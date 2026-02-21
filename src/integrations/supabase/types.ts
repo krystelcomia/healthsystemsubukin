@@ -14,7 +14,254 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      consultations: {
+        Row: {
+          age: number | null
+          birthdate: string | null
+          consultation_cause: string | null
+          consultation_date: string
+          created_at: string
+          height: string | null
+          id: string
+          pulse_rate: string | null
+          resident_id: string | null
+          respiration_rate: string | null
+          sitio: string | null
+          temperature: string | null
+          weight: string | null
+        }
+        Insert: {
+          age?: number | null
+          birthdate?: string | null
+          consultation_cause?: string | null
+          consultation_date?: string
+          created_at?: string
+          height?: string | null
+          id?: string
+          pulse_rate?: string | null
+          resident_id?: string | null
+          respiration_rate?: string | null
+          sitio?: string | null
+          temperature?: string | null
+          weight?: string | null
+        }
+        Update: {
+          age?: number | null
+          birthdate?: string | null
+          consultation_cause?: string | null
+          consultation_date?: string
+          created_at?: string
+          height?: string | null
+          id?: string
+          pulse_rate?: string | null
+          resident_id?: string | null
+          respiration_rate?: string | null
+          sitio?: string | null
+          temperature?: string | null
+          weight?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultations_resident_id_fkey"
+            columns: ["resident_id"]
+            isOneToOne: false
+            referencedRelation: "residents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dengue_prevention: {
+        Row: {
+          action_plan: string | null
+          container_type: string | null
+          created_at: string
+          has_larvae: boolean | null
+          household_name: string | null
+          id: string
+          resident_id: string | null
+          signature: string | null
+        }
+        Insert: {
+          action_plan?: string | null
+          container_type?: string | null
+          created_at?: string
+          has_larvae?: boolean | null
+          household_name?: string | null
+          id?: string
+          resident_id?: string | null
+          signature?: string | null
+        }
+        Update: {
+          action_plan?: string | null
+          container_type?: string | null
+          created_at?: string
+          has_larvae?: boolean | null
+          household_name?: string | null
+          id?: string
+          resident_id?: string | null
+          signature?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dengue_prevention_resident_id_fkey"
+            columns: ["resident_id"]
+            isOneToOne: false
+            referencedRelation: "residents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_data: {
+        Row: {
+          created_at: string
+          family_number: string | null
+          father_name: string | null
+          id: string
+          mother_name: string | null
+          num_females: number | null
+          num_households: number | null
+          num_males: number | null
+          resident_id: string | null
+          total_members: number | null
+        }
+        Insert: {
+          created_at?: string
+          family_number?: string | null
+          father_name?: string | null
+          id?: string
+          mother_name?: string | null
+          num_females?: number | null
+          num_households?: number | null
+          num_males?: number | null
+          resident_id?: string | null
+          total_members?: number | null
+        }
+        Update: {
+          created_at?: string
+          family_number?: string | null
+          father_name?: string | null
+          id?: string
+          mother_name?: string | null
+          num_females?: number | null
+          num_households?: number | null
+          num_males?: number | null
+          resident_id?: string | null
+          total_members?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_data_resident_id_fkey"
+            columns: ["resident_id"]
+            isOneToOne: false
+            referencedRelation: "residents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      philpen_health: {
+        Row: {
+          address_sitio: string | null
+          age: number | null
+          birthdate: string | null
+          bmi: string | null
+          bp: string | null
+          created_at: string
+          diabetes_symptoms: boolean | null
+          drinks_alcohol: boolean | null
+          height: string | null
+          high_blood_pressure: boolean | null
+          id: string
+          record_date: string
+          resident_id: string | null
+          smokes: boolean | null
+          weight: string | null
+        }
+        Insert: {
+          address_sitio?: string | null
+          age?: number | null
+          birthdate?: string | null
+          bmi?: string | null
+          bp?: string | null
+          created_at?: string
+          diabetes_symptoms?: boolean | null
+          drinks_alcohol?: boolean | null
+          height?: string | null
+          high_blood_pressure?: boolean | null
+          id?: string
+          record_date?: string
+          resident_id?: string | null
+          smokes?: boolean | null
+          weight?: string | null
+        }
+        Update: {
+          address_sitio?: string | null
+          age?: number | null
+          birthdate?: string | null
+          bmi?: string | null
+          bp?: string | null
+          created_at?: string
+          diabetes_symptoms?: boolean | null
+          drinks_alcohol?: boolean | null
+          height?: string | null
+          high_blood_pressure?: boolean | null
+          id?: string
+          record_date?: string
+          resident_id?: string | null
+          smokes?: boolean | null
+          weight?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "philpen_health_resident_id_fkey"
+            columns: ["resident_id"]
+            isOneToOne: false
+            referencedRelation: "residents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      residents: {
+        Row: {
+          age: number
+          blood_type: string | null
+          created_at: string
+          full_name: string
+          gender: string
+          id: string
+          nationality: string
+          religion: string | null
+          sitio: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          age?: number
+          blood_type?: string | null
+          created_at?: string
+          full_name: string
+          gender?: string
+          id?: string
+          nationality?: string
+          religion?: string | null
+          sitio?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          age?: number
+          blood_type?: string | null
+          created_at?: string
+          full_name?: string
+          gender?: string
+          id?: string
+          nationality?: string
+          religion?: string | null
+          sitio?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
