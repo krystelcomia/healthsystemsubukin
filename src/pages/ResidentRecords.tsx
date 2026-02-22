@@ -20,6 +20,7 @@ interface Resident {
   blood_type: string;
   nationality: string;
   sitio: string;
+  birthday: string | null;
   created_at: string;
 }
 
@@ -40,7 +41,7 @@ const ResidentRecords = () => {
   const printRef = useRef<HTMLDivElement>(null);
 
   const [newResident, setNewResident] = useState({
-    full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "",
+    full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "", birthday: "",
   });
 
   const fetchResidents = async () => {
@@ -63,10 +64,11 @@ const ResidentRecords = () => {
       blood_type: newResident.blood_type,
       nationality: newResident.nationality,
       sitio: newResident.sitio,
+      birthday: newResident.birthday || null,
     });
     if (error) { toast.error("Failed to add resident"); return; }
     toast.success("Resident added successfully!");
-    setNewResident({ full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "" });
+    setNewResident({ full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "", birthday: "" });
     setDialogOpen(false);
     fetchResidents();
   };
@@ -96,10 +98,40 @@ const ResidentRecords = () => {
     if (!content) return;
     const win = window.open("", "_blank");
     if (!win) return;
-    win.document.write(`<html><head><title>Resident Record - ${selectedResident?.full_name || "List"}</title>
-      <style>body{font-family:Arial,sans-serif;padding:20px;color:#222}table{width:100%;border-collapse:collapse;margin:10px 0}th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:13px}th{background:#f0f0f0}h1,h2,h3{margin:8px 0}.badge{display:inline-block;background:#e0e7ff;padding:2px 8px;border-radius:8px;font-size:12px;margin:2px}</style></head><body>`);
-    win.document.write(content.innerHTML);
-    win.document.write("</body></html>");
+    win.document.write(`<!DOCTYPE html><html><head><title>${selectedResident ? `Record - ${selectedResident.full_name}` : "Resident Records List"}</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #1a1a1a; font-size: 13px; }
+        .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #0d9488; padding-bottom: 16px; }
+        .header h1 { font-size: 20px; color: #0d9488; margin-bottom: 4px; }
+        .header p { font-size: 11px; color: #666; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; }
+        th { background: #f0fdfa; color: #0d9488; font-weight: 600; }
+        h2 { font-size: 15px; color: #0d9488; margin: 20px 0 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 10px 0; }
+        .info-item { font-size: 12px; }
+        .info-item strong { color: #374151; }
+        .resident-card { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+        .no-records { color: #999; font-style: italic; margin-top: 12px; }
+        .print-date { text-align: right; font-size: 10px; color: #999; margin-top: 20px; }
+        @media print { body { padding: 15px; } }
+      </style></head><body>`);
+
+    if (!selectedResident) {
+      // Print all residents list
+      win.document.write(`<div class="header"><h1>Barangay Health System</h1><p>Resident Records Directory</p></div>`);
+      win.document.write(`<table><thead><tr><th>#</th><th>Full Name</th><th>Gender</th><th>Age</th><th>Birthday</th><th>Status</th><th>Blood Type</th><th>Sitio</th><th>Nationality</th></tr></thead><tbody>`);
+      filtered.forEach((r, i) => {
+        win.document.write(`<tr><td>${i + 1}</td><td>${r.full_name}</td><td>${r.gender}</td><td>${r.age}</td><td>${r.birthday || "—"}</td><td>${r.status}</td><td>${r.blood_type || "—"}</td><td>${r.sitio || "—"}</td><td>${r.nationality}</td></tr>`);
+      });
+      win.document.write(`</tbody></table>`);
+      win.document.write(`<p style="margin-top:12px;font-size:12px;color:#666;">Total Residents: ${filtered.length}</p>`);
+    } else {
+      win.document.write(content.innerHTML);
+    }
+
+    win.document.write(`<p class="print-date">Printed on: ${new Date().toLocaleString()}</p></body></html>`);
     win.document.close();
     win.print();
   };
@@ -117,28 +149,35 @@ const ResidentRecords = () => {
           <Button variant="ghost" onClick={() => { setSelectedResident(null); setHealthRecords(null); }}>
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Records
           </Button>
-          <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> Print</Button>
+          <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> Print Record</Button>
         </div>
 
         <div ref={printRef}>
-          <h1 style={{ fontSize: 22, fontWeight: "bold" }}>{selectedResident.full_name}</h1>
-          <table>
-            <tbody>
-              <tr><th>Gender</th><td>{selectedResident.gender}</td><th>Age</th><td>{selectedResident.age}</td></tr>
-              <tr><th>Status</th><td>{selectedResident.status}</td><th>Religion</th><td>{selectedResident.religion || "—"}</td></tr>
-              <tr><th>Blood Type</th><td>{selectedResident.blood_type || "—"}</td><th>Nationality</th><td>{selectedResident.nationality}</td></tr>
-              <tr><th>Sitio</th><td>{selectedResident.sitio || "—"}</td><th>Total Records</th><td>{totalRecords}</td></tr>
-            </tbody>
-          </table>
+          <div className="header" style={{ textAlign: "center", marginBottom: 20, borderBottom: "2px solid #0d9488", paddingBottom: 12 }}>
+            <h1 style={{ fontSize: 20, fontWeight: "bold", color: "#0d9488" }}>Barangay Health System</h1>
+            <p style={{ fontSize: 11, color: "#666" }}>Individual Resident Health Record</p>
+          </div>
+
+          <h2 style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>{selectedResident.full_name}</h2>
+          <div className="info-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16 }}>
+            <p style={{ fontSize: 13 }}><strong>Gender:</strong> {selectedResident.gender}</p>
+            <p style={{ fontSize: 13 }}><strong>Age:</strong> {selectedResident.age}</p>
+            <p style={{ fontSize: 13 }}><strong>Birthday:</strong> {selectedResident.birthday || "—"}</p>
+            <p style={{ fontSize: 13 }}><strong>Status:</strong> {selectedResident.status}</p>
+            <p style={{ fontSize: 13 }}><strong>Religion:</strong> {selectedResident.religion || "—"}</p>
+            <p style={{ fontSize: 13 }}><strong>Blood Type:</strong> {selectedResident.blood_type || "—"}</p>
+            <p style={{ fontSize: 13 }}><strong>Nationality:</strong> {selectedResident.nationality}</p>
+            <p style={{ fontSize: 13 }}><strong>Sitio:</strong> {selectedResident.sitio || "—"}</p>
+          </div>
 
           {healthRecords.consultations.length > 0 && (
             <>
-              <h2 style={{ fontSize: 16, fontWeight: "bold", marginTop: 16 }}>Consultations</h2>
-              <table>
-                <thead><tr><th>Date</th><th>Temp</th><th>PR</th><th>RR</th><th>Height</th><th>Weight</th><th>Cause</th></tr></thead>
+              <h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>Consultations ({healthRecords.consultations.length})</h2>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}>
+                <thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>Date</th><th style={thStyle}>Temp</th><th style={thStyle}>PR</th><th style={thStyle}>RR</th><th style={thStyle}>Height</th><th style={thStyle}>Weight</th><th style={thStyle}>Cause</th></tr></thead>
                 <tbody>
                   {healthRecords.consultations.map((c: any) => (
-                    <tr key={c.id}><td>{c.consultation_date}</td><td>{c.temperature}</td><td>{c.pulse_rate}</td><td>{c.respiration_rate}</td><td>{c.height}</td><td>{c.weight}</td><td>{c.consultation_cause}</td></tr>
+                    <tr key={c.id}><td style={tdStyle}>{c.consultation_date}</td><td style={tdStyle}>{c.temperature || "—"}</td><td style={tdStyle}>{c.pulse_rate || "—"}</td><td style={tdStyle}>{c.respiration_rate || "—"}</td><td style={tdStyle}>{c.height || "—"}</td><td style={tdStyle}>{c.weight || "—"}</td><td style={tdStyle}>{c.consultation_cause || "—"}</td></tr>
                   ))}
                 </tbody>
               </table>
@@ -147,12 +186,12 @@ const ResidentRecords = () => {
 
           {healthRecords.philpen_health.length > 0 && (
             <>
-              <h2 style={{ fontSize: 16, fontWeight: "bold", marginTop: 16 }}>PhilPen Health</h2>
-              <table>
-                <thead><tr><th>Date</th><th>BP</th><th>Height</th><th>Weight</th><th>BMI</th><th>Smokes</th><th>Alcohol</th><th>HBP</th><th>Diabetes</th></tr></thead>
+              <h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>PhilPen Health ({healthRecords.philpen_health.length})</h2>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}>
+                <thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>Date</th><th style={thStyle}>BP</th><th style={thStyle}>Height</th><th style={thStyle}>Weight</th><th style={thStyle}>BMI</th><th style={thStyle}>Smokes</th><th style={thStyle}>Alcohol</th><th style={thStyle}>HBP</th><th style={thStyle}>Diabetes</th></tr></thead>
                 <tbody>
                   {healthRecords.philpen_health.map((p: any) => (
-                    <tr key={p.id}><td>{p.record_date}</td><td>{p.bp}</td><td>{p.height}</td><td>{p.weight}</td><td>{p.bmi}</td><td>{p.smokes ? "Yes" : "No"}</td><td>{p.drinks_alcohol ? "Yes" : "No"}</td><td>{p.high_blood_pressure ? "Yes" : "No"}</td><td>{p.diabetes_symptoms ? "Yes" : "No"}</td></tr>
+                    <tr key={p.id}><td style={tdStyle}>{p.record_date}</td><td style={tdStyle}>{p.bp || "—"}</td><td style={tdStyle}>{p.height || "—"}</td><td style={tdStyle}>{p.weight || "—"}</td><td style={tdStyle}>{p.bmi || "—"}</td><td style={tdStyle}>{p.smokes ? "Yes" : "No"}</td><td style={tdStyle}>{p.drinks_alcohol ? "Yes" : "No"}</td><td style={tdStyle}>{p.high_blood_pressure ? "Yes" : "No"}</td><td style={tdStyle}>{p.diabetes_symptoms ? "Yes" : "No"}</td></tr>
                   ))}
                 </tbody>
               </table>
@@ -161,12 +200,12 @@ const ResidentRecords = () => {
 
           {healthRecords.family_data.length > 0 && (
             <>
-              <h2 style={{ fontSize: 16, fontWeight: "bold", marginTop: 16 }}>Family Data</h2>
-              <table>
-                <thead><tr><th>Family #</th><th>Households</th><th>Father</th><th>Mother</th><th>Males</th><th>Females</th><th>Total</th></tr></thead>
+              <h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>Family Data ({healthRecords.family_data.length})</h2>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}>
+                <thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>Family #</th><th style={thStyle}>Households</th><th style={thStyle}>Father</th><th style={thStyle}>Mother</th><th style={thStyle}>Males</th><th style={thStyle}>Females</th><th style={thStyle}>Total</th></tr></thead>
                 <tbody>
                   {healthRecords.family_data.map((f: any) => (
-                    <tr key={f.id}><td>{f.family_number}</td><td>{f.num_households}</td><td>{f.father_name}</td><td>{f.mother_name}</td><td>{f.num_males}</td><td>{f.num_females}</td><td>{f.total_members}</td></tr>
+                    <tr key={f.id}><td style={tdStyle}>{f.family_number || "—"}</td><td style={tdStyle}>{f.num_households}</td><td style={tdStyle}>{f.father_name || "—"}</td><td style={tdStyle}>{f.mother_name || "—"}</td><td style={tdStyle}>{f.num_males}</td><td style={tdStyle}>{f.num_females}</td><td style={tdStyle}>{f.total_members}</td></tr>
                   ))}
                 </tbody>
               </table>
@@ -175,19 +214,19 @@ const ResidentRecords = () => {
 
           {healthRecords.dengue_prevention.length > 0 && (
             <>
-              <h2 style={{ fontSize: 16, fontWeight: "bold", marginTop: 16 }}>Dengue Prevention</h2>
-              <table>
-                <thead><tr><th>Household</th><th>Container</th><th>Larvae</th><th>Action Plan</th><th>Signature</th></tr></thead>
+              <h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>Dengue Prevention ({healthRecords.dengue_prevention.length})</h2>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}>
+                <thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>Household</th><th style={thStyle}>Container</th><th style={thStyle}>Larvae</th><th style={thStyle}>Action Plan</th><th style={thStyle}>Signature</th></tr></thead>
                 <tbody>
                   {healthRecords.dengue_prevention.map((d: any) => (
-                    <tr key={d.id}><td>{d.household_name}</td><td>{d.container_type}</td><td>{d.has_larvae ? "Yes" : "No"}</td><td>{d.action_plan}</td><td>{d.signature}</td></tr>
+                    <tr key={d.id}><td style={tdStyle}>{d.household_name || "—"}</td><td style={tdStyle}>{d.container_type || "—"}</td><td style={tdStyle}>{d.has_larvae ? "Yes" : "No"}</td><td style={tdStyle}>{d.action_plan || "—"}</td><td style={tdStyle}>{d.signature || "—"}</td></tr>
                   ))}
                 </tbody>
               </table>
             </>
           )}
 
-          {totalRecords === 0 && <p style={{ color: "#888", marginTop: 16 }}>No health records found for this resident.</p>}
+          {totalRecords === 0 && <p style={{ color: "#888", marginTop: 16, fontStyle: "italic" }}>No health records found for this resident.</p>}
         </div>
       </div>
     );
@@ -218,6 +257,10 @@ const ResidentRecords = () => {
                 <div className="space-y-1">
                   <Label>Full Name *</Label>
                   <Input value={newResident.full_name} onChange={(e) => setNewResident({ ...newResident, full_name: e.target.value })} placeholder="Full name" />
+                </div>
+                <div className="space-y-1">
+                  <Label>Birthday</Label>
+                  <Input type="date" value={newResident.birthday} onChange={(e) => setNewResident({ ...newResident, birthday: e.target.value })} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -306,6 +349,7 @@ const ResidentRecords = () => {
                     <p className="font-medium text-foreground">{resident.full_name}</p>
                     <p className="text-sm text-muted-foreground">
                       {resident.sitio ? `${resident.sitio} · ` : ""}{resident.gender} · Age {resident.age} · {resident.status}
+                      {resident.birthday ? ` · Born ${resident.birthday}` : ""}
                     </p>
                   </div>
                 </div>
@@ -321,5 +365,8 @@ const ResidentRecords = () => {
     </div>
   );
 };
+
+const thStyle: React.CSSProperties = { border: "1px solid #d1d5db", padding: "7px 10px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "#0d9488", background: "#f0fdfa" };
+const tdStyle: React.CSSProperties = { border: "1px solid #d1d5db", padding: "7px 10px", textAlign: "left", fontSize: 12 };
 
 export default ResidentRecords;

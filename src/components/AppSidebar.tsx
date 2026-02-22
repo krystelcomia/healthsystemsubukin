@@ -1,5 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -22,7 +23,9 @@ import {
   Baby,
   Settings,
   Activity,
+  LogOut,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -44,6 +47,7 @@ const systemItems = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const { user, userRole, signOut } = useAuth();
   const isActive = (path: string) => location.pathname === path;
 
   const renderItems = (items: typeof mainItems) => (
@@ -103,16 +107,21 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
+      <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center">
-            <span className="text-xs font-semibold text-sidebar-accent-foreground">BH</span>
+            <span className="text-xs font-semibold text-sidebar-accent-foreground">
+              {userRole === "supervisor" ? "SV" : "BH"}
+            </span>
           </div>
-          <div>
-            <p className="text-sm font-medium text-sidebar-foreground">Health Worker</p>
-            <p className="text-xs text-sidebar-foreground/50">Barangay Staff</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.email || "User"}</p>
+            <p className="text-xs text-sidebar-foreground/50 capitalize">{userRole || "Staff"}</p>
           </div>
         </div>
+        <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground" onClick={signOut}>
+          <LogOut className="h-4 w-4 mr-2" /> Sign Out
+        </Button>
       </SidebarFooter>
     </Sidebar>
   );
