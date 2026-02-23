@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Users, Search, Plus, Printer, ArrowLeft } from "lucide-react";
+import { Users, Search, Plus, Printer, ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -39,6 +40,9 @@ const ResidentRecords = () => {
   const [selectedResident, setSelectedResident] = useState<Resident | null>(null);
   const [healthRecords, setHealthRecords] = useState<HealthRecords | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editResident, setEditResident] = useState<Resident | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [newResident, setNewResident] = useState({
     full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "", birthday: "",
@@ -70,6 +74,34 @@ const ResidentRecords = () => {
     toast.success("Resident added successfully!");
     setNewResident({ full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "", birthday: "" });
     setDialogOpen(false);
+    fetchResidents();
+  };
+
+  const handleEditResident = async () => {
+    if (!editResident) return;
+    const { error } = await supabase.from("residents").update({
+      full_name: editResident.full_name,
+      gender: editResident.gender,
+      age: editResident.age,
+      status: editResident.status,
+      religion: editResident.religion,
+      blood_type: editResident.blood_type,
+      nationality: editResident.nationality,
+      sitio: editResident.sitio,
+      birthday: editResident.birthday || null,
+    }).eq("id", editResident.id);
+    if (error) { toast.error("Failed to update resident"); return; }
+    toast.success("Resident updated!");
+    setEditDialogOpen(false);
+    setEditResident(null);
+    fetchResidents();
+  };
+
+  const handleDeleteResident = async (id: string) => {
+    const { error } = await supabase.from("residents").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete resident"); return; }
+    toast.success("Resident deleted!");
+    setDeleteConfirmId(null);
     fetchResidents();
   };
 
@@ -337,9 +369,9 @@ const ResidentRecords = () => {
           <p className="text-center text-muted-foreground py-8">No residents found.</p>
         ) : (
           filtered.map((resident) => (
-            <Card key={resident.id} className="border-border/50 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleSelectResident(resident)}>
+            <Card key={resident.id} className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="flex items-center justify-between py-4">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 cursor-pointer flex-1" onClick={() => handleSelectResident(resident)}>
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <span className="text-sm font-semibold text-primary">
                       {resident.full_name.split(" ").map((n) => n[0]).join("")}
@@ -353,15 +385,114 @@ const ResidentRecords = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-2 flex-wrap justify-end">
+                <div className="flex gap-2 items-center">
                   <Badge variant="secondary" className="text-xs">{resident.blood_type || "—"}</Badge>
                   <Badge variant="outline" className="text-xs">{resident.nationality}</Badge>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditResident(resident); setEditDialogOpen(true); }}>
+                    <Pencil className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(resident.id); }}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))
         )}
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Resident</DialogTitle>
+            <DialogDescription>Update resident information.</DialogDescription>
+          </DialogHeader>
+          {editResident && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label>Full Name *</Label>
+                <Input value={editResident.full_name} onChange={(e) => setEditResident({ ...editResident, full_name: e.target.value })} />
+              </div>
+              <div className="space-y-1">
+                <Label>Birthday</Label>
+                <Input type="date" value={editResident.birthday || ""} onChange={(e) => setEditResident({ ...editResident, birthday: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label>Gender</Label>
+                  <Select value={editResident.gender} onValueChange={(v) => setEditResident({ ...editResident, gender: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label>Age</Label>
+                  <Input type="number" value={editResident.age} onChange={(e) => setEditResident({ ...editResident, age: Number(e.target.value) })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label>Civil Status</Label>
+                  <Select value={editResident.status} onValueChange={(v) => setEditResident({ ...editResident, status: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Single">Single</SelectItem>
+                      <SelectItem value="Married">Married</SelectItem>
+                      <SelectItem value="Widowed">Widowed</SelectItem>
+                      <SelectItem value="Separated">Separated</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label>Religion</Label>
+                  <Input value={editResident.religion || ""} onChange={(e) => setEditResident({ ...editResident, religion: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label>Blood Type</Label>
+                  <Select value={editResident.blood_type || ""} onValueChange={(v) => setEditResident({ ...editResident, blood_type: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bt) => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label>Nationality</Label>
+                  <Input value={editResident.nationality} onChange={(e) => setEditResident({ ...editResident, nationality: e.target.value })} />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label>Sitio</Label>
+                <Input value={editResident.sitio || ""} onChange={(e) => setEditResident({ ...editResident, sitio: e.target.value })} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleEditResident}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Resident?</AlertDialogTitle>
+            <AlertDialogDescription>This action cannot be undone. All associated health records may become orphaned.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteConfirmId && handleDeleteResident(deleteConfirmId)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
