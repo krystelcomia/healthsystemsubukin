@@ -35,6 +35,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUserRole(data?.role || null);
   };
 
+  const updateOnlineStatus = async (userId: string, online: boolean) => {
+    await (supabase.from as any)("bhw_workers")
+      .update({ is_online: online, last_seen: new Date().toISOString() })
+      .eq("user_id", userId);
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
@@ -42,6 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
         if (session?.user) {
           setTimeout(() => fetchRole(session.user.id), 0);
+          setTimeout(() => updateOnlineStatus(session.user.id, true), 0);
         } else {
           setUserRole(null);
         }
@@ -54,6 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchRole(session.user.id);
+        updateOnlineStatus(session.user.id, true);
       }
       setLoading(false);
     });
@@ -62,6 +70,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = async () => {
+    if (user) {
+      await updateOnlineStatus(user.id, false);
+    }
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
