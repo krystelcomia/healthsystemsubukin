@@ -17,6 +17,7 @@ import DenguePreventionForm from "./pages/DenguePreventionForm";
 import MaternalCareForm from "./pages/MaternalCareForm";
 import ChildHealthForm from "./pages/ChildHealthForm";
 import ResidentRecords from "./pages/ResidentRecords";
+import AdminDashboard from "./pages/AdminDashboard";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/forms/child-health" element={<ProtectedRoute><Layout><ChildHealthForm /></Layout></ProtectedRoute>} />
             <Route path="/residents" element={<ProtectedRoute><Layout><ResidentRecords /></Layout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

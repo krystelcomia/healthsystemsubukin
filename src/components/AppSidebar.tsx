@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,8 +25,10 @@ import {
   Settings,
   Activity,
   LogOut,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -45,9 +48,14 @@ const systemItems = [
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
+const adminItems = [
+  { title: "Admin Panel", url: "/admin", icon: Shield },
+];
+
 export function AppSidebar() {
   const location = useLocation();
   const { user, userRole, signOut } = useAuth();
+  const [signOutOpen, setSignOutOpen] = useState(false);
   const isActive = (path: string) => location.pathname === path;
 
   const renderItems = (items: typeof mainItems) => (
@@ -99,6 +107,15 @@ export function AppSidebar() {
           <SidebarGroupContent>{renderItems(formItems)}</SidebarGroupContent>
         </SidebarGroup>
 
+        {userRole === "supervisor" && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider mb-1">
+              Admin
+            </SidebarGroupLabel>
+            <SidebarGroupContent>{renderItems(adminItems)}</SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider mb-1">
             System
@@ -119,10 +136,24 @@ export function AppSidebar() {
             <p className="text-xs text-sidebar-foreground/50 capitalize">{userRole || "Staff"}</p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground" onClick={signOut}>
+        <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground" onClick={() => setSignOutOpen(true)}>
           <LogOut className="h-4 w-4 mr-2" /> Sign Out
         </Button>
       </SidebarFooter>
+
+      {/* Sign Out Confirmation */}
+      <AlertDialog open={signOutOpen} onOpenChange={setSignOutOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sign Out?</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to sign out? You will need to log in again to access the system.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={signOut}>Sign Out</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sidebar>
   );
 }

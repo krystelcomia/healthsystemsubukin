@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      bhw_workers: {
+        Row: {
+          address: string
+          age: number
+          created_at: string
+          gmail: string
+          id: string
+          is_online: boolean
+          last_seen: string | null
+          name: string
+          number: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address?: string
+          age?: number
+          created_at?: string
+          gmail?: string
+          id?: string
+          is_online?: boolean
+          last_seen?: string | null
+          name: string
+          number?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address?: string
+          age?: number
+          created_at?: string
+          gmail?: string
+          id?: string
+          is_online?: boolean
+          last_seen?: string | null
+          name?: string
+          number?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       consultations: {
         Row: {
           age: number | null
