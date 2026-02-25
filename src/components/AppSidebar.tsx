@@ -49,14 +49,17 @@ const systemItems = [
 ];
 
 const adminItems = [
-  { title: "Admin Panel", url: "/admin", icon: Shield },
+  { title: "Resident Records", url: "/admin/residents", icon: Users },
+  { title: "BH Workers", url: "/admin/workers", icon: Shield },
+  { title: "Health Records", url: "/admin/health", icon: Activity },
+  { title: "Admin Settings", url: "/admin/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
   const { user, userRole, signOut } = useAuth();
   const [signOutOpen, setSignOutOpen] = useState(false);
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
 
   const renderItems = (items: typeof mainItems) => (
     <SidebarMenu>
