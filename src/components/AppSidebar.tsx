@@ -49,6 +49,7 @@ const systemItems = [
 ];
 
 const adminItems = [
+  { title: "Admin Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Resident Records", url: "/admin/residents", icon: Users },
   { title: "BH Workers", url: "/admin/workers", icon: Shield },
   { title: "Health Records", url: "/admin/health", icon: Activity },
