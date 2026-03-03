@@ -30,12 +30,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
-const mainItems = [
+// BHW user navigation
+const bhwMainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Resident Records", url: "/residents", icon: Users },
 ];
 
-const formItems = [
+const bhwFormItems = [
   { title: "Family Data", url: "/forms/family-data", icon: ClipboardList },
   { title: "Consultation", url: "/forms/consultation", icon: Stethoscope },
   { title: "PhilPen Health", url: "/forms/philpen-health", icon: Activity },
@@ -44,28 +45,44 @@ const formItems = [
   { title: "Child Health", url: "/forms/child-health", icon: Baby },
 ];
 
-const systemItems = [
+const bhwSystemItems = [
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
-const adminItems = [
-  { title: "Admin Dashboard", url: "/admin", icon: LayoutDashboard },
+// Admin/Supervisor navigation
+const adminMainItems = [
+  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Resident Records", url: "/admin/residents", icon: Users },
   { title: "BH Workers", url: "/admin/workers", icon: Shield },
-  { title: "Health Records", url: "/admin/health", icon: Activity },
-  { title: "Admin Settings", url: "/admin/settings", icon: Settings },
+];
+
+const adminFormItems = [
+  { title: "Family Data", url: "/admin/forms/family-data", icon: ClipboardList },
+  { title: "Consultation", url: "/admin/forms/consultation", icon: Stethoscope },
+  { title: "PhilPen Health", url: "/admin/forms/philpen-health", icon: Activity },
+  { title: "Dengue Prevention", url: "/admin/forms/dengue-prevention", icon: Bug },
+  { title: "Maternal Care", url: "/admin/forms/maternal-care", icon: Heart },
+  { title: "Child Health", url: "/admin/forms/child-health", icon: Baby },
+  { title: "Family Planning", url: "/admin/forms/family-planning", icon: Heart },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
   const { user, userRole, signOut } = useAuth();
   const [signOutOpen, setSignOutOpen] = useState(false);
-  const isActive = (path: string) => location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
+
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  const isAdmin = userRole === "supervisor" && isAdminRoute;
+
+  const mainItems = isAdmin ? adminMainItems : bhwMainItems;
+  const formItems = isAdmin ? adminFormItems : bhwFormItems;
+
+  const isActive = (path: string) => location.pathname === path || (path !== "/" && path !== "/admin" && location.pathname.startsWith(path));
 
   const renderItems = (items: typeof mainItems) => (
     <SidebarMenu>
       {items.map((item) => (
-        <SidebarMenuItem key={item.title}>
+        <SidebarMenuItem key={item.title + item.url}>
           <SidebarMenuButton asChild isActive={isActive(item.url)}>
             <NavLink
               to={item.url}
@@ -90,8 +107,12 @@ export function AppSidebar() {
             <Heart className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           <div>
-            <h2 className="font-heading text-sm font-bold text-sidebar-foreground">BHW System</h2>
-            <p className="text-xs text-sidebar-foreground/60">Health Records</p>
+            <h2 className="font-heading text-sm font-bold text-sidebar-foreground">
+              {isAdmin ? "Admin Panel" : "BHW System"}
+            </h2>
+            <p className="text-xs text-sidebar-foreground/60">
+              {isAdmin ? "Supervisor" : "Health Records"}
+            </p>
           </div>
         </div>
       </SidebarHeader>
@@ -111,28 +132,21 @@ export function AppSidebar() {
           <SidebarGroupContent>{renderItems(formItems)}</SidebarGroupContent>
         </SidebarGroup>
 
-        {userRole === "supervisor" && (
+        {!isAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider mb-1">
-              Admin
+              System
             </SidebarGroupLabel>
-            <SidebarGroupContent>{renderItems(adminItems)}</SidebarGroupContent>
+            <SidebarGroupContent>{renderItems(bhwSystemItems)}</SidebarGroupContent>
           </SidebarGroup>
         )}
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider mb-1">
-            System
-          </SidebarGroupLabel>
-          <SidebarGroupContent>{renderItems(systemItems)}</SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center">
             <span className="text-xs font-semibold text-sidebar-accent-foreground">
-              {userRole === "supervisor" ? "SV" : "BH"}
+              {isAdmin ? "SV" : "BH"}
             </span>
           </div>
           <div className="flex-1 min-w-0">
@@ -145,7 +159,6 @@ export function AppSidebar() {
         </Button>
       </SidebarFooter>
 
-      {/* Sign Out Confirmation */}
       <AlertDialog open={signOutOpen} onOpenChange={setSignOutOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
