@@ -56,6 +56,10 @@ const adminMainItems = [
   { title: "BH Workers", url: "/admin/workers", icon: Shield },
 ];
 
+const adminSystemItems = [
+  { title: "Settings", url: "/admin/settings", icon: Settings },
+];
+
 const adminFormItems = [
   { title: "Family Data", url: "/admin/forms/family-data", icon: ClipboardList },
   { title: "Consultation", url: "/admin/forms/consultation", icon: Stethoscope },
@@ -132,14 +136,12 @@ export function AppSidebar() {
           <SidebarGroupContent>{renderItems(formItems)}</SidebarGroupContent>
         </SidebarGroup>
 
-        {!isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider mb-1">
-              System
-            </SidebarGroupLabel>
-            <SidebarGroupContent>{renderItems(bhwSystemItems)}</SidebarGroupContent>
-          </SidebarGroup>
-        )}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider mb-1">
+            System
+          </SidebarGroupLabel>
+          <SidebarGroupContent>{renderItems(isAdmin ? adminSystemItems : bhwSystemItems)}</SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
