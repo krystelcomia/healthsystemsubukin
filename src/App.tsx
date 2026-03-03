@@ -16,6 +16,7 @@ import PhilPenHealthForm from "./pages/PhilPenHealthForm";
 import DenguePreventionForm from "./pages/DenguePreventionForm";
 import MaternalCareForm from "./pages/MaternalCareForm";
 import ChildHealthForm from "./pages/ChildHealthForm";
+import FamilyPlanningForm from "./pages/FamilyPlanningForm";
 import ResidentRecords from "./pages/ResidentRecords";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminResidents from "./pages/AdminResidents";
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/forms/dengue-prevention" element={<ProtectedRoute><Layout><DenguePreventionForm /></Layout></ProtectedRoute>} />
             <Route path="/forms/maternal-care" element={<ProtectedRoute><Layout><MaternalCareForm /></Layout></ProtectedRoute>} />
             <Route path="/forms/child-health" element={<ProtectedRoute><Layout><ChildHealthForm /></Layout></ProtectedRoute>} />
+            <Route path="/forms/family-planning" element={<ProtectedRoute><Layout><FamilyPlanningForm /></Layout></ProtectedRoute>} />
             <Route path="/residents" element={<ProtectedRoute><Layout><ResidentRecords /></Layout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
@@ -52,6 +54,13 @@ const App = () => (
             <Route path="/admin/workers" element={<ProtectedRoute><Layout><AdminWorkers /></Layout></ProtectedRoute>} />
             <Route path="/admin/health" element={<ProtectedRoute><Layout><AdminHealthRecords /></Layout></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute><Layout><AdminSettings /></Layout></ProtectedRoute>} />
+            <Route path="/admin/forms/family-data" element={<ProtectedRoute><Layout><FamilyDataForm /></Layout></ProtectedRoute>} />
+            <Route path="/admin/forms/consultation" element={<ProtectedRoute><Layout><ConsultationForm /></Layout></ProtectedRoute>} />
+            <Route path="/admin/forms/philpen-health" element={<ProtectedRoute><Layout><PhilPenHealthForm /></Layout></ProtectedRoute>} />
+            <Route path="/admin/forms/dengue-prevention" element={<ProtectedRoute><Layout><DenguePreventionForm /></Layout></ProtectedRoute>} />
+            <Route path="/admin/forms/maternal-care" element={<ProtectedRoute><Layout><MaternalCareForm /></Layout></ProtectedRoute>} />
+            <Route path="/admin/forms/child-health" element={<ProtectedRoute><Layout><ChildHealthForm /></Layout></ProtectedRoute>} />
+            <Route path="/admin/forms/family-planning" element={<ProtectedRoute><Layout><FamilyPlanningForm /></Layout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
