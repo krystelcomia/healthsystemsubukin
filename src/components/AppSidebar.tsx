@@ -26,6 +26,7 @@ import {
   Activity,
   LogOut,
   Shield,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -43,9 +44,11 @@ const bhwFormItems = [
   { title: "Dengue Prevention", url: "/forms/dengue-prevention", icon: Bug },
   { title: "Maternal Care", url: "/forms/maternal-care", icon: Heart },
   { title: "Child Health", url: "/forms/child-health", icon: Baby },
+  { title: "Family Planning", url: "/forms/family-planning", icon: Heart },
 ];
 
 const bhwSystemItems = [
+  { title: "My Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
@@ -153,7 +156,7 @@ export function AppSidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.email || "User"}</p>
-            <p className="text-xs text-sidebar-foreground/50 capitalize">{userRole || "Staff"}</p>
+            <p className="text-xs text-sidebar-foreground/50 capitalize">{userRole || "Worker"}</p>
           </div>
         </div>
         <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground" onClick={() => setSignOutOpen(true)}>

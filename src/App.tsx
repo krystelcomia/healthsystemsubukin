@@ -24,6 +24,7 @@ import AdminWorkers from "./pages/AdminWorkers";
 import AdminHealthRecords from "./pages/AdminHealthRecords";
 import AdminSettings from "./pages/AdminSettings";
 import SettingsPage from "./pages/SettingsPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/forms/family-planning" element={<ProtectedRoute><Layout><FamilyPlanningForm /></Layout></ProtectedRoute>} />
             <Route path="/residents" element={<ProtectedRoute><Layout><ResidentRecords /></Layout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Layout><ProfilePage /></Layout></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
             <Route path="/admin/residents" element={<ProtectedRoute><Layout><AdminResidents /></Layout></ProtectedRoute>} />
             <Route path="/admin/workers" element={<ProtectedRoute><Layout><AdminWorkers /></Layout></ProtectedRoute>} />
