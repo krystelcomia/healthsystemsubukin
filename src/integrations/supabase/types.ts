@@ -200,6 +200,41 @@ export type Database = {
           },
         ]
       }
+      family_planning: {
+        Row: {
+          created_at: string
+          id: string
+          method: string | null
+          remarks: string | null
+          resident_id: string | null
+          start_date: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          method?: string | null
+          remarks?: string | null
+          resident_id?: string | null
+          start_date?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          method?: string | null
+          remarks?: string | null
+          resident_id?: string | null
+          start_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_planning_resident_id_fkey"
+            columns: ["resident_id"]
+            isOneToOne: false
+            referencedRelation: "residents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       philpen_health: {
         Row: {
           address_sitio: string | null
