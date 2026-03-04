@@ -11,6 +11,7 @@ import { toast } from "sonner";
 const ProfilePage = () => {
   const { user } = useAuth();
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -23,10 +24,11 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("full_name")
+        .select("full_name, username")
         .eq("user_id", user.id)
         .maybeSingle();
       setFullName(data?.full_name || "");
+      setUsername(data?.username || "");
       setLoading(false);
     };
     fetchProfile();
@@ -37,7 +39,7 @@ const ProfilePage = () => {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: fullName })
+      .update({ full_name: fullName, username })
       .eq("user_id", user.id);
 
     if (error) {
@@ -73,6 +75,14 @@ const ProfilePage = () => {
             <p className="text-sm text-muted-foreground">Loading...</p>
           ) : (
             <>
+              <div>
+                <Label>Username</Label>
+                {editing ? (
+                  <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter your username" />
+                ) : (
+                  <p className="text-foreground mt-1">{username || "—"}</p>
+                )}
+              </div>
               <div>
                 <Label>Full Name</Label>
                 {editing ? (
