@@ -6,6 +6,7 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   userRole: string | null;
+  username: string | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   userRole: null,
+  username: null,
   loading: true,
   signOut: async () => {},
 });
@@ -24,6 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchRole = async (userId: string) => {
@@ -33,6 +36,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .eq("user_id", userId)
       .maybeSingle();
     setUserRole(data?.role || null);
+  };
+
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("user_id", userId)
+      .maybeSingle();
+    setUsername(data?.username || null);
   };
 
   const updateOnlineStatus = async (userId: string, online: boolean) => {
@@ -48,9 +60,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
         if (session?.user) {
           setTimeout(() => fetchRole(session.user.id), 0);
+          setTimeout(() => fetchProfile(session.user.id), 0);
           setTimeout(() => updateOnlineStatus(session.user.id, true), 0);
         } else {
           setUserRole(null);
+          setUsername(null);
         }
         setLoading(false);
       }
@@ -61,6 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchRole(session.user.id);
+        fetchProfile(session.user.id);
         updateOnlineStatus(session.user.id, true);
       }
       setLoading(false);
@@ -77,10 +92,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(null);
     setUser(null);
     setUserRole(null);
+    setUsername(null);
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, userRole, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, userRole, username, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -74,7 +74,7 @@ const adminFormItems = [
 
 export function AppSidebar() {
   const location = useLocation();
-  const { user, userRole, signOut } = useAuth();
+  const { user, userRole, username, signOut } = useAuth();
   const [signOutOpen, setSignOutOpen] = useState(false);
 
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -154,7 +154,7 @@ export function AppSidebar() {
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.email || "User"}</p>
+            <p className="text-sm font-medium text-sidebar-foreground truncate">{username || user?.email || "User"}</p>
             <p className="text-xs text-sidebar-foreground/50 capitalize">{userRole || "Worker"}</p>
           </div>
         </NavLink>
