@@ -43,6 +43,7 @@ const bhwFormItems = [
   { title: "Dengue Prevention", url: "/forms/dengue-prevention", icon: Bug },
   { title: "Maternal Care", url: "/forms/maternal-care", icon: Heart },
   { title: "Child Health", url: "/forms/child-health", icon: Baby },
+  { title: "Family Planning", url: "/forms/family-planning", icon: Heart },
 ];
 
 const bhwSystemItems = [
@@ -153,7 +154,7 @@ export function AppSidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.email || "User"}</p>
-            <p className="text-xs text-sidebar-foreground/50 capitalize">{userRole || "Staff"}</p>
+            <p className="text-xs text-sidebar-foreground/50 capitalize">{userRole || "Worker"}</p>
           </div>
         </div>
         <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground" onClick={() => setSignOutOpen(true)}>
