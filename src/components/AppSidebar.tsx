@@ -48,7 +48,6 @@ const bhwFormItems = [
 ];
 
 const bhwSystemItems = [
-  { title: "My Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
@@ -148,7 +147,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
-        <div className="flex items-center gap-3">
+        <NavLink to="/profile" className="flex items-center gap-3 rounded-md p-1 -m-1 transition-colors hover:bg-sidebar-accent" activeClassName="">
           <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center">
             <span className="text-xs font-semibold text-sidebar-accent-foreground">
               {isAdmin ? "SV" : "BH"}
@@ -158,7 +157,7 @@ export function AppSidebar() {
             <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.email || "User"}</p>
             <p className="text-xs text-sidebar-foreground/50 capitalize">{userRole || "Worker"}</p>
           </div>
-        </div>
+        </NavLink>
         <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground" onClick={() => setSignOutOpen(true)}>
           <LogOut className="h-4 w-4 mr-2" /> Sign Out
         </Button>
