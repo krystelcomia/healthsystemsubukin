@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
     );
 
     const email = "admin@gmail.com";
-    const password = "adminadminbhwsupervisor123";
+    const password = "adminsupervisory123";
 
     // Check if user already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
