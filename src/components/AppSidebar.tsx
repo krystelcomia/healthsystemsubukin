@@ -28,7 +28,7 @@ import {
   Shield,
   User,
 } from "lucide-react";
-import barangayLogo from "@/assets/barangay-logo.jpg";
+import barangayLogo from "@/assets/barangay-logo.png";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
