@@ -1,8 +1,9 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { session, loading } = useAuth();
+  const { session, userRole, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -14,6 +15,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!session) {
     return <Navigate to="/auth" replace />;
+  }
+
+  const isAdminRoute = location.pathname.startsWith("/admin");
+
+  // Supervisor should always be on /admin routes
+  if (userRole === "supervisor" && !isAdminRoute) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  // BHW users should never access /admin routes
+  if (userRole === "bhw" && isAdminRoute) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
