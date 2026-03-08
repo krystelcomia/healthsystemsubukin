@@ -72,9 +72,7 @@ const AuthPage = () => {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md border-border/50 shadow-lg">
           <CardHeader className="text-center space-y-2">
-            <div className="mx-auto h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
-              <Heart className="h-7 w-7 text-primary" />
-            </div>
+            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-14 w-14 rounded-full object-cover" />
             <CardTitle className="text-xl font-heading">Forgot Password</CardTitle>
             <CardDescription>Enter your email to receive a password reset link.</CardDescription>
           </CardHeader>
