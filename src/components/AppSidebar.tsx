@@ -110,7 +110,7 @@ export function AppSidebar() {
     <Sidebar className="border-r-0">
       <SidebarHeader className="p-5 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-11 w-11 rounded-lg object-cover" />
+          <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-11 w-11 rounded-full object-cover" />
           <div>
             <h2 className="font-heading text-sm font-bold text-sidebar-foreground">
               {isAdmin ? "Admin Panel" : "BHW System"}
