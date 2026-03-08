@@ -72,7 +72,7 @@ const AuthPage = () => {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md border-border/50 shadow-lg">
           <CardHeader className="text-center space-y-2">
-            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-14 w-14 rounded-full object-cover" />
+            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-20 w-20 rounded-full object-cover" />
             <CardTitle className="text-xl font-heading">Forgot Password</CardTitle>
             <CardDescription>Enter your email to receive a password reset link.</CardDescription>
           </CardHeader>
@@ -97,7 +97,7 @@ const AuthPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md border-border/50 shadow-lg">
         <CardHeader className="text-center space-y-2">
-          <img src={barangayLogo} alt="Barangay Subukin Logo" className="mx-auto h-14 w-14 rounded-full object-cover" />
+          <img src={barangayLogo} alt="Barangay Subukin Logo" className="mx-auto h-20 w-20 rounded-full object-cover" />
           <CardTitle className="text-2xl font-heading">Barangay Health System</CardTitle>
           <CardDescription>Sign in to access the health records system.</CardDescription>
         </CardHeader>
