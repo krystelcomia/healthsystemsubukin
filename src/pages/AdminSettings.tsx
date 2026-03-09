@@ -11,7 +11,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 
 const AdminSettings = () => {
   const [generating, setGenerating] = useState(false);
-  const { darkMode, setDarkMode, fontSize, setFontSize, fontStyle, setFontStyle } = useSettings();
+  const { darkMode, setDarkMode, fontSize, setFontSize, fontStyle, setFontStyle, language, setLanguage, t } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleGenerateReport = async () => {
@@ -128,31 +128,31 @@ const AdminSettings = () => {
       <div>
         <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
           <Settings className="h-6 w-6 text-primary" />
-          Admin Settings
+          {t("admin.settings.title")}
         </h1>
-        <p className="text-muted-foreground mt-1">Manage display preferences, reports, and data.</p>
+        <p className="text-muted-foreground mt-1">{t("admin.settings.description")}</p>
       </div>
 
       <Card className="border-border/50 shadow-sm">
-        <CardHeader><CardTitle className="text-lg font-heading">Display</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg font-heading">{t("settings.display")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label>Dark Mode</Label>
+            <Label>{t("settings.darkMode")}</Label>
             <Switch checked={darkMode} onCheckedChange={setDarkMode} />
           </div>
           <div className="flex items-center justify-between">
-            <Label>Font Size</Label>
+            <Label>{t("settings.fontSize")}</Label>
             <Select value={fontSize} onValueChange={setFontSize}>
               <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="small">Small</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="large">Large</SelectItem>
+                <SelectItem value="small">{t("common.small")}</SelectItem>
+                <SelectItem value="medium">{t("common.medium")}</SelectItem>
+                <SelectItem value="large">{t("common.large")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="flex items-center justify-between">
-            <Label>Font Style</Label>
+            <Label>{t("settings.fontStyle")}</Label>
             <Select value={fontStyle} onValueChange={setFontStyle}>
               <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -162,30 +162,40 @@ const AdminSettings = () => {
               </SelectContent>
             </Select>
           </div>
+          <div className="flex items-center justify-between">
+            <Label>{t("settings.language")}</Label>
+            <Select value={language} onValueChange={(v) => setLanguage(v as "en" | "tl")}>
+              <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">{t("common.english")}</SelectItem>
+                <SelectItem value="tl">{t("common.tagalog")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardContent>
       </Card>
 
       <Card className="border-border/50 shadow-sm">
-        <CardHeader><CardTitle className="text-lg font-heading">Generate Reports</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg font-heading">{t("settings.generateReport")}</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Generate a comprehensive report of all health forms, records, and resident data.
+            {t("settings.generateReportDesc")}
           </p>
           <Button className="w-full gap-2" onClick={handleGenerateReport} disabled={generating}>
             <Download className="h-4 w-4" />
-            {generating ? "Generating..." : "Generate Full Report"}
+            {generating ? t("settings.generating") : t("settings.generateFullReport")}
           </Button>
         </CardContent>
       </Card>
 
       <Card className="border-border/50 shadow-sm">
-        <CardHeader><CardTitle className="text-lg font-heading">Backup & Recovery</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg font-heading">{t("settings.backup")}</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <Button variant="outline" className="w-full justify-start gap-2" onClick={handleExport}>
-            <Download className="h-4 w-4" /> Export Data Backup
+            <Download className="h-4 w-4" /> {t("settings.export")}
           </Button>
           <Button variant="outline" className="w-full justify-start gap-2" onClick={() => fileInputRef.current?.click()}>
-            <Upload className="h-4 w-4" /> Restore from Backup
+            <Upload className="h-4 w-4" /> {t("settings.restore")}
           </Button>
           <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
         </CardContent>
