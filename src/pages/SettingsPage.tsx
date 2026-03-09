@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRef } from "react";
 
 const SettingsPage = () => {
-  const { darkMode, setDarkMode, fontSize, setFontSize, fontStyle, setFontStyle } = useSettings();
+  const { darkMode, setDarkMode, fontSize, setFontSize, fontStyle, setFontStyle, language, setLanguage, t } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = async () => {
@@ -61,7 +61,6 @@ const SettingsPage = () => {
 
       toast.info("Restoring data...");
 
-      // Upsert each table
       const tables = ["residents", "consultations", "family_data", "dengue_prevention", "philpen_health"] as const;
       for (const table of tables) {
         const rows = data[table];
@@ -88,31 +87,31 @@ const SettingsPage = () => {
       <div>
         <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
           <SettingsIcon className="h-6 w-6 text-primary" />
-          Settings
+          {t("settings.title")}
         </h1>
-        <p className="text-muted-foreground mt-1">Manage system preferences and data.</p>
+        <p className="text-muted-foreground mt-1">{t("settings.description")}</p>
       </div>
 
       <Card className="border-border/50 shadow-sm">
-        <CardHeader><CardTitle className="text-lg font-heading">Display</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg font-heading">{t("settings.display")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label>Dark Mode</Label>
+            <Label>{t("settings.darkMode")}</Label>
             <Switch checked={darkMode} onCheckedChange={setDarkMode} />
           </div>
           <div className="flex items-center justify-between">
-            <Label>Font Size</Label>
+            <Label>{t("settings.fontSize")}</Label>
             <Select value={fontSize} onValueChange={setFontSize}>
               <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="small">Small</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="large">Large</SelectItem>
+                <SelectItem value="small">{t("common.small")}</SelectItem>
+                <SelectItem value="medium">{t("common.medium")}</SelectItem>
+                <SelectItem value="large">{t("common.large")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="flex items-center justify-between">
-            <Label>Font Style</Label>
+            <Label>{t("settings.fontStyle")}</Label>
             <Select value={fontStyle} onValueChange={setFontStyle}>
               <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -122,17 +121,27 @@ const SettingsPage = () => {
               </SelectContent>
             </Select>
           </div>
+          <div className="flex items-center justify-between">
+            <Label>{t("settings.language")}</Label>
+            <Select value={language} onValueChange={(v) => setLanguage(v as "en" | "tl")}>
+              <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">{t("common.english")}</SelectItem>
+                <SelectItem value="tl">{t("common.tagalog")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardContent>
       </Card>
 
       <Card className="border-border/50 shadow-sm">
-        <CardHeader><CardTitle className="text-lg font-heading">Backup & Recovery</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg font-heading">{t("settings.backup")}</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <Button variant="outline" className="w-full justify-start gap-2" onClick={handleExport}>
-            <Download className="h-4 w-4" /> Export Data Backup
+            <Download className="h-4 w-4" /> {t("settings.export")}
           </Button>
           <Button variant="outline" className="w-full justify-start gap-2" onClick={() => fileInputRef.current?.click()}>
-            <Upload className="h-4 w-4" /> Restore from Backup
+            <Upload className="h-4 w-4" /> {t("settings.restore")}
           </Button>
           <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
         </CardContent>
