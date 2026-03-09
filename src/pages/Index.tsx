@@ -9,8 +9,10 @@ import {
   Baby,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSettings } from "@/contexts/SettingsContext";
 
 const Index = () => {
+  const { t } = useSettings();
   const [stats, setStats] = useState({
     totalResidents: 0,
     consultations: 0,
@@ -72,17 +74,17 @@ const Index = () => {
   };
 
   const statCards = [
-    { label: "Total Residents", value: stats.totalResidents.toLocaleString(), icon: Users, change: "Registered residents" },
-    { label: "Consultations", value: stats.consultations.toLocaleString(), icon: Stethoscope, change: "Total consultations" },
-    { label: "Family Records", value: stats.familyRecords.toLocaleString(), icon: ClipboardList, change: "Families registered" },
-    { label: "Children (≤12)", value: stats.childVaccinations.toLocaleString(), icon: Baby, change: "Registered children" },
+    { label: t("dashboard.totalResidents"), value: stats.totalResidents.toLocaleString(), icon: Users, change: t("dashboard.registeredResidents") },
+    { label: t("dashboard.consultations"), value: stats.consultations.toLocaleString(), icon: Stethoscope, change: t("dashboard.totalConsultations") },
+    { label: t("dashboard.familyRecords"), value: stats.familyRecords.toLocaleString(), icon: ClipboardList, change: t("dashboard.familiesRegistered") },
+    { label: t("dashboard.children"), value: stats.childVaccinations.toLocaleString(), icon: Baby, change: t("dashboard.registeredChildren") },
   ];
 
   return (
     <div className="space-y-6 max-w-7xl">
       <div>
-        <h1 className="text-2xl font-heading font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back! Here's an overview of your barangay health data.</p>
+        <h1 className="text-2xl font-heading font-bold text-foreground">{t("dashboard.title")}</h1>
+        <p className="text-muted-foreground mt-1">{t("dashboard.welcome")}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -110,15 +112,15 @@ const Index = () => {
           <CardHeader>
             <CardTitle className="text-lg font-heading flex items-center gap-2">
               <Activity className="h-5 w-5 text-primary" />
-              Recent Activity
+              {t("dashboard.recentActivity")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {loading ? (
-                <p className="text-sm text-muted-foreground">Loading...</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.loading")}</p>
               ) : recentActivity.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No recent activity.</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.noActivity")}</p>
               ) : (
                 recentActivity.map((item, i) => (
                   <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
@@ -138,16 +140,16 @@ const Index = () => {
           <CardHeader>
             <CardTitle className="text-lg font-heading flex items-center gap-2">
               <ClipboardList className="h-5 w-5 text-primary" />
-              Quick Actions
+              {t("dashboard.quickActions")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "New Consultation", href: "/forms/consultation", icon: Stethoscope },
-                { label: "Family Data", href: "/forms/family-data", icon: ClipboardList },
-                { label: "Health Screening", href: "/forms/philpen-health", icon: Activity },
-                { label: "View Residents", href: "/residents", icon: Users },
+                { label: t("dashboard.newConsultation"), href: "/forms/consultation", icon: Stethoscope },
+                { label: t("nav.familyData"), href: "/forms/family-data", icon: ClipboardList },
+                { label: t("dashboard.healthScreening"), href: "/forms/philpen-health", icon: Activity },
+                { label: t("dashboard.viewResidents"), href: "/residents", icon: Users },
               ].map((action) => (
                 <a
                   key={action.label}
