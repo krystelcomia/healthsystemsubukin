@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import {
   Sidebar,
   SidebarContent,
@@ -26,60 +27,60 @@ import {
   Activity,
   LogOut,
   Shield,
-  User,
 } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
-// BHW user navigation
-const bhwMainItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Resident Records", url: "/residents", icon: Users },
-];
-
-const bhwFormItems = [
-  { title: "Family Data", url: "/forms/family-data", icon: ClipboardList },
-  { title: "Consultation", url: "/forms/consultation", icon: Stethoscope },
-  { title: "PhilPen Health", url: "/forms/philpen-health", icon: Activity },
-  { title: "Dengue Prevention", url: "/forms/dengue-prevention", icon: Bug },
-  { title: "Maternal Care", url: "/forms/maternal-care", icon: Heart },
-  { title: "Child Health", url: "/forms/child-health", icon: Baby },
-  { title: "Family Planning", url: "/forms/family-planning", icon: Heart },
-];
-
-const bhwSystemItems = [
-  { title: "Settings", url: "/settings", icon: Settings },
-];
-
-// Admin/Supervisor navigation
-const adminMainItems = [
-  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Resident Records", url: "/admin/residents", icon: Users },
-  { title: "BH Workers", url: "/admin/workers", icon: Shield },
-];
-
-const adminSystemItems = [
-  { title: "Settings", url: "/admin/settings", icon: Settings },
-];
-
-const adminFormItems = [
-  { title: "Family Data", url: "/admin/forms/family-data", icon: ClipboardList },
-  { title: "Consultation", url: "/admin/forms/consultation", icon: Stethoscope },
-  { title: "PhilPen Health", url: "/admin/forms/philpen-health", icon: Activity },
-  { title: "Dengue Prevention", url: "/admin/forms/dengue-prevention", icon: Bug },
-  { title: "Maternal Care", url: "/admin/forms/maternal-care", icon: Heart },
-  { title: "Child Health", url: "/admin/forms/child-health", icon: Baby },
-  { title: "Family Planning", url: "/admin/forms/family-planning", icon: Heart },
-];
-
 export function AppSidebar() {
   const location = useLocation();
   const { user, userRole, username, signOut } = useAuth();
+  const { t } = useSettings();
   const [signOutOpen, setSignOutOpen] = useState(false);
 
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isAdmin = userRole === "supervisor" && isAdminRoute;
+
+  // BHW user navigation
+  const bhwMainItems = [
+    { title: t("nav.dashboard"), url: "/", icon: LayoutDashboard },
+    { title: t("nav.residentRecords"), url: "/residents", icon: Users },
+  ];
+
+  const bhwFormItems = [
+    { title: t("nav.familyData"), url: "/forms/family-data", icon: ClipboardList },
+    { title: t("nav.consultation"), url: "/forms/consultation", icon: Stethoscope },
+    { title: t("nav.philpenHealth"), url: "/forms/philpen-health", icon: Activity },
+    { title: t("nav.denguePrevention"), url: "/forms/dengue-prevention", icon: Bug },
+    { title: t("nav.maternalCare"), url: "/forms/maternal-care", icon: Heart },
+    { title: t("nav.childHealth"), url: "/forms/child-health", icon: Baby },
+    { title: t("nav.familyPlanning"), url: "/forms/family-planning", icon: Heart },
+  ];
+
+  const bhwSystemItems = [
+    { title: t("nav.settings"), url: "/settings", icon: Settings },
+  ];
+
+  // Admin/Supervisor navigation
+  const adminMainItems = [
+    { title: t("nav.dashboard"), url: "/admin", icon: LayoutDashboard },
+    { title: t("nav.residentRecords"), url: "/admin/residents", icon: Users },
+    { title: t("nav.bhWorkers"), url: "/admin/workers", icon: Shield },
+  ];
+
+  const adminSystemItems = [
+    { title: t("nav.settings"), url: "/admin/settings", icon: Settings },
+  ];
+
+  const adminFormItems = [
+    { title: t("nav.familyData"), url: "/admin/forms/family-data", icon: ClipboardList },
+    { title: t("nav.consultation"), url: "/admin/forms/consultation", icon: Stethoscope },
+    { title: t("nav.philpenHealth"), url: "/admin/forms/philpen-health", icon: Activity },
+    { title: t("nav.denguePrevention"), url: "/admin/forms/dengue-prevention", icon: Bug },
+    { title: t("nav.maternalCare"), url: "/admin/forms/maternal-care", icon: Heart },
+    { title: t("nav.childHealth"), url: "/admin/forms/child-health", icon: Baby },
+    { title: t("nav.familyPlanning"), url: "/admin/forms/family-planning", icon: Heart },
+  ];
 
   const mainItems = isAdmin ? adminMainItems : bhwMainItems;
   const formItems = isAdmin ? adminFormItems : bhwFormItems;
@@ -113,10 +114,10 @@ export function AppSidebar() {
           <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-11 w-11 rounded-full object-cover" />
           <div>
             <h2 className="font-heading text-sm font-bold text-sidebar-foreground">
-              {isAdmin ? "Admin Panel" : "BHW System"}
+              {isAdmin ? t("sidebar.adminPanel") : t("sidebar.bhwSystem")}
             </h2>
             <p className="text-xs text-sidebar-foreground/60">
-              {isAdmin ? "Supervisor" : "Health Records"}
+              {isAdmin ? t("sidebar.supervisor") : t("sidebar.healthRecords")}
             </p>
           </div>
         </div>
@@ -125,21 +126,21 @@ export function AppSidebar() {
       <SidebarContent className="px-3 py-4">
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider mb-1">
-            Overview
+            {t("sidebar.overview")}
           </SidebarGroupLabel>
           <SidebarGroupContent>{renderItems(mainItems)}</SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider mb-1">
-            Health Forms
+            {t("sidebar.healthForms")}
           </SidebarGroupLabel>
           <SidebarGroupContent>{renderItems(formItems)}</SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider mb-1">
-            System
+            {t("sidebar.system")}
           </SidebarGroupLabel>
           <SidebarGroupContent>{renderItems(isAdmin ? adminSystemItems : bhwSystemItems)}</SidebarGroupContent>
         </SidebarGroup>
@@ -154,23 +155,23 @@ export function AppSidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">{username || user?.email || "User"}</p>
-            <p className="text-xs text-sidebar-foreground/50 capitalize">{userRole || "Worker"}</p>
+            <p className="text-xs text-sidebar-foreground/50 capitalize">{userRole || t("common.worker")}</p>
           </div>
         </NavLink>
         <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground" onClick={() => setSignOutOpen(true)}>
-          <LogOut className="h-4 w-4 mr-2" /> Sign Out
+          <LogOut className="h-4 w-4 mr-2" /> {t("sidebar.signOut")}
         </Button>
       </SidebarFooter>
 
       <AlertDialog open={signOutOpen} onOpenChange={setSignOutOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Sign Out?</AlertDialogTitle>
-            <AlertDialogDescription>Are you sure you want to sign out? You will need to log in again to access the system.</AlertDialogDescription>
+            <AlertDialogTitle>{t("sidebar.signOutTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("sidebar.signOutDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={signOut}>Sign Out</AlertDialogAction>
+            <AlertDialogCancel>{t("sidebar.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={signOut}>{t("sidebar.signOut")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
