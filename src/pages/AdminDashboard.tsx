@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Shield, Stethoscope, ClipboardList, Activity, Bug, UserCheck, UserX, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface BHWWorker {
   id: string;
@@ -13,14 +14,9 @@ interface BHWWorker {
 }
 
 const AdminDashboard = () => {
+  const { t } = useSettings();
   const [stats, setStats] = useState({
-    totalResidents: 0,
-    totalWorkers: 0,
-    onlineWorkers: 0,
-    consultations: 0,
-    familyRecords: 0,
-    philpenRecords: 0,
-    dengueRecords: 0,
+    totalResidents: 0, totalWorkers: 0, onlineWorkers: 0, consultations: 0, familyRecords: 0, philpenRecords: 0, dengueRecords: 0,
   });
   const [workers, setWorkers] = useState<BHWWorker[]>([]);
   const [recentActivity, setRecentActivity] = useState<{ name: string; action: string; time: string }[]>([]);
@@ -39,37 +35,26 @@ const AdminDashboard = () => {
       ]);
 
       setStats({
-        totalResidents: residents.count || 0,
-        totalWorkers: workersCount.count || 0,
-        onlineWorkers: onlineWorkers.count || 0,
-        consultations: consultations.count || 0,
-        familyRecords: families.count || 0,
-        philpenRecords: philpen.count || 0,
-        dengueRecords: dengue.count || 0,
+        totalResidents: residents.count || 0, totalWorkers: workersCount.count || 0, onlineWorkers: onlineWorkers.count || 0,
+        consultations: consultations.count || 0, familyRecords: families.count || 0, philpenRecords: philpen.count || 0, dengueRecords: dengue.count || 0,
       });
 
-      // Fetch workers list
       const { data: workersData } = await (supabase.from as any)("bhw_workers").select("id, name, is_online, last_seen, gmail").order("name");
       setWorkers(workersData || []);
 
-      // Fetch recent consultations
       const { data: recentConsultations } = await supabase
-        .from("consultations")
-        .select("consultation_date, consultation_cause, created_at, residents(full_name)")
-        .order("created_at", { ascending: false })
-        .limit(5);
+        .from("consultations").select("consultation_date, consultation_cause, created_at, residents(full_name)")
+        .order("created_at", { ascending: false }).limit(5);
 
       if (recentConsultations) {
         setRecentActivity(recentConsultations.map((c: any) => ({
           name: c.residents?.full_name || "Unknown",
-          action: c.consultation_cause || "Consultation recorded",
+          action: c.consultation_cause || t("dashboard.consultations"),
           time: formatTimeAgo(new Date(c.created_at)),
         })));
       }
-
       setLoading(false);
     };
-
     fetchAll();
   }, []);
 
@@ -85,12 +70,12 @@ const AdminDashboard = () => {
   };
 
   const statCards = [
-    { label: "Total Residents", value: stats.totalResidents, icon: Users, desc: "Registered residents" },
-    { label: "BHW Workers", value: `${stats.onlineWorkers} / ${stats.totalWorkers}`, icon: Shield, desc: "Online / Total" },
-    { label: "Consultations", value: stats.consultations, icon: Stethoscope, desc: "Total consultations" },
-    { label: "Family Records", value: stats.familyRecords, icon: ClipboardList, desc: "Families registered" },
-    { label: "PhilPen Health", value: stats.philpenRecords, icon: Activity, desc: "Health screenings" },
-    { label: "Dengue Prevention", value: stats.dengueRecords, icon: Bug, desc: "Dengue records" },
+    { label: t("dashboard.totalResidents"), value: stats.totalResidents, icon: Users, desc: t("dashboard.registeredResidents") },
+    { label: t("admin.dashboard.bhwWorkers"), value: `${stats.onlineWorkers} / ${stats.totalWorkers}`, icon: Shield, desc: t("admin.dashboard.onlineTotal") },
+    { label: t("dashboard.consultations"), value: stats.consultations, icon: Stethoscope, desc: t("dashboard.totalConsultations") },
+    { label: t("dashboard.familyRecords"), value: stats.familyRecords, icon: ClipboardList, desc: t("dashboard.familiesRegistered") },
+    { label: t("nav.philpenHealth"), value: stats.philpenRecords, icon: Activity, desc: t("admin.dashboard.healthScreenings") },
+    { label: t("nav.denguePrevention"), value: stats.dengueRecords, icon: Bug, desc: t("admin.dashboard.dengueRecords") },
   ];
 
   return (
@@ -98,12 +83,11 @@ const AdminDashboard = () => {
       <div>
         <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
           <Shield className="h-6 w-6 text-primary" />
-          Admin Dashboard
+          {t("admin.dashboard.title")}
         </h1>
-        <p className="text-muted-foreground mt-1">Overview of all barangay health system data and BHW reports.</p>
+        <p className="text-muted-foreground mt-1">{t("admin.dashboard.desc")}</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map((stat) => (
           <Card key={stat.label} className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
@@ -112,9 +96,7 @@ const AdminDashboard = () => {
               <stat.icon className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-heading font-bold text-foreground">
-                {loading ? "..." : stat.value}
-              </div>
+              <div className="text-2xl font-heading font-bold text-foreground">{loading ? "..." : stat.value}</div>
               <p className="text-xs text-muted-foreground mt-1">{stat.desc}</p>
             </CardContent>
           </Card>
@@ -122,27 +104,24 @@ const AdminDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* BHW Workers Status */}
         <Card className="border-border/50 shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-heading flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              BHW Workers Status
+              {t("admin.dashboard.workersStatus")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {loading ? (
-                <p className="text-sm text-muted-foreground">Loading...</p>
+                <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
               ) : workers.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No workers registered yet.</p>
+                <p className="text-sm text-muted-foreground">{t("admin.dashboard.noWorkers")}</p>
               ) : workers.map((w) => (
                 <div key={w.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center relative">
-                      <span className="text-xs font-semibold text-primary">
-                        {w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                      </span>
+                      <span className="text-xs font-semibold text-primary">{w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
                       <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card ${w.is_online ? "bg-green-500" : "bg-muted-foreground/40"}`} />
                     </div>
                     <div>
@@ -151,7 +130,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   <Badge variant={w.is_online ? "default" : "secondary"} className="text-xs">
-                    {w.is_online ? <><UserCheck className="h-3 w-3 mr-1" />Online</> : <><UserX className="h-3 w-3 mr-1" />Offline</>}
+                    {w.is_online ? <><UserCheck className="h-3 w-3 mr-1" />{t("admin.dashboard.online")}</> : <><UserX className="h-3 w-3 mr-1" />{t("admin.dashboard.offline")}</>}
                   </Badge>
                 </div>
               ))}
@@ -159,20 +138,19 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Recent Reports/Activity */}
         <Card className="border-border/50 shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-heading flex items-center gap-2">
               <Activity className="h-5 w-5 text-primary" />
-              Recent Reports
+              {t("admin.dashboard.recentReports")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {loading ? (
-                <p className="text-sm text-muted-foreground">Loading...</p>
+                <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
               ) : recentActivity.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No recent activity.</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.noActivity")}</p>
               ) : recentActivity.map((item, i) => (
                 <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                   <div>
