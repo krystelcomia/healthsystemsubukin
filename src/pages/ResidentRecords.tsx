@@ -10,29 +10,18 @@ import { Users, Search, Plus, Printer, ArrowLeft, Pencil, Trash2 } from "lucide-
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface Resident {
-  id: string;
-  full_name: string;
-  gender: string;
-  age: number;
-  status: string;
-  religion: string;
-  blood_type: string;
-  nationality: string;
-  sitio: string;
-  birthday: string | null;
-  created_at: string;
+  id: string; full_name: string; gender: string; age: number; status: string; religion: string; blood_type: string; nationality: string; sitio: string; birthday: string | null; created_at: string;
 }
 
 interface HealthRecords {
-  consultations: any[];
-  family_data: any[];
-  philpen_health: any[];
-  dengue_prevention: any[];
+  consultations: any[]; family_data: any[]; philpen_health: any[]; dengue_prevention: any[];
 }
 
 const ResidentRecords = () => {
+  const { t } = useSettings();
   const [search, setSearch] = useState("");
   const [residents, setResidents] = useState<Resident[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,17 +47,10 @@ const ResidentRecords = () => {
   useEffect(() => { fetchResidents(); }, []);
 
   const handleAddResident = async () => {
-    if (!newResident.full_name.trim()) { toast.error("Full name is required"); return; }
+    if (!newResident.full_name.trim()) { toast.error(t("residents.fullName") + " required"); return; }
     const { error } = await supabase.from("residents").insert({
-      full_name: newResident.full_name.trim(),
-      gender: newResident.gender,
-      age: Number(newResident.age) || 0,
-      status: newResident.status,
-      religion: newResident.religion,
-      blood_type: newResident.blood_type,
-      nationality: newResident.nationality,
-      sitio: newResident.sitio,
-      birthday: newResident.birthday || null,
+      full_name: newResident.full_name.trim(), gender: newResident.gender, age: Number(newResident.age) || 0, status: newResident.status,
+      religion: newResident.religion, blood_type: newResident.blood_type, nationality: newResident.nationality, sitio: newResident.sitio, birthday: newResident.birthday || null,
     });
     if (error) { toast.error("Failed to add resident"); return; }
     toast.success("Resident added successfully!");
@@ -80,29 +62,19 @@ const ResidentRecords = () => {
   const handleEditResident = async () => {
     if (!editResident) return;
     const { error } = await supabase.from("residents").update({
-      full_name: editResident.full_name,
-      gender: editResident.gender,
-      age: editResident.age,
-      status: editResident.status,
-      religion: editResident.religion,
-      blood_type: editResident.blood_type,
-      nationality: editResident.nationality,
-      sitio: editResident.sitio,
-      birthday: editResident.birthday || null,
+      full_name: editResident.full_name, gender: editResident.gender, age: editResident.age, status: editResident.status,
+      religion: editResident.religion, blood_type: editResident.blood_type, nationality: editResident.nationality, sitio: editResident.sitio, birthday: editResident.birthday || null,
     }).eq("id", editResident.id);
     if (error) { toast.error("Failed to update resident"); return; }
     toast.success("Resident updated!");
-    setEditDialogOpen(false);
-    setEditResident(null);
-    fetchResidents();
+    setEditDialogOpen(false); setEditResident(null); fetchResidents();
   };
 
   const handleDeleteResident = async (id: string) => {
     const { error } = await supabase.from("residents").delete().eq("id", id);
     if (error) { toast.error("Failed to delete resident"); return; }
     toast.success("Resident deleted!");
-    setDeleteConfirmId(null);
-    fetchResidents();
+    setDeleteConfirmId(null); fetchResidents();
   };
 
   const fetchHealthRecords = async (residentId: string) => {
@@ -112,153 +84,62 @@ const ResidentRecords = () => {
       supabase.from("philpen_health").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
       supabase.from("dengue_prevention").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
     ]);
-    setHealthRecords({
-      consultations: c.data || [],
-      family_data: f.data || [],
-      philpen_health: p.data || [],
-      dengue_prevention: d.data || [],
-    });
+    setHealthRecords({ consultations: c.data || [], family_data: f.data || [], philpen_health: p.data || [], dengue_prevention: d.data || [] });
   };
 
-  const handleSelectResident = (resident: Resident) => {
-    setSelectedResident(resident);
-    fetchHealthRecords(resident.id);
-  };
+  const handleSelectResident = (resident: Resident) => { setSelectedResident(resident); fetchHealthRecords(resident.id); };
 
   const handlePrint = () => {
     const content = printRef.current;
     if (!content) return;
     const win = window.open("", "_blank");
     if (!win) return;
-    win.document.write(`<!DOCTYPE html><html><head><title>${selectedResident ? `Record - ${selectedResident.full_name}` : "Resident Records List"}</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #1a1a1a; font-size: 13px; }
-        .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #0d9488; padding-bottom: 16px; }
-        .header h1 { font-size: 20px; color: #0d9488; margin-bottom: 4px; }
-        .header p { font-size: 11px; color: #666; }
-        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
-        th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; }
-        th { background: #f0fdfa; color: #0d9488; font-weight: 600; }
-        h2 { font-size: 15px; color: #0d9488; margin: 20px 0 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 10px 0; }
-        .info-item { font-size: 12px; }
-        .info-item strong { color: #374151; }
-        .resident-card { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
-        .no-records { color: #999; font-style: italic; margin-top: 12px; }
-        .print-date { text-align: right; font-size: 10px; color: #999; margin-top: 20px; }
-        @media print { body { padding: 15px; } }
-      </style></head><body>`);
-
+    win.document.write(`<!DOCTYPE html><html><head><title>${selectedResident ? `Record - ${selectedResident.full_name}` : t("residents.title")}</title>
+      <style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #1a1a1a; font-size: 13px; }
+        .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #0d9488; padding-bottom: 16px; } .header h1 { font-size: 20px; color: #0d9488; margin-bottom: 4px; } .header p { font-size: 11px; color: #666; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; } th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; } th { background: #f0fdfa; color: #0d9488; font-weight: 600; }
+        h2 { font-size: 15px; color: #0d9488; margin: 20px 0 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; } .print-date { text-align: right; font-size: 10px; color: #999; margin-top: 20px; } @media print { body { padding: 15px; } }</style></head><body>`);
     if (!selectedResident) {
-      // Print all residents list
-      win.document.write(`<div class="header"><h1>Barangay Health System</h1><p>Resident Records Directory</p></div>`);
-      win.document.write(`<table><thead><tr><th>#</th><th>Full Name</th><th>Gender</th><th>Age</th><th>Birthday</th><th>Status</th><th>Blood Type</th><th>Sitio</th><th>Nationality</th></tr></thead><tbody>`);
-      filtered.forEach((r, i) => {
-        win.document.write(`<tr><td>${i + 1}</td><td>${r.full_name}</td><td>${r.gender}</td><td>${r.age}</td><td>${r.birthday || "—"}</td><td>${r.status}</td><td>${r.blood_type || "—"}</td><td>${r.sitio || "—"}</td><td>${r.nationality}</td></tr>`);
-      });
-      win.document.write(`</tbody></table>`);
-      win.document.write(`<p style="margin-top:12px;font-size:12px;color:#666;">Total Residents: ${filtered.length}</p>`);
-    } else {
-      win.document.write(content.innerHTML);
-    }
-
-    win.document.write(`<p class="print-date">Printed on: ${new Date().toLocaleString()}</p></body></html>`);
-    win.document.close();
-    win.print();
+      win.document.write(`<div class="header"><h1>Barangay Health System</h1><p>${t("residents.title")}</p></div>`);
+      win.document.write(`<table><thead><tr><th>#</th><th>${t("residents.fullName")}</th><th>${t("residents.gender")}</th><th>${t("residents.age")}</th><th>${t("residents.birthday")}</th><th>${t("residents.civilStatus")}</th><th>${t("residents.bloodType")}</th><th>${t("residents.sitio")}</th><th>${t("residents.nationality")}</th></tr></thead><tbody>`);
+      filtered.forEach((r, i) => { win.document.write(`<tr><td>${i + 1}</td><td>${r.full_name}</td><td>${r.gender}</td><td>${r.age}</td><td>${r.birthday || "—"}</td><td>${r.status}</td><td>${r.blood_type || "—"}</td><td>${r.sitio || "—"}</td><td>${r.nationality}</td></tr>`); });
+      win.document.write(`</tbody></table><p style="margin-top:12px;font-size:12px;color:#666;">${t("common.total")}: ${filtered.length}</p>`);
+    } else { win.document.write(content.innerHTML); }
+    win.document.write(`<p class="print-date">${new Date().toLocaleString()}</p></body></html>`);
+    win.document.close(); win.print();
   };
 
-  const filtered = residents.filter(
-    (r) => r.full_name.toLowerCase().includes(search.toLowerCase()) || (r.sitio || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = residents.filter((r) => r.full_name.toLowerCase().includes(search.toLowerCase()) || (r.sitio || "").toLowerCase().includes(search.toLowerCase()));
 
-  // Detail view
   if (selectedResident && healthRecords) {
     const totalRecords = healthRecords.consultations.length + healthRecords.family_data.length + healthRecords.philpen_health.length + healthRecords.dengue_prevention.length;
     return (
       <div className="max-w-4xl space-y-6">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => { setSelectedResident(null); setHealthRecords(null); }}>
-            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Records
-          </Button>
-          <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> Print Record</Button>
+          <Button variant="ghost" onClick={() => { setSelectedResident(null); setHealthRecords(null); }}><ArrowLeft className="h-4 w-4 mr-2" /> {t("residents.backToRecords")}</Button>
+          <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> {t("residents.printRecord")}</Button>
         </div>
-
         <div ref={printRef}>
-          <div className="header" style={{ textAlign: "center", marginBottom: 20, borderBottom: "2px solid #0d9488", paddingBottom: 12 }}>
+          <div style={{ textAlign: "center", marginBottom: 20, borderBottom: "2px solid #0d9488", paddingBottom: 12 }}>
             <h1 style={{ fontSize: 20, fontWeight: "bold", color: "#0d9488" }}>Barangay Health System</h1>
-            <p style={{ fontSize: 11, color: "#666" }}>Individual Resident Health Record</p>
+            <p style={{ fontSize: 11, color: "#666" }}>{t("residents.title")}</p>
           </div>
-
           <h2 style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>{selectedResident.full_name}</h2>
-          <div className="info-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16 }}>
-            <p style={{ fontSize: 13 }}><strong>Gender:</strong> {selectedResident.gender}</p>
-            <p style={{ fontSize: 13 }}><strong>Age:</strong> {selectedResident.age}</p>
-            <p style={{ fontSize: 13 }}><strong>Birthday:</strong> {selectedResident.birthday || "—"}</p>
-            <p style={{ fontSize: 13 }}><strong>Status:</strong> {selectedResident.status}</p>
-            <p style={{ fontSize: 13 }}><strong>Religion:</strong> {selectedResident.religion || "—"}</p>
-            <p style={{ fontSize: 13 }}><strong>Blood Type:</strong> {selectedResident.blood_type || "—"}</p>
-            <p style={{ fontSize: 13 }}><strong>Nationality:</strong> {selectedResident.nationality}</p>
-            <p style={{ fontSize: 13 }}><strong>Sitio:</strong> {selectedResident.sitio || "—"}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16 }}>
+            <p style={{ fontSize: 13 }}><strong>{t("residents.gender")}:</strong> {selectedResident.gender}</p>
+            <p style={{ fontSize: 13 }}><strong>{t("residents.age")}:</strong> {selectedResident.age}</p>
+            <p style={{ fontSize: 13 }}><strong>{t("residents.birthday")}:</strong> {selectedResident.birthday || "—"}</p>
+            <p style={{ fontSize: 13 }}><strong>{t("residents.civilStatus")}:</strong> {selectedResident.status}</p>
+            <p style={{ fontSize: 13 }}><strong>{t("residents.religion")}:</strong> {selectedResident.religion || "—"}</p>
+            <p style={{ fontSize: 13 }}><strong>{t("residents.bloodType")}:</strong> {selectedResident.blood_type || "—"}</p>
+            <p style={{ fontSize: 13 }}><strong>{t("residents.nationality")}:</strong> {selectedResident.nationality}</p>
+            <p style={{ fontSize: 13 }}><strong>{t("residents.sitio")}:</strong> {selectedResident.sitio || "—"}</p>
           </div>
-
-          {healthRecords.consultations.length > 0 && (
-            <>
-              <h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>Consultations ({healthRecords.consultations.length})</h2>
-              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}>
-                <thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>Date</th><th style={thStyle}>Temp</th><th style={thStyle}>PR</th><th style={thStyle}>RR</th><th style={thStyle}>Height</th><th style={thStyle}>Weight</th><th style={thStyle}>Cause</th></tr></thead>
-                <tbody>
-                  {healthRecords.consultations.map((c: any) => (
-                    <tr key={c.id}><td style={tdStyle}>{c.consultation_date}</td><td style={tdStyle}>{c.temperature || "—"}</td><td style={tdStyle}>{c.pulse_rate || "—"}</td><td style={tdStyle}>{c.respiration_rate || "—"}</td><td style={tdStyle}>{c.height || "—"}</td><td style={tdStyle}>{c.weight || "—"}</td><td style={tdStyle}>{c.consultation_cause || "—"}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          )}
-
-          {healthRecords.philpen_health.length > 0 && (
-            <>
-              <h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>PhilPen Health ({healthRecords.philpen_health.length})</h2>
-              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}>
-                <thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>Date</th><th style={thStyle}>BP</th><th style={thStyle}>Height</th><th style={thStyle}>Weight</th><th style={thStyle}>BMI</th><th style={thStyle}>Smokes</th><th style={thStyle}>Alcohol</th><th style={thStyle}>HBP</th><th style={thStyle}>Diabetes</th></tr></thead>
-                <tbody>
-                  {healthRecords.philpen_health.map((p: any) => (
-                    <tr key={p.id}><td style={tdStyle}>{p.record_date}</td><td style={tdStyle}>{p.bp || "—"}</td><td style={tdStyle}>{p.height || "—"}</td><td style={tdStyle}>{p.weight || "—"}</td><td style={tdStyle}>{p.bmi || "—"}</td><td style={tdStyle}>{p.smokes ? "Yes" : "No"}</td><td style={tdStyle}>{p.drinks_alcohol ? "Yes" : "No"}</td><td style={tdStyle}>{p.high_blood_pressure ? "Yes" : "No"}</td><td style={tdStyle}>{p.diabetes_symptoms ? "Yes" : "No"}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          )}
-
-          {healthRecords.family_data.length > 0 && (
-            <>
-              <h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>Family Data ({healthRecords.family_data.length})</h2>
-              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}>
-                <thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>Family #</th><th style={thStyle}>Households</th><th style={thStyle}>Father</th><th style={thStyle}>Mother</th><th style={thStyle}>Males</th><th style={thStyle}>Females</th><th style={thStyle}>Total</th></tr></thead>
-                <tbody>
-                  {healthRecords.family_data.map((f: any) => (
-                    <tr key={f.id}><td style={tdStyle}>{f.family_number || "—"}</td><td style={tdStyle}>{f.num_households}</td><td style={tdStyle}>{f.father_name || "—"}</td><td style={tdStyle}>{f.mother_name || "—"}</td><td style={tdStyle}>{f.num_males}</td><td style={tdStyle}>{f.num_females}</td><td style={tdStyle}>{f.total_members}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          )}
-
-          {healthRecords.dengue_prevention.length > 0 && (
-            <>
-              <h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>Dengue Prevention ({healthRecords.dengue_prevention.length})</h2>
-              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}>
-                <thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>Household</th><th style={thStyle}>Container</th><th style={thStyle}>Larvae</th><th style={thStyle}>Action Plan</th><th style={thStyle}>Signature</th></tr></thead>
-                <tbody>
-                  {healthRecords.dengue_prevention.map((d: any) => (
-                    <tr key={d.id}><td style={tdStyle}>{d.household_name || "—"}</td><td style={tdStyle}>{d.container_type || "—"}</td><td style={tdStyle}>{d.has_larvae ? "Yes" : "No"}</td><td style={tdStyle}>{d.action_plan || "—"}</td><td style={tdStyle}>{d.signature || "—"}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          )}
-
-          {totalRecords === 0 && <p style={{ color: "#888", marginTop: 16, fontStyle: "italic" }}>No health records found for this resident.</p>}
+          {healthRecords.consultations.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>{t("dashboard.consultations")} ({healthRecords.consultations.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>{t("consultation.date")}</th><th style={thStyle}>{t("consultation.temp")}</th><th style={thStyle}>PR</th><th style={thStyle}>RR</th><th style={thStyle}>{t("consultation.height")}</th><th style={thStyle}>{t("consultation.weight")}</th><th style={thStyle}>{t("consultation.cause")}</th></tr></thead><tbody>{healthRecords.consultations.map((c: any) => (<tr key={c.id}><td style={tdStyle}>{c.consultation_date}</td><td style={tdStyle}>{c.temperature || "—"}</td><td style={tdStyle}>{c.pulse_rate || "—"}</td><td style={tdStyle}>{c.respiration_rate || "—"}</td><td style={tdStyle}>{c.height || "—"}</td><td style={tdStyle}>{c.weight || "—"}</td><td style={tdStyle}>{c.consultation_cause || "—"}</td></tr>))}</tbody></table></>)}
+          {healthRecords.philpen_health.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>{t("nav.philpenHealth")} ({healthRecords.philpen_health.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>{t("consultation.date")}</th><th style={thStyle}>{t("philpen.bp")}</th><th style={thStyle}>{t("consultation.height")}</th><th style={thStyle}>{t("consultation.weight")}</th><th style={thStyle}>{t("philpen.bmi")}</th><th style={thStyle}>{t("philpen.smoke")}</th><th style={thStyle}>{t("philpen.alcohol")}</th><th style={thStyle}>{t("philpen.highBP")}</th><th style={thStyle}>{t("philpen.diabetes")}</th></tr></thead><tbody>{healthRecords.philpen_health.map((p: any) => (<tr key={p.id}><td style={tdStyle}>{p.record_date}</td><td style={tdStyle}>{p.bp || "—"}</td><td style={tdStyle}>{p.height || "—"}</td><td style={tdStyle}>{p.weight || "—"}</td><td style={tdStyle}>{p.bmi || "—"}</td><td style={tdStyle}>{p.smokes ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.drinks_alcohol ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.high_blood_pressure ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.diabetes_symptoms ? t("common.yes") : t("common.no")}</td></tr>))}</tbody></table></>)}
+          {healthRecords.family_data.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>{t("nav.familyData")} ({healthRecords.family_data.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>{t("familyData.familyNumber")}</th><th style={thStyle}>{t("familyData.numHouseholds")}</th><th style={thStyle}>{t("familyData.father")}</th><th style={thStyle}>{t("familyData.mother")}</th><th style={thStyle}>{t("familyData.males")}</th><th style={thStyle}>{t("familyData.females")}</th><th style={thStyle}>{t("familyData.totalMembers")}</th></tr></thead><tbody>{healthRecords.family_data.map((f: any) => (<tr key={f.id}><td style={tdStyle}>{f.family_number || "—"}</td><td style={tdStyle}>{f.num_households}</td><td style={tdStyle}>{f.father_name || "—"}</td><td style={tdStyle}>{f.mother_name || "—"}</td><td style={tdStyle}>{f.num_males}</td><td style={tdStyle}>{f.num_females}</td><td style={tdStyle}>{f.total_members}</td></tr>))}</tbody></table></>)}
+          {healthRecords.dengue_prevention.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>{t("nav.denguePrevention")} ({healthRecords.dengue_prevention.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>{t("dengue.householdName")}</th><th style={thStyle}>{t("dengue.containerType")}</th><th style={thStyle}>{t("dengue.hasLarvae")}</th><th style={thStyle}>{t("dengue.actionPlan")}</th><th style={thStyle}>{t("dengue.signature")}</th></tr></thead><tbody>{healthRecords.dengue_prevention.map((d: any) => (<tr key={d.id}><td style={tdStyle}>{d.household_name || "—"}</td><td style={tdStyle}>{d.container_type || "—"}</td><td style={tdStyle}>{d.has_larvae ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{d.action_plan || "—"}</td><td style={tdStyle}>{d.signature || "—"}</td></tr>))}</tbody></table></>)}
+          {totalRecords === 0 && <p style={{ color: "#888", marginTop: 16, fontStyle: "italic" }}>{t("residents.noHealthRecords")}</p>}
         </div>
       </div>
     );
@@ -268,132 +149,57 @@ const ResidentRecords = () => {
     <div className="max-w-4xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
-            <Users className="h-6 w-6 text-primary" />
-            Resident Records
-          </h1>
-          <p className="text-muted-foreground mt-1">Search and view all resident health records.</p>
+          <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2"><Users className="h-6 w-6 text-primary" />{t("residents.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("residents.desc")}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => { setSelectedResident(null); handlePrint(); }}><Printer className="h-4 w-4 mr-2" /> Print List</Button>
+          <Button variant="outline" onClick={() => { setSelectedResident(null); handlePrint(); }}><Printer className="h-4 w-4 mr-2" /> {t("residents.printList")}</Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" /> Add Resident</Button>
-            </DialogTrigger>
+            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> {t("residents.addResident")}</Button></DialogTrigger>
             <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Add New Resident</DialogTitle>
-                <DialogDescription>Enter the resident's basic information.</DialogDescription>
-              </DialogHeader>
+              <DialogHeader><DialogTitle>{t("residents.addNew")}</DialogTitle><DialogDescription>{t("residents.addNewDesc")}</DialogDescription></DialogHeader>
               <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label>Full Name *</Label>
-                  <Input value={newResident.full_name} onChange={(e) => setNewResident({ ...newResident, full_name: e.target.value })} placeholder="Full name" />
-                </div>
-                <div className="space-y-1">
-                  <Label>Birthday</Label>
-                  <Input type="date" value={newResident.birthday} onChange={(e) => setNewResident({ ...newResident, birthday: e.target.value })} />
+                <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={newResident.full_name} onChange={(e) => setNewResident({ ...newResident, full_name: e.target.value })} placeholder={t("residents.fullName")} /></div>
+                <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={newResident.birthday} onChange={(e) => setNewResident({ ...newResident, birthday: e.target.value })} /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={newResident.gender} onValueChange={(v) => setNewResident({ ...newResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
+                  <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={newResident.age} onChange={(e) => setNewResident({ ...newResident, age: e.target.value })} placeholder="0" /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label>Gender</Label>
-                    <Select value={newResident.gender} onValueChange={(v) => setNewResident({ ...newResident, gender: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Age</Label>
-                    <Input type="number" value={newResident.age} onChange={(e) => setNewResident({ ...newResident, age: e.target.value })} placeholder="0" />
-                  </div>
+                  <div className="space-y-1"><Label>{t("residents.civilStatus")}</Label><Select value={newResident.status} onValueChange={(v) => setNewResident({ ...newResident, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">{t("residents.single")}</SelectItem><SelectItem value="Married">{t("residents.married")}</SelectItem><SelectItem value="Widowed">{t("residents.widowed")}</SelectItem><SelectItem value="Separated">{t("residents.separated")}</SelectItem></SelectContent></Select></div>
+                  <div className="space-y-1"><Label>{t("residents.religion")}</Label><Input value={newResident.religion} onChange={(e) => setNewResident({ ...newResident, religion: e.target.value })} placeholder={t("residents.religion")} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label>Civil Status</Label>
-                    <Select value={newResident.status} onValueChange={(v) => setNewResident({ ...newResident, status: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Single">Single</SelectItem>
-                        <SelectItem value="Married">Married</SelectItem>
-                        <SelectItem value="Widowed">Widowed</SelectItem>
-                        <SelectItem value="Separated">Separated</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Religion</Label>
-                    <Input value={newResident.religion} onChange={(e) => setNewResident({ ...newResident, religion: e.target.value })} placeholder="Religion" />
-                  </div>
+                  <div className="space-y-1"><Label>{t("residents.bloodType")}</Label><Select value={newResident.blood_type} onValueChange={(v) => setNewResident({ ...newResident, blood_type: v })}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bt) => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-1"><Label>{t("residents.nationality")}</Label><Input value={newResident.nationality} onChange={(e) => setNewResident({ ...newResident, nationality: e.target.value })} placeholder="Filipino" /></div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label>Blood Type</Label>
-                    <Select value={newResident.blood_type} onValueChange={(v) => setNewResident({ ...newResident, blood_type: v })}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>
-                        {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bt) => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Nationality</Label>
-                    <Input value={newResident.nationality} onChange={(e) => setNewResident({ ...newResident, nationality: e.target.value })} placeholder="Filipino" />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Label>Sitio</Label>
-                  <Input value={newResident.sitio} onChange={(e) => setNewResident({ ...newResident, sitio: e.target.value })} placeholder="Sitio / Area" />
-                </div>
+                <div className="space-y-1"><Label>{t("residents.sitio")}</Label><Input value={newResident.sitio} onChange={(e) => setNewResident({ ...newResident, sitio: e.target.value })} placeholder="Sitio / Area" /></div>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleAddResident}>Save Resident</Button>
-              </DialogFooter>
+              <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>{t("common.cancel")}</Button><Button onClick={handleAddResident}>{t("residents.saveResident")}</Button></DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input className="pl-10" placeholder="Search by name or sitio..." value={search} onChange={(e) => setSearch(e.target.value)} />
-      </div>
+      <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input className="pl-10" placeholder={t("residents.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} /></div>
 
       <div ref={!selectedResident ? printRef : undefined} className="space-y-3">
-        {loading ? (
-          <p className="text-center text-muted-foreground py-8">Loading residents...</p>
-        ) : filtered.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No residents found.</p>
-        ) : (
+        {loading ? (<p className="text-center text-muted-foreground py-8">{t("residents.loadingResidents")}</p>) : filtered.length === 0 ? (<p className="text-center text-muted-foreground py-8">{t("residents.noResidents")}</p>) : (
           filtered.map((resident) => (
             <Card key={resident.id} className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="flex items-center justify-between py-4">
                 <div className="flex items-center gap-4 cursor-pointer flex-1" onClick={() => handleSelectResident(resident)}>
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-primary">
-                      {resident.full_name.split(" ").map((n) => n[0]).join("")}
-                    </span>
-                  </div>
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center"><span className="text-sm font-semibold text-primary">{resident.full_name.split(" ").map((n) => n[0]).join("")}</span></div>
                   <div>
                     <p className="font-medium text-foreground">{resident.full_name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {resident.sitio ? `${resident.sitio} · ` : ""}{resident.gender} · Age {resident.age} · {resident.status}
-                      {resident.birthday ? ` · Born ${resident.birthday}` : ""}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{resident.sitio ? `${resident.sitio} · ` : ""}{resident.gender} · {t("residents.age")} {resident.age} · {resident.status}{resident.birthday ? ` · ${t("residents.birthday")} ${resident.birthday}` : ""}</p>
                   </div>
                 </div>
                 <div className="flex gap-2 items-center">
                   <Badge variant="secondary" className="text-xs">{resident.blood_type || "—"}</Badge>
                   <Badge variant="outline" className="text-xs">{resident.nationality}</Badge>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditResident(resident); setEditDialogOpen(true); }}>
-                    <Pencil className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(resident.id); }}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditResident(resident); setEditDialogOpen(true); }}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(resident.id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
               </CardContent>
             </Card>
@@ -401,96 +207,36 @@ const ResidentRecords = () => {
         )}
       </div>
 
-      {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit Resident</DialogTitle>
-            <DialogDescription>Update resident information.</DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>{t("residents.editResident")}</DialogTitle><DialogDescription>{t("residents.editResidentDesc")}</DialogDescription></DialogHeader>
           {editResident && (
             <div className="space-y-3">
-              <div className="space-y-1">
-                <Label>Full Name *</Label>
-                <Input value={editResident.full_name} onChange={(e) => setEditResident({ ...editResident, full_name: e.target.value })} />
-              </div>
-              <div className="space-y-1">
-                <Label>Birthday</Label>
-                <Input type="date" value={editResident.birthday || ""} onChange={(e) => setEditResident({ ...editResident, birthday: e.target.value })} />
+              <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={editResident.full_name} onChange={(e) => setEditResident({ ...editResident, full_name: e.target.value })} /></div>
+              <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={editResident.birthday || ""} onChange={(e) => setEditResident({ ...editResident, birthday: e.target.value })} /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={editResident.gender} onValueChange={(v) => setEditResident({ ...editResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
+                <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={editResident.age} onChange={(e) => setEditResident({ ...editResident, age: Number(e.target.value) })} /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label>Gender</Label>
-                  <Select value={editResident.gender} onValueChange={(v) => setEditResident({ ...editResident, gender: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Male">Male</SelectItem>
-                      <SelectItem value="Female">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label>Age</Label>
-                  <Input type="number" value={editResident.age} onChange={(e) => setEditResident({ ...editResident, age: Number(e.target.value) })} />
-                </div>
+                <div className="space-y-1"><Label>{t("residents.civilStatus")}</Label><Select value={editResident.status} onValueChange={(v) => setEditResident({ ...editResident, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">{t("residents.single")}</SelectItem><SelectItem value="Married">{t("residents.married")}</SelectItem><SelectItem value="Widowed">{t("residents.widowed")}</SelectItem><SelectItem value="Separated">{t("residents.separated")}</SelectItem></SelectContent></Select></div>
+                <div className="space-y-1"><Label>{t("residents.religion")}</Label><Input value={editResident.religion || ""} onChange={(e) => setEditResident({ ...editResident, religion: e.target.value })} /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label>Civil Status</Label>
-                  <Select value={editResident.status} onValueChange={(v) => setEditResident({ ...editResident, status: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Single">Single</SelectItem>
-                      <SelectItem value="Married">Married</SelectItem>
-                      <SelectItem value="Widowed">Widowed</SelectItem>
-                      <SelectItem value="Separated">Separated</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label>Religion</Label>
-                  <Input value={editResident.religion || ""} onChange={(e) => setEditResident({ ...editResident, religion: e.target.value })} />
-                </div>
+                <div className="space-y-1"><Label>{t("residents.bloodType")}</Label><Select value={editResident.blood_type || ""} onValueChange={(v) => setEditResident({ ...editResident, blood_type: v })}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bt) => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}</SelectContent></Select></div>
+                <div className="space-y-1"><Label>{t("residents.nationality")}</Label><Input value={editResident.nationality} onChange={(e) => setEditResident({ ...editResident, nationality: e.target.value })} /></div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label>Blood Type</Label>
-                  <Select value={editResident.blood_type || ""} onValueChange={(v) => setEditResident({ ...editResident, blood_type: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                      {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bt) => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label>Nationality</Label>
-                  <Input value={editResident.nationality} onChange={(e) => setEditResident({ ...editResident, nationality: e.target.value })} />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label>Sitio</Label>
-                <Input value={editResident.sitio || ""} onChange={(e) => setEditResident({ ...editResident, sitio: e.target.value })} />
-              </div>
+              <div className="space-y-1"><Label>{t("residents.sitio")}</Label><Input value={editResident.sitio || ""} onChange={(e) => setEditResident({ ...editResident, sitio: e.target.value })} /></div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleEditResident}>Save Changes</Button>
-          </DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setEditDialogOpen(false)}>{t("common.cancel")}</Button><Button onClick={handleEditResident}>{t("common.saveChanges")}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
       <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Resident?</AlertDialogTitle>
-            <AlertDialogDescription>This action cannot be undone. All associated health records may become orphaned.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteConfirmId && handleDeleteResident(deleteConfirmId)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
-          </AlertDialogFooter>
+          <AlertDialogHeader><AlertDialogTitle>{t("residents.deleteResident")}</AlertDialogTitle><AlertDialogDescription>{t("residents.deleteResidentDesc")}</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel><AlertDialogAction onClick={() => deleteConfirmId && handleDeleteResident(deleteConfirmId)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t("common.delete")}</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
