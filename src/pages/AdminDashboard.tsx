@@ -160,38 +160,6 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* Line Chart */}
-      <Card className="border-border/50 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg font-heading flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            {t("dashboard.formsOverview")}
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">{t("dashboard.formsOverviewDesc")}</p>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                {chartData.length > 0 &&
-                  Object.keys(chartData[0])
-                    .filter((k) => k !== "month")
-                    .map((key, i) => (
-                      <Line key={key} type="monotone" dataKey={key} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
-                    ))}
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-border/50 shadow-sm">
           <CardHeader>
@@ -253,6 +221,38 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Line Chart */}
+      <Card className="border-border/50 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-lg font-heading flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            {t("dashboard.formsOverview")}
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">{t("dashboard.formsOverviewDesc")}</p>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={320}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                {chartData.length > 0 &&
+                  Object.keys(chartData[0])
+                    .filter((k) => k !== "month")
+                    .map((key, i) => (
+                      <Line key={key} type="monotone" dataKey={key} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+                    ))}
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
