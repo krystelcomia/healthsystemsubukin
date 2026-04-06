@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Shield, Stethoscope, ClipboardList, Activity, Bug, UserCheck, UserX, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 interface BHWWorker {
   id: string;
@@ -20,6 +21,7 @@ const AdminDashboard = () => {
   });
   const [workers, setWorkers] = useState<BHWWorker[]>([]);
   const [recentActivity, setRecentActivity] = useState<{ name: string; action: string; time: string }[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,6 +40,28 @@ const AdminDashboard = () => {
         totalResidents: residents.count || 0, totalWorkers: workersCount.count || 0, onlineWorkers: onlineWorkers.count || 0,
         consultations: consultations.count || 0, familyRecords: families.count || 0, philpenRecords: philpen.count || 0, dengueRecords: dengue.count || 0,
       });
+
+      // Fetch all form data for chart
+      const [consData, famData, philData, dengData, matData, childData, fpData] = await Promise.all([
+        supabase.from("consultations").select("created_at"),
+        supabase.from("family_data").select("created_at"),
+        supabase.from("philpen_health").select("created_at"),
+        supabase.from("dengue_prevention").select("created_at"),
+        supabase.from("maternal_care" as any).select("created_at"),
+        supabase.from("child_health" as any).select("created_at"),
+        supabase.from("family_planning").select("created_at"),
+      ]);
+
+      const monthlyData = buildMonthlyChart({
+        [t("nav.consultation")]: consData.data || [],
+        [t("nav.familyData")]: famData.data || [],
+        [t("nav.philpenHealth")]: philData.data || [],
+        [t("nav.denguePrevention")]: dengData.data || [],
+        [t("nav.maternalCare")]: (matData.data as any[]) || [],
+        [t("nav.childHealth")]: (childData.data as any[]) || [],
+        [t("nav.familyPlanning")]: fpData.data || [],
+      });
+      setChartData(monthlyData);
 
       const { data: workersData } = await (supabase.from as any)("bhw_workers").select("id, name, is_online, last_seen, gmail").order("name");
       setWorkers(workersData || []);
@@ -58,6 +82,29 @@ const AdminDashboard = () => {
     fetchAll();
   }, []);
 
+  const buildMonthlyChart = (formData: Record<string, { created_at: string }[]>) => {
+    const months: Record<string, Record<string, any>> = {};
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const label = d.toLocaleString("default", { month: "short", year: "2-digit" });
+      months[key] = { _labelStr: label };
+      Object.keys(formData).forEach((form) => { months[key][form] = 0; });
+    }
+    Object.entries(formData).forEach(([formName, records]) => {
+      records.forEach((r) => {
+        const d = new Date(r.created_at);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (months[key]) months[key][formName] = (months[key][formName] || 0) + 1;
+      });
+    });
+    return Object.entries(months).map(([, val]) => {
+      const { _labelStr, ...rest } = val;
+      return { month: _labelStr, ...rest };
+    });
+  };
+
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -68,6 +115,16 @@ const AdminDashboard = () => {
     if (diffDays === 1) return "Yesterday";
     return `${diffDays}d ago`;
   };
+
+  const CHART_COLORS = [
+    "hsl(var(--primary))",
+    "hsl(220, 70%, 55%)",
+    "hsl(150, 60%, 45%)",
+    "hsl(35, 90%, 55%)",
+    "hsl(340, 70%, 55%)",
+    "hsl(270, 60%, 55%)",
+    "hsl(180, 50%, 45%)",
+  ];
 
   const statCards = [
     { label: t("dashboard.totalResidents"), value: stats.totalResidents, icon: Users, desc: t("dashboard.registeredResidents") },
@@ -102,6 +159,38 @@ const AdminDashboard = () => {
           </Card>
         ))}
       </div>
+
+      {/* Line Chart */}
+      <Card className="border-border/50 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-lg font-heading flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            {t("dashboard.formsOverview")}
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">{t("dashboard.formsOverviewDesc")}</p>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={320}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                {chartData.length > 0 &&
+                  Object.keys(chartData[0])
+                    .filter((k) => k !== "month")
+                    .map((key, i) => (
+                      <Line key={key} type="monotone" dataKey={key} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+                    ))}
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-border/50 shadow-sm">
