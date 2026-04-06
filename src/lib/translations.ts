@@ -44,6 +44,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "dashboard.viewResidents": "View Residents",
     "dashboard.loading": "Loading...",
     "dashboard.noActivity": "No recent activity.",
+    "dashboard.formsOverview": "Forms Overview",
+    "dashboard.formsOverviewDesc": "Monthly submissions across all health forms",
     // Settings
     "settings.title": "Settings",
     "settings.description": "Manage system preferences and data.",
@@ -318,6 +320,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "dashboard.familiesRegistered": "Mga nakarehistrong pamilya",
     "dashboard.registeredChildren": "Mga nakarehistrong bata",
     "dashboard.recentActivity": "Kamakailang Aktibidad",
+    "dashboard.formsOverview": "Pangkalahatang-Ideya ng mga Form",
+    "dashboard.formsOverviewDesc": "Buwanang pagsusumite sa lahat ng health forms",
     "dashboard.quickActions": "Mabilis na Aksyon",
     "dashboard.newConsultation": "Bagong Konsultasyon",
     "dashboard.healthScreening": "Health Screening",
