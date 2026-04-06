@@ -32,7 +32,7 @@ const FamilyDataForm = () => {
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="w-full space-y-6">
       <div>
         <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2"><ClipboardList className="h-6 w-6 text-primary" />{t("familyData.title")}</h1>
         <p className="text-muted-foreground mt-1">{t("familyData.desc")}</p>
