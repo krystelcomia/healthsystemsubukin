@@ -53,6 +53,7 @@ const ResidentRecords = () => {
       religion: newResident.religion, blood_type: newResident.blood_type, nationality: newResident.nationality, sitio: newResident.sitio, birthday: newResident.birthday || null,
     });
     if (error) { toast.error("Failed to add resident"); return; }
+    logActivity("create_resident", { entity_type: "resident", description: `Added resident: ${newResident.full_name.trim()}` });
     toast.success("Resident added successfully!");
     setNewResident({ full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "", birthday: "" });
     setDialogOpen(false);
