@@ -26,7 +26,30 @@ const ProfilePage = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
+  // Activity tracking
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [activityLoading, setActivityLoading] = useState(false);
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
+
+  const fetchActivity = async () => {
+    if (!user) return;
+    setActivityLoading(true);
+    let sQ = (supabase.from as any)("user_sessions").select("*").eq("user_id", user.id).order("login_at", { ascending: false }).limit(200);
+    let aQ = (supabase.from as any)("user_activity_logs").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200);
+    if (fromDate) { sQ = sQ.gte("login_at", fromDate); aQ = aQ.gte("created_at", fromDate); }
+    if (toDate) {
+      const end = new Date(toDate); end.setDate(end.getDate() + 1);
+      sQ = sQ.lt("login_at", end.toISOString()); aQ = aQ.lt("created_at", end.toISOString());
+    }
+    const [{ data: sData }, { data: aData }] = await Promise.all([sQ, aQ]);
+    setSessions(sData || []);
+    setActivities(aData || []);
+    setActivityLoading(false);
+  };
+
+  useEffect(() => { fetchActivity(); /* eslint-disable-next-line */ }, [user, fromDate, toDate]);
     if (!user) return;
     setEmail(user.email || "");
     (async () => {
