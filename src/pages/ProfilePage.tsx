@@ -94,12 +94,11 @@ const ProfilePage = () => {
 
   return (
     <div className="w-full space-y-6">
-      {/* Hero */}
+      {/* Header */}
       <Card className="w-full overflow-hidden border-border/50 shadow-sm">
-        <div className="relative h-40 bg-gradient-to-br from-primary via-primary/80 to-accent" />
-        <CardContent className="relative pt-0 pb-6">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 -mt-16">
-            <div className="flex flex-col md:flex-row md:items-end gap-4">
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="relative group">
                 <Avatar className="h-32 w-32 ring-4 ring-background shadow-xl">
                   {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName || "avatar"} />}
