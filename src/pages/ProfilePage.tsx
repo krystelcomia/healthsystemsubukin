@@ -122,7 +122,7 @@ const ProfilePage = () => {
                   onChange={handleAvatarChange}
                 />
               </div>
-              <div className="md:pb-2">
+              <div>
                 <h1 className="text-2xl md:text-3xl font-heading font-bold text-foreground">
                   {fullName || username || t("profile.title")}
                 </h1>
@@ -133,7 +133,7 @@ const ProfilePage = () => {
                 </div>
               </div>
             </div>
-            <div className="flex gap-2 md:pb-2">
+            <div className="flex gap-2">
               {avatarUrl && (
                 <Button variant="outline" size="sm" onClick={removeAvatar}>
                   <X className="h-4 w-4 mr-1" /> Remove photo
