@@ -50,6 +50,8 @@ const ProfilePage = () => {
   };
 
   useEffect(() => { fetchActivity(); /* eslint-disable-next-line */ }, [user, fromDate, toDate]);
+
+  useEffect(() => {
     if (!user) return;
     setEmail(user.email || "");
     (async () => {
