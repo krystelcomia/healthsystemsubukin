@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { startSession, endSession, logActivity } from "@/lib/activityLogger";
 
 interface AuthContextType {
   session: Session | null;
@@ -55,13 +56,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
           setTimeout(() => fetchRole(session.user.id), 0);
           setTimeout(() => fetchProfile(session.user.id), 0);
           setTimeout(() => updateOnlineStatus(session.user.id, true), 0);
+          if (event === "SIGNED_IN") {
+            setTimeout(() => {
+              startSession(session.user.id);
+              logActivity("login", { description: "Signed in to the system" });
+            }, 0);
+          }
         } else {
           setUserRole(null);
           setUsername(null);
@@ -86,6 +93,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     if (user) {
+      await logActivity("logout", { description: "Signed out of the system" });
+      await endSession();
       await updateOnlineStatus(user.id, false);
     }
     await supabase.auth.signOut();

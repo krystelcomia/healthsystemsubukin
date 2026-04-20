@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Stethoscope } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { logActivity } from "@/lib/activityLogger";
 
 const ConsultationForm = () => {
   const { t } = useSettings();
@@ -30,6 +31,7 @@ const ConsultationForm = () => {
       consultation_date: form.date, temperature: form.temperature, pulse_rate: form.pulseRate, respiration_rate: form.respirationRate, height: form.height, weight: form.weight, consultation_cause: form.consultationCause,
     });
     if (error) { toast.error("Failed to save consultation"); return; }
+    logActivity("submit_consultation", { entity_type: "consultation", description: "Recorded a consultation" });
     toast.success("Consultation recorded!");
     setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: new Date().toISOString().split("T")[0], temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
   };

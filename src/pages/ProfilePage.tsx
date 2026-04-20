@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Pencil, Save, Camera, Mail, AtSign, IdCard, ShieldCheck, Loader2, X } from "lucide-react";
+import { User, Pencil, Save, Camera, Mail, AtSign, IdCard, ShieldCheck, Loader2, X, Clock, LogIn, LogOut, Activity as ActivityIcon, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 const ProfilePage = () => {
   const { user, userRole } = useAuth();
@@ -23,6 +25,31 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  // Activity tracking
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [activityLoading, setActivityLoading] = useState(false);
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
+
+  const fetchActivity = async () => {
+    if (!user) return;
+    setActivityLoading(true);
+    let sQ = (supabase.from as any)("user_sessions").select("*").eq("user_id", user.id).order("login_at", { ascending: false }).limit(200);
+    let aQ = (supabase.from as any)("user_activity_logs").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200);
+    if (fromDate) { sQ = sQ.gte("login_at", fromDate); aQ = aQ.gte("created_at", fromDate); }
+    if (toDate) {
+      const end = new Date(toDate); end.setDate(end.getDate() + 1);
+      sQ = sQ.lt("login_at", end.toISOString()); aQ = aQ.lt("created_at", end.toISOString());
+    }
+    const [{ data: sData }, { data: aData }] = await Promise.all([sQ, aQ]);
+    setSessions(sData || []);
+    setActivities(aData || []);
+    setActivityLoading(false);
+  };
+
+  useEffect(() => { fetchActivity(); /* eslint-disable-next-line */ }, [user, fromDate, toDate]);
 
   useEffect(() => {
     if (!user) return;
@@ -233,6 +260,131 @@ const ProfilePage = () => {
               )}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Activity & Sessions */}
+      <Card className="border-border/50 shadow-sm">
+        <CardContent className="p-6 space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-heading font-semibold text-foreground flex items-center gap-2">
+                <ActivityIcon className="h-5 w-5 text-primary" /> Activity & Sessions
+              </h2>
+              <p className="text-sm text-muted-foreground">Login times, hours, and what you did in the system</p>
+            </div>
+            <div className="flex items-end gap-2 flex-wrap">
+              <div>
+                <Label className="text-xs text-muted-foreground">From</Label>
+                <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="h-9" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">To</Label>
+                <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="h-9" />
+              </div>
+              {(fromDate || toDate) && (
+                <Button variant="outline" size="sm" onClick={() => { setFromDate(""); setToDate(""); }}>Clear</Button>
+              )}
+            </div>
+          </div>
+
+          {/* Summary tiles */}
+          {(() => {
+            const totalMins = sessions.reduce((s, x) => s + (x.duration_minutes || 0), 0);
+            const hrs = Math.floor(totalMins / 60);
+            const mins = totalMins % 60;
+            const completed = sessions.filter((s) => s.logout_at).length;
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="rounded-lg border border-border/50 p-4">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><LogIn className="h-3 w-3" /> Sessions</p>
+                  <p className="text-2xl font-heading font-bold mt-1">{sessions.length}</p>
+                </div>
+                <div className="rounded-lg border border-border/50 p-4">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> Total time</p>
+                  <p className="text-2xl font-heading font-bold mt-1">{hrs}h {mins}m</p>
+                </div>
+                <div className="rounded-lg border border-border/50 p-4">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><LogOut className="h-3 w-3" /> Completed</p>
+                  <p className="text-2xl font-heading font-bold mt-1">{completed}</p>
+                </div>
+                <div className="rounded-lg border border-border/50 p-4">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><ActivityIcon className="h-3 w-3" /> Actions</p>
+                  <p className="text-2xl font-heading font-bold mt-1">{activities.length}</p>
+                </div>
+              </div>
+            );
+          })()}
+
+          <Tabs defaultValue="sessions" className="w-full">
+            <TabsList>
+              <TabsTrigger value="sessions">Sessions</TabsTrigger>
+              <TabsTrigger value="actions">Activity Log</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="sessions" className="mt-4">
+              {activityLoading ? (
+                <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+              ) : sessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No sessions in this range.</p>
+              ) : (
+                <div className="border border-border/50 rounded-lg divide-y divide-border/50 max-h-96 overflow-auto">
+                  {sessions.map((s) => {
+                    const login = new Date(s.login_at);
+                    const logout = s.logout_at ? new Date(s.logout_at) : null;
+                    const dur = s.duration_minutes;
+                    return (
+                      <div key={s.id} className="p-3 flex items-center justify-between gap-3 text-sm">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground">{login.toLocaleDateString()}</p>
+                            <p className="text-xs text-muted-foreground">
+                              <LogIn className="h-3 w-3 inline mr-1" />{login.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              {logout && <> &nbsp;→&nbsp; <LogOut className="h-3 w-3 inline mr-1" />{logout.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</>}
+                            </p>
+                          </div>
+                        </div>
+                        {logout ? (
+                          <Badge variant="secondary">{Math.floor((dur || 0) / 60)}h {(dur || 0) % 60}m</Badge>
+                        ) : (
+                          <Badge>Active</Badge>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="actions" className="mt-4">
+              {activityLoading ? (
+                <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+              ) : activities.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No activity in this range.</p>
+              ) : (
+                <div className="border border-border/50 rounded-lg divide-y divide-border/50 max-h-96 overflow-auto">
+                  {activities.map((a) => {
+                    const d = new Date(a.created_at);
+                    return (
+                      <div key={a.id} className="p-3 flex items-center justify-between gap-3 text-sm">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <ActivityIcon className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground truncate">{a.description || a.action}</p>
+                            <p className="text-xs text-muted-foreground">{d.toLocaleString()}</p>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="capitalize whitespace-nowrap">{a.action.replace(/_/g, " ")}</Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>

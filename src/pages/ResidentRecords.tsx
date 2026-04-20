@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
+import { logActivity } from "@/lib/activityLogger";
 
 interface Resident {
   id: string; full_name: string; gender: string; age: number; status: string; religion: string; blood_type: string; nationality: string; sitio: string; birthday: string | null; created_at: string;
@@ -53,6 +54,7 @@ const ResidentRecords = () => {
       religion: newResident.religion, blood_type: newResident.blood_type, nationality: newResident.nationality, sitio: newResident.sitio, birthday: newResident.birthday || null,
     });
     if (error) { toast.error("Failed to add resident"); return; }
+    logActivity("create_resident", { entity_type: "resident", description: `Added resident: ${newResident.full_name.trim()}` });
     toast.success("Resident added successfully!");
     setNewResident({ full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "", birthday: "" });
     setDialogOpen(false);
