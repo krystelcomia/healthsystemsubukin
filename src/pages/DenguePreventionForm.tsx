@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Bug } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { logActivity } from "@/lib/activityLogger";
 
 const DenguePreventionForm = () => {
   const { t } = useSettings();
@@ -27,6 +28,7 @@ const DenguePreventionForm = () => {
       resident_id: form.resident_id, household_name: form.householdName, container_type: form.containerType, has_larvae: form.hasLarvae, action_plan: form.actionPlan, signature: form.signature,
     });
     if (error) { toast.error("Failed to save"); return; }
+    logActivity("submit_dengue", { entity_type: "dengue_prevention", description: "Saved dengue prevention record" });
     toast.success("Dengue prevention record saved!");
     setForm({ resident_id: "", householdName: "", containerType: "", hasLarvae: false, actionPlan: "", signature: "" });
   };

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { logActivity } from "@/lib/activityLogger";
 
 const PhilPenHealthForm = () => {
   const { t } = useSettings();
@@ -32,6 +33,7 @@ const PhilPenHealthForm = () => {
       smokes: form.smokes, drinks_alcohol: form.drinksAlcohol, high_blood_pressure: form.highBloodPressure, diabetes_symptoms: form.diabetesSymptoms,
     });
     if (error) { toast.error("Failed to save"); return; }
+    logActivity("submit_philpen", { entity_type: "philpen_health", description: "Saved PhilPen health record" });
     toast.success("PhilPen health record saved!");
     setForm({ resident_id: "", address: "", age: "", birthdate: "", currentDate: new Date().toISOString().split("T")[0], bp: "", height: "", weight: "", smokes: false, drinksAlcohol: false, highBloodPressure: false, diabetesSymptoms: false });
   };

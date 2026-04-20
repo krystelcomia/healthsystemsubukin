@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { ClipboardList } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { logActivity } from "@/lib/activityLogger";
 
 const FamilyDataForm = () => {
   const { t } = useSettings();
@@ -27,6 +28,7 @@ const FamilyDataForm = () => {
       father_name: form.fatherName, mother_name: form.motherName, num_males: Number(form.numberOfMales) || 0, num_females: Number(form.numberOfFemales) || 0, total_members: totalMembers,
     });
     if (error) { toast.error("Failed to save"); return; }
+    logActivity("submit_family_data", { entity_type: "family_data", description: "Saved family data record" });
     toast.success("Family data saved!");
     setForm({ resident_id: "", familyNumber: "", numberOfHouseholds: "", fatherName: "", motherName: "", numberOfMales: "", numberOfFemales: "" });
   };

@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useSettings } from "@/contexts/SettingsContext";
+import { logActivity } from "@/lib/activityLogger";
 
 interface FamilyPlanningRecord {
   id: string; resident_id: string | null; method: string | null; start_date: string | null; remarks: string | null; created_at: string; residents?: { full_name: string } | null;
@@ -48,10 +49,12 @@ const FamilyPlanningForm = () => {
     if (editingRecord) {
       const { error } = await supabase.from("family_planning").update(payload).eq("id", editingRecord.id);
       if (error) { toast.error(error.message); return; }
+      logActivity("update_family_planning", { entity_type: "family_planning", entity_id: editingRecord.id, description: "Updated family planning record" });
       toast.success("Record updated!");
     } else {
       const { error } = await supabase.from("family_planning").insert(payload);
       if (error) { toast.error(error.message); return; }
+      logActivity("submit_family_planning", { entity_type: "family_planning", description: "Saved family planning record" });
       toast.success("Record saved!");
     }
     setDialogOpen(false); fetchData();
