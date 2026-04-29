@@ -33,7 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               ))}
             </nav>
           </header>
-          <div className="flex-1 p-6 overflow-auto animate-fade-in">
+          <div className="flex-1 p-6 animate-fade-in">
             {children}
           </div>
         </main>
