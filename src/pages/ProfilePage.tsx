@@ -72,8 +72,10 @@ const ProfilePage = () => {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: fullName, username })
-      .eq("user_id", user.id);
+      .upsert(
+        { user_id: user.id, full_name: fullName, username },
+        { onConflict: "user_id" }
+      );
     if (error) toast.error(t("profile.saveFailed") || "Failed to save profile");
     else {
       toast.success(t("profile.updated") || "Profile updated!");
@@ -97,7 +99,10 @@ const ProfilePage = () => {
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
       const url = pub.publicUrl;
-      const { error: updErr } = await supabase.from("profiles").update({ avatar_url: url } as any).eq("user_id", user.id);
+      const { error: updErr } = await (supabase.from("profiles") as any).upsert(
+        { user_id: user.id, avatar_url: url },
+        { onConflict: "user_id" }
+      );
       if (updErr) throw updErr;
       setAvatarUrl(url);
       toast.success("Profile picture updated!");
