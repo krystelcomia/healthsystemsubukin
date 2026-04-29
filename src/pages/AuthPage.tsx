@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
+import loginBg from "@/assets/login-bg.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -43,7 +44,10 @@ const AuthPage = () => {
 
   if (forgotMode) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div
+        className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `linear-gradient(hsl(var(--background) / 0.7), hsl(var(--background) / 0.7)), url(${loginBg})` }}
+      >
         <Card className="w-full max-w-md border-border/50 shadow-lg">
           <CardHeader className="text-center space-y-2">
             <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-20 w-20 rounded-full object-cover" />
@@ -61,7 +65,10 @@ const AuthPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `linear-gradient(hsl(var(--background) / 0.7), hsl(var(--background) / 0.7)), url(${loginBg})` }}
+    >
       <Card className="w-full max-w-md border-border/50 shadow-lg">
         <CardHeader className="text-center space-y-2">
           <img src={barangayLogo} alt="Barangay Subukin Logo" className="mx-auto h-20 w-20 rounded-full object-cover" />
