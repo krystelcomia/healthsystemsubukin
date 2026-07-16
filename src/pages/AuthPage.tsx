@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
-import loginBg from "@/assets/login-bg.jpg";
+import loginBg from "@/assets/login-bg.jpg.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -46,7 +46,7 @@ const AuthPage = () => {
     return (
       <div
         className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${loginBg})` }}
+        style={{ backgroundImage: `url(${loginBg.url})` }}
       >
         <Card className="w-full max-w-md border-0 bg-background/30 backdrop-blur-md shadow-2xl text-foreground">
           <CardHeader className="text-center space-y-2">
@@ -67,7 +67,7 @@ const AuthPage = () => {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: `url(${loginBg})` }}
+      style={{ backgroundImage: `url(${loginBg.url})` }}
     >
       <Card className="w-full max-w-md border-0 bg-background/30 backdrop-blur-md shadow-2xl text-foreground">
         <CardHeader className="text-center space-y-2">
