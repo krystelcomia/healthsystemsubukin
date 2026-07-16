@@ -27,6 +27,7 @@ import {
   Activity,
   LogOut,
   Shield,
+  Plus,
 } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ export function AppSidebar() {
     { title: t("nav.maternalCare"), url: "/forms/maternal-care", icon: Heart },
     { title: t("nav.childHealth"), url: "/forms/child-health", icon: Baby },
     { title: t("nav.familyPlanning"), url: "/forms/family-planning", icon: Heart },
+    { title: "Add New Form", url: "/forms/add-new", icon: Plus },
   ];
 
   const bhwSystemItems = [
@@ -80,6 +82,7 @@ export function AppSidebar() {
     { title: t("nav.maternalCare"), url: "/admin/forms/maternal-care", icon: Heart },
     { title: t("nav.childHealth"), url: "/admin/forms/child-health", icon: Baby },
     { title: t("nav.familyPlanning"), url: "/admin/forms/family-planning", icon: Heart },
+    { title: "Add New Form", url: "/admin/forms/add-new", icon: Plus },
   ];
 
   const mainItems = isAdmin ? adminMainItems : bhwMainItems;

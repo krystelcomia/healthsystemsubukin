@@ -17,6 +17,7 @@ import DenguePreventionForm from "./pages/DenguePreventionForm";
 import MaternalCareForm from "./pages/MaternalCareForm";
 import ChildHealthForm from "./pages/ChildHealthForm";
 import FamilyPlanningForm from "./pages/FamilyPlanningForm";
+import AddNewForm from "./pages/AddNewForm";
 import ResidentRecords from "./pages/ResidentRecords";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminResidents from "./pages/AdminResidents";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/forms/maternal-care" element={<ProtectedRoute><Layout><MaternalCareForm /></Layout></ProtectedRoute>} />
             <Route path="/forms/child-health" element={<ProtectedRoute><Layout><ChildHealthForm /></Layout></ProtectedRoute>} />
             <Route path="/forms/family-planning" element={<ProtectedRoute><Layout><FamilyPlanningForm /></Layout></ProtectedRoute>} />
+            <Route path="/forms/add-new" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
             <Route path="/residents" element={<ProtectedRoute><Layout><ResidentRecords /></Layout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Layout><ProfilePage /></Layout></ProtectedRoute>} />
@@ -63,6 +65,7 @@ const App = () => (
             <Route path="/admin/forms/maternal-care" element={<ProtectedRoute><Layout><MaternalCareForm /></Layout></ProtectedRoute>} />
             <Route path="/admin/forms/child-health" element={<ProtectedRoute><Layout><ChildHealthForm /></Layout></ProtectedRoute>} />
             <Route path="/admin/forms/family-planning" element={<ProtectedRoute><Layout><FamilyPlanningForm /></Layout></ProtectedRoute>} />
+            <Route path="/admin/forms/add-new" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
