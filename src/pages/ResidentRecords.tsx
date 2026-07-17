@@ -33,6 +33,7 @@ const ResidentRecords = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editResident, setEditResident] = useState<Resident | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [sitioFilter, setSitioFilter] = useState<string>("all");
 
   const [newResident, setNewResident] = useState({
     full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "", birthday: "",
@@ -111,7 +112,12 @@ const ResidentRecords = () => {
     win.document.close(); win.print();
   };
 
-  const filtered = residents.filter((r) => r.full_name.toLowerCase().includes(search.toLowerCase()) || (r.sitio || "").toLowerCase().includes(search.toLowerCase()));
+  const sitios = Array.from(new Set(residents.map((r) => r.sitio).filter(Boolean))) as string[];
+  const filtered = residents.filter((r) => {
+    const matchesSearch = r.full_name.toLowerCase().includes(search.toLowerCase()) || (r.sitio || "").toLowerCase().includes(search.toLowerCase());
+    const matchesSitio = sitioFilter === "all" || r.sitio === sitioFilter;
+    return matchesSearch && matchesSitio;
+  });
 
   if (selectedResident && healthRecords) {
     const totalRecords = healthRecords.consultations.length + healthRecords.family_data.length + healthRecords.philpen_health.length + healthRecords.dengue_prevention.length;
@@ -183,7 +189,16 @@ const ResidentRecords = () => {
         </div>
       </div>
 
-      <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input className="pl-10" placeholder={t("residents.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input className="pl-10" placeholder={t("residents.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+        <Select value={sitioFilter} onValueChange={setSitioFilter}>
+          <SelectTrigger className="w-full sm:w-56"><SelectValue placeholder={t("residents.sitio")} /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Sitios</SelectItem>
+            {sitios.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div ref={!selectedResident ? printRef : undefined} className="space-y-3">
         {loading ? (<p className="text-center text-muted-foreground py-8">{t("residents.loadingResidents")}</p>) : filtered.length === 0 ? (<p className="text-center text-muted-foreground py-8">{t("residents.noResidents")}</p>) : (
