@@ -33,6 +33,7 @@ const ResidentRecords = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editResident, setEditResident] = useState<Resident | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [sitioFilter, setSitioFilter] = useState<string>("all");
 
   const [newResident, setNewResident] = useState({
     full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "", birthday: "",
@@ -111,7 +112,12 @@ const ResidentRecords = () => {
     win.document.close(); win.print();
   };
 
-  const filtered = residents.filter((r) => r.full_name.toLowerCase().includes(search.toLowerCase()) || (r.sitio || "").toLowerCase().includes(search.toLowerCase()));
+  const sitios = Array.from(new Set(residents.map((r) => r.sitio).filter(Boolean))) as string[];
+  const filtered = residents.filter((r) => {
+    const matchesSearch = r.full_name.toLowerCase().includes(search.toLowerCase()) || (r.sitio || "").toLowerCase().includes(search.toLowerCase());
+    const matchesSitio = sitioFilter === "all" || r.sitio === sitioFilter;
+    return matchesSearch && matchesSitio;
+  });
 
   if (selectedResident && healthRecords) {
     const totalRecords = healthRecords.consultations.length + healthRecords.family_data.length + healthRecords.philpen_health.length + healthRecords.dengue_prevention.length;
