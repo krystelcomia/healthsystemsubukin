@@ -102,6 +102,14 @@ const FONT_STYLE_MAP: Record<string, string> = {
   inter: "'Inter', sans-serif",
   system: "system-ui, sans-serif",
   serif: "Georgia, 'Times New Roman', serif",
+  poppins: "'Poppins', sans-serif",
+  roboto: "'Roboto', sans-serif",
+  montserrat: "'Montserrat', sans-serif",
+  nunito: "'Nunito', sans-serif",
+  lora: "'Lora', serif",
+  playfair: "'Playfair Display', serif",
+  merriweather: "'Merriweather', serif",
+  mono: "'JetBrains Mono', monospace",
 };
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
