@@ -263,6 +263,12 @@ class MockAuth {
     return { data: { session }, error: null };
   }
 
+  async getUser() {
+    const sessionStr = localStorage.getItem('supabase_mock_session');
+    const session = sessionStr ? JSON.parse(sessionStr) : null;
+    return { data: { user: session ? session.user : null }, error: null };
+  }
+
   onAuthStateChange(callback: (event: string, session: any) => void) {
     this.listeners.push(callback);
     const sessionStr = localStorage.getItem('supabase_mock_session');
