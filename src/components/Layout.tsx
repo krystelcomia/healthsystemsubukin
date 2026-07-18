@@ -264,27 +264,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     variant="ghost" 
                     size="sm" 
                     className={`relative flex items-center gap-2 h-9 rounded-full px-3 transition-all shrink-0 ${
-                      userRole === "bhw" && !activeBhw
+                      !activeBhw
                         ? "bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/20 animate-pulse" 
                         : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     }`}
                   >
-                    <Fingerprint className={`h-5 w-5 ${userRole === "bhw" && !activeBhw ? "text-amber-500 animate-pulse" : "text-primary"}`} />
-                    {userRole === "bhw" && (
-                      <span className="text-xs font-semibold max-w-[120px] truncate">
-                        {activeBhw ? activeBhw : "BHW Sign In"}
-                      </span>
-                    )}
-                    {userRole === "supervisor" && (
-                      <span className="text-xs font-semibold">Attendance Logs</span>
-                    )}
+                    <Fingerprint className={`h-5 w-5 ${!activeBhw ? "text-amber-500 animate-pulse" : "text-primary"}`} />
+                    <span className="text-xs font-semibold max-w-[120px] truncate">
+                      {activeBhw ? activeBhw : "BHW Sign In"}
+                    </span>
                     {activeBhw && (
                       <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background animate-pulse" />
                     )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-80 p-4 border border-border/50 bg-popover shadow-xl rounded-lg z-50 space-y-4">
-                  {userRole === "bhw" && (
+                  {(userRole === "bhw" || userRole === "supervisor") && (
                     <>
                       <div className="space-y-1">
                         <h4 className="font-heading font-semibold text-sm text-foreground flex items-center gap-1.5">
@@ -357,13 +352,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   )}
 
                   {userRole === "supervisor" && (
-                    <div className="space-y-1">
-                      <h4 className="font-heading font-semibold text-sm text-foreground flex items-center gap-1.5">
-                        <Shield className="h-4 w-4 text-primary" />
-                        Supervisor Admin
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        Monitor and review worker attendance history and log entries.
+                    <div className="space-y-1 p-2 bg-muted/20 border border-border/20 rounded-md">
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+                        <Shield className="h-3.5 w-3.5 text-primary" />
+                        Supervisor Admin Mode
                       </p>
                     </div>
                   )}
