@@ -55,8 +55,13 @@ export async function logActivity(
       description: opts?.description ?? null,
     });
 
-    // Also log to BHW specific logs if a BHW worker is checked in
-    const activeBhw = localStorage.getItem("active_bhw_worker");
+    // Also log to BHW specific logs
+    const activeBhw = localStorage.getItem("active_bhw_worker") || 
+                      localStorage.getItem("logged_in_fullname") || 
+                      localStorage.getItem("logged_in_username") ||
+                      user.email?.split("@")[0] ||
+                      "BHW Worker";
+
     if (activeBhw) {
       const dbStr = localStorage.getItem("bhw_activity_logs");
       const logs = dbStr ? JSON.parse(dbStr) : [];

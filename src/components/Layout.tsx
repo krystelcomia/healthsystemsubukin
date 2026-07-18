@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NavLink } from "@/components/NavLink";
-import { Home, Info, Calendar, Phone, Fingerprint, Clock, UserCheck, LogOut, List, Shield, User, Activity, CalendarDays } from "lucide-react";
+import { Home, Info, Calendar, Phone, Fingerprint, Clock, UserCheck, LogOut, List, Shield, User, Activity, CalendarDays, Eye } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -42,6 +42,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [sessionDuration, setSessionDuration] = useState("00:00:00");
   const [logsDialogOpen, setLogsDialogOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<any>(null);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [attendanceLogs, setAttendanceLogs] = useState<any[]>([]);
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
 
@@ -236,6 +237,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
     if (hrs > 0) return `${hrs}h ${mins}m`;
     return `${mins}m`;
   };
+
+  const getSessionActivities = (workerName: string, sessionId: string | null) => {
+    const workerActions = getWorkerActivities(workerName);
+    if (!sessionId) return workerActions;
+    
+    const session = attendanceLogs.find((l: any) => l.id === sessionId);
+    if (!session) return [];
+    
+    const start = new Date(session.loginAt).getTime();
+    const end = session.logoutAt ? new Date(session.logoutAt).getTime() : Date.now();
+    
+    return workerActions.filter((activity: any) => {
+      const t = new Date(activity.timestamp).getTime();
+      // 5-second window buffer to capture login/logout operations
+      return t >= start - 5000 && t <= end + 5000;
+    });
+  };
+
+  useEffect(() => {
+    if (selectedWorker) {
+      const att = getWorkerAttendance(selectedWorker.name);
+      if (att.length > 0) {
+        setSelectedSessionId(att[0].id);
+      } else {
+        setSelectedSessionId(null);
+      }
+    } else {
+      setSelectedSessionId(null);
+    }
+  }, [selectedWorker, attendanceLogs]);
 
   return (
     <SidebarProvider>
@@ -498,6 +529,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             <th className="p-2.5">Check In</th>
                             <th className="p-2.5">Check Out</th>
                             <th className="p-2.5">Duration</th>
+                            <th className="p-2.5 text-center">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border/20">
@@ -507,8 +539,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                               const durationStr = log.logoutAt 
                                 ? formatDuration(new Date(log.loginAt), new Date(log.logoutAt))
                                 : "Active Shift";
+                              const isCurrentSession = selectedSessionId === log.id;
                               return (
-                                <tr key={log.id} className="hover:bg-muted/20 text-foreground/90">
+                                <tr key={log.id} className={`hover:bg-muted/20 text-foreground/90 transition-colors ${isCurrentSession ? "bg-primary/5 hover:bg-primary/10" : ""}`}>
                                   <td className="p-2.5 font-medium">{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
                                   <td className="p-2.5 text-muted-foreground">{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
                                   <td className="p-2.5 text-muted-foreground">
@@ -523,12 +556,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                       {durationStr}
                                     </span>
                                   </td>
+                                  <td className="p-2.5 text-center">
+                                    <Button
+                                      variant={isCurrentSession ? "default" : "outline"}
+                                      size="icon"
+                                      className="h-6 w-6 rounded"
+                                      onClick={() => setSelectedSessionId(log.id)}
+                                      title="Filter activities for this shift"
+                                    >
+                                      <Eye className="h-3 w-3" />
+                                    </Button>
+                                  </td>
                                 </tr>
                               );
                             })
                           ) : (
                             <tr>
-                              <td colSpan={4} className="p-4 text-center text-muted-foreground italic">
+                              <td colSpan={5} className="p-4 text-center text-muted-foreground italic">
                                 No attendance records found.
                               </td>
                             </tr>
@@ -540,13 +584,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
                   {/* Activity Logs Timeline */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                      <Activity className="h-3.5 w-3.5 text-primary" />
-                      Shift Action Log
-                    </h4>
+                    <div className="flex items-center justify-between gap-4">
+                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <Activity className="h-3.5 w-3.5 text-primary" />
+                        {selectedSessionId ? "Shift Action Log" : "All Actions Log"}
+                        {selectedSessionId && (
+                          <span className="text-[10px] text-muted-foreground font-normal lowercase">
+                            ({(() => {
+                              const sess = attendanceLogs.find(l => l.id === selectedSessionId);
+                              if (!sess) return "";
+                              return `${new Date(sess.loginAt).toLocaleTimeString(undefined, {timeStyle: "short"})} - ${sess.logoutAt ? new Date(sess.logoutAt).toLocaleTimeString(undefined, {timeStyle: "short"}) : "present"}`;
+                            })()})
+                          </span>
+                        )}
+                      </h4>
+                      {selectedSessionId && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 text-[10px] px-2 hover:bg-muted text-primary"
+                          onClick={() => setSelectedSessionId(null)}
+                        >
+                          Show All History
+                        </Button>
+                      )}
+                    </div>
                     <div className="space-y-2">
-                      {getWorkerActivities(selectedWorker.name).length > 0 ? (
-                        getWorkerActivities(selectedWorker.name).map((activity) => {
+                      {getSessionActivities(selectedWorker.name, selectedSessionId).length > 0 ? (
+                        getSessionActivities(selectedWorker.name, selectedSessionId).map((activity) => {
                           const logTime = new Date(activity.timestamp);
                           return (
                             <div 
@@ -569,7 +634,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         })
                       ) : (
                         <div className="p-6 text-center text-xs text-muted-foreground italic border border-dashed border-border/30 rounded-xl bg-muted/10">
-                          No logged actions found.
+                          {selectedSessionId 
+                            ? "No logged actions found during this shift. Click 'Show All History' or another shift to view logs." 
+                            : "No logged actions found."}
                         </div>
                       )}
                     </div>

@@ -42,9 +42,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("username")
+      .select("username, full_name")
       .eq("user_id", userId)
       .maybeSingle();
+    if (data) {
+      if (data.username) localStorage.setItem("logged_in_username", data.username);
+      if ((data as any).full_name) localStorage.setItem("logged_in_fullname", (data as any).full_name);
+    }
     setUsername(data?.username || null);
   };
 
@@ -72,6 +76,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setUserRole(null);
           setUsername(null);
+          localStorage.removeItem("logged_in_username");
+          localStorage.removeItem("logged_in_fullname");
         }
         setLoading(false);
       }
@@ -97,6 +103,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await endSession();
       await updateOnlineStatus(user.id, false);
     }
+    localStorage.removeItem("logged_in_username");
+    localStorage.removeItem("logged_in_fullname");
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
