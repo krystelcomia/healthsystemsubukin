@@ -33,7 +33,9 @@ const PhilPenHealthForm = () => {
       smokes: form.smokes, drinks_alcohol: form.drinksAlcohol, high_blood_pressure: form.highBloodPressure, diabetes_symptoms: form.diabetesSymptoms,
     });
     if (error) { toast.error("Failed to save"); return; }
-    logActivity("submit_philpen", { entity_type: "philpen_health", description: "Saved PhilPen health record" });
+    const selectedResident = residents.find(r => r.id === form.resident_id);
+    const resName = selectedResident ? selectedResident.full_name : form.resident_id;
+    logActivity("submit_philpen", { entity_type: "philpen_health", description: `Saved PhilPen health record for resident: ${resName}` });
     toast.success("PhilPen health record saved!");
     setForm({ resident_id: "", address: "", age: "", birthdate: "", currentDate: new Date().toISOString().split("T")[0], bp: "", height: "", weight: "", smokes: false, drinksAlcohol: false, highBloodPressure: false, diabetesSymptoms: false });
   };

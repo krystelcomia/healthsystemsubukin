@@ -69,13 +69,16 @@ const ResidentRecords = () => {
       religion: editResident.religion, blood_type: editResident.blood_type, nationality: editResident.nationality, sitio: editResident.sitio, birthday: editResident.birthday || null,
     }).eq("id", editResident.id);
     if (error) { toast.error("Failed to update resident"); return; }
+    logActivity("update_resident", { entity_type: "resident", entity_id: editResident.id, description: `Updated resident record: ${editResident.full_name.trim()}` });
     toast.success("Resident updated!");
     setEditDialogOpen(false); setEditResident(null); fetchResidents();
   };
 
   const handleDeleteResident = async (id: string) => {
+    const target = residents.find(r => r.id === id);
     const { error } = await supabase.from("residents").delete().eq("id", id);
     if (error) { toast.error("Failed to delete resident"); return; }
+    logActivity("delete_resident", { entity_type: "resident", entity_id: id, description: `Deleted resident record: ${target?.full_name || id}` });
     toast.success("Resident deleted!");
     setDeleteConfirmId(null); fetchResidents();
   };

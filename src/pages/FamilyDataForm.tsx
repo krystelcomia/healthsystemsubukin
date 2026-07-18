@@ -28,7 +28,9 @@ const FamilyDataForm = () => {
       father_name: form.fatherName, mother_name: form.motherName, num_males: Number(form.numberOfMales) || 0, num_females: Number(form.numberOfFemales) || 0, total_members: totalMembers,
     });
     if (error) { toast.error("Failed to save"); return; }
-    logActivity("submit_family_data", { entity_type: "family_data", description: "Saved family data record" });
+    const selectedResident = residents.find(r => r.id === form.resident_id);
+    const resName = selectedResident ? selectedResident.full_name : form.resident_id;
+    logActivity("submit_family_data", { entity_type: "family_data", description: `Saved family details profile (Family No: ${form.familyNumber || "—"}) for resident: ${resName}` });
     toast.success("Family data saved!");
     setForm({ resident_id: "", familyNumber: "", numberOfHouseholds: "", fatherName: "", motherName: "", numberOfMales: "", numberOfFemales: "" });
   };

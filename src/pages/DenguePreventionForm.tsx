@@ -28,7 +28,9 @@ const DenguePreventionForm = () => {
       resident_id: form.resident_id, household_name: form.householdName, container_type: form.containerType, has_larvae: form.hasLarvae, action_plan: form.actionPlan, signature: form.signature,
     });
     if (error) { toast.error("Failed to save"); return; }
-    logActivity("submit_dengue", { entity_type: "dengue_prevention", description: "Saved dengue prevention record" });
+    const selectedResident = residents.find(r => r.id === form.resident_id);
+    const resName = selectedResident ? selectedResident.full_name : form.resident_id;
+    logActivity("submit_dengue", { entity_type: "dengue_prevention", description: `Saved Dengue prevention record (${form.containerType || "—"}) for resident: ${resName}` });
     toast.success("Dengue prevention record saved!");
     setForm({ resident_id: "", householdName: "", containerType: "", hasLarvae: false, actionPlan: "", signature: "" });
   };

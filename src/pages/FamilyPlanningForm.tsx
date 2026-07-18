@@ -46,15 +46,18 @@ const FamilyPlanningForm = () => {
   const handleSave = async () => {
     if (!form.resident_id) { toast.error(t("consultation.selectResident")); return; }
     const payload = { resident_id: form.resident_id, method: form.method || null, start_date: form.start_date || null, remarks: form.remarks || null };
+    const selectedResident = residents.find(r => r.id === form.resident_id);
+    const resName = selectedResident ? selectedResident.full_name : form.resident_id;
+
     if (editingRecord) {
       const { error } = await supabase.from("family_planning").update(payload).eq("id", editingRecord.id);
       if (error) { toast.error(error.message); return; }
-      logActivity("update_family_planning", { entity_type: "family_planning", entity_id: editingRecord.id, description: "Updated family planning record" });
+      logActivity("update_family_planning", { entity_type: "family_planning", entity_id: editingRecord.id, description: `Updated family planning record (${form.method || "—"}) for resident: ${resName}` });
       toast.success("Record updated!");
     } else {
       const { error } = await supabase.from("family_planning").insert(payload);
       if (error) { toast.error(error.message); return; }
-      logActivity("submit_family_planning", { entity_type: "family_planning", description: "Saved family planning record" });
+      logActivity("submit_family_planning", { entity_type: "family_planning", description: `Saved family planning record (${form.method || "—"}) for resident: ${resName}` });
       toast.success("Record saved!");
     }
     setDialogOpen(false); fetchData();
@@ -62,8 +65,12 @@ const FamilyPlanningForm = () => {
 
   const handleDelete = async () => {
     if (!deleteId) return;
+    const target = records.find(r => r.id === deleteId);
+    const resName = target?.residents?.full_name || target?.resident_id || deleteId;
+
     const { error } = await supabase.from("family_planning").delete().eq("id", deleteId);
     if (error) { toast.error(error.message); return; }
+    logActivity("delete_family_planning", { entity_type: "family_planning", entity_id: deleteId, description: `Deleted family planning record for resident: ${resName}` });
     toast.success("Record deleted!"); setDeleteId(null); fetchData();
   };
 

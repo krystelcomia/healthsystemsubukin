@@ -31,7 +31,9 @@ const ConsultationForm = () => {
       consultation_date: form.date, temperature: form.temperature, pulse_rate: form.pulseRate, respiration_rate: form.respirationRate, height: form.height, weight: form.weight, consultation_cause: form.consultationCause,
     });
     if (error) { toast.error("Failed to save consultation"); return; }
-    logActivity("submit_consultation", { entity_type: "consultation", description: "Recorded a consultation" });
+    const selectedResident = residents.find(r => r.id === form.resident_id);
+    const resName = selectedResident ? selectedResident.full_name : form.resident_id;
+    logActivity("submit_consultation", { entity_type: "consultation", description: `Recorded a health consultation for resident: ${resName}` });
     toast.success("Consultation recorded!");
     setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: new Date().toISOString().split("T")[0], temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
   };
