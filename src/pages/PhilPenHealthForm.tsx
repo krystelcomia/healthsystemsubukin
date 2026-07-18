@@ -284,7 +284,7 @@ const PhilPenHealthForm = () => {
       {/* Printable Sheet Canvas */}
       <Card 
         id="philpen-print-area" 
-        className="border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden max-w-4xl mx-auto"
+        className="border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden w-full"
         style={{ fontFamily: "var(--font-body)" }}
       >
         <CardContent className="p-8 space-y-6">
