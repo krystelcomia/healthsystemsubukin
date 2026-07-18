@@ -7,6 +7,8 @@ import { Bug, Plus, Printer, Trash2, Trash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
+import sanjuanLogo from "@/assets/sanjuan_logo.png";
+import barangayLogo from "@/assets/barangay-logo.png";
 
 const DenguePreventionForm = () => {
   const { t } = useSettings();
@@ -150,6 +152,13 @@ const DenguePreventionForm = () => {
   return (
     <div className="w-full space-y-6">
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+        .font-script {
+          font-family: 'Great Vibes', cursive;
+        }
+        .print-only {
+          display: none !important;
+        }
         .cell-input {
           width: 100%;
           height: 100%;
@@ -181,6 +190,7 @@ const DenguePreventionForm = () => {
             top: 0 !important;
             width: 100% !important;
             background: white !important;
+            color: black !important;
             padding: 0 !important;
             margin: 0 !important;
             box-shadow: none !important;
@@ -192,6 +202,9 @@ const DenguePreventionForm = () => {
           }
           .no-print {
             display: none !important;
+          }
+          .print-only {
+            display: flex !important;
           }
           .cell-input {
             border: none !important;
@@ -216,6 +229,23 @@ const DenguePreventionForm = () => {
         style={{ fontFamily: "var(--font-body)" }}
       >
         <CardContent className="p-8 space-y-6">
+          
+          {/* Header Seal Layout - Visible ONLY when printing */}
+          <div className="print-only flex items-center justify-between border-b-[4px] border-double border-slate-900 pb-4">
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0" />
+            
+            <div className="text-center space-y-0.5">
+              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600">Republika ng Pilipinas</p>
+              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600">Lalawigan ng Batangas</p>
+              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600">Munisipalidad ng San Juan</p>
+              <h2 className="text-2xl text-red-600 font-medium tracking-wide mt-1 leading-none font-script">
+                Barangay Subukin
+              </h2>
+            </div>
+
+            <img src={barangayLogo} alt="Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0" />
+          </div>
+
           <div className="text-center space-y-1 py-2">
             <h1 
               className="text-xl md:text-2xl font-bold tracking-widest text-foreground"
