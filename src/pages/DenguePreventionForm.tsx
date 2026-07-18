@@ -1,51 +1,26 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Bug, Plus, Printer, Trash2, Edit, Trash } from "lucide-react";
+import { Bug, Plus, Printer, Trash2, Trash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 
-interface FormState {
-  id?: string;
-  resident_id: string;
-  household_name: string;
-  container_type: string;
-  has_larvae: boolean;
-  action_plan: string;
-  signature: string;
-}
-
 const DenguePreventionForm = () => {
   const { t } = useSettings();
   const [records, setRecords] = useState<any[]>([]);
-  const [residents, setResidents] = useState<{ id: string; full_name: string }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [editRecord, setEditRecord] = useState<FormState | null>(null);
-  const [form, setForm] = useState<FormState>({
-    resident_id: "",
-    household_name: "",
-    container_type: "",
-    has_larvae: false,
-    action_plan: "",
-    signature: ""
-  });
 
   const fetchRecords = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("dengue_prevention")
-      .select("*, residents(full_name)")
+      .select("*")
       .order("created_at", { ascending: true });
     
     if (error) {
@@ -58,117 +33,90 @@ const DenguePreventionForm = () => {
 
   useEffect(() => {
     fetchRecords();
-    supabase
-      .from("residents")
-      .select("id, full_name")
-      .order("full_name")
-      .then(({ data }) => setResidents(data || []));
   }, []);
 
-  const handleResidentChange = (value: string) => {
-    if (value === "custom") {
-      setForm(prev => ({ ...prev, resident_id: "", household_name: "" }));
-      return;
+  const handleCellBlur = async (id: string, field: string, value: any) => {
+    const record = records.find(r => r.id === id);
+    if (!record || record[field] === value) return;
+
+    const { error } = await supabase
+      .from("dengue_prevention")
+      .update({ [field]: value })
+      .eq("id", id);
+
+    if (error) {
+      toast.error("Failed to save changes");
+    } else {
+      setRecords(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
+      logActivity("update_dengue", {
+        entity_type: "dengue_prevention",
+        description: `Updated ${field.replace('_', ' ')} for Dengue checklist row`
+      });
     }
-    const res = residents.find(r => r.id === value);
-    setForm(prev => ({
-      ...prev,
-      resident_id: value,
-      household_name: res ? res.full_name : ""
-    }));
   };
 
-  const handleOpenAdd = () => {
-    setEditRecord(null);
-    setForm({
-      resident_id: "",
+  const handleToggleLarvae = async (id: string, hasLarvae: boolean) => {
+    const record = records.find(r => r.id === id);
+    if (!record || record.has_larvae === hasLarvae) return;
+
+    const { error } = await supabase
+      .from("dengue_prevention")
+      .update({ has_larvae: hasLarvae })
+      .eq("id", id);
+
+    if (error) {
+      toast.error("Failed to save larvae status");
+    } else {
+      setRecords(prev => prev.map(r => r.id === id ? { ...r, has_larvae: hasLarvae } : r));
+      logActivity("update_dengue", {
+        entity_type: "dengue_prevention",
+        description: `Set larvae status to ${hasLarvae ? "Meron" : "Wala"} in Dengue prevention form`
+      });
+    }
+  };
+
+  const handleAddRow = async () => {
+    const newRow = {
+      resident_id: null,
       household_name: "",
       container_type: "",
       has_larvae: false,
       action_plan: "",
       signature: ""
-    });
-    setDialogOpen(true);
-  };
-
-  const handleOpenEdit = (rec: any) => {
-    setEditRecord(rec);
-    setForm({
-      resident_id: rec.resident_id || "",
-      household_name: rec.household_name || "",
-      container_type: rec.container_type || "",
-      has_larvae: !!rec.has_larvae,
-      action_plan: rec.action_plan || "",
-      signature: rec.signature || ""
-    });
-    setDialogOpen(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.household_name) {
-      toast.error("Household name is required");
-      return;
-    }
-
-    const payload = {
-      resident_id: form.resident_id || null,
-      household_name: form.household_name,
-      container_type: form.container_type,
-      has_larvae: form.has_larvae,
-      action_plan: form.action_plan,
-      signature: form.signature,
     };
 
-    if (editRecord) {
-      const { error } = await supabase
-        .from("dengue_prevention")
-        .update(payload)
-        .eq("id", editRecord.id);
+    const { data, error } = await supabase
+      .from("dengue_prevention")
+      .insert(newRow)
+      .select()
+      .single();
 
-      if (error) {
-        toast.error("Failed to update record");
-        return;
-      }
-      logActivity("update_dengue", {
-        entity_type: "dengue_prevention",
-        description: `Updated Dengue prevention record (${form.container_type || "—"}) for resident: ${form.household_name}`
-      });
-      toast.success("Record updated successfully!");
+    if (error) {
+      toast.error("Failed to add new row");
     } else {
-      const { error } = await supabase
-        .from("dengue_prevention")
-        .insert(payload);
-
-      if (error) {
-        toast.error("Failed to save record");
-        return;
-      }
+      setRecords(prev => [...prev, data]);
       logActivity("submit_dengue", {
         entity_type: "dengue_prevention",
-        description: `Saved Dengue prevention record (${form.container_type || "—"}) for resident: ${form.household_name}`
+        description: "Added a new blank record row in Dengue prevention checklist"
       });
-      toast.success("Record saved successfully!");
     }
-
-    setDialogOpen(false);
-    fetchRecords();
   };
 
-  const handleDelete = async (id: string, name: string) => {
+  const handleDeleteRow = async (id: string, name: string) => {
+    const displayName = name.trim() || "unnamed row";
     const { error } = await supabase
       .from("dengue_prevention")
       .delete()
       .eq("id", id);
     
     if (error) {
-      toast.error("Failed to delete record");
+      toast.error("Failed to delete row");
     } else {
       logActivity("delete_dengue", {
         entity_type: "dengue_prevention",
-        description: `Deleted Dengue prevention record for resident: ${name}`
+        description: `Deleted Dengue prevention record row for: ${displayName}`
       });
-      toast.success("Record deleted successfully!");
+      toast.success("Row deleted successfully");
       fetchRecords();
     }
   };
@@ -196,7 +144,7 @@ const DenguePreventionForm = () => {
     window.print();
   };
 
-  // Determine minimum rows to draw for a professional templates sheet look
+  // Pad table with empty static rows to reach a minimum layout size
   const minRows = 15;
   const emptyRowsCount = Math.max(0, minRows - records.length);
   const emptyRows = Array.from({ length: emptyRowsCount });
@@ -207,6 +155,21 @@ const DenguePreventionForm = () => {
         @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
         .font-script {
           font-family: 'Great Vibes', cursive;
+        }
+        .cell-input {
+          width: 100%;
+          height: 100%;
+          background-color: transparent;
+          border: none;
+          outline: none;
+          padding: 6px 8px;
+          transition: background-color 0.2s;
+        }
+        .cell-input:hover {
+          background-color: rgba(13, 148, 136, 0.05);
+        }
+        .cell-input:focus {
+          background-color: rgba(13, 148, 136, 0.1);
         }
         @media print {
           body * {
@@ -230,6 +193,15 @@ const DenguePreventionForm = () => {
           .no-print {
             display: none !important;
           }
+          .cell-input {
+            border: none !important;
+            box-shadow: none !important;
+            background-color: transparent !important;
+            padding: 0 !important;
+          }
+          .cell-input::placeholder {
+            color: transparent !important;
+          }
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -237,7 +209,7 @@ const DenguePreventionForm = () => {
         }
       `}</style>
 
-      {/* Toolbar - Hidden in Print */}
+      {/* Simplified Toolbar - Hidden in Print */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print bg-sidebar text-sidebar-foreground p-4 rounded-xl border border-sidebar-border shadow-sm">
         <div>
           <h1 className="text-xl font-heading font-bold flex items-center gap-2">
@@ -247,16 +219,16 @@ const DenguePreventionForm = () => {
           <p className="text-xs text-muted-foreground mt-0.5">{t("dengue.desc")}</p>
         </div>
         <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
-          <Button onClick={handleOpenAdd} size="sm" className="gap-1.5">
-            <Plus className="h-4 w-4" /> Add Entry
+          <Button onClick={handleAddRow} size="sm" className="gap-1 bg-primary hover:bg-primary/90 text-primary-foreground">
+            <Plus className="h-4 w-4" /> Add Row
           </Button>
           {records.length > 0 && (
-            <Button onClick={() => setDeleteConfirmOpen(true)} size="sm" variant="destructive" className="gap-1.5">
-              <Trash2 className="h-4 w-4" /> Delete All
+            <Button onClick={() => setDeleteConfirmOpen(true)} size="sm" variant="outline" className="gap-1 text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30">
+              <Trash2 className="h-4 w-4" /> Clear All
             </Button>
           )}
-          <Button onClick={handlePrint} size="sm" variant="outline" className="gap-1.5 bg-background">
-            <Printer className="h-4 w-4" /> Print Form
+          <Button onClick={handlePrint} size="sm" variant="outline" className="gap-1 bg-background border-border/60">
+            <Printer className="h-4 w-4" /> Print
           </Button>
         </div>
       </div>
@@ -273,7 +245,7 @@ const DenguePreventionForm = () => {
               <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600">Republika ng Pilipinas</p>
               <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600">Lalawigan ng Batangas</p>
               <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600">Munisipalidad ng San Juan</p>
-              <h2 className="text-2xl font-script text-red-600 font-medium tracking-wide mt-1 leading-none font-script">
+              <h2 className="text-2xl text-red-600 font-medium tracking-wide mt-1 leading-none font-script">
                 Barangay Subukin
               </h2>
             </div>
@@ -296,13 +268,13 @@ const DenguePreventionForm = () => {
             <table className="w-full border-collapse border border-slate-400 text-left text-xs md:text-sm">
               <thead>
                 <tr>
-                  <th className="border border-slate-400 bg-slate-50/50 p-2 font-bold text-center text-slate-700 w-[25%]" rowSpan={2}>
+                  <th className="border border-slate-400 bg-slate-50/50 p-2 font-bold text-center text-slate-700 w-[28%]" rowSpan={2}>
                     PANGALAN NG MAYBAHAY
                   </th>
-                  <th className="border border-slate-400 bg-slate-50/50 p-2 font-bold text-center text-slate-700 w-[30%]" rowSpan={2}>
+                  <th className="border border-slate-400 bg-slate-50/50 p-2 font-bold text-center text-slate-700 w-[28%]" rowSpan={2}>
                     URI NG LALAGYAN O TIRAHAN NG LAMOK
                   </th>
-                  <th className="border border-slate-400 bg-slate-50/50 p-1.5 font-bold text-center text-slate-700 w-[15%]" colSpan={2}>
+                  <th className="border border-slate-400 bg-slate-50/50 p-1.5 font-bold text-center text-slate-700 w-[14%]" colSpan={2}>
                     KITI-KITI
                   </th>
                   <th className="border border-slate-400 bg-slate-50/50 p-2 font-bold text-center text-slate-700 w-[20%]" rowSpan={2}>
@@ -311,8 +283,8 @@ const DenguePreventionForm = () => {
                   <th className="border border-slate-400 bg-slate-50/50 p-2 font-bold text-center text-slate-700 w-[10%]" rowSpan={2}>
                     LAGDA
                   </th>
-                  <th className="border border-slate-400 bg-slate-50/50 p-2 font-bold text-center text-slate-700 w-[8%] no-print" rowSpan={2}>
-                    MGA HAKBANG
+                  <th className="border border-slate-400 bg-slate-50/50 p-2 font-bold text-center text-slate-700 w-[5%] no-print" rowSpan={2}>
+                    
                   </th>
                 </tr>
                 <tr>
@@ -327,43 +299,92 @@ const DenguePreventionForm = () => {
               <tbody>
                 {records.map((rec) => (
                   <tr key={rec.id} className="hover:bg-slate-50/30 transition-colors">
-                    <td className="border border-slate-400 p-2 font-medium">
-                      {rec.household_name}
+                    {/* Household Name */}
+                    <td className="border border-slate-400 p-0 font-medium">
+                      <input
+                        type="text"
+                        value={rec.household_name || ""}
+                        onChange={(e) => {
+                          setRecords(prev => prev.map(r => r.id === rec.id ? { ...r, household_name: e.target.value } : r));
+                        }}
+                        onBlur={(e) => handleCellBlur(rec.id, "household_name", e.target.value)}
+                        className="cell-input"
+                        placeholder="Click to type name..."
+                      />
                     </td>
-                    <td className="border border-slate-400 p-2">
-                      {rec.container_type || "—"}
+                    
+                    {/* Container Type */}
+                    <td className="border border-slate-400 p-0">
+                      <input
+                        type="text"
+                        value={rec.container_type || ""}
+                        onChange={(e) => {
+                          setRecords(prev => prev.map(r => r.id === rec.id ? { ...r, container_type: e.target.value } : r));
+                        }}
+                        onBlur={(e) => handleCellBlur(rec.id, "container_type", e.target.value)}
+                        className="cell-input"
+                        placeholder="Gulong, plorera, etc..."
+                      />
                     </td>
-                    <td className="border border-slate-400 p-2 text-center text-green-600 font-bold">
-                      {rec.has_larvae ? "✓" : ""}
-                    </td>
-                    <td className="border border-slate-400 p-2 text-center text-slate-400">
-                      {!rec.has_larvae ? "✓" : ""}
-                    </td>
-                    <td className="border border-slate-400 p-2">
-                      {rec.action_plan || "—"}
-                    </td>
-                    <td className="border border-slate-400 p-2 font-mono text-[10px] text-center">
-                      {rec.signature || "—"}
-                    </td>
-                    <td className="border border-slate-400 p-2 text-center no-print">
-                      <div className="flex items-center justify-center gap-1">
-                        <Button 
-                          onClick={() => handleOpenEdit(rec)} 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 text-primary hover:text-primary-foreground hover:bg-primary"
-                        >
-                          <Edit className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button 
-                          onClick={() => handleDelete(rec.id, rec.household_name)} 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 text-destructive hover:text-destructive-foreground hover:bg-destructive"
-                        >
-                          <Trash className="h-3.5 w-3.5" />
-                        </Button>
+                    
+                    {/* Larvae: MERON */}
+                    <td 
+                      onClick={() => handleToggleLarvae(rec.id, true)}
+                      className="border border-slate-400 p-0 text-center text-base text-teal-600 font-bold cursor-pointer hover:bg-slate-50 select-none w-7 h-10"
+                    >
+                      <div className="flex items-center justify-center h-full w-full">
+                        {rec.has_larvae ? "✓" : ""}
                       </div>
+                    </td>
+                    
+                    {/* Larvae: WALA */}
+                    <td 
+                      onClick={() => handleToggleLarvae(rec.id, false)}
+                      className="border border-slate-400 p-0 text-center text-base text-slate-500 font-bold cursor-pointer hover:bg-slate-50 select-none w-7 h-10"
+                    >
+                      <div className="flex items-center justify-center h-full w-full">
+                        {!rec.has_larvae ? "✓" : ""}
+                      </div>
+                    </td>
+                    
+                    {/* Action Plan */}
+                    <td className="border border-slate-400 p-0">
+                      <input
+                        type="text"
+                        value={rec.action_plan || ""}
+                        onChange={(e) => {
+                          setRecords(prev => prev.map(r => r.id === rec.id ? { ...r, action_plan: e.target.value } : r));
+                        }}
+                        onBlur={(e) => handleCellBlur(rec.id, "action_plan", e.target.value)}
+                        className="cell-input"
+                        placeholder="Action..."
+                      />
+                    </td>
+                    
+                    {/* Signature */}
+                    <td className="border border-slate-400 p-0">
+                      <input
+                        type="text"
+                        value={rec.signature || ""}
+                        onChange={(e) => {
+                          setRecords(prev => prev.map(r => r.id === rec.id ? { ...r, signature: e.target.value } : r));
+                        }}
+                        onBlur={(e) => handleCellBlur(rec.id, "signature", e.target.value)}
+                        className="cell-input text-center font-mono text-xs"
+                        placeholder="Lagda..."
+                      />
+                    </td>
+                    
+                    {/* Simple Trash Icon delete button */}
+                    <td className="border border-slate-400 p-1 text-center no-print w-10">
+                      <Button 
+                        onClick={() => handleDeleteRow(rec.id, rec.household_name)} 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash className="h-4.5 w-4.5" />
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -386,116 +407,6 @@ const DenguePreventionForm = () => {
 
         </CardContent>
       </Card>
-
-      {/* Add / Edit Entry Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-heading font-bold">
-                {editRecord ? "Edit Record" : "Add Inspection Record"}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">Piliin ang Maybahay (Resident) *</Label>
-                <Select 
-                  value={form.resident_id || (form.household_name ? "custom" : "")} 
-                  onValueChange={handleResidentChange}
-                >
-                  <SelectTrigger className="bg-slate-50 border-slate-200">
-                    <SelectValue placeholder="Select from Masterlist" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200">
-                    <SelectItem value="custom" className="font-semibold text-primary">-- Custom / Other Name --</SelectItem>
-                    {residents.map((r) => (
-                      <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">Pangalan ng Maybahay (Household Head Name) *</Label>
-                <Input 
-                  value={form.household_name} 
-                  onChange={(e) => setForm(prev => ({ ...prev, household_name: e.target.value }))}
-                  placeholder="Enter name"
-                  required
-                  className="bg-slate-50 border-slate-200"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">Uri ng Lalagyan o Tirahan ng Lamok (Container Type)</Label>
-                <Input 
-                  value={form.container_type} 
-                  onChange={(e) => setForm(prev => ({ ...prev, container_type: e.target.value }))}
-                  placeholder="e.g. Gulong, Plorera, Bote"
-                  className="bg-slate-50 border-slate-200"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold block mb-1">Kiti-kiti (Larvae Presence)</Label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm">
-                    <input 
-                      type="radio" 
-                      name="has_larvae" 
-                      checked={form.has_larvae === true} 
-                      onChange={() => setForm(prev => ({ ...prev, has_larvae: true }))}
-                      className="text-primary focus:ring-primary h-4 w-4"
-                    />
-                    Meron (Present)
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer text-sm">
-                    <input 
-                      type="radio" 
-                      name="has_larvae" 
-                      checked={form.has_larvae === false} 
-                      onChange={() => setForm(prev => ({ ...prev, has_larvae: false }))}
-                      className="text-primary focus:ring-primary h-4 w-4"
-                    />
-                    Wala (None)
-                  </label>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">Action Plan / Dapat na Gawin</Label>
-                <Textarea 
-                  value={form.action_plan} 
-                  onChange={(e) => setForm(prev => ({ ...prev, action_plan: e.target.value }))}
-                  placeholder="Describe treatment or clean-up actions"
-                  rows={2}
-                  className="bg-slate-50 border-slate-200"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">Lagda (Signature / Initials)</Label>
-                <Input 
-                  value={form.signature} 
-                  onChange={(e) => setForm(prev => ({ ...prev, signature: e.target.value }))}
-                  placeholder="Enter BHW Initials/Name"
-                  className="bg-slate-50 border-slate-200"
-                />
-              </div>
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                {editRecord ? "Save Changes" : "Save Record"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete All Confirmation Dialog */}
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
