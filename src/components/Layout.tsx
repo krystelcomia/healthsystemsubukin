@@ -272,12 +272,38 @@ export function Layout({ children }: { children: React.ReactNode }) {
     }
   }, [selectedWorker, attendanceLogs]);
 
+  const [sidebarHeaderHeight, setSidebarHeaderHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      const el = document.querySelector('[data-sidebar="header"]');
+      if (el) {
+        setSidebarHeaderHeight(el.getBoundingClientRect().height);
+      }
+    };
+    
+    updateHeight();
+    window.addEventListener("load", updateHeight);
+    window.addEventListener("resize", updateHeight);
+    
+    const timer = setTimeout(updateHeight, 150);
+    
+    return () => {
+      window.removeEventListener("load", updateHeight);
+      window.removeEventListener("resize", updateHeight);
+      clearTimeout(timer);
+    };
+  }, []);
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 flex flex-col min-h-screen">
-          <header className="sticky top-0 z-30 h-[84px] flex items-center justify-between gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6 shrink-0">
+          <header 
+            className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6 shrink-0"
+            style={sidebarHeaderHeight ? { height: `${sidebarHeaderHeight}px` } : { height: "73px" }}
+          >
             <div className="flex items-center gap-4">
               <SidebarTrigger className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
             </div>
