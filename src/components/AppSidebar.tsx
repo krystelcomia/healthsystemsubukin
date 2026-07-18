@@ -112,14 +112,14 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r-0">
-      <SidebarHeader className="p-5 border-b border-sidebar-border">
+      <SidebarHeader className="h-16 flex items-center px-5 border-b border-sidebar-border shrink-0 justify-start">
         <div className="flex items-center gap-3">
-          <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-11 w-11 rounded-full object-cover" />
-          <div>
-            <h2 className="font-heading text-sm font-bold text-sidebar-foreground">
+          <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-10 w-10 rounded-full object-cover shrink-0" />
+          <div className="min-w-0">
+            <h2 className="font-heading text-sm font-bold text-sidebar-foreground truncate">
               {isAdmin ? t("sidebar.adminPanel") : t("sidebar.bhwSystem")}
             </h2>
-            <p className="text-xs text-sidebar-foreground/60">
+            <p className="text-xs text-sidebar-foreground/60 truncate">
               {isAdmin ? t("sidebar.supervisor") : t("sidebar.healthRecords")}
             </p>
           </div>
