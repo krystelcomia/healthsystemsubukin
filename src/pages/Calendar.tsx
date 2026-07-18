@@ -476,7 +476,7 @@ const CalendarPage = () => {
   const unreadCount = notifications.filter(n => !readEventIds.includes(n.id)).length;
 
   return (
-    <div className="space-y-6 max-w-7xl animate-fade-in">
+    <div className="space-y-6 w-full animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">

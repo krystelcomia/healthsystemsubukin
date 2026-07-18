@@ -125,7 +125,7 @@ const ResidentRecords = () => {
   if (selectedResident && healthRecords) {
     const totalRecords = healthRecords.consultations.length + healthRecords.family_data.length + healthRecords.philpen_health.length + healthRecords.dengue_prevention.length;
     return (
-      <div className="max-w-7xl space-y-6">
+      <div className="w-full space-y-6">
         <div className="flex items-center justify-between">
           <Button variant="ghost" onClick={() => { setSelectedResident(null); setHealthRecords(null); }}><ArrowLeft className="h-4 w-4 mr-2" /> {t("residents.backToRecords")}</Button>
           <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> {t("residents.printRecord")}</Button>
@@ -157,7 +157,7 @@ const ResidentRecords = () => {
   }
 
   return (
-    <div className="max-w-7xl space-y-6">
+    <div className="w-full space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2"><Users className="h-6 w-6 text-primary" />{t("residents.title")}</h1>

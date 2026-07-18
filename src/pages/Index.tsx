@@ -142,7 +142,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 w-full">
       <div>
         <h1 className="text-2xl font-heading font-bold text-foreground">{t("dashboard.title")}</h1>
         <p className="text-muted-foreground mt-1">{t("dashboard.welcome")}</p>

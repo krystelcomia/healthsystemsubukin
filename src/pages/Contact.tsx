@@ -130,7 +130,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl animate-fade-in">
+    <div className="space-y-6 w-full animate-fade-in">
       <div>
         <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
           <Phone className="h-6 w-6 text-primary" />

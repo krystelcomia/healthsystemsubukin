@@ -72,7 +72,7 @@ const About = () => {
   }, []);
 
   return (
-    <div className="space-y-8 max-w-7xl animate-fade-in">
+    <div className="space-y-8 w-full animate-fade-in">
       {/* Hero Header Section */}
       <div className="relative rounded-2xl bg-gradient-to-r from-primary/95 to-primary/80 text-primary-foreground p-8 md:p-12 shadow-lg overflow-hidden">
         <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-y-1/4 translate-x-1/4">
