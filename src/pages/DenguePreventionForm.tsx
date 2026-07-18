@@ -190,15 +190,33 @@ const DenguePreventionForm = () => {
             top: 0 !important;
             width: 100% !important;
             background: white !important;
-            color: black !important;
             padding: 0 !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
           }
-          #dengue-print-area * {
+          /* Print form elements in solid black and table borders in slate-400 */
+          #dengue-print-area h1,
+          #dengue-print-area p:not(.header-text),
+          #dengue-print-area table,
+          #dengue-print-area th,
+          #dengue-print-area td {
             color: black !important;
-            border-color: #94a3b8 !important;
+          }
+          #dengue-print-area table,
+          #dengue-print-area th,
+          #dengue-print-area td {
+            border-color: #94a3b8 !important; /* slate-400 */
+          }
+          /* Lock header colors in print */
+          .header-text {
+            color: #475569 !important; /* slate-600 */
+          }
+          .header-title-red {
+            color: #dc2626 !important; /* red-600 */
+          }
+          .header-border {
+            border-color: #0f172a !important; /* slate-900 double line */
           }
           .no-print {
             display: none !important;
@@ -230,15 +248,18 @@ const DenguePreventionForm = () => {
       >
         <CardContent className="p-8 space-y-6">
           
-          {/* Header Seal Layout - Visible ONLY when printing */}
-          <div className="print-only flex items-center justify-between border-b-[4px] border-double border-slate-900 pb-4">
+          {/* Header Seal Layout - Visible ONLY when printing (locked styling) */}
+          <div className="print-only flex items-center justify-between border-b-[4px] border-double border-slate-900 pb-4 header-border">
             <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0" />
             
-            <div className="text-center space-y-0.5">
-              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600">Republika ng Pilipinas</p>
-              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600">Lalawigan ng Batangas</p>
-              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600">Munisipalidad ng San Juan</p>
-              <h2 className="text-2xl text-red-600 font-medium tracking-wide mt-1 leading-none font-script">
+            <div className="text-center space-y-0.5" style={{ fontFamily: "Georgia, serif" }}>
+              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600 header-text">Republika ng Pilipinas</p>
+              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600 header-text">Lalawigan ng Batangas</p>
+              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600 header-text">Munisipalidad ng San Juan</p>
+              <h2 
+                className="text-2xl text-red-600 font-medium tracking-wide mt-1 leading-none font-script header-title-red"
+                style={{ fontFamily: "'Great Vibes', cursive" }}
+              >
                 Barangay Subukin
               </h2>
             </div>
