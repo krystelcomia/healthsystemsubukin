@@ -207,29 +207,7 @@ const DenguePreventionForm = () => {
         }
       `}</style>
 
-      {/* Simplified Toolbar - Hidden in Print */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print bg-sidebar text-sidebar-foreground p-4 rounded-xl border border-sidebar-border shadow-sm">
-        <div>
-          <h1 className="text-xl font-heading font-bold flex items-center gap-2">
-            <Bug className="h-5 w-5 text-primary" />
-            {t("dengue.title")}
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">{t("dengue.desc")}</p>
-        </div>
-        <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
-          <Button onClick={handleAddRow} size="sm" className="gap-1 bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Plus className="h-4 w-4" /> Add Row
-          </Button>
-          {records.length > 0 && (
-            <Button onClick={() => setDeleteConfirmOpen(true)} size="sm" variant="outline" className="gap-1 text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30">
-              <Trash2 className="h-4 w-4" /> Clear All
-            </Button>
-          )}
-          <Button onClick={handlePrint} size="sm" variant="outline" className="gap-1 bg-background border-border/60">
-            <Printer className="h-4 w-4" /> Print
-          </Button>
-        </div>
-      </div>
+
 
       {/* Printable Sheet Canvas */}
       <Card id="dengue-print-area" className="border border-border/50 shadow-md bg-white text-slate-900 overflow-hidden">
@@ -387,6 +365,21 @@ const DenguePreventionForm = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Simple controls row below the table */}
+          <div className="flex items-center justify-end gap-2 mt-4 no-print">
+            <Button onClick={handleAddRow} size="sm" className="gap-1 bg-teal-600 hover:bg-teal-700 text-white font-medium shadow-sm">
+              <Plus className="h-4 w-4" /> Add Row
+            </Button>
+            {records.length > 0 && (
+              <Button onClick={() => setDeleteConfirmOpen(true)} size="sm" variant="outline" className="gap-1 text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30">
+                <Trash2 className="h-4 w-4" /> Clear All
+              </Button>
+            )}
+            <Button onClick={handlePrint} size="sm" variant="outline" className="gap-1 bg-background border-border/60 text-slate-700 hover:bg-slate-50">
+              <Printer className="h-4 w-4" /> Print
+            </Button>
           </div>
 
         </CardContent>
