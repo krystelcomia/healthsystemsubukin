@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Bug, Plus, Printer, Trash2, Trash } from "lucide-react";
+import { Bug, Plus, Printer, Trash2, Trash, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
@@ -16,6 +16,7 @@ const DenguePreventionForm = () => {
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const fetchRecords = async () => {
     setLoading(true);
@@ -52,6 +53,40 @@ const DenguePreventionForm = () => {
       logActivity("update_dengue", {
         entity_type: "dengue_prevention",
         description: `Updated ${field.replace('_', ' ')} for Dengue checklist row`
+      });
+    }
+  };
+
+  const handleSaveAll = async () => {
+    setSaving(true);
+    let hasError = false;
+
+    // Save each record to Supabase
+    for (const record of records) {
+      const { error } = await supabase
+        .from("dengue_prevention")
+        .update({
+          household_name: record.household_name,
+          container_type: record.container_type,
+          has_larvae: record.has_larvae,
+          action_plan: record.action_plan,
+          signature: record.signature
+        })
+        .eq("id", record.id);
+
+      if (error) {
+        hasError = true;
+      }
+    }
+
+    setSaving(false);
+    if (hasError) {
+      toast.error("Some records failed to save. Please try again.");
+    } else {
+      toast.success("All information has been saved successfully to the database!");
+      logActivity("update_dengue", {
+        entity_type: "dengue_prevention",
+        description: "Saved all records in Dengue prevention checklist form"
       });
     }
   };
@@ -409,6 +444,14 @@ const DenguePreventionForm = () => {
           </div>
 
           <div className="flex items-center justify-end gap-2 mt-4 no-print">
+            <Button 
+              onClick={handleSaveAll} 
+              disabled={saving} 
+              size="sm" 
+              className="gap-1 bg-green-600 hover:bg-green-700 text-white font-medium shadow-sm"
+            >
+              <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save"}
+            </Button>
             <Button onClick={handleAddRow} size="sm" className="gap-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm">
               <Plus className="h-4 w-4" /> Add Row
             </Button>
