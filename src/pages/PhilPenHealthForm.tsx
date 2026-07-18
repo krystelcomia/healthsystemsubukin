@@ -14,7 +14,7 @@ interface Resident {
   id: string;
   full_name: string;
   age?: number;
-  birthdate?: string;
+  birthday?: string;
   sitio?: string;
   address?: string;
 }
@@ -81,8 +81,8 @@ const PhilPenHealthForm = () => {
     if (!res) return;
 
     let computedAge = "";
-    if (res.birthdate) {
-      const birth = new Date(res.birthdate);
+    if (res.birthday) {
+      const birth = new Date(res.birthday);
       const today = new Date();
       let age = today.getFullYear() - birth.getFullYear();
       const m = today.getMonth() - birth.getMonth();
@@ -99,7 +99,7 @@ const PhilPenHealthForm = () => {
       resident_id: residentId,
       address: res.sitio || res.address || "",
       age: computedAge,
-      birthdate: res.birthdate || ""
+      birthdate: res.birthday || ""
     }));
   };
 
