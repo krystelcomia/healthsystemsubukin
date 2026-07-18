@@ -195,7 +195,15 @@ const DenguePreventionForm = () => {
             box-shadow: none !important;
             border: none !important;
           }
-          /* Print form elements in solid black and table borders in slate-400 */
+          /* Enforce compact print heights and prevent extra blank page generation */
+          html, body {
+            height: 100% !important;
+            overflow: hidden !important;
+          }
+          #dengue-print-area tr {
+            height: 32px !important;
+            page-break-inside: avoid !important;
+          }
           #dengue-print-area h1,
           #dengue-print-area p:not(.header-text),
           #dengue-print-area table,
@@ -238,6 +246,10 @@ const DenguePreventionForm = () => {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
+          @page {
+            size: A4 portrait;
+            margin: 10mm;
+          }
         }
       `}</style>
 
@@ -248,8 +260,8 @@ const DenguePreventionForm = () => {
       >
         <CardContent className="p-8 space-y-6">
           
-          {/* Header Seal Layout - Visible ONLY when printing (locked styling) */}
-          <div className="print-only flex items-center justify-between border-b-[4px] border-double border-slate-900 pb-4 header-border">
+          {/* Header Seal Layout - Visible ONLY when printing (locked styling with compact center layout) */}
+          <div className="print-only flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 header-border">
             <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0" />
             
             <div className="text-center space-y-0.5" style={{ fontFamily: "Georgia, serif" }}>
