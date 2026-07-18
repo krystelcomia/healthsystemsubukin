@@ -19,6 +19,7 @@ interface NotificationItem {
   title: string;
   timeStr: string;
   minsLeft: number;
+  dayLabel?: string;
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -50,34 +51,41 @@ export function Layout({ children }: { children: React.ReactNode }) {
           setShowAlertBadge(false);
           return;
         }
-        const now = new Date();
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         const upcomingList: NotificationItem[] = [];
 
         events.forEach((event: any) => {
           if (event.status !== "scheduled" && event.status !== "rescheduled") {
             return;
           }
-          // Parse event date (YYYY-MM-DD) and time (HH:MM)
-          const [year, month, day] = event.date.split("-").map(Number);
-          const [hours, minutes] = event.time.split(":").map(Number);
-          const eventDate = new Date(year, month - 1, day, hours, minutes);
+          
+          const eventDate = new Date(event.date);
+          eventDate.setHours(0, 0, 0, 0);
 
-          const diffMs = eventDate.getTime() - now.getTime();
-          const diffMins = Math.floor(diffMs / (1000 * 60));
+          const diffTime = eventDate.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-          // Alert triggers if the event starts in 1 hour 30 mins (90 minutes) or less, but is not in the past
-          if (diffMins > 0 && diffMins <= 90) {
+          // Alert triggers if the event starts in the next 3 days (same as the Calendar reminders list)
+          if (diffDays >= 0 && diffDays <= 3) {
+            let label = "";
+            if (diffDays === 0) label = "Today";
+            else if (diffDays === 1) label = "Tomorrow";
+            else label = `In ${diffDays} days`;
+
             upcomingList.push({
               id: event.id,
               title: event.title,
               timeStr: event.time,
-              minsLeft: diffMins,
+              minsLeft: diffDays,
+              dayLabel: label
             });
           }
         });
 
-        // Filter and sort upcoming notifications (soonest first)
-        upcomingList.sort((a, b) => a.minsLeft - b.minsLeft);
+        // Sort upcoming notifications (soonest day first, then by time)
+        upcomingList.sort((a, b) => a.minsLeft - b.minsLeft || a.timeStr.localeCompare(b.timeStr));
         setNotifications(upcomingList);
 
         // Alert badge is visible if there is at least one upcoming event that has NOT been marked as read
@@ -205,7 +213,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             </p>
                             <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
                               <Clock className="h-3 w-3 text-primary/75" />
-                              <span>Starts in {n.minsLeft} mins ({n.timeStr})</span>
+                              <span>{n.dayLabel} at {n.timeStr}</span>
                             </p>
                           </div>
                         </div>
@@ -213,7 +221,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     })
                   ) : (
                     <div className="p-6 text-center text-xs text-muted-foreground">
-                      No upcoming events (starts within 1h 30m).
+                      No upcoming reminders (within the next 3 days).
                     </div>
                   )}
                 </div>
