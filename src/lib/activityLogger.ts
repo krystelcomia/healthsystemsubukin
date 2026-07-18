@@ -45,6 +45,8 @@ export async function logActivity(
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    
+    // Log to standard Supabase logs
     await (supabase.from as any)("user_activity_logs").insert({
       user_id: user.id,
       action,
@@ -52,7 +54,80 @@ export async function logActivity(
       entity_id: opts?.entity_id ?? null,
       description: opts?.description ?? null,
     });
+
+    // Also log to BHW specific logs if a BHW worker is checked in
+    const activeBhw = localStorage.getItem("active_bhw_worker");
+    if (activeBhw) {
+      const dbStr = localStorage.getItem("bhw_activity_logs");
+      const logs = dbStr ? JSON.parse(dbStr) : [];
+      const newLog = {
+        id: crypto.randomUUID(),
+        workerName: activeBhw,
+        action,
+        description: opts?.description ?? action,
+        timestamp: new Date().toISOString(),
+        dateStr: new Date().toISOString().split("T")[0]
+      };
+      logs.push(newLog);
+      localStorage.setItem("bhw_activity_logs", JSON.stringify(logs));
+      
+      // Dispatch storage/custom event for active UI updates
+      window.dispatchEvent(new Event("bhw-attendance-updated"));
+    }
   } catch (e) {
     console.warn("logActivity failed", e);
   }
 }
+
+export function bhwCheckIn(workerName: string) {
+  const now = new Date();
+  const sessionId = crypto.randomUUID();
+  localStorage.setItem("active_bhw_worker", workerName);
+  localStorage.setItem("active_bhw_session_id", sessionId);
+
+  // Add to bhw_attendance_logs
+  const dbStr = localStorage.getItem("bhw_attendance_logs") || "[]";
+  const logs = JSON.parse(dbStr);
+  const newLog = {
+    id: sessionId,
+    workerName,
+    loginAt: now.toISOString(),
+    logoutAt: null,
+    dateStr: now.toISOString().split("T")[0]
+  };
+  logs.push(newLog);
+  localStorage.setItem("bhw_attendance_logs", JSON.stringify(logs));
+
+  // Log activity
+  logActivity("check-in", { description: `BHW worker ${workerName} checked in` });
+  
+  // Dispatch custom event
+  window.dispatchEvent(new Event("bhw-attendance-updated"));
+}
+
+export function bhwCheckOut() {
+  const workerName = localStorage.getItem("active_bhw_worker");
+  const sessionId = localStorage.getItem("active_bhw_session_id");
+  if (!workerName || !sessionId) return;
+
+  const now = new Date();
+
+  // Update bhw_attendance_logs
+  const dbStr = localStorage.getItem("bhw_attendance_logs") || "[]";
+  const logs = JSON.parse(dbStr);
+  const updatedLogs = logs.map((log: any) => 
+    log.id === sessionId ? { ...log, logoutAt: now.toISOString() } : log
+  );
+  localStorage.setItem("bhw_attendance_logs", JSON.stringify(updatedLogs));
+
+  // Log activity
+  logActivity("check-out", { description: `BHW worker ${workerName} checked out` });
+
+  // Clear active session keys
+  localStorage.removeItem("active_bhw_worker");
+  localStorage.removeItem("active_bhw_session_id");
+  
+  // Dispatch custom event
+  window.dispatchEvent(new Event("bhw-attendance-updated"));
+}
+
