@@ -223,9 +223,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
     return activityLogs
       .filter((l: any) => {
         const logWorker = l.workerName.toLowerCase();
-        return logWorker === cleanWorkerName || 
-               cleanWorkerName.includes(logWorker) ||
-               logWorker.includes(cleanWorkerName.split(" ")[0]);
+        const matchesWorker = logWorker === cleanWorkerName || 
+                              cleanWorkerName.includes(logWorker) ||
+                              logWorker.includes(cleanWorkerName.split(" ")[0]);
+        
+        // Exclude check-in and check-out records as they are already in the attendance history
+        const isNotCheckAction = l.action !== "check-in" && l.action !== "check-out";
+        return matchesWorker && isNotCheckAction;
       })
       .sort((a: any, b: any) => b.timestamp.localeCompare(a.timestamp));
   };
