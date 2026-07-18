@@ -301,6 +301,7 @@ const CalendarPage = () => {
 
     setEvents(updatedEvents);
     localStorage.setItem("subukin_calendar_events", JSON.stringify(updatedEvents));
+    window.dispatchEvent(new Event("calendar-events-updated"));
     
     // Clear form
     setEventTitle("");
@@ -328,6 +329,7 @@ const CalendarPage = () => {
     const updatedEvents = events.filter((evt) => evt.id !== id);
     setEvents(updatedEvents);
     localStorage.setItem("subukin_calendar_events", JSON.stringify(updatedEvents));
+    window.dispatchEvent(new Event("calendar-events-updated"));
     toast.success(language === "tl" ? "Nabura na ang event!" : "Event deleted successfully!");
   };
 
