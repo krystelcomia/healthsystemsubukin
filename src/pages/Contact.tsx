@@ -20,6 +20,8 @@ import {
   HeartPulse
 } from "lucide-react";
 
+import { logActivity } from "@/lib/activityLogger";
+
 interface Contact {
   id: number;
   name: string;
@@ -197,7 +199,10 @@ const ContactPage = () => {
                             className="hover:bg-primary hover:text-white"
                             asChild
                           >
-                            <a href={`tel:${c.phone.replace(/-/g, "")}`}>
+                            <a 
+                              href={`tel:${c.phone.replace(/-/g, "")}`}
+                              onClick={() => logActivity("call_bhw", { description: `Clicked call to BHW worker: ${c.name} (${c.phone})` })}
+                            >
                               {t("contact.call")}
                             </a>
                           </Button>
@@ -273,6 +278,7 @@ const ContactPage = () => {
                                 .split("/")[0]
                                 .trim()
                                 .replace(/[()-\s]/g, "")}`}
+                              onClick={() => logActivity("call_hotline", { description: `Clicked call to emergency hotline: ${c.service} (${c.phone})` })}
                             >
                               {t("contact.call")}
                             </a>
@@ -323,7 +329,10 @@ const ContactPage = () => {
                         className="hover:bg-rose-500 hover:text-white"
                         asChild
                       >
-                        <a href={`tel:${c.phone.replace(/[()-\s]/g, "")}`}>
+                        <a 
+                          href={`tel:${c.phone.replace(/[()-\s]/g, "")}`}
+                          onClick={() => logActivity("call_hospital", { description: `Clicked call to hospital: ${c.name} (${c.phone})` })}
+                        >
                           {t("contact.call")}
                         </a>
                       </Button>

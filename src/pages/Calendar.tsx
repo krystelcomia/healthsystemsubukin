@@ -23,6 +23,7 @@ import {
   Bell,
 } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { logActivity } from "@/lib/activityLogger";
 
 interface CalendarEvent {
   id: string;
@@ -346,6 +347,7 @@ const CalendarPage = () => {
           : evt
       );
       toast.success(language === "tl" ? "Na-update na ang event!" : "Event updated successfully!");
+      logActivity("update_event", { description: `Updated calendar event: "${eventTitle}" for date: ${selectedDateStr}` });
     } else {
       const newEvt: CalendarEvent = {
         id: Date.now().toString(),
@@ -357,6 +359,7 @@ const CalendarPage = () => {
       };
       updatedEvents.push(newEvt);
       toast.success(language === "tl" ? "Naidagdag na ang event!" : "Event added successfully!");
+      logActivity("create_event", { description: `Created calendar event: "${eventTitle}" scheduled for ${selectedDateStr}` });
     }
 
     setEvents(updatedEvents);
@@ -386,11 +389,13 @@ const CalendarPage = () => {
 
   // Delete an event
   const handleDeleteEvent = (id: string) => {
+    const deletedEvent = events.find((evt) => evt.id === id);
     const updatedEvents = events.filter((evt) => evt.id !== id);
     setEvents(updatedEvents);
     localStorage.setItem("subukin_calendar_events", JSON.stringify(updatedEvents));
     window.dispatchEvent(new Event("calendar-events-updated"));
     toast.success(language === "tl" ? "Nabura na ang event!" : "Event deleted successfully!");
+    logActivity("delete_event", { description: `Deleted calendar event: "${deletedEvent?.title || id}"` });
   };
 
   // Handle Note (minutes) saving
@@ -402,6 +407,7 @@ const CalendarPage = () => {
     setNotes(updatedNotes);
     localStorage.setItem("subukin_calendar_notes", JSON.stringify(updatedNotes));
     toast.success(language === "tl" ? "Nai-save na ang mga tala!" : "Notes saved successfully!");
+    logActivity("save_calendar_notes", { description: `Saved meeting notes/minutes for ${selectedDateStr}` });
   };
 
   // Filter events occurring in the upcoming 3 days for reminder sidebar
