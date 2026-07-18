@@ -20,7 +20,9 @@ import {
   AlertCircle,
   Edit,
   Trash2,
+  Bell,
 } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 interface CalendarEvent {
   id: string;
@@ -42,6 +44,64 @@ const CalendarPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [readEventIds, setReadEventIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Load read notifications
+    const storedRead = localStorage.getItem("subukin_read_events");
+    const readIds: string[] = storedRead ? JSON.parse(storedRead) : [];
+    setReadEventIds(readIds);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const upcomingList: any[] = [];
+
+    events.forEach((event: any) => {
+      if (event.status !== "scheduled" && event.status !== "rescheduled") {
+        return;
+      }
+      
+      const eventDate = new Date(event.date);
+      eventDate.setHours(0, 0, 0, 0);
+
+      const diffTime = eventDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays >= 0 && diffDays <= 3) {
+        let label = "";
+        if (diffDays === 0) label = t("calendar.today");
+        else if (diffDays === 1) label = language === "tl" ? "Bukas" : "Tomorrow";
+        else label = language === "tl" ? `Sa loob ng ${diffDays} araw` : `In ${diffDays} days`;
+
+        upcomingList.push({
+          id: event.id,
+          title: event.title,
+          timeStr: event.time,
+          diffDays: diffDays,
+          dayLabel: label
+        });
+      }
+    });
+
+    upcomingList.sort((a, b) => a.diffDays - b.diffDays || a.timeStr.localeCompare(b.timeStr));
+    setNotifications(upcomingList);
+  }, [events, language]);
+
+  const markAsRead = (eventId: string) => {
+    const newReadIds = [...readEventIds, eventId];
+    setReadEventIds(newReadIds);
+    localStorage.setItem("subukin_read_events", JSON.stringify(newReadIds));
+    window.dispatchEvent(new Event("calendar-events-updated"));
+  };
+
+  const markAllAsRead = () => {
+    const allIds = notifications.map(n => n.id);
+    const newReadIds = Array.from(new Set([...readEventIds, ...allIds]));
+    setReadEventIds(newReadIds);
+    localStorage.setItem("subukin_read_events", JSON.stringify(newReadIds));
+    window.dispatchEvent(new Event("calendar-events-updated"));
+  };
 
   // Form states
   const [isEditing, setIsEditing] = useState(false);
@@ -407,15 +467,77 @@ const CalendarPage = () => {
   };
 
   const upcomingEvents = getUpcomingEvents();
+  const unreadCount = notifications.filter(n => !readEventIds.includes(n.id)).length;
 
   return (
     <div className="space-y-6 max-w-7xl animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
-          <CalendarIcon className="h-6 w-6 text-primary" />
-          {t("calendar.title")}
-        </h1>
-        <p className="text-muted-foreground mt-1">{t("calendar.subtitle")}</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
+            <CalendarIcon className="h-6 w-6 text-primary" />
+            {t("calendar.title")}
+          </h1>
+          <p className="text-muted-foreground mt-1">{t("calendar.subtitle")}</p>
+        </div>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="relative flex items-center gap-2 shadow-sm bg-card border-border/50 hover:bg-muted/30">
+              <Bell className="h-4 w-4 text-primary" />
+              <span className="font-medium text-xs">Notifications</span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
+                  {unreadCount}
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-80 p-0 border border-border/50 bg-popover shadow-xl rounded-lg overflow-hidden z-50">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40 bg-muted/40">
+              <span className="font-heading font-semibold text-sm text-foreground">Notifications</span>
+              {unreadCount > 0 && (
+                <button onClick={markAllAsRead} className="text-xs text-primary hover:underline font-medium">
+                  Mark all as read
+                </button>
+              )}
+            </div>
+            <div className="max-h-64 overflow-y-auto divide-y divide-border/20">
+              {notifications.length > 0 ? (
+                notifications.map((n) => {
+                  const isUnread = !readEventIds.includes(n.id);
+                  return (
+                    <div 
+                      key={n.id} 
+                      onClick={() => isUnread && markAsRead(n.id)}
+                      className={`p-3 text-left transition-colors cursor-pointer flex items-start gap-3 hover:bg-muted/50 ${
+                        isUnread ? "bg-primary/5 dark:bg-primary/10" : ""
+                      }`}
+                    >
+                      <div className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${
+                        isUnread ? "bg-primary animate-pulse" : "bg-transparent"
+                      }`} />
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-xs leading-normal ${
+                          isUnread ? "text-foreground font-bold font-semibold" : "text-muted-foreground"
+                        }`}>
+                          {n.title}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                          <Clock className="h-3 w-3 text-primary/75" />
+                          <span>{n.dayLabel} at {n.timeStr}</span>
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="p-6 text-center text-xs text-muted-foreground">
+                  No upcoming reminders (within the next 3 days).
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
