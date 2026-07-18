@@ -137,6 +137,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <NavLink
                           to={to}
                           end
+                          onClick={isCalendar ? markAllAsRead : undefined}
                           className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                           activeClassName="bg-sidebar-accent text-sidebar-primary"
                         >
