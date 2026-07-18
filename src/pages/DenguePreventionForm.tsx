@@ -448,19 +448,33 @@ const DenguePreventionForm = () => {
               onClick={handleSaveAll} 
               disabled={saving} 
               size="sm" 
-              className="gap-1 bg-green-600 hover:bg-green-700 text-white font-medium shadow-sm"
+              className="gap-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm"
             >
               <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save"}
             </Button>
-            <Button onClick={handleAddRow} size="sm" className="gap-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm">
+            <Button 
+              onClick={handleAddRow} 
+              size="sm" 
+              className="gap-1 bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium shadow-sm"
+            >
               <Plus className="h-4 w-4" /> Add Row
             </Button>
             {records.length > 0 && (
-              <Button onClick={() => setDeleteConfirmOpen(true)} size="sm" variant="outline" className="gap-1 text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30">
+              <Button 
+                onClick={() => setDeleteConfirmOpen(true)} 
+                size="sm" 
+                variant="outline" 
+                className="gap-1 text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium shadow-sm"
+              >
                 <Trash2 className="h-4 w-4" /> Clear All
               </Button>
             )}
-            <Button onClick={handlePrint} size="sm" variant="outline" className="gap-1 bg-background border-border/60 text-muted-foreground hover:bg-muted/15">
+            <Button 
+              onClick={handlePrint} 
+              size="sm" 
+              variant="outline" 
+              className="gap-1 border-primary/20 text-primary hover:bg-primary/10 font-medium shadow-sm"
+            >
               <Printer className="h-4 w-4" /> Print
             </Button>
           </div>
