@@ -36,15 +36,17 @@ const BHW_WORKERS = [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { userRole } = useAuth();
+  const { user, userRole, username } = useAuth();
   const [showAlertBadge, setShowAlertBadge] = useState(false);
   const [activeBhw, setActiveBhw] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState("00:00:00");
   const [logsDialogOpen, setLogsDialogOpen] = useState(false);
-  const [selectedCheckInName, setSelectedCheckInName] = useState("");
   const [selectedWorker, setSelectedWorker] = useState<any>(null);
   const [attendanceLogs, setAttendanceLogs] = useState<any[]>([]);
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
+
+  // Get active worker display name (full name, username or email local part)
+  const workerDisplayName = username || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "BHW Worker";
 
   useEffect(() => {
     const checkUpcomingEvents = () => {
@@ -129,6 +131,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [logsDialogOpen]);
 
   useEffect(() => {
+    if (userRole === "bhw" && workerDisplayName) {
+      setSelectedWorker({
+        name: workerDisplayName,
+        role: "worker",
+        phone: user?.email ?? "—"
+      });
+    }
+  }, [workerDisplayName, userRole, logsDialogOpen]);
+
+  useEffect(() => {
     if (!activeBhw) {
       setSessionDuration("00:00:00");
       return;
@@ -194,14 +206,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const getWorkerAttendance = (workerName: string) => {
+    const cleanWorkerName = workerName.toLowerCase();
     return attendanceLogs
-      .filter((l: any) => l.workerName === workerName)
+      .filter((l: any) => {
+        const logWorker = l.workerName.toLowerCase();
+        return logWorker === cleanWorkerName || 
+               cleanWorkerName.includes(logWorker) ||
+               logWorker.includes(cleanWorkerName.split(" ")[0]);
+      })
       .sort((a: any, b: any) => b.loginAt.localeCompare(a.loginAt));
   };
 
   const getWorkerActivities = (workerName: string) => {
+    const cleanWorkerName = workerName.toLowerCase();
     return activityLogs
-      .filter((l: any) => l.workerName === workerName)
+      .filter((l: any) => {
+        const logWorker = l.workerName.toLowerCase();
+        return logWorker === cleanWorkerName || 
+               cleanWorkerName.includes(logWorker) ||
+               logWorker.includes(cleanWorkerName.split(" ")[0]);
+      })
       .sort((a: any, b: any) => b.timestamp.localeCompare(a.timestamp));
   };
 
@@ -287,14 +311,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           BHW Active Shift
                         </h4>
                         <p className="text-xs text-muted-foreground">
-                          Simultaneous local shift and database activity tracking.
+                          Shift tracker using your active login profile: <span className="font-bold text-foreground">{workerDisplayName}</span>.
                         </p>
                       </div>
 
                       {activeBhw ? (
                         <div className="p-3 bg-muted/40 border border-border/30 rounded-lg space-y-2 text-xs">
                           <p className="text-foreground">
-                            Active: <strong>{activeBhw}</strong>
+                            Active Shift: <strong>{activeBhw}</strong>
                           </p>
                           <p className="text-muted-foreground flex items-center gap-1">
                             <Clock className="h-3 w-3 text-primary/75" />
@@ -314,37 +338,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          <div className="space-y-1">
-                            <Label className="text-xs">Select BHW Worker Name *</Label>
-                            <Select 
-                              value={selectedCheckInName} 
-                              onValueChange={setSelectedCheckInName}
-                            >
-                              <SelectTrigger className="w-full text-xs h-8">
-                                <SelectValue placeholder="Choose name..." />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-56 z-[60]">
-                                {BHW_WORKERS.map((worker) => (
-                                  <SelectItem key={worker.name} value={worker.name} className="text-xs">
-                                    {worker.name} ({worker.role === "supervisory" ? "Supervisor" : worker.role === "bns" ? "BNS" : "BHW"})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                          <div className="p-3 bg-muted/20 border border-border/10 rounded-lg space-y-1">
+                            <p className="text-xs text-muted-foreground">Logged In User Profile:</p>
+                            <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                              <User className="h-3.5 w-3.5 text-primary" /> {workerDisplayName}
+                            </p>
                           </div>
                           <Button 
                             size="sm" 
                             className="w-full text-xs h-8 gap-1.5 font-semibold"
-                            disabled={!selectedCheckInName}
                             onClick={() => {
-                              if (selectedCheckInName) {
-                                bhwCheckIn(selectedCheckInName);
-                                toast.success(`Welcome, ${selectedCheckInName}! Shift started.`);
-                                setSelectedCheckInName("");
-                              }
+                              bhwCheckIn(workerDisplayName);
+                              toast.success(`Welcome, ${workerDisplayName}! Shift started.`);
                             }}
                           >
-                            <UserCheck className="h-3.5 w-3.5" /> Check In / Start Shift
+                            <UserCheck className="h-3.5 w-3.5" /> Clock In / Start Shift
                           </Button>
                         </div>
                       )}
@@ -392,54 +400,56 @@ export function Layout({ children }: { children: React.ReactNode }) {
               Barangay Health Workers Attendance & Logs
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Attendance records and shift activity history for all Barangay Subukin health staff.
+              Attendance records and shift activity history for Barangay Subukin health staff.
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 overflow-hidden">
-            {/* Sidebar list of BHW Workers */}
-            <div className="border-r border-border/30 pr-4 overflow-y-auto space-y-2 h-full">
-              <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
-                BHW Personnel Directory ({BHW_WORKERS.length})
-              </Label>
-              {BHW_WORKERS.map((worker) => {
-                const isSelected = selectedWorker?.name === worker.name;
-                const isOnline = activeBhw === worker.name;
-                return (
-                  <button
-                    key={worker.name}
-                    onClick={() => setSelectedWorker(worker)}
-                    className={`w-full text-left p-2.5 rounded-lg border text-xs transition-all flex items-center justify-between gap-2 ${
-                      isSelected 
-                        ? "bg-primary/5 border-primary text-foreground font-semibold" 
-                        : "border-border/30 hover:border-primary/40 hover:bg-muted/30 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 ${
-                        isSelected ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-                      }`}>
-                        {worker.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+            {/* Sidebar list of BHW Workers - ONLY VISIBLE TO ADMIN/SUPERVISOR */}
+            {userRole === "supervisor" ? (
+              <div className="border-r border-border/30 pr-4 overflow-y-auto space-y-2 h-full">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  BHW Personnel Directory ({BHW_WORKERS.length})
+                </Label>
+                {BHW_WORKERS.map((worker) => {
+                  const isSelected = selectedWorker?.name === worker.name;
+                  const isOnline = activeBhw === worker.name;
+                  return (
+                    <button
+                      key={worker.name}
+                      onClick={() => setSelectedWorker(worker)}
+                      className={`w-full text-left p-2.5 rounded-lg border text-xs transition-all flex items-center justify-between gap-2 ${
+                        isSelected 
+                          ? "bg-primary/5 border-primary text-foreground font-semibold" 
+                          : "border-border/30 hover:border-primary/40 hover:bg-muted/30 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 ${
+                          isSelected ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+                        }`}>
+                          {worker.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                        </div>
+                        <div className="min-w-0">
+                          <p className={`truncate text-xs ${isSelected ? "text-foreground font-semibold" : "text-foreground/95"}`}>
+                            {worker.name}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground capitalize truncate">
+                            {worker.role === "supervisory" ? "Supervisor" : worker.role === "bns" ? "BNS Scholar" : "BHW Worker"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className={`truncate text-xs ${isSelected ? "text-foreground font-semibold" : "text-foreground/95"}`}>
-                          {worker.name}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground capitalize truncate">
-                          {worker.role === "supervisory" ? "Supervisor" : worker.role === "bns" ? "BNS Scholar" : "BHW Worker"}
-                        </p>
-                      </div>
-                    </div>
-                    {isOnline && (
-                      <span className="h-2 w-2 rounded-full bg-green-500 shrink-0 animate-ping" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                      {isOnline && (
+                        <span className="h-2 w-2 rounded-full bg-green-500 shrink-0 animate-ping" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
 
             {/* Logs detail view */}
-            <div className="col-span-2 overflow-y-auto h-full space-y-6">
+            <div className={`${userRole === "supervisor" ? "col-span-2" : "col-span-3"} overflow-y-auto h-full space-y-6`}>
               {selectedWorker ? (
                 <>
                   {/* Worker header summary */}
@@ -466,10 +476,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground pt-1 border-t border-border/10">
                       <div>
-                        <strong>Phone Number:</strong> {selectedWorker.phone}
+                        <strong>User ID / Phone:</strong> {selectedWorker.phone || "—"}
                       </div>
                       <div>
-                        <strong>Local ID Status:</strong> Active BHW
+                        <strong>Shift Access:</strong> Registered BHW Staff
                       </div>
                     </div>
                   </div>
@@ -519,7 +529,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           ) : (
                             <tr>
                               <td colSpan={4} className="p-4 text-center text-muted-foreground italic">
-                                No attendance records found for this worker.
+                                No attendance records found.
                               </td>
                             </tr>
                           )}
@@ -559,7 +569,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         })
                       ) : (
                         <div className="p-6 text-center text-xs text-muted-foreground italic border border-dashed border-border/30 rounded-xl bg-muted/10">
-                          No logged actions found for this worker.
+                          No logged actions found.
                         </div>
                       )}
                     </div>
@@ -568,7 +578,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground py-12">
                   <User className="h-10 w-10 text-muted-foreground/50 mb-2" />
-                  <p className="text-xs">Select a BHW staff worker from the directory list on the left to review logs.</p>
+                  <p className="text-xs">Review logs and attendance sessions above.</p>
                 </div>
               )}
             </div>
