@@ -282,40 +282,40 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <SidebarTrigger className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
             </div>
 
-            <TooltipProvider delayDuration={100}>
-              <nav className="flex items-center gap-2">
-                {headerLinks.map(({ label, to, Icon }) => {
-                  const isCalendar = label === "Calendar";
-                  return (
-                    <Tooltip key={label}>
-                      <TooltipTrigger asChild>
-                        <NavLink
-                          to={to}
-                          end
-                          onClick={isCalendar ? markAllAsSeen : undefined}
-                          className="flex items-center justify-center px-3 py-1.5 rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                          activeClassName="bg-sidebar-accent text-sidebar-primary"
-                        >
-                          <div className="relative">
-                            <Icon className="h-5 w-5" aria-label={label} />
-                            {isCalendar && showAlertBadge && (
-                              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                              </span>
-                            )}
-                          </div>
-                        </NavLink>
-                      </TooltipTrigger>
-                      <TooltipContent>{label}</TooltipContent>
-                    </Tooltip>
-                  );
-                })}
-              </nav>
-            </TooltipProvider>
+            <div className="flex items-center gap-4 ml-auto">
+              <TooltipProvider delayDuration={100}>
+                <nav className="flex items-center gap-2">
+                  {headerLinks.map(({ label, to, Icon }) => {
+                    const isCalendar = label === "Calendar";
+                    return (
+                      <Tooltip key={label}>
+                        <TooltipTrigger asChild>
+                          <NavLink
+                            to={to}
+                            end
+                            onClick={isCalendar ? markAllAsSeen : undefined}
+                            className="flex items-center justify-center px-3 py-1.5 rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            activeClassName="bg-sidebar-accent text-sidebar-primary"
+                          >
+                            <div className="relative">
+                              <Icon className="h-5 w-5" aria-label={label} />
+                              {isCalendar && showAlertBadge && (
+                                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                </span>
+                              )}
+                            </div>
+                          </NavLink>
+                        </TooltipTrigger>
+                        <TooltipContent>{label}</TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                </nav>
+              </TooltipProvider>
 
-            <div className="flex items-center gap-2">
-              <div className="border-l border-sidebar-border h-6 mx-1 shrink-0" />
+              <div className="border-l border-sidebar-border h-6 shrink-0" />
 
               <Popover>
                 <PopoverTrigger asChild>
