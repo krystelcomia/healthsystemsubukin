@@ -134,7 +134,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }, [fontSize]);
 
   useEffect(() => {
-    document.documentElement.style.fontFamily = FONT_STYLE_MAP[fontStyle] || FONT_STYLE_MAP.inter;
+    const fontVal = FONT_STYLE_MAP[fontStyle] || FONT_STYLE_MAP.inter;
+    document.documentElement.style.setProperty("--font-body", fontVal);
+    document.documentElement.style.setProperty("--font-heading", fontVal);
     localStorage.setItem("fontStyle", fontStyle);
   }, [fontStyle]);
 

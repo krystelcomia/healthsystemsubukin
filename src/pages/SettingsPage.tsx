@@ -83,7 +83,7 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-7xl space-y-6">
       <div>
         <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
           <SettingsIcon className="h-6 w-6 text-primary" />
