@@ -96,7 +96,7 @@ const About = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Vision Card */}
         <Card className="border-border/50 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-4 flex flex-col items-center text-center">
             <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
               <Eye className="h-6 w-6 text-primary" />
             </div>
@@ -104,14 +104,14 @@ const About = () => {
               {t("about.vision")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-muted-foreground leading-relaxed text-sm flex-1">
+          <CardContent className="text-muted-foreground leading-relaxed text-sm flex-1 text-center">
             {t("about.visionText")}
           </CardContent>
         </Card>
 
         {/* Mission Card */}
         <Card className="border-border/50 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-4 flex flex-col items-center text-center">
             <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
               <Rocket className="h-6 w-6 text-primary" />
             </div>
@@ -119,14 +119,14 @@ const About = () => {
               {t("about.mission")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-muted-foreground leading-relaxed text-sm flex-1">
+          <CardContent className="text-muted-foreground leading-relaxed text-sm flex-1 text-center">
             {t("about.missionText")}
           </CardContent>
         </Card>
 
         {/* Goal Card */}
         <Card className="border-border/50 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-4 flex flex-col items-center text-center">
             <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
               <Target className="h-6 w-6 text-primary" />
             </div>
@@ -134,7 +134,7 @@ const About = () => {
               {t("about.goal")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-muted-foreground leading-relaxed text-sm flex-1">
+          <CardContent className="text-muted-foreground leading-relaxed text-sm flex-1 text-center">
             {t("about.goalText")}
           </CardContent>
         </Card>
