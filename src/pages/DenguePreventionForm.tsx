@@ -9,6 +9,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
+import headerTextImg from "@/assets/header_text.png";
 
 const DenguePreventionForm = () => {
   const { t } = useSettings();
@@ -264,17 +265,7 @@ const DenguePreventionForm = () => {
           <div className="print-only flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 header-border">
             <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0" />
             
-            <div className="text-center space-y-0.5" style={{ fontFamily: "Georgia, serif" }}>
-              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600 header-text">Republika ng Pilipinas</p>
-              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600 header-text">Lalawigan ng Batangas</p>
-              <p className="text-[10px] md:text-xs font-serif uppercase tracking-wider text-slate-600 header-text">Munisipalidad ng San Juan</p>
-              <h2 
-                className="text-2xl text-red-600 font-medium tracking-wide mt-1 leading-none font-script header-title-red"
-                style={{ fontFamily: "'Great Vibes', cursive" }}
-              >
-                Barangay Subukin
-              </h2>
-            </div>
+            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0" />
 
             <img src={barangayLogo} alt="Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0" />
           </div>
