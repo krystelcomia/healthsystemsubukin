@@ -522,19 +522,28 @@ const FamilyDataForm = () => {
           font-family: inherit;
           font-size: inherit;
         }
-        #family-print-area {
+        #family-print-area, #individual-file-print-area {
           background-color: #ffffff !important;
           color: #000000 !important;
         }
         #family-print-area table,
         #family-print-area table th,
-        #family-print-area table td {
+        #family-print-area table td,
+        #individual-file-print-area table,
+        #individual-file-print-area table th,
+        #individual-file-print-area table td {
           color: #000000 !important;
           border-color: #cbd5e1 !important;
         }
         #family-print-area h2,
         #family-print-area p,
-        #family-print-area span {
+        #family-print-area span,
+        #individual-file-print-area h2,
+        #individual-file-print-area h3,
+        #individual-file-print-area p,
+        #individual-file-print-area span,
+        #individual-file-print-area strong,
+        #individual-file-print-area label {
           color: #000000 !important;
         }
         @media print {
@@ -743,10 +752,13 @@ const FamilyDataForm = () => {
         >
           <CardContent className="p-6 md:p-8 space-y-6">
             {/* Official Barangay Printable Header */}
-            <div className="print-only flex items-center justify-center gap-8 border-b-4 border-double border-slate-900 pb-4 mb-4" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "32px" }}>
-              <img src={sanjuanLogo} alt="San Juan Seal" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-              <img src={headerTextImg} alt="Header Text" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-              <img src={barangayLogo} alt="Barangay Subukin" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <div 
+              className="print-only header-seal flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
+            >
+              <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+              <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+              <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
             </div>
 
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
@@ -900,10 +912,13 @@ const FamilyDataForm = () => {
           {selectedFile && (
             <div className="space-y-6">
               {/* Official Barangay Printable Header */}
-              <div className="print-only flex items-center justify-center gap-8 border-b-4 border-double border-slate-900 pb-4 mb-4" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "32px" }}>
-                <img src={sanjuanLogo} alt="San Juan Seal" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                <img src={headerTextImg} alt="Header Text" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                <img src={barangayLogo} alt="Barangay Subukin" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+              <div 
+                className="print-only header-seal flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
+              >
+                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
               </div>
 
               {/* Opened File Folder Banner */}
@@ -1063,13 +1078,13 @@ const FamilyDataForm = () => {
                 <div className="border border-border/80 rounded-xl overflow-hidden shadow-xs">
                   <table className="w-full text-xs md:text-sm text-left">
                     <thead>
-                      <tr className="bg-muted/70 border-b border-border/80">
-                        <th className="p-3 font-semibold text-muted-foreground">Full Name</th>
-                        <th className="p-3 font-semibold text-muted-foreground">Relationship / Role</th>
-                        <th className="p-3 font-semibold text-muted-foreground text-center">Birthday</th>
-                        <th className="p-3 font-semibold text-muted-foreground text-center">Age</th>
-                        <th className="p-3 font-semibold text-muted-foreground text-center">Gender</th>
-                        <th className="p-3 font-semibold text-muted-foreground text-center no-print">Action</th>
+                      <tr className="bg-transparent border-b border-border/80">
+                        <th className="p-3 font-semibold">Full Name</th>
+                        <th className="p-3 font-semibold">Relationship / Role</th>
+                        <th className="p-3 font-semibold text-center">Birthday</th>
+                        <th className="p-3 font-semibold text-center">Age</th>
+                        <th className="p-3 font-semibold text-center">Gender</th>
+                        <th className="p-3 font-semibold text-center no-print">Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1081,26 +1096,12 @@ const FamilyDataForm = () => {
                         </tr>
                       ) : (
                         activeMembers.map((m) => (
-                          <tr key={m.id} className="border-b border-border/40 hover:bg-muted/30">
-                            <td className="p-3 font-medium text-foreground">{m.full_name}</td>
-                            <td className="p-3">
-                              <Badge variant="outline" className="text-xs bg-muted/50">
-                                {m.relationship}
-                              </Badge>
-                            </td>
+                          <tr key={m.id} className="border-b border-border/40">
+                            <td className="p-3 font-medium">{m.full_name}</td>
+                            <td className="p-3">{m.relationship}</td>
                             <td className="p-3 text-center">{m.birthday || "—"}</td>
                             <td className="p-3 text-center">{m.age || "—"}</td>
-                            <td className="p-3 text-center">
-                              <span
-                                className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
-                                  m.gender === "Female"
-                                    ? "bg-pink-500/10 text-pink-700 dark:text-pink-300"
-                                    : "bg-blue-500/10 text-blue-700 dark:text-blue-300"
-                                }`}
-                              >
-                                {m.gender}
-                              </span>
-                            </td>
+                            <td className="p-3 text-center">{m.gender}</td>
                             <td className="p-3 text-center no-print">
                               <Button
                                 onClick={() => handleRemoveMember(m.id)}
