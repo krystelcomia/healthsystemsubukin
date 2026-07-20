@@ -135,7 +135,7 @@ const FamilyDataForm = () => {
     const { data, error } = await supabase
       .from("family_data")
       .select("*")
-      .order("created_at", { ascending: true });
+      .order("family_number", { ascending: true });
 
     if (error) {
       toast.error("Failed to load family data records");
