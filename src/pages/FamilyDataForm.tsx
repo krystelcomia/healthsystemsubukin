@@ -982,6 +982,7 @@ const FamilyDataForm = () => {
                         <th className="p-3 font-semibold text-muted-foreground">Full Name</th>
                         <th className="p-3 font-semibold text-muted-foreground">Relationship / Role</th>
                         <th className="p-3 font-semibold text-muted-foreground text-center">Age</th>
+                        <th className="p-3 font-semibold text-muted-foreground text-center">Birthday</th>
                         <th className="p-3 font-semibold text-muted-foreground text-center">Gender</th>
                         <th className="p-3 font-semibold text-muted-foreground text-center no-print">Action</th>
                       </tr>
@@ -989,7 +990,7 @@ const FamilyDataForm = () => {
                     <tbody>
                       {activeMembers.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="p-6 text-center text-muted-foreground italic">
+                          <td colSpan={6} className="p-6 text-center text-muted-foreground italic">
                             No family members added yet. Click "Add Family Member" above to record members.
                           </td>
                         </tr>
@@ -1003,6 +1004,7 @@ const FamilyDataForm = () => {
                               </Badge>
                             </td>
                             <td className="p-3 text-center">{m.age || "—"}</td>
+                            <td className="p-3 text-center">{m.birthday || "—"}</td>
                             <td className="p-3 text-center">
                               <span
                                 className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
@@ -1166,9 +1168,9 @@ const FamilyDataForm = () => {
                 </Button>
               </div>
 
-              <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                 {newMembers.map((mem) => (
-                  <div key={mem.id} className="flex items-center gap-2">
+                  <div key={mem.id} className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
                     <Input
                       placeholder="Full Name"
                       value={mem.full_name}
@@ -1180,7 +1182,30 @@ const FamilyDataForm = () => {
                         if (mem.relationship === "Father" && !newFather) setNewFather(val);
                         if (mem.relationship === "Mother" && !newMother) setNewMother(val);
                       }}
-                      className="h-8 text-xs flex-1"
+                      className="h-8 text-xs flex-1 min-w-[120px]"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Age"
+                      value={mem.age || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNewMembers((prev) =>
+                          prev.map((m) => (m.id === mem.id ? { ...m, age: val } : m))
+                        );
+                      }}
+                      className="h-8 text-xs w-16"
+                    />
+                    <Input
+                      type="date"
+                      value={mem.birthday || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNewMembers((prev) =>
+                          prev.map((m) => (m.id === mem.id ? { ...m, birthday: val } : m))
+                        );
+                      }}
+                      className="h-8 text-xs w-28"
                     />
                     <Select
                       value={mem.relationship}
@@ -1190,7 +1215,7 @@ const FamilyDataForm = () => {
                         )
                       }
                     >
-                      <SelectTrigger className="h-8 text-xs w-28">
+                      <SelectTrigger className="h-8 text-xs w-24">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1209,7 +1234,7 @@ const FamilyDataForm = () => {
                         )
                       }
                     >
-                      <SelectTrigger className="h-8 text-xs w-24">
+                      <SelectTrigger className="h-8 text-xs w-20">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
