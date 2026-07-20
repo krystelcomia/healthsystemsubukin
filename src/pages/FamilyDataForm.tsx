@@ -250,15 +250,7 @@ const FamilyDataForm = () => {
       return;
     }
 
-    if (newFather.trim() && !/^[\p{L}\s.,]*$/u.test(newFather)) {
-      toast.error("Father's name can only contain letters and the symbols . and ,");
-      return;
-    }
-
-    if (newMother.trim() && !/^[\p{L}\s.,]*$/u.test(newMother)) {
-      toast.error("Mother's name can only contain letters and the symbols . and ,");
-      return;
-    }
+    // Input is already filtered in real-time to only permit valid characters
 
     const validMembers = newMembers.filter((m) => m.full_name.trim());
     const malesCount = validMembers.filter((m) => m.gender === "Male").length;
@@ -357,15 +349,7 @@ const FamilyDataForm = () => {
       return;
     }
 
-    if (editFather.trim() && !/^[\p{L}\s.,]*$/u.test(editFather)) {
-      toast.error("Father's name can only contain letters and the symbols . and ,");
-      return;
-    }
-
-    if (editMother.trim() && !/^[\p{L}\s.,]*$/u.test(editMother)) {
-      toast.error("Mother's name can only contain letters and the symbols . and ,");
-      return;
-    }
+    // Input is already filtered in real-time to only permit valid characters
 
     const malesCount = activeMembers.filter((m) => m.gender === "Male").length;
     const femalesCount = activeMembers.filter((m) => m.gender === "Female").length;
@@ -970,27 +954,23 @@ const FamilyDataForm = () => {
                         <Label className="text-xs">Father's Name (Household Head)</Label>
                         <Input
                           value={editFather}
-                          onChange={(e) => setEditFather(e.target.value)}
-                          className={`h-8 text-xs ${editFather.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(editFather) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^\p{L}\s.,]/gu, "");
+                            setEditFather(val);
+                          }}
+                          className="h-8 text-xs"
                         />
-                        {editFather.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(editFather) && (
-                          <p className="text-[10px] text-destructive mt-1 font-medium">
-                            Only letters and the symbols . and , are allowed.
-                          </p>
-                        )}
                       </div>
                       <div>
                         <Label className="text-xs">Mother's Name</Label>
                         <Input
                           value={editMother}
-                          onChange={(e) => setEditMother(e.target.value)}
-                          className={`h-8 text-xs ${editMother.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(editMother) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^\p{L}\s.,]/gu, "");
+                            setEditMother(val);
+                          }}
+                          className="h-8 text-xs"
                         />
-                        {editMother.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(editMother) && (
-                          <p className="text-[10px] text-destructive mt-1 font-medium">
-                            Only letters and the symbols . and , are allowed.
-                          </p>
-                        )}
                       </div>
                       <div>
                         <Label className="text-xs">Sitio</Label>
@@ -1203,34 +1183,24 @@ const FamilyDataForm = () => {
                 <Input
                   value={newFather}
                   onChange={(e) => {
-                    const val = e.target.value;
+                    const val = e.target.value.replace(/[^\p{L}\s.,]/gu, "");
                     setNewFather(val);
                     setNewMembers(prev => prev.map(m => m.relationship === "Father" ? { ...m, full_name: val } : m));
                   }}
-                  className={`text-xs mt-1 ${newFather.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(newFather) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
+                  className="text-xs mt-1"
                 />
-                {newFather.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(newFather) && (
-                  <p className="text-[10px] text-destructive mt-1 font-medium">
-                    Only letters and the symbols . and , are allowed.
-                  </p>
-                )}
               </div>
               <div>
                 <Label className="text-xs font-semibold">Mother's Name</Label>
                 <Input
                   value={newMother}
                   onChange={(e) => {
-                    const val = e.target.value;
+                    const val = e.target.value.replace(/[^\p{L}\s.,]/gu, "");
                     setNewMother(val);
                     setNewMembers(prev => prev.map(m => m.relationship === "Mother" ? { ...m, full_name: val } : m));
                   }}
-                  className={`text-xs mt-1 ${newMother.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(newMother) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
+                  className="text-xs mt-1"
                 />
-                {newMother.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(newMother) && (
-                  <p className="text-[10px] text-destructive mt-1 font-medium">
-                    Only letters and the symbols . and , are allowed.
-                  </p>
-                )}
               </div>
             </div>
 
