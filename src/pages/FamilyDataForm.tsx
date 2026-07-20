@@ -488,16 +488,24 @@ const FamilyDataForm = () => {
           border: none;
           outline: none;
           padding: 6px 8px;
-          color: currentColor;
+          color: #000000 !important;
           font-family: inherit;
           font-size: inherit;
-          transition: background-color 0.2s;
         }
-        .cell-input:hover {
-          background-color: hsl(var(--primary) / 0.05);
+        #family-print-area {
+          background-color: #ffffff !important;
+          color: #000000 !important;
         }
-        .cell-input:focus {
-          background-color: hsl(var(--primary) / 0.1);
+        #family-print-area table,
+        #family-print-area table th,
+        #family-print-area table td {
+          color: #000000 !important;
+          border-color: #cbd5e1 !important;
+        }
+        #family-print-area h2,
+        #family-print-area p,
+        #family-print-area span {
+          color: #000000 !important;
         }
         @media print {
           body * {
@@ -764,7 +772,7 @@ const FamilyDataForm = () => {
                   {filteredRecords.map((rec) => {
                     const totalMembers = (Number(rec.num_males) || 0) + (Number(rec.num_females) || 0);
                     return (
-                      <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
+                      <tr key={rec.id} className="transition-colors">
                         <td className="border border-border p-0">
                           <input
                             type="text"
