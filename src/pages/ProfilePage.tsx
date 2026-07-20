@@ -163,7 +163,7 @@ const ProfilePage = () => {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">{t("profile.role") || "Role"}</p>
-              <p className="font-semibold text-foreground capitalize">{userRole || "—"}</p>
+              <p className="font-semibold text-foreground capitalize">{userRole === "bns" ? "BNS" : userRole === "supervisory" ? "Supervisory" : (userRole || "—")}</p>
             </div>
           </CardContent>
         </Card>

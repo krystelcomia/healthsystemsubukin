@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NavLink } from "@/components/NavLink";
-import { Home, Info, Calendar, Phone, Fingerprint, Clock, UserCheck, LogOut, List, Shield, User, Activity, CalendarDays, Eye } from "lucide-react";
+import { Home, Info, Calendar, Phone, Fingerprint, Clock, UserCheck, LogOut, List, Shield, User, Activity, CalendarDays, Eye, AlertTriangle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -37,10 +37,13 @@ const BHW_WORKERS = [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, userRole, username } = useAuth();
+  const { t } = useSettings();
   const [showAlertBadge, setShowAlertBadge] = useState(false);
   const [activeBhw, setActiveBhw] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState("00:00:00");
   const [logsDialogOpen, setLogsDialogOpen] = useState(false);
+  const [attendanceNoticeOpen, setAttendanceNoticeOpen] = useState(false);
+  const [noticeDismissed, setNoticeDismissed] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<any>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [attendanceLogs, setAttendanceLogs] = useState<any[]>([]);
@@ -132,10 +135,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [logsDialogOpen]);
 
   useEffect(() => {
-    if (userRole === "bhw" && workerDisplayName) {
+    if (user && userRole !== "supervisor" && !activeBhw && !noticeDismissed) {
+      const timer = setTimeout(() => setAttendanceNoticeOpen(true), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [user, userRole, activeBhw, noticeDismissed]);
+
+  useEffect(() => {
+    if ((userRole === "bhw" || userRole === "bns" || userRole === "BNS" || userRole === "supervisory") && workerDisplayName) {
       setSelectedWorker({
         name: workerDisplayName,
-        role: "worker",
+        role: userRole === "supervisory" ? "supervisory" : userRole === "bns" ? "bns" : "worker",
         phone: user?.email ?? "—"
       });
     }
@@ -364,12 +374,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-80 p-4 border border-border/50 bg-popover shadow-xl rounded-lg z-50 space-y-4">
-                  {(userRole === "bhw" || userRole === "supervisor") && (
+                  {(userRole === "bhw" || userRole === "bns" || userRole === "BNS" || userRole === "supervisor" || userRole === "supervisory") && (
                     <>
                       <div className="space-y-1">
                         <h4 className="font-heading font-semibold text-sm text-foreground flex items-center gap-1.5">
                           <Fingerprint className="h-4 w-4 text-primary" />
-                          BHW Active Shift
+                          {userRole === "supervisory" ? "Supervisory Active Shift" : userRole === "bns" ? "BNS Scholar Active Shift" : "BHW Active Shift"}
                         </h4>
                         <p className="text-xs text-muted-foreground">
                           Shift tracker using your active login profile: <span className="font-bold text-foreground">{workerDisplayName}</span>.
@@ -424,7 +434,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <div className="space-y-1 p-2 bg-muted/20 border border-border/20 rounded-md">
                       <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
                         <Shield className="h-3.5 w-3.5 text-primary" />
-                        Supervisor Admin Mode
+                        Midwife Admin Mode
                       </p>
                     </div>
                   )}
@@ -446,7 +456,42 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </header>
 
-          <div className="flex-1 p-6 animate-fade-in">
+          <div className="flex-1 p-6 animate-fade-in space-y-6">
+            {!activeBhw && user && userRole !== "supervisor" && (
+              <div className="p-4 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-amber-500/5 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-bounce-subtle">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5 animate-pulse">
+                    <Fingerprint className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-heading font-bold text-sm text-foreground flex items-center gap-2 flex-wrap">
+                      <span>{t("attendance.noticeTitle")}</span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-amber-500 text-white animate-pulse">
+                        ATTENDANCE REQUIRED
+                      </span>
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                      {t("attendance.noticeDesc")}
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 text-xs shadow-md shrink-0 gap-2 w-full md:w-auto"
+                  onClick={() => {
+                    bhwCheckIn(workerDisplayName);
+                    toast.success(`Welcome, ${workerDisplayName}! You are now checked in for today's attendance.`);
+                    setAttendanceNoticeOpen(false);
+                    setNoticeDismissed(true);
+                  }}
+                >
+                  <UserCheck className="h-4 w-4" />
+                  {t("attendance.clockInNow")}
+                </Button>
+              </div>
+            )}
+
             {children}
           </div>
         </main>
@@ -496,7 +541,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             {worker.name}
                           </p>
                           <p className="text-[10px] text-muted-foreground capitalize truncate">
-                            {worker.role === "supervisory" ? "Supervisor" : worker.role === "bns" ? "BNS Scholar" : "BHW Worker"}
+                            {worker.role === "supervisory" ? "Midwife" : worker.role === "bns" ? "BNS Scholar" : "BHW Worker"}
                           </p>
                         </div>
                       </div>
@@ -518,8 +563,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <div className="flex items-center justify-between gap-4 flex-wrap">
                       <div>
                         <h3 className="text-base font-bold text-foreground">{selectedWorker.name}</h3>
-                        <p className="text-xs text-muted-foreground capitalize">
-                          {selectedWorker.role === "supervisory" ? "Supervisory Staff" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar" : "Barangay Health Worker"}
+                        <p className="text-[10px] text-muted-foreground capitalize">
+                          {selectedWorker.role === "supervisory" ? "Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar" : "Barangay Health Worker"}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -684,6 +729,60 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <DialogFooter className="pt-4 border-t border-border/30 mt-4 shrink-0 font-semibold">
             <Button variant="outline" size="sm" onClick={() => setLogsDialogOpen(false)}>
               Close Log Viewer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Attendance Check-In Notice Popup Dialog */}
+      <Dialog open={attendanceNoticeOpen} onOpenChange={setAttendanceNoticeOpen}>
+        <DialogContent className="max-w-md bg-card border-2 border-amber-500/50 shadow-2xl p-6 rounded-2xl">
+          <DialogHeader className="text-center sm:text-left space-y-2">
+            <div className="mx-auto sm:mx-0 h-12 w-12 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center animate-pulse">
+              <Fingerprint className="h-6 w-6" />
+            </div>
+            <DialogTitle className="text-lg font-heading font-bold text-foreground">
+              {t("attendance.noticeTitle")}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              {t("attendance.noticeDesc")}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-xs text-amber-800 dark:text-amber-300 font-medium space-y-1">
+            <p className="flex items-center gap-1.5 font-bold">
+              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              Attendance Warning:
+            </p>
+            <p className="text-[11px] leading-normal opacity-90">
+              Check-in serves as your official daily attendance log. Failing to check in now means your <strong>"In" time</strong> will not be recorded.
+            </p>
+          </div>
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setNoticeDismissed(true);
+                setAttendanceNoticeOpen(false);
+              }}
+              className="text-xs"
+            >
+              {t("attendance.remindLater")}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                bhwCheckIn(workerDisplayName);
+                toast.success(`Welcome, ${workerDisplayName}! You are now checked in.`);
+                setNoticeDismissed(true);
+                setAttendanceNoticeOpen(false);
+              }}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs gap-1.5 shadow-md"
+            >
+              <UserCheck className="h-4 w-4" />
+              {t("attendance.clockInNow")}
             </Button>
           </DialogFooter>
         </DialogContent>

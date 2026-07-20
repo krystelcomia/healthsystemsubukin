@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -18,6 +18,11 @@ const DenguePreventionForm = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false);
+  const [activeSignRecordId, setActiveSignRecordId] = useState<string | null>(null);
+
   const fetchRecords = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -28,7 +33,22 @@ const DenguePreventionForm = () => {
     if (error) {
       toast.error("Failed to load records");
     } else {
-      setRecords(data || []);
+      const dbRecords = data || [];
+      // Pad to a minimum of 15 rows in state
+      const minRows = 15;
+      const paddedRecords = [...dbRecords];
+      for (let i = dbRecords.length; i < minRows; i++) {
+        paddedRecords.push({
+          id: `temp-${i}-${Date.now()}`,
+          resident_id: null,
+          household_name: "",
+          container_type: "",
+          has_larvae: null,
+          action_plan: "",
+          signature: ""
+        });
+      }
+      setRecords(paddedRecords);
     }
     setLoading(false);
   };
@@ -37,23 +57,252 @@ const DenguePreventionForm = () => {
     fetchRecords();
   }, []);
 
+  const isRowEmpty = (row: any) => {
+    return (
+      !row.household_name?.trim() &&
+      !row.container_type?.trim() &&
+      !row.action_plan?.trim() &&
+      !row.signature?.trim() &&
+      (row.has_larvae === null || row.has_larvae === undefined)
+    );
+  };
+
+  useEffect(() => {
+    if (!signatureModalOpen || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 5.0;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+  }, [signatureModalOpen]);
+
+  const getCoordinates = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+    const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+    return { x, y };
+  };
+
+  const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const coords = getCoordinates(e);
+    ctx.beginPath();
+    ctx.moveTo(coords.x, coords.y);
+    setIsDrawing(true);
+    e.preventDefault();
+  };
+
+  const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const coords = getCoordinates(e);
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+    e.preventDefault();
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const saveSignature = async () => {
+    const canvas = canvasRef.current;
+    if (!canvas || !activeSignRecordId) return;
+
+    const dataUrl = canvas.toDataURL("image/png");
+    setSignatureModalOpen(false);
+
+    const record = records.find(r => r.id === activeSignRecordId);
+    if (!record) return;
+
+    if (activeSignRecordId.startsWith("temp-")) {
+      setRecords(prev => prev.map(r => r.id === activeSignRecordId ? { ...r, signature: dataUrl } : r));
+
+      const isCurrentlyEmpty = 
+        !record.household_name?.trim() &&
+        !record.container_type?.trim() &&
+        !record.action_plan?.trim();
+
+      if (isCurrentlyEmpty) return;
+
+      const newRow = {
+        resident_id: null,
+        household_name: record.household_name,
+        container_type: record.container_type,
+        has_larvae: record.has_larvae,
+        action_plan: record.action_plan,
+        signature: dataUrl
+      };
+
+      const { data, error } = await supabase
+        .from("dengue_prevention")
+        .insert(newRow)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Failed to save row");
+      } else {
+        setRecords(prev => prev.map(r => r.id === activeSignRecordId ? data : r));
+        logActivity("submit_dengue", {
+          entity_type: "dengue_prevention",
+          description: `Saved new Dengue prevention checklist row with signature for: ${data.household_name || "—"}`
+        });
+      }
+    } else {
+      const { error } = await supabase
+        .from("dengue_prevention")
+        .update({ signature: dataUrl })
+        .eq("id", activeSignRecordId);
+
+      if (error) {
+        toast.error("Failed to save signature");
+      } else {
+        setRecords(prev => prev.map(r => r.id === activeSignRecordId ? { ...r, signature: dataUrl } : r));
+        logActivity("update_dengue", {
+          entity_type: "dengue_prevention",
+          description: `Updated signature for Dengue checklist row`
+        });
+      }
+    }
+  };
+
   const handleCellBlur = async (id: string, field: string, value: any) => {
     const record = records.find(r => r.id === id);
-    if (!record || record[field] === value) return;
+    if (!record) return;
 
-    const { error } = await supabase
-      .from("dengue_prevention")
-      .update({ [field]: value })
-      .eq("id", id);
+    // Check if the actual value didn't change
+    if (record[field] === value && !id.startsWith("temp-")) return;
 
-    if (error) {
-      toast.error("Failed to save changes");
+    if (id.startsWith("temp-")) {
+      // Don't save if row is empty on blur
+      const isCurrentlyEmpty = 
+        (field === "household_name" ? !value?.trim() : !record.household_name?.trim()) &&
+        (field === "container_type" ? !value?.trim() : !record.container_type?.trim()) &&
+        (field === "action_plan" ? !value?.trim() : !record.action_plan?.trim()) &&
+        (field === "signature" ? !value?.trim() : !record.signature?.trim());
+
+      if (isCurrentlyEmpty) return;
+
+      // Insert new row to DB
+      const newRow = {
+        resident_id: null,
+        household_name: field === "household_name" ? value : record.household_name,
+        container_type: field === "container_type" ? value : record.container_type,
+        has_larvae: field === "has_larvae" ? value : record.has_larvae,
+        action_plan: field === "action_plan" ? value : record.action_plan,
+        signature: field === "signature" ? value : record.signature
+      };
+
+      const { data, error } = await supabase
+        .from("dengue_prevention")
+        .insert(newRow)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Failed to save row");
+      } else {
+        setRecords(prev => prev.map(r => r.id === id ? data : r));
+        logActivity("submit_dengue", {
+          entity_type: "dengue_prevention",
+          description: `Saved new Dengue prevention checklist row for Maybahay: ${data.household_name || "—"}`
+        });
+      }
     } else {
-      setRecords(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
-      logActivity("update_dengue", {
-        entity_type: "dengue_prevention",
-        description: `Updated ${field.replace('_', ' ')} for Dengue checklist row`
-      });
+      // It's an existing row, update it
+      const { error } = await supabase
+        .from("dengue_prevention")
+        .update({ [field]: value })
+        .eq("id", id);
+
+      if (error) {
+        toast.error("Failed to save changes");
+      } else {
+        setRecords(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
+        logActivity("update_dengue", {
+          entity_type: "dengue_prevention",
+          description: `Updated ${field.replace('_', ' ')} for Dengue checklist row`
+        });
+      }
+    }
+  };
+
+  const handleToggleLarvae = async (id: string, hasLarvae: boolean) => {
+    const record = records.find(r => r.id === id);
+    if (!record) return;
+
+    const targetVal = record.has_larvae === hasLarvae ? null : hasLarvae;
+
+    if (id.startsWith("temp-")) {
+      setRecords(prev => prev.map(r => r.id === id ? { ...r, has_larvae: targetVal } : r));
+
+      const otherFieldsEmpty = 
+        !record.household_name?.trim() &&
+        !record.container_type?.trim() &&
+        !record.action_plan?.trim() &&
+        !record.signature?.trim();
+
+      if (otherFieldsEmpty) return;
+
+      const newRow = {
+        resident_id: null,
+        household_name: record.household_name,
+        container_type: record.container_type,
+        has_larvae: targetVal,
+        action_plan: record.action_plan,
+        signature: record.signature
+      };
+
+      const { data, error } = await supabase
+        .from("dengue_prevention")
+        .insert(newRow)
+        .select()
+        .single();
+
+      if (!error) {
+        setRecords(prev => prev.map(r => r.id === id ? data : r));
+      }
+    } else {
+      const { error } = await supabase
+        .from("dengue_prevention")
+        .update({ has_larvae: targetVal })
+        .eq("id", id);
+
+      if (error) {
+        toast.error("Failed to save larvae status");
+      } else {
+        setRecords(prev => prev.map(r => r.id === id ? { ...r, has_larvae: targetVal } : r));
+        logActivity("update_dengue", {
+          entity_type: "dengue_prevention",
+          description: `Set larvae status to ${targetVal === null ? "unspecified" : targetVal ? "Meron" : "Wala"} in Dengue prevention form`
+        });
+      }
     }
   };
 
@@ -63,19 +312,43 @@ const DenguePreventionForm = () => {
 
     // Save each record to Supabase
     for (const record of records) {
-      const { error } = await supabase
-        .from("dengue_prevention")
-        .update({
-          household_name: record.household_name,
-          container_type: record.container_type,
-          has_larvae: record.has_larvae,
-          action_plan: record.action_plan,
-          signature: record.signature
-        })
-        .eq("id", record.id);
+      if (record.id.startsWith("temp-")) {
+        // Skip if empty
+        if (isRowEmpty(record)) continue;
 
-      if (error) {
-        hasError = true;
+        const { data, error } = await supabase
+          .from("dengue_prevention")
+          .insert({
+            resident_id: null,
+            household_name: record.household_name,
+            container_type: record.container_type,
+            has_larvae: record.has_larvae,
+            action_plan: record.action_plan,
+            signature: record.signature
+          })
+          .select()
+          .single();
+
+        if (error) {
+          hasError = true;
+        } else {
+          setRecords(prev => prev.map(r => r.id === record.id ? data : r));
+        }
+      } else {
+        const { error } = await supabase
+          .from("dengue_prevention")
+          .update({
+            household_name: record.household_name,
+            container_type: record.container_type,
+            has_larvae: record.has_larvae,
+            action_plan: record.action_plan,
+            signature: record.signature
+          })
+          .eq("id", record.id);
+
+        if (error) {
+          hasError = true;
+        }
       }
     }
 
@@ -88,58 +361,32 @@ const DenguePreventionForm = () => {
         entity_type: "dengue_prevention",
         description: "Saved all records in Dengue prevention checklist form"
       });
+      fetchRecords();
     }
   };
 
-  const handleToggleLarvae = async (id: string, hasLarvae: boolean) => {
-    const record = records.find(r => r.id === id);
-    if (!record || record.has_larvae === hasLarvae) return;
-
-    const { error } = await supabase
-      .from("dengue_prevention")
-      .update({ has_larvae: hasLarvae })
-      .eq("id", id);
-
-    if (error) {
-      toast.error("Failed to save larvae status");
-    } else {
-      setRecords(prev => prev.map(r => r.id === id ? { ...r, has_larvae: hasLarvae } : r));
-      logActivity("update_dengue", {
-        entity_type: "dengue_prevention",
-        description: `Set larvae status to ${hasLarvae ? "Meron" : "Wala"} in Dengue prevention form`
-      });
-    }
-  };
-
-  const handleAddRow = async () => {
+  const handleAddRow = () => {
+    const tempId = `temp-${Date.now()}`;
     const newRow = {
+      id: tempId,
       resident_id: null,
       household_name: "",
       container_type: "",
-      has_larvae: false,
+      has_larvae: null,
       action_plan: "",
       signature: ""
     };
-
-    const { data, error } = await supabase
-      .from("dengue_prevention")
-      .insert(newRow)
-      .select()
-      .single();
-
-    if (error) {
-      toast.error("Failed to add new row");
-    } else {
-      setRecords(prev => [...prev, data]);
-      logActivity("submit_dengue", {
-        entity_type: "dengue_prevention",
-        description: "Added a new blank record row in Dengue prevention checklist"
-      });
-    }
+    setRecords(prev => [...prev, newRow]);
   };
 
   const handleDeleteRow = async (id: string, name: string) => {
-    const displayName = name.trim() || "unnamed row";
+    if (id.startsWith("temp-")) {
+      setRecords(prev => prev.filter(r => r.id !== id));
+      toast.success("Row removed");
+      return;
+    }
+
+    const displayName = name?.trim() || "unnamed row";
     const { error } = await supabase
       .from("dengue_prevention")
       .delete()
@@ -180,18 +427,9 @@ const DenguePreventionForm = () => {
     window.print();
   };
 
-  // Pad table with empty static rows to reach a minimum layout size
-  const minRows = 15;
-  const emptyRowsCount = Math.max(0, minRows - records.length);
-  const emptyRows = Array.from({ length: emptyRowsCount });
-
   return (
     <div className="w-full space-y-6">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
-        .font-script {
-          font-family: 'Great Vibes', cursive;
-        }
         .print-only {
           display: none !important;
         }
@@ -231,7 +469,6 @@ const DenguePreventionForm = () => {
             box-shadow: none !important;
             border: none !important;
           }
-          /* Enforce compact print heights and prevent extra blank page generation */
           html, body {
             height: 100% !important;
             overflow: hidden !important;
@@ -241,7 +478,6 @@ const DenguePreventionForm = () => {
             page-break-inside: avoid !important;
           }
           #dengue-print-area h1,
-          #dengue-print-area p:not(.header-text),
           #dengue-print-area table,
           #dengue-print-area th,
           #dengue-print-area td {
@@ -250,17 +486,10 @@ const DenguePreventionForm = () => {
           #dengue-print-area table,
           #dengue-print-area th,
           #dengue-print-area td {
-            border-color: #94a3b8 !important; /* slate-400 */
-          }
-          /* Lock header colors in print */
-          .header-text {
-            color: #475569 !important; /* slate-600 */
-          }
-          .header-title-red {
-            color: #dc2626 !important; /* red-600 */
+            border-color: #94a3b8 !important;
           }
           .header-border {
-            border-color: #0f172a !important; /* slate-900 double line */
+            border-color: #0f172a !important;
           }
           .no-print {
             display: none !important;
@@ -275,9 +504,6 @@ const DenguePreventionForm = () => {
             padding: 0 !important;
             color: black !important;
           }
-          .cell-input::placeholder {
-            color: transparent !important;
-          }
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -289,6 +515,8 @@ const DenguePreventionForm = () => {
         }
       `}</style>
 
+
+
       <Card 
         id="dengue-print-area" 
         className="border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden"
@@ -296,18 +524,16 @@ const DenguePreventionForm = () => {
       >
         <CardContent className="p-8 space-y-6">
           
-          {/* Header Seal Layout - Visible ONLY when printing (locked styling with compact center layout) */}
+          {/* Header Seal Layout - Visible ONLY when printing */}
           <div className="print-only flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 header-border">
             <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0" />
-            
             <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0" />
-
             <img src={barangayLogo} alt="Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0" />
           </div>
 
           <div className="text-center space-y-1 py-2">
             <h1 
-              className="text-xl md:text-2xl font-bold tracking-widest text-foreground"
+              className="text-xl md:text-2xl font-bold tracking-widest text-foreground uppercase"
               style={{ fontFamily: "var(--font-heading)" }}
             >
               SEARCH AND DESTROY 2025
@@ -361,7 +587,7 @@ const DenguePreventionForm = () => {
                         }}
                         onBlur={(e) => handleCellBlur(rec.id, "household_name", e.target.value)}
                         className="cell-input"
-                        placeholder="Click to type name..."
+                        placeholder=""
                       />
                     </td>
                     <td className="border border-border p-0">
@@ -373,7 +599,7 @@ const DenguePreventionForm = () => {
                         }}
                         onBlur={(e) => handleCellBlur(rec.id, "container_type", e.target.value)}
                         className="cell-input"
-                        placeholder="Gulong, plorera, etc..."
+                        placeholder=""
                       />
                     </td>
                     <td 
@@ -381,7 +607,7 @@ const DenguePreventionForm = () => {
                       className="border border-border p-0 text-center text-base text-primary font-bold cursor-pointer hover:bg-muted/20 select-none w-7 h-10"
                     >
                       <div className="flex items-center justify-center h-full w-full">
-                        {rec.has_larvae ? "✓" : ""}
+                        {rec.has_larvae === true ? "✓" : ""}
                       </div>
                     </td>
                     <td 
@@ -389,7 +615,7 @@ const DenguePreventionForm = () => {
                       className="border border-border p-0 text-center text-base text-muted-foreground font-bold cursor-pointer hover:bg-muted/20 select-none w-7 h-10"
                     >
                       <div className="flex items-center justify-center h-full w-full">
-                        {!rec.has_larvae ? "✓" : ""}
+                        {rec.has_larvae === false ? "✓" : ""}
                       </div>
                     </td>
                     <td className="border border-border p-0">
@@ -401,42 +627,38 @@ const DenguePreventionForm = () => {
                         }}
                         onBlur={(e) => handleCellBlur(rec.id, "action_plan", e.target.value)}
                         className="cell-input"
-                        placeholder="Action..."
+                        placeholder=""
                       />
                     </td>
-                    <td className="border border-border p-0">
-                      <input
-                        type="text"
-                        value={rec.signature || ""}
-                        onChange={(e) => {
-                          setRecords(prev => prev.map(r => r.id === rec.id ? { ...r, signature: e.target.value } : r));
-                        }}
-                        onBlur={(e) => handleCellBlur(rec.id, "signature", e.target.value)}
-                        className="cell-input text-center font-mono text-xs"
-                        placeholder="Lagda..."
-                      />
+                    <td 
+                      onClick={() => {
+                        setActiveSignRecordId(rec.id);
+                        setSignatureModalOpen(true);
+                      }}
+                      className="border border-border p-1 text-center cursor-pointer hover:bg-muted/20 w-[10%] h-10 select-none"
+                    >
+                      {rec.signature ? (
+                        <img 
+                          src={rec.signature} 
+                          alt="Signature" 
+                          className="h-8 object-contain mx-auto print:h-8" 
+                        />
+                      ) : (
+                        ""
+                      )}
                     </td>
                     <td className="border border-border p-1 text-center no-print w-10">
-                      <Button 
-                        onClick={() => handleDeleteRow(rec.id, rec.household_name)} 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash className="h-4.5 w-4.5" />
-                      </Button>
+                      {!isRowEmpty(rec) && (
+                        <Button 
+                          onClick={() => handleDeleteRow(rec.id, rec.household_name)} 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash className="h-4.5 w-4.5" />
+                        </Button>
+                      )}
                     </td>
-                  </tr>
-                ))}
-                {emptyRows.map((_, idx) => (
-                  <tr key={`empty-${idx}`} className="h-10">
-                    <td className="border border-border p-2">&nbsp;</td>
-                    <td className="border border-border p-2">&nbsp;</td>
-                    <td className="border border-border p-2">&nbsp;</td>
-                    <td className="border border-border p-2">&nbsp;</td>
-                    <td className="border border-border p-2">&nbsp;</td>
-                    <td className="border border-border p-2">&nbsp;</td>
-                    <td className="border border-border p-2 no-print">&nbsp;</td>
                   </tr>
                 ))}
               </tbody>
@@ -497,6 +719,42 @@ const DenguePreventionForm = () => {
             </Button>
             <Button type="button" variant="destructive" onClick={handleDeleteAll}>
               Delete All
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={signatureModalOpen} onOpenChange={setSignatureModalOpen}>
+        <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-heading font-bold text-foreground">
+              Lagda ng Maybahay (Resident Signature)
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 text-sm text-slate-500">
+            Pumirma sa ibaba gamit ang iyong touchscreen, mouse, o touchpad.
+          </div>
+          <div className="border border-slate-200 rounded-lg p-1 bg-slate-50 flex justify-center items-center">
+            <canvas
+              ref={canvasRef}
+              width={400}
+              height={200}
+              onPointerDown={startDrawing}
+              onPointerMove={draw}
+              onPointerUp={stopDrawing}
+              onPointerLeave={stopDrawing}
+              className="border border-slate-300 rounded-md w-full bg-white touch-none cursor-crosshair"
+            />
+          </div>
+          <DialogFooter className="gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={clearCanvas}>
+              Clear
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setSignatureModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={saveSignature} className="bg-primary text-white">
+              Save Signature
             </Button>
           </DialogFooter>
         </DialogContent>

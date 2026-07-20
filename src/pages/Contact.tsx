@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -80,8 +81,50 @@ const HOSPITAL_CONTACTS: HospitalContact[] = [
 const ContactPage = () => {
   const { t } = useSettings();
   const [searchTerm, setSearchTerm] = useState("");
+  const [workersList, setWorkersList] = useState<Contact[]>(BHW_CONTACTS);
 
-  const filteredBHW = BHW_CONTACTS.filter(
+  useEffect(() => {
+    const fetchDbWorkers = async () => {
+      try {
+        const { data: dbWorkers } = await supabase.from("bhw_workers").select("*");
+        const { data: dbRoles } = await supabase.from("user_roles").select("*");
+
+        if (dbWorkers && dbWorkers.length > 0) {
+          const mapped: Contact[] = dbWorkers.map((w: any, idx: number) => {
+            const userRoleObj = dbRoles?.find((r: any) => r.user_id === w.user_id);
+            let role: Contact["role"] = "worker";
+            if (
+              userRoleObj?.role === "supervisory" ||
+              userRoleObj?.role === "supervisor" ||
+              w.name?.toLowerCase().includes("lanuza")
+            ) {
+              role = "supervisory";
+            } else if (userRoleObj?.role === "bns" || w.name?.toLowerCase().includes("abayon")) {
+              role = "bns";
+            }
+
+            const fallbackPhone = BHW_CONTACTS.find((c) =>
+              c.name.toLowerCase().includes(w.name.toLowerCase().split(" ")[0])
+            )?.phone;
+
+            return {
+              id: idx + 1,
+              name: w.name,
+              phone: w.number?.trim() || fallbackPhone || "0919-6980-712",
+              role: role
+            };
+          });
+          setWorkersList(mapped);
+        }
+      } catch (e) {
+        console.error("Error fetching workers from database:", e);
+      }
+    };
+
+    fetchDbWorkers();
+  }, []);
+
+  const filteredBHW = workersList.filter(
     (c) =>
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.phone.includes(searchTerm)
@@ -189,23 +232,10 @@ const ContactPage = () => {
                         </div>
 
                         <div className="flex items-center justify-between pt-2 border-t border-border/20">
-                          <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
+                          <div className="flex items-center gap-2 text-foreground text-sm font-semibold">
                             <PhoneCall className="h-4 w-4 text-primary" />
                             <span>{c.phone}</span>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="hover:bg-primary hover:text-white"
-                            asChild
-                          >
-                            <a 
-                              href={`tel:${c.phone.replace(/-/g, "")}`}
-                              onClick={() => logActivity("call_bhw", { description: `Clicked call to BHW worker: ${c.name} (${c.phone})` })}
-                            >
-                              {t("contact.call")}
-                            </a>
-                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -266,26 +296,6 @@ const ContactPage = () => {
                             {c.phone}
                           </span>
                         </div>
-                        {c.hasDirectCall ? (
-                          <Button
-                            size="sm"
-                            variant={is911 ? "destructive" : "outline"}
-                            className={!is911 ? "hover:bg-primary hover:text-white" : ""}
-                            asChild
-                          >
-                            <a
-                              href={`tel:${c.phone
-                                .split("/")[0]
-                                .trim()
-                                .replace(/[()-\s]/g, "")}`}
-                              onClick={() => logActivity("call_hotline", { description: `Clicked call to emergency hotline: ${c.service} (${c.phone})` })}
-                            >
-                              {t("contact.call")}
-                            </a>
-                          </Button>
-                        ) : (
-                          <Badge variant="secondary">{t("common.worker")}</Badge>
-                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -319,23 +329,10 @@ const ContactPage = () => {
                     </div>
 
                     <div className="flex items-center justify-between pt-2 border-t border-border/20">
-                      <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
+                      <div className="flex items-center gap-2 text-foreground text-sm font-semibold">
                         <PhoneCall className="h-4 w-4 text-rose-500" />
                         <span>{c.phone}</span>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="hover:bg-rose-500 hover:text-white"
-                        asChild
-                      >
-                        <a 
-                          href={`tel:${c.phone.replace(/[()-\s]/g, "")}`}
-                          onClick={() => logActivity("call_hospital", { description: `Clicked call to hospital: ${c.name} (${c.phone})` })}
-                        >
-                          {t("contact.call")}
-                        </a>
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>

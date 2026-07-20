@@ -392,9 +392,10 @@ export function seedMockDatabase() {
     db = JSON.parse(dbStr);
   }
 
-  // Check if supervisor user exists; if not, force re-seeding / patching
-  const hasSupervisor = db['auth_users']?.some((u: any) => u.email === 'supervisor@gmail.com');
-  if (dbStr && hasSupervisor) {
+  // Check if admin user exists; if not, force re-seeding / patching
+  const hasAdmin = db['auth_users']?.some((u: any) => u.email === 'adminsubukin@gmail.com');
+  const CristetaIsSupervisory = db['user_roles']?.some((r: any) => r.user_id === 'user-cristeta' && r.role === 'supervisory');
+  if (dbStr && hasAdmin && CristetaIsSupervisory) {
     return; // Already seeded with correct user and supervisor roles
   }
 
@@ -402,43 +403,70 @@ export function seedMockDatabase() {
   localStorage.removeItem('supabase_mock_session');
 
   db['auth_users'] = [
-    {
-      id: "user-1",
-      email: "krystelcomia@gmail.com",
-      password: "krystel123",
-      user_metadata: { full_name: "Krystel Comia" }
-    },
-    {
-      id: "user-2",
-      email: "supervisor@gmail.com",
-      password: "supervisor123",
-      user_metadata: { full_name: "Barangay Supervisor" }
-    }
+    { id: "user-1", email: "krystelcomia@gmail.com", password: "krystel123", user_metadata: { full_name: "Krystel Comia" } },
+    { id: "user-admin", email: "adminsubukin@gmail.com", password: "adminmidwife", user_metadata: { full_name: "Admin Midwife" } },
+    { id: "user-cristeta", email: "cristetalanuzaBHW@gmail.com", password: "bhwcristeta", user_metadata: { full_name: "Cristeta R. Lanuza" } },
+    { id: "user-evelyn", email: "evelynilaoBHW@gmail.com", password: "bhwevelyn", user_metadata: { full_name: "Evelyn T. Ilao" } },
+    { id: "user-cecilia", email: "ceciliabenosaBHW@gmail.com", password: "bhwcecilia", user_metadata: { full_name: "Cecilia G. Benosa" } },
+    { id: "user-merlita", email: "merlitaalonzoBHW@gmail.com", password: "bhwmerlita", user_metadata: { full_name: "Merlita R. Alonzo" } },
+    { id: "user-suzette", email: "suzettelopezBHW@gmail.com", password: "bhwsuzette", user_metadata: { full_name: "Suzette B. Lopez" } },
+    { id: "user-amelita", email: "amelitasayatBHW@gmail.com", password: "bhwamelita", user_metadata: { full_name: "Amelita R. Sayat" } },
+    { id: "user-wilma", email: "wilmatanyagBHW@gmail.com", password: "bhwawilma", user_metadata: { full_name: "Wilma D. Tanyag" } },
+    { id: "user-nenita", email: "nenitadimaculanganBHW@gmail.com", password: "bhwanenita", user_metadata: { full_name: "Nenita M. Dimaculangan" } },
+    { id: "user-mercy", email: "mercyabanillaBHW@gmail.com", password: "bhwmercy", user_metadata: { full_name: "Mercy O. Abanilla" } },
+    { id: "user-renchie", email: "renchieilaoBHW@gmail.com", password: "bhwrenchie", user_metadata: { full_name: "Renchie V. Ilao" } },
+    { id: "user-renalyn", email: "renalynlauranteBHW@gmail.com", password: "bhwrenalyn", user_metadata: { full_name: "Renalyn D. Laurante" } },
+    { id: "user-maribel", email: "maribelabayonBNS@gmail.com", password: "bnsmaribel", user_metadata: { full_name: "Maribel M. Abayon" } }
   ];
 
   db['user_roles'] = [
     { id: "role-1", user_id: "user-1", role: "bhw" },
-    { id: "role-2", user_id: "user-2", role: "supervisor" }
+    { id: "role-admin", user_id: "user-admin", role: "supervisor" },
+    { id: "role-cristeta", user_id: "user-cristeta", role: "supervisory" },
+    { id: "role-evelyn", user_id: "user-evelyn", role: "bhw" },
+    { id: "role-cecilia", user_id: "user-cecilia", role: "bhw" },
+    { id: "role-merlita", user_id: "user-merlita", role: "bhw" },
+    { id: "role-suzette", user_id: "user-suzette", role: "bhw" },
+    { id: "role-amelita", user_id: "user-amelita", role: "bhw" },
+    { id: "role-wilma", user_id: "user-wilma", role: "bhw" },
+    { id: "role-nenita", user_id: "user-nenita", role: "bhw" },
+    { id: "role-mercy", user_id: "user-mercy", role: "bhw" },
+    { id: "role-renchie", user_id: "user-renchie", role: "bhw" },
+    { id: "role-renalyn", user_id: "user-renalyn", role: "bhw" },
+    { id: "role-maribel", user_id: "user-maribel", role: "bns" }
   ];
 
   db['profiles'] = [
     { id: "profile-1", user_id: "user-1", full_name: "Krystel Comia", username: "krystel" },
-    { id: "profile-2", user_id: "user-2", full_name: "Barangay Supervisor", username: "supervisor" }
+    { id: "profile-admin", user_id: "user-admin", full_name: "Admin Midwife", username: "admin" },
+    { id: "profile-cristeta", user_id: "user-cristeta", full_name: "Cristeta R. Lanuza", username: "Cristeta" },
+    { id: "profile-evelyn", user_id: "user-evelyn", full_name: "Evelyn T. Ilao", username: "Evelyn" },
+    { id: "profile-cecilia", user_id: "user-cecilia", full_name: "Cecilia G. Benosa", username: "Cecilia" },
+    { id: "profile-merlita", user_id: "user-merlita", full_name: "Merlita R. Alonzo", username: "Merlita" },
+    { id: "profile-suzette", user_id: "user-suzette", full_name: "Suzette B. Lopez", username: "Suzette" },
+    { id: "profile-amelita", user_id: "user-amelita", full_name: "Amelita R. Sayat", username: "Amelita" },
+    { id: "profile-wilma", user_id: "user-wilma", full_name: "Wilma D. Tanyag", username: "Wilma" },
+    { id: "profile-nenita", user_id: "user-nenita", full_name: "Nenita M. Dimaculangan", username: "Nenita" },
+    { id: "profile-mercy", user_id: "user-mercy", full_name: "Mercy O. Abanilla", username: "Mercy" },
+    { id: "profile-renchie", user_id: "user-renchie", full_name: "Renchie V. Ilao", username: "Renchie" },
+    { id: "profile-renalyn", user_id: "user-renalyn", full_name: "Renalyn D. Laurante", username: "Renalyn" },
+    { id: "profile-maribel", user_id: "user-maribel", full_name: "Maribel M. Abayon", username: "Maribel" }
   ];
 
   db['bhw_workers'] = [
-    {
-      id: "worker-1",
-      name: "Krystel Comia",
-      age: 28,
-      address: "Sitio Centro, Subukin",
-      gmail: "krystelcomia@gmail.com",
-      number: "09123456789",
-      is_online: true,
-      user_id: "user-1",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
+    { id: "worker-1", name: "Krystel Comia", age: 28, address: "Sitio Centro, Subukin", gmail: "krystelcomia@gmail.com", number: "09123456789", is_online: true, user_id: "user-1", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-cristeta", name: "Cristeta R. Lanuza", age: 0, address: "", gmail: "cristetalanuzaBHW@gmail.com", number: "", is_online: false, user_id: "user-cristeta", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-evelyn", name: "Evelyn T. Ilao", age: 0, address: "", gmail: "evelynilaoBHW@gmail.com", number: "", is_online: false, user_id: "user-evelyn", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-cecilia", name: "Cecilia G. Benosa", age: 0, address: "", gmail: "ceciliabenosaBHW@gmail.com", number: "", is_online: false, user_id: "user-cecilia", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-merlita", name: "Merlita R. Alonzo", age: 0, address: "", gmail: "merlitaalonzoBHW@gmail.com", number: "", is_online: false, user_id: "user-merlita", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-suzette", name: "Suzette B. Lopez", age: 0, address: "", gmail: "suzettelopezBHW@gmail.com", number: "", is_online: false, user_id: "user-suzette", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-amelita", name: "Amelita R. Sayat", age: 0, address: "", gmail: "amelitasayatBHW@gmail.com", number: "", is_online: false, user_id: "user-amelita", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-wilma", name: "Wilma D. Tanyag", age: 0, address: "", gmail: "wilmatanyagBHW@gmail.com", number: "", is_online: false, user_id: "user-wilma", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-nenita", name: "Nenita M. Dimaculangan", age: 0, address: "", gmail: "nenitadimaculanganBHW@gmail.com", number: "", is_online: false, user_id: "user-nenita", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-mercy", name: "Mercy O. Abanilla", age: 0, address: "", gmail: "mercyabanillaBHW@gmail.com", number: "", is_online: false, user_id: "user-mercy", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-renchie", name: "Renchie V. Ilao", age: 0, address: "", gmail: "renchieilaoBHW@gmail.com", number: "", is_online: false, user_id: "user-renchie", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-renalyn", name: "Renalyn D. Laurante", age: 0, address: "", gmail: "renalynlauranteBHW@gmail.com", number: "", is_online: false, user_id: "user-renalyn", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-maribel", name: "Maribel M. Abayon", age: 0, address: "", gmail: "maribelabayonBNS@gmail.com", number: "", is_online: false, user_id: "user-maribel", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
   ];
 
   if (!db['residents']) {

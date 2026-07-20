@@ -19,13 +19,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   const isAdminRoute = location.pathname.startsWith("/admin");
 
+  const isAdmin = userRole === "supervisor";
+  const isNonAdmin = userRole === "bhw" || userRole === "bns" || userRole === "BNS" || userRole === "supervisory";
+
   // Supervisor should always be on /admin routes
-  if (userRole === "supervisor" && !isAdminRoute) {
+  if (isAdmin && !isAdminRoute) {
     return <Navigate to="/admin" replace />;
   }
 
-  // BHW users should never access /admin routes
-  if (userRole === "bhw" && isAdminRoute) {
+  // Non-admin users should never access /admin routes
+  if (isNonAdmin && isAdminRoute) {
     return <Navigate to="/" replace />;
   }
 

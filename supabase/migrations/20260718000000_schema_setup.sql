@@ -1,9 +1,12 @@
 -- 1. Create role enum
 DO $$ BEGIN
-  CREATE TYPE public.app_role AS ENUM ('bhw', 'supervisor');
+  CREATE TYPE public.app_role AS ENUM ('bhw', 'supervisor', 'supervisory', 'bns');
 EXCEPTION
   WHEN duplicate_object THEN null;
 END $$;
+
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'supervisory';
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'bns';
 
 -- 2. Trigger for updated_at column helper function
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()

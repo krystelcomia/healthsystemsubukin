@@ -143,15 +143,7 @@ const AddNewForm = () => {
 
   return (
     <div className="w-full space-y-6">
-      <div>
-        <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-primary" />
-          Add New Form
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Snap a picture of any paper health form and let AI turn it into a digital form you can fill out and save.
-        </p>
-      </div>
+
 
       <Card className="border-border/50 shadow-sm">
         <CardHeader>

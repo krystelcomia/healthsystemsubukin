@@ -76,11 +76,7 @@ const FamilyPlanningForm = () => {
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2"><Heart className="h-6 w-6 text-primary" />{t("fp.title")}</h1>
-          <p className="text-muted-foreground mt-1">{t("fp.desc")}</p>
-        </div>
+      <div className="flex justify-end">
         <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> {t("fp.newRecord")}</Button>
       </div>
 
