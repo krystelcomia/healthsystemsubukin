@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
-import { ensureResidentExists } from "@/lib/residentLinker";
+import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
@@ -1227,8 +1227,13 @@ const FamilyDataForm = () => {
                             value={mem.birthday || ""}
                             onChange={(e) => {
                               const val = e.target.value;
+                              const computedAge = calculateAge(val);
                               setNewMembers((prev) =>
-                                prev.map((m) => (m.id === mem.id ? { ...m, birthday: val } : m))
+                                prev.map((m) =>
+                                  m.id === mem.id
+                                    ? { ...m, birthday: val, age: computedAge > 0 ? computedAge : m.age }
+                                    : m
+                                )
                               );
                             }}
                             className="h-8 text-xs"
@@ -1380,7 +1385,14 @@ const FamilyDataForm = () => {
                 <Input
                   type="date"
                   value={memBirthday}
-                  onChange={(e) => setMemBirthday(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setMemBirthday(val);
+                    if (val) {
+                      const calculated = calculateAge(val);
+                      if (calculated >= 0) setMemAge(calculated);
+                    }
+                  }}
                   className="h-8 text-xs mt-1"
                 />
               </div>

@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
+import { calculateAge } from "@/lib/residentLinker";
 
 interface Resident {
   id: string; full_name: string; gender: string; age: number; status: string; religion: string; blood_type: string; nationality: string; sitio: string; birthday: string | null; family_number?: string | null; created_at: string;
@@ -185,7 +186,11 @@ const ResidentRecords = () => {
               <DialogHeader><DialogTitle>{t("residents.addNew")}</DialogTitle><DialogDescription>{t("residents.addNewDesc")}</DialogDescription></DialogHeader>
               <div className="space-y-3">
                 <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={newResident.full_name} onChange={(e) => setNewResident({ ...newResident, full_name: e.target.value })} placeholder={t("residents.fullName")} /></div>
-                <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={newResident.birthday} onChange={(e) => setNewResident({ ...newResident, birthday: e.target.value })} /></div>
+                <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={newResident.birthday} onChange={(e) => {
+                  const bday = e.target.value;
+                  const computed = calculateAge(bday);
+                  setNewResident({ ...newResident, birthday: bday, age: computed > 0 ? String(computed) : newResident.age });
+                }} /></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={newResident.gender} onValueChange={(v) => setNewResident({ ...newResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
                   <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={newResident.age} onChange={(e) => setNewResident({ ...newResident, age: e.target.value })} placeholder="0" /></div>
@@ -259,7 +264,11 @@ const ResidentRecords = () => {
           {editResident && (
             <div className="space-y-3">
               <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={editResident.full_name} onChange={(e) => setEditResident({ ...editResident, full_name: e.target.value })} /></div>
-              <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={editResident.birthday || ""} onChange={(e) => setEditResident({ ...editResident, birthday: e.target.value })} /></div>
+              <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={editResident.birthday || ""} onChange={(e) => {
+                const bday = e.target.value;
+                const computed = calculateAge(bday);
+                setEditResident({ ...editResident, birthday: bday, age: computed > 0 ? computed : editResident.age });
+              }} /></div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={editResident.gender} onValueChange={(v) => setEditResident({ ...editResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
                 <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={editResident.age} onChange={(e) => setEditResident({ ...editResident, age: Number(e.target.value) })} /></div>

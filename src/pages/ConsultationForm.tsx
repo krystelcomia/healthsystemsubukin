@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ensureResidentExists } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
+import { calculateAge } from "@/lib/residentLinker";
 
 const ConsultationForm = () => {
   const { t } = useSettings();
@@ -114,7 +115,11 @@ const ConsultationForm = () => {
               <div className="space-y-2"><Label>{t("consultation.date")}</Label><Input type="date" value={form.date} onChange={(e) => handleChange("date", e.target.value)} /></div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2"><Label>{t("consultation.birthdate")}</Label><Input type="date" value={form.birthdate} onChange={(e) => handleChange("birthdate", e.target.value)} /></div>
+              <div className="space-y-2"><Label>{t("consultation.birthdate")}</Label><Input type="date" value={form.birthdate} onChange={(e) => {
+                const bday = e.target.value;
+                const computed = calculateAge(bday);
+                setForm(prev => ({ ...prev, birthdate: bday, age: computed > 0 ? String(computed) : prev.age }));
+              }} /></div>
               <div className="space-y-2"><Label>{t("consultation.age")}</Label><Input type="number" value={form.age} onChange={(e) => handleChange("age", e.target.value)} placeholder="0" /></div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

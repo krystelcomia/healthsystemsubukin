@@ -9,6 +9,7 @@ import { Activity, Save, Printer, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
+import { calculateAge } from "@/lib/residentLinker";
 
 interface Resident {
   id: string;
@@ -342,7 +343,11 @@ const PhilPenHealthForm = () => {
                   <input 
                     type="date"
                     value={form.birthdate}
-                    onChange={(e) => handleFieldChange("birthdate", e.target.value)}
+                    onChange={(e) => {
+                      const bday = e.target.value;
+                      const computed = calculateAge(bday);
+                      setForm(prev => ({ ...prev, birthdate: bday, age: computed > 0 ? String(computed) : prev.age }));
+                    }}
                     className="print-input flex-1 font-medium"
                   />
                 </div>

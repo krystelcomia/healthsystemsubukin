@@ -1,5 +1,18 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export function calculateAge(birthday: string | null | undefined): number {
+  if (!birthday) return 0;
+  const birthDate = new Date(birthday);
+  if (isNaN(birthDate.getTime())) return 0;
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age >= 0 ? age : 0;
+}
+
 export async function ensureResidentExists(opts: {
   fullName: string;
   sitio?: string;
@@ -10,6 +23,8 @@ export async function ensureResidentExists(opts: {
 }): Promise<string | null> {
   const cleanName = (opts.fullName || "").trim();
   if (!cleanName) return null;
+
+  const computedAge = opts.birthday ? calculateAge(opts.birthday) : (Number(opts.age) || 0);
 
   try {
     // Check if resident already exists in residents table by full_name (case insensitive)
@@ -27,7 +42,7 @@ export async function ensureResidentExists(opts: {
       const updates: any = {};
       if (opts.sitio && !match.sitio) updates.sitio = opts.sitio;
       if (opts.gender && !match.gender) updates.gender = opts.gender;
-      if (opts.age && (!match.age || match.age === 0)) updates.age = Number(opts.age) || 0;
+      if (computedAge > 0 && (!match.age || match.age === 0)) updates.age = computedAge;
       if (opts.birthday && !match.birthday) updates.birthday = opts.birthday;
       if (opts.familyNumber) updates.family_number = opts.familyNumber;
 
@@ -42,7 +57,7 @@ export async function ensureResidentExists(opts: {
     const newResident = {
       full_name: cleanName,
       gender: opts.gender || "Male",
-      age: Number(opts.age) || 0,
+      age: computedAge,
       status: "Single",
       religion: "",
       blood_type: "",
