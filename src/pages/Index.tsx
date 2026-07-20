@@ -87,29 +87,30 @@ const Index = () => {
   }, []);
 
   const buildMonthlyChart = (formData: Record<string, { created_at: string }[]>) => {
-    const months: Record<string, Record<string, number>> = {};
+    const months: Record<string, Record<string, any>> = {};
     const now = new Date();
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const label = d.toLocaleString("default", { month: "short", year: "2-digit" });
-      months[key] = { _label: 0 };
-      months[key]._label = 0;
+      months[key] = { monthStr: label };
       Object.keys(formData).forEach((form) => { months[key][form] = 0; });
-      months[key]._labelStr = label as any;
     }
 
     Object.entries(formData).forEach(([formName, records]) => {
+      if (!Array.isArray(records)) return;
       records.forEach((r) => {
+        if (!r || !r.created_at) return;
         const d = new Date(r.created_at);
+        if (isNaN(d.getTime())) return;
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         if (months[key]) months[key][formName] = (months[key][formName] || 0) + 1;
       });
     });
 
     return Object.entries(months).map(([, val]) => {
-      const { _label, _labelStr, ...rest } = val as any;
-      return { month: _labelStr, ...rest };
+      const { monthStr, ...rest } = val;
+      return { month: monthStr, ...rest };
     });
   };
 
