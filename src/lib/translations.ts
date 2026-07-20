@@ -236,7 +236,7 @@ export const translations: Record<Language, Record<string, string>> = {
     "familyData.relationship": "Relationship / Role",
     "familyData.age": "Age",
     "familyData.gender": "Gender",
-    "familyData.sitio": "Sitio / Address",
+    "familyData.sitio": "Sitio",
     // PhilPen Health Form
     "philpen.title": "PhilPen Health Form",
     "philpen.desc": "Community health screening and assessment.",
@@ -589,7 +589,7 @@ export const translations: Record<Language, Record<string, string>> = {
     "familyData.relationship": "Relasyon / Papel",
     "familyData.age": "Edad",
     "familyData.gender": "Kasarian",
-    "familyData.sitio": "Sitio / Address",
+    "familyData.sitio": "Sitio",
     // PhilPen Health Form
     "philpen.title": "PhilPen Health Form",
     "philpen.desc": "Pagsusuri ng kalusugan sa komunidad.",

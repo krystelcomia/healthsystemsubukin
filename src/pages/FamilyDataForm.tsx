@@ -201,11 +201,10 @@ const FamilyDataForm = () => {
 
   // Open Create New Family File dialog
   const handleOpenCreateModal = () => {
-    const suggestedNum = generateNextFamilyNumber();
-    setNewFamNum(suggestedNum);
+    setNewFamNum("");
     setNewFather("");
     setNewMother("");
-    setNewSitio("Centro");
+    setNewSitio(sitioOptions[0] || "");
     setNewHouseholds(1);
     setNewMembers([
       { id: "1", full_name: "", relationship: "Father", age: "", gender: "Male" },
@@ -911,7 +910,7 @@ const FamilyDataForm = () => {
                         />
                       </div>
                       <div>
-                        <Label className="text-xs">Sitio / Location</Label>
+                        <Label className="text-xs">Sitio</Label>
                         <Select value={editSitio} onValueChange={setEditSitio}>
                           <SelectTrigger className="h-8 text-xs">
                             <SelectValue />
@@ -945,7 +944,7 @@ const FamilyDataForm = () => {
                         <strong className="text-foreground text-sm font-semibold">{editMother || "—"}</strong>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block text-[11px]">Sitio / Address:</span>
+                        <span className="text-muted-foreground block text-[11px]">Sitio:</span>
                         <strong className="text-foreground text-sm font-semibold">{editSitio || "Centro"}</strong>
                       </div>
                       <div>
@@ -1102,12 +1101,11 @@ const FamilyDataForm = () => {
                 <Input
                   value={newFamNum}
                   onChange={(e) => setNewFamNum(e.target.value)}
-                  placeholder="FAM-001"
                   className="font-mono text-sm mt-1"
                 />
               </div>
               <div>
-                <Label className="text-xs font-semibold">Sitio / Location</Label>
+                <Label className="text-xs font-semibold">Sitio</Label>
                 <Select value={newSitio} onValueChange={setNewSitio}>
                   <SelectTrigger className="mt-1 text-xs">
                     <SelectValue />
@@ -1131,7 +1129,6 @@ const FamilyDataForm = () => {
                     setNewFather(val);
                     setNewMembers(prev => prev.map(m => m.relationship === "Father" ? { ...m, full_name: val } : m));
                   }}
-                  placeholder="Juan dela Cruz"
                   className="text-xs mt-1"
                 />
               </div>
@@ -1144,7 +1141,6 @@ const FamilyDataForm = () => {
                     setNewMother(val);
                     setNewMembers(prev => prev.map(m => m.relationship === "Mother" ? { ...m, full_name: val } : m));
                   }}
-                  placeholder="Maria dela Cruz"
                   className="text-xs mt-1"
                 />
               </div>
