@@ -220,6 +220,11 @@ const FamilyDataForm = () => {
       toast.error("Please enter a Family Number");
       return;
     }
+
+    if (!/\d/.test(newFamNum)) {
+      toast.error("Family number cannot consist solely of letters. It must contain at least one number.");
+      return;
+    }
     if (!newFather.trim() && !newMother.trim()) {
       toast.error("Please enter at least the Father's or Mother's name");
       return;
@@ -311,6 +316,16 @@ const FamilyDataForm = () => {
   // Save changes inside opened file
   const handleSaveFileChanges = async () => {
     if (!selectedFile) return;
+
+    if (!editFamNum.trim()) {
+      toast.error("Please enter a Family Number");
+      return;
+    }
+
+    if (!/\d/.test(editFamNum)) {
+      toast.error("Family number cannot consist solely of letters. It must contain at least one number.");
+      return;
+    }
 
     const malesCount = activeMembers.filter((m) => m.gender === "Male").length;
     const femalesCount = activeMembers.filter((m) => m.gender === "Female").length;
