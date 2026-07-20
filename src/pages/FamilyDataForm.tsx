@@ -771,7 +771,19 @@ const FamilyDataForm = () => {
                 </thead>
                 <tbody>
                   {filteredRecords.map((rec) => {
-                    const totalMembers = (Number(rec.num_males) || 0) + (Number(rec.num_females) || 0);
+                    const membersList = Array.isArray(rec.members_detail) ? rec.members_detail : [];
+                    const validMembersCount = membersList.filter(m => m.full_name?.trim()).length;
+                    const derivedMales = validMembersCount > 0 
+                      ? membersList.filter(m => m.gender === "Male" && m.full_name?.trim()).length 
+                      : (Number(rec.num_males) || 0);
+                    const derivedFemales = validMembersCount > 0 
+                      ? membersList.filter(m => m.gender === "Female" && m.full_name?.trim()).length 
+                      : (Number(rec.num_females) || 0);
+
+                    const hasData = !!(rec.family_number || rec.father_name || rec.mother_name);
+                    const displayMales = hasData ? derivedMales : "";
+                    const displayFemales = hasData ? derivedFemales : "";
+                    const displayTotal = hasData ? (derivedMales + derivedFemales) : "";
                     return (
                       <tr key={rec.id} className="transition-colors">
                         <td className="border border-border p-0">
@@ -824,36 +836,14 @@ const FamilyDataForm = () => {
                             className="cell-input"
                           />
                         </td>
-                        <td className="border border-border p-0">
-                          <input
-                            type="number"
-                            value={rec.num_males === "" ? "" : (rec.num_males ?? "")}
-                            onChange={(e) => {
-                              const val = e.target.value === "" ? "" : Number(e.target.value);
-                              setRecords((prev) =>
-                                prev.map((r) => (r.id === rec.id ? { ...r, num_males: val } : r))
-                              );
-                            }}
-                            className="cell-input text-center"
-                            min="0"
-                          />
+                        <td className="border border-border p-2 text-center">
+                          {displayMales}
                         </td>
-                        <td className="border border-border p-0">
-                          <input
-                            type="number"
-                            value={rec.num_females === "" ? "" : (rec.num_females ?? "")}
-                            onChange={(e) => {
-                              const val = e.target.value === "" ? "" : Number(e.target.value);
-                              setRecords((prev) =>
-                                prev.map((r) => (r.id === rec.id ? { ...r, num_females: val } : r))
-                              );
-                            }}
-                            className="cell-input text-center"
-                            min="0"
-                          />
+                        <td className="border border-border p-2 text-center">
+                          {displayFemales}
                         </td>
                         <td className="border border-border p-2 text-center font-bold">
-                          {totalMembers > 0 || rec.total_members > 0 ? (totalMembers || rec.total_members) : ""}
+                          {displayTotal}
                         </td>
                         <td className="border border-border p-1 text-center no-print">
                           <Button
