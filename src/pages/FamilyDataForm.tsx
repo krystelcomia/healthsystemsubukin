@@ -566,6 +566,13 @@ const FamilyDataForm = () => {
             border: none !important;
             color: black !important;
           }
+          #individual-file-print-area {
+            transform: none !important;
+            max-width: 100% !important;
+            max-height: none !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
           .no-print {
             display: none !important;
           }
