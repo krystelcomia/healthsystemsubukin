@@ -10,9 +10,10 @@ import { Users, Plus, Printer, Pencil, Trash2, UserCheck, UserX, Eye, EyeOff } f
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
+import { getAssignedSitio } from "@/lib/sitioMapping";
 
 interface BHWWorker {
-  id: string; name: string; age: number; address: string; gmail: string; number: string; is_online: boolean; last_seen: string | null; user_id: string | null; created_at: string;
+  id: string; name: string; age: number; address: string; gmail: string; number: string; is_online: boolean; last_seen: string | null; user_id: string | null; created_at: string; assigned_sitio?: string;
 }
 
 const AdminWorkers = () => {
@@ -27,7 +28,7 @@ const AdminWorkers = () => {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [newWorker, setNewWorker] = useState({ name: "", age: "", address: "", gmail: "", number: "", username: "", password: "" });
+  const [newWorker, setNewWorker] = useState({ name: "", age: "", address: "", gmail: "", number: "", username: "", password: "", assigned_sitio: "" });
 
   useEffect(() => { fetchWorkers(); }, []);
 
@@ -44,13 +45,14 @@ const AdminWorkers = () => {
     if (!newWorker.password || newWorker.password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
     setSubmitting(true);
     try {
+      const sitio = newWorker.assigned_sitio.trim() || getAssignedSitio(newWorker.name.trim());
       const { data, error } = await supabase.functions.invoke("create-bhw-account", {
-        body: { name: newWorker.name.trim(), age: Number(newWorker.age) || 0, address: newWorker.address, gmail: newWorker.gmail.trim(), number: newWorker.number, username: newWorker.username.trim(), password: newWorker.password },
+        body: { name: newWorker.name.trim(), age: Number(newWorker.age) || 0, address: newWorker.address || sitio, gmail: newWorker.gmail.trim(), number: newWorker.number, username: newWorker.username.trim(), password: newWorker.password, assigned_sitio: sitio },
       });
       if (error) { toast.error("Failed to create worker account"); setSubmitting(false); return; }
       if (data?.error) { toast.error(data.error); setSubmitting(false); return; }
       toast.success("BHW worker account created!");
-      setNewWorker({ name: "", age: "", address: "", gmail: "", number: "", username: "", password: "" });
+      setNewWorker({ name: "", age: "", address: "", gmail: "", number: "", username: "", password: "", assigned_sitio: "" });
       setDialogOpen(false); fetchWorkers();
     } catch { toast.error("Failed to create worker account"); }
     setSubmitting(false);
@@ -58,7 +60,7 @@ const AdminWorkers = () => {
 
   const handleEditWorker = async () => {
     if (!editWorker) return;
-    const { error } = await (supabase.from as any)("bhw_workers").update({ name: editWorker.name, age: editWorker.age, address: editWorker.address, gmail: editWorker.gmail, number: editWorker.number }).eq("id", editWorker.id);
+    const { error } = await (supabase.from as any)("bhw_workers").update({ name: editWorker.name, age: editWorker.age, address: editWorker.address, gmail: editWorker.gmail, number: editWorker.number, assigned_sitio: editWorker.assigned_sitio }).eq("id", editWorker.id);
     if (error) { toast.error("Failed to update worker"); return; }
     toast.success("Worker updated!"); setEditDialogOpen(false); setEditWorker(null); fetchWorkers();
   };
@@ -75,11 +77,11 @@ const AdminWorkers = () => {
     win.document.write(`<!DOCTYPE html><html><head><title>${t("workers.title")}</title>
       <style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #1a1a1a; font-size: 13px; }
         .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #0d9488; padding-bottom: 16px; } .header h1 { font-size: 20px; color: #0d9488; }
-        table { width: 100%; border-collapse: collapse; margin: 12px 0; } th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; } th { background: #f0fdfa; color: #0d9488; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; } th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; } th { background: transparent; color: #000; font-weight: 600; }
         .print-date { text-align: right; font-size: 10px; color: #999; margin-top: 20px; }</style></head><body>
       <div class="header"><h1>Barangay Health System</h1><p>${t("workers.title")}</p></div>
-      <table><thead><tr><th>#</th><th>${t("workers.name")}</th><th>${t("workers.age")}</th><th>${t("workers.address")}</th><th>${t("workers.gmail")}</th><th>${t("workers.contact")}</th><th>${t("admin.residents.status")}</th></tr></thead><tbody>`);
-    workers.forEach((w, i) => { win.document.write(`<tr><td>${i + 1}</td><td>${w.name}</td><td>${w.age}</td><td>${w.address}</td><td>${w.gmail}</td><td>${w.number}</td><td>${w.is_online ? t("admin.dashboard.online") : t("admin.dashboard.offline")}</td></tr>`); });
+      <table><thead><tr><th>#</th><th>${t("workers.name")}</th><th>Assigned Sitio</th><th>${t("workers.gmail")}</th><th>${t("workers.contact")}</th><th>${t("admin.residents.status")}</th></tr></thead><tbody>`);
+    workers.forEach((w, i) => { win.document.write(`<tr><td>${i + 1}</td><td>${w.name}</td><td>${w.assigned_sitio || getAssignedSitio(w.name) || "—"}</td><td>${w.gmail}</td><td>${w.number}</td><td>${w.is_online ? t("admin.dashboard.online") : t("admin.dashboard.offline")}</td></tr>`); });
     win.document.write(`</tbody></table><p style="margin-top:12px;font-size:12px;color:#666;">${t("common.total")}: ${workers.length}</p>`);
     win.document.write(`<p class="print-date">${new Date().toLocaleString()}</p></body></html>`);
     win.document.close(); win.print();
@@ -123,7 +125,7 @@ const AdminWorkers = () => {
                       {w.is_online ? <><UserCheck className="h-3 w-3 mr-1" />{t("admin.dashboard.online")}</> : <><UserX className="h-3 w-3 mr-1" />{t("admin.dashboard.offline")}</>}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{t("workers.age")} {w.age} · {w.address} · {w.gmail} · {w.number}</p>
+                  <p className="text-sm text-muted-foreground">Assigned Sitio: <strong className="text-foreground">{w.assigned_sitio || getAssignedSitio(w.name) || "—"}</strong> · {w.gmail} · {w.number}</p>
                 </div>
               </div>
               <div className="flex gap-1">

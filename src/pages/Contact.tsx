@@ -6,21 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Phone,
-  Search,
-  Users,
-  PhoneCall,
-  User,
-  Shield,
-  AlertTriangle,
-  Building,
-  Activity,
-  Flame,
-  Heart,
-  HeartPulse
-} from "lucide-react";
-
+import { Phone, Search, Users, PhoneCall, User, Shield, AlertTriangle, Building, Activity, Flame, Heart, HeartPulse, MapPin, ExternalLink } from "lucide-react";
+import { getAssignedSitio } from "@/lib/sitioMapping";
 import { logActivity } from "@/lib/activityLogger";
 
 interface Contact {
@@ -28,6 +15,7 @@ interface Contact {
   name: string;
   phone: string;
   role: "supervisory" | "bns" | "worker";
+  sitio?: string;
 }
 
 interface EmergencyContact {
@@ -36,7 +24,7 @@ interface EmergencyContact {
   phone: string;
   hasDirectCall: boolean;
   notes?: string;
-  icon: "AlertTriangle" | "Shield" | "Activity" | "Building" | "Flame" | "HeartPulse";
+  icon: "AlertTriangle" | "Shield" | "HeartPulse" | "Building" | "Flame" | "Activity";
 }
 
 interface HospitalContact {
@@ -46,18 +34,18 @@ interface HospitalContact {
 }
 
 const BHW_CONTACTS: Contact[] = [
-  { id: 1, name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisory" },
-  { id: 2, name: "Evelyn T. Ilao", phone: "0935-5638-247", role: "worker" },
-  { id: 3, name: "Cecilia G. Benosa", phone: "0921-8509-320", role: "worker" },
-  { id: 4, name: "Merlita R. Alonzo", phone: "0930-9085-713", role: "worker" },
-  { id: 5, name: "Suzette B. Lopez", phone: "0935-2008-942", role: "worker" },
-  { id: 6, name: "Amelita R. Sayat", phone: "0931-0232-973", role: "worker" },
-  { id: 7, name: "Wilma D. Tanyag", phone: "0997-4971-138", role: "worker" },
-  { id: 8, name: "Nenita M. Dimaculangan", phone: "0985-1225-857", role: "worker" },
-  { id: 9, name: "Mercy O. Abanilla", phone: "0949-7768-394", role: "worker" },
-  { id: 10, name: "Renchie V. Ilao", phone: "0965-6627-031", role: "worker" },
-  { id: 11, name: "Renalyn D. Laurente", phone: "0985-1086-472", role: "worker" },
-  { id: 12, name: "Maribel M. Abayon", phone: "0922-6722-134", role: "bns" }
+  { id: 1, name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisory", sitio: "Masigla" },
+  { id: 2, name: "Evelyn T. Ilao", phone: "0935-5638-247", role: "worker", sitio: "Manggahan 1" },
+  { id: 3, name: "Cecilia G. Benosa", phone: "0921-8509-320", role: "worker", sitio: "Maligaya" },
+  { id: 4, name: "Merlita R. Alonzo", phone: "0930-9085-713", role: "worker", sitio: "Matahimik/Punta" },
+  { id: 5, name: "Suzette B. Lopez", phone: "0935-2008-942", role: "worker", sitio: "Makalintal 1" },
+  { id: 6, name: "Amelita R. Sayat", phone: "0931-0232-973", role: "worker", sitio: "Puntor" },
+  { id: 7, name: "Wilma D. Tanyag", phone: "0997-4971-138", role: "worker", sitio: "Masaya" },
+  { id: 8, name: "Nenita M. Dimaculangan", phone: "0985-1225-857", role: "worker", sitio: "Manggahan 2" },
+  { id: 9, name: "Mercy O. Abanilla", phone: "0949-7768-394", role: "worker", sitio: "Cama" },
+  { id: 10, name: "Renchie V. Ilao", phone: "0965-6627-031", role: "worker", sitio: "Makalintal 2" },
+  { id: 11, name: "Renalyn D. Laurente", phone: "0985-1086-472", role: "worker", sitio: "Matahimik / Burol" },
+  { id: 12, name: "Maribel M. Abayon", phone: "0922-6722-134", role: "bns", sitio: "Centro" }
 ];
 
 const EMERGENCY_SERVICES: EmergencyContact[] = [
@@ -103,15 +91,17 @@ const ContactPage = () => {
               role = "bns";
             }
 
-            const fallbackPhone = BHW_CONTACTS.find((c) =>
-              c.name.toLowerCase().includes(w.name.toLowerCase().split(" ")[0])
-            )?.phone;
+            const fallback = BHW_CONTACTS.find((c) =>
+              c.name.toLowerCase().includes(w.name.toLowerCase().split(" ")[0]) ||
+              w.name.toLowerCase().includes(c.name.toLowerCase().split(" ")[0])
+            );
 
             return {
               id: idx + 1,
               name: w.name,
-              phone: w.number?.trim() || fallbackPhone || "0919-6980-712",
-              role: role
+              phone: w.number?.trim() || fallback?.phone || "0919-6980-712",
+              role: role,
+              sitio: w.assigned_sitio || fallback?.sitio || getAssignedSitio(w.name)
             };
           });
           setWorkersList(mapped);
@@ -127,7 +117,8 @@ const ContactPage = () => {
   const filteredBHW = workersList.filter(
     (c) =>
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.phone.includes(searchTerm)
+      c.phone.includes(searchTerm) ||
+      (c.sitio && c.sitio.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const getRoleBadge = (role: Contact["role"]) => {
@@ -231,11 +222,17 @@ const ContactPage = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between pt-2 border-t border-border/20">
+                        <div className="space-y-2 pt-2 border-t border-border/20">
                           <div className="flex items-center gap-2 text-foreground text-sm font-semibold">
-                            <PhoneCall className="h-4 w-4 text-primary" />
+                            <PhoneCall className="h-4 w-4 text-primary shrink-0" />
                             <span>{c.phone}</span>
                           </div>
+                          {c.sitio && (
+                            <div className="flex items-center gap-2 text-foreground/90 text-xs font-semibold bg-muted/50 px-2.5 py-1 rounded-md border border-border/40">
+                              <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                              <span>Assigned Sitio: <strong className="text-foreground">{c.sitio}</strong></span>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

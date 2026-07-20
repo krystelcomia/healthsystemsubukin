@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Pencil, Save, Camera, Mail, AtSign, IdCard, ShieldCheck, Loader2, X } from "lucide-react";
+import { User, Pencil, Save, Camera, Mail, AtSign, IdCard, ShieldCheck, Loader2, X, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
+import { getAssignedSitio } from "@/lib/sitioMapping";
 
 const ProfilePage = () => {
   const { user, userRole } = useAuth();
@@ -18,6 +19,7 @@ const ProfilePage = () => {
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [assignedSitio, setAssignedSitio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -30,12 +32,25 @@ const ProfilePage = () => {
     (async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, username, avatar_url")
+        .select("full_name, username, avatar_url, assigned_sitio")
         .eq("user_id", user.id)
         .maybeSingle();
-      setFullName(data?.full_name || "");
-      setUsername(data?.username || "");
+
+      const fName = data?.full_name || "";
+      const uName = data?.username || "";
+      setFullName(fName);
+      setUsername(uName);
       setAvatarUrl((data as any)?.avatar_url || null);
+
+      let sitio = (data as any)?.assigned_sitio;
+      if (!sitio) {
+        const { data: wData } = await (supabase.from("bhw_workers") as any)
+          .select("assigned_sitio, address, name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        sitio = wData?.assigned_sitio || wData?.address || getAssignedSitio(fName || uName || "");
+      }
+      setAssignedSitio(sitio || getAssignedSitio(fName || uName || "") || "Centro");
       setLoading(false);
     })();
   }, [user]);
@@ -46,9 +61,13 @@ const ProfilePage = () => {
     const { error } = await supabase
       .from("profiles")
       .upsert(
-        { user_id: user.id, full_name: fullName, username },
+        { user_id: user.id, full_name: fullName, username, assigned_sitio: assignedSitio } as any,
         { onConflict: "user_id" }
       );
+    await (supabase.from("bhw_workers") as any)
+      .update({ assigned_sitio: assignedSitio } as any)
+      .eq("user_id", user.id);
+
     if (error) toast.error(t("profile.saveFailed") || "Failed to save profile");
     else {
       toast.success(t("profile.updated") || "Profile updated!");
@@ -135,6 +154,14 @@ const ProfilePage = () => {
                   <span className="flex items-center gap-1"><AtSign className="h-3.5 w-3.5" />{username || "—"}</span>
                   <span className="hidden md:inline">•</span>
                   <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{email}</span>
+                  {assignedSitio && (
+                    <>
+                      <span className="hidden md:inline">•</span>
+                      <span className="flex items-center gap-1 text-primary font-semibold">
+                        <MapPin className="h-3.5 w-3.5" />Assigned Sitio: {assignedSitio}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -155,7 +182,7 @@ const ProfilePage = () => {
       </Card>
 
       {/* Stats / Quick info row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-border/50">
           <CardContent className="p-5 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
@@ -167,6 +194,19 @@ const ProfilePage = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="border-border/50">
+          <CardContent className="p-5 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">Assigned Sitio</p>
+              <p className="font-semibold text-foreground truncate">{assignedSitio || "—"}</p>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="border-border/50">
           <CardContent className="p-5 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
@@ -178,6 +218,7 @@ const ProfilePage = () => {
             </div>
           </CardContent>
         </Card>
+
         <Card className="border-border/50">
           <CardContent className="p-5 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
@@ -221,7 +262,17 @@ const ProfilePage = () => {
                   <p className="text-foreground font-medium py-2 border-b border-border/50">{username || "—"}</p>
                 )}
               </div>
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">Assigned Sitio</Label>
+                {editing ? (
+                  <Input value={assignedSitio} onChange={(e) => setAssignedSitio(e.target.value)} placeholder="Assigned Sitio" />
+                ) : (
+                  <p className="text-foreground font-medium py-2 border-b border-border/50 flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" /> {assignedSitio || "—"}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("profile.email")}</Label>
                 <p className="text-foreground font-medium py-2 border-b border-border/50 flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" /> {email}

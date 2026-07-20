@@ -22,18 +22,18 @@ const headerLinks = [
 ];
 
 const BHW_WORKERS = [
-  { name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisory" },
-  { name: "Evelyn T. Ilao", phone: "0935-5638-247", role: "worker" },
-  { name: "Cecilia G. Benosa", phone: "0921-8509-320", role: "worker" },
-  { name: "Merlita R. Alonzo", phone: "0930-9085-713", role: "worker" },
-  { name: "Suzette B. Lopez", phone: "0935-2008-942", role: "worker" },
-  { name: "Amelita R. Sayat", phone: "0931-0232-973", role: "worker" },
-  { name: "Wilma D. Tanyag", phone: "0997-4971-138", role: "worker" },
-  { name: "Nenita M. Dimaculangan", phone: "0985-1225-857", role: "worker" },
-  { name: "Mercy O. Abanilla", phone: "0949-7768-394", role: "worker" },
-  { name: "Renchie V. Ilao", phone: "0965-6627-031", role: "worker" },
-  { name: "Renalyn D. Laurente", phone: "0985-1086-472", role: "worker" },
-  { name: "Maribel M. Abayon", phone: "0922-6722-134", role: "bns" }
+  { name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisory", sitio: "Masigla" },
+  { name: "Evelyn T. Ilao", phone: "0935-5638-247", role: "worker", sitio: "Manggahan 1" },
+  { name: "Cecilia G. Benosa", phone: "0921-8509-320", role: "worker", sitio: "Maligaya" },
+  { name: "Merlita R. Alonzo", phone: "0930-9085-713", role: "worker", sitio: "Matahimik/Punta" },
+  { name: "Suzette B. Lopez", phone: "0935-2008-942", role: "worker", sitio: "Makalintal 1" },
+  { name: "Amelita R. Sayat", phone: "0931-0232-973", role: "worker", sitio: "Puntor" },
+  { name: "Wilma D. Tanyag", phone: "0997-4971-138", role: "worker", sitio: "Masaya" },
+  { name: "Nenita M. Dimaculangan", phone: "0985-1225-857", role: "worker", sitio: "Manggahan 2" },
+  { name: "Mercy O. Abanilla", phone: "0949-7768-394", role: "worker", sitio: "Cama" },
+  { name: "Renchie V. Ilao", phone: "0965-6627-031", role: "worker", sitio: "Makalintal 2" },
+  { name: "Renalyn D. Laurente", phone: "0985-1086-472", role: "worker", sitio: "Matahimik / Burol" },
+  { name: "Maribel M. Abayon", phone: "0922-6722-134", role: "bns", sitio: "Centro" }
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
