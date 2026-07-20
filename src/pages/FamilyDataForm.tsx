@@ -1271,11 +1271,11 @@ const FamilyDataForm = () => {
               </div>
 
               <div className="overflow-x-auto border border-border/60 rounded-lg max-h-52 overflow-y-auto">
-                <table className="w-full text-xs min-w-[620px]">
+                <table className="w-full text-xs min-w-[660px]">
                   <thead>
                     <tr className="bg-muted/60 border-b border-border/50 text-muted-foreground font-semibold">
                       <th className="p-2 text-left w-48">Full Name</th>
-                      <th className="p-2 text-left w-32">Birthday</th>
+                      <th className="p-2 text-left w-44">Birthday</th>
                       <th className="p-2 text-center w-20">Age</th>
                       <th className="p-2 text-left w-24">Role</th>
                       <th className="p-2 text-left w-24">Gender</th>
@@ -1310,7 +1310,7 @@ const FamilyDataForm = () => {
                               setNewMembers((prev) =>
                                 prev.map((m) =>
                                   m.id === mem.id
-                                    ? { ...m, birthday: val, age: computedAge > 0 ? computedAge : m.age }
+                                    ? { ...m, birthday: val, age: val ? computedAge : "" }
                                     : m
                                 )
                               );
@@ -1459,8 +1459,8 @@ const FamilyDataForm = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div className="sm:col-span-2">
                 <Label className="text-xs">Birthday</Label>
                 <Input
                   type="date"
@@ -1470,10 +1470,12 @@ const FamilyDataForm = () => {
                     setMemBirthday(val);
                     if (val) {
                       const calculated = calculateAge(val);
-                      if (calculated >= 0) setMemAge(calculated);
+                      setMemAge(calculated);
+                    } else {
+                      setMemAge("");
                     }
                   }}
-                  className="h-8 text-xs mt-1"
+                  className="h-8 text-xs mt-1 w-full"
                 />
               </div>
 
@@ -1484,7 +1486,7 @@ const FamilyDataForm = () => {
                   value={memAge}
                   onChange={(e) => setMemAge(e.target.value)}
                   placeholder="e.g. 12"
-                  className="h-8 text-xs mt-1"
+                  className="h-8 text-xs mt-1 w-full"
                   min="0"
                 />
               </div>
