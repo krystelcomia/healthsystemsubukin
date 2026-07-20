@@ -250,6 +250,16 @@ const FamilyDataForm = () => {
       return;
     }
 
+    if (newFather.trim() && !/^[\p{L}\s.,]*$/u.test(newFather)) {
+      toast.error("Father's name can only contain letters and the symbols . and ,");
+      return;
+    }
+
+    if (newMother.trim() && !/^[\p{L}\s.,]*$/u.test(newMother)) {
+      toast.error("Mother's name can only contain letters and the symbols . and ,");
+      return;
+    }
+
     const validMembers = newMembers.filter((m) => m.full_name.trim());
     const malesCount = validMembers.filter((m) => m.gender === "Male").length;
     const femalesCount = validMembers.filter((m) => m.gender === "Female").length;
@@ -344,6 +354,16 @@ const FamilyDataForm = () => {
 
     if (!/^\d+[a-zA-Z]*$/.test(editFamNum.trim())) {
       toast.error("Incorrect family number format.");
+      return;
+    }
+
+    if (editFather.trim() && !/^[\p{L}\s.,]*$/u.test(editFather)) {
+      toast.error("Father's name can only contain letters and the symbols . and ,");
+      return;
+    }
+
+    if (editMother.trim() && !/^[\p{L}\s.,]*$/u.test(editMother)) {
+      toast.error("Mother's name can only contain letters and the symbols . and ,");
       return;
     }
 
@@ -951,16 +971,26 @@ const FamilyDataForm = () => {
                         <Input
                           value={editFather}
                           onChange={(e) => setEditFather(e.target.value)}
-                          className="h-8 text-xs"
+                          className={`h-8 text-xs ${editFather.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(editFather) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                         />
+                        {editFather.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(editFather) && (
+                          <p className="text-[10px] text-destructive mt-1 font-medium">
+                            Only letters and the symbols . and , are allowed.
+                          </p>
+                        )}
                       </div>
                       <div>
                         <Label className="text-xs">Mother's Name</Label>
                         <Input
                           value={editMother}
                           onChange={(e) => setEditMother(e.target.value)}
-                          className="h-8 text-xs"
+                          className={`h-8 text-xs ${editMother.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(editMother) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                         />
+                        {editMother.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(editMother) && (
+                          <p className="text-[10px] text-destructive mt-1 font-medium">
+                            Only letters and the symbols . and , are allowed.
+                          </p>
+                        )}
                       </div>
                       <div>
                         <Label className="text-xs">Sitio</Label>
@@ -1177,8 +1207,13 @@ const FamilyDataForm = () => {
                     setNewFather(val);
                     setNewMembers(prev => prev.map(m => m.relationship === "Father" ? { ...m, full_name: val } : m));
                   }}
-                  className="text-xs mt-1"
+                  className={`text-xs mt-1 ${newFather.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(newFather) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                 />
+                {newFather.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(newFather) && (
+                  <p className="text-[10px] text-destructive mt-1 font-medium">
+                    Only letters and the symbols . and , are allowed.
+                  </p>
+                )}
               </div>
               <div>
                 <Label className="text-xs font-semibold">Mother's Name</Label>
@@ -1189,8 +1224,13 @@ const FamilyDataForm = () => {
                     setNewMother(val);
                     setNewMembers(prev => prev.map(m => m.relationship === "Mother" ? { ...m, full_name: val } : m));
                   }}
-                  className="text-xs mt-1"
+                  className={`text-xs mt-1 ${newMother.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(newMother) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                 />
+                {newMother.trim() !== "" && !/^[\p{L}\s.,]*$/u.test(newMother) && (
+                  <p className="text-[10px] text-destructive mt-1 font-medium">
+                    Only letters and the symbols . and , are allowed.
+                  </p>
+                )}
               </div>
             </div>
 
