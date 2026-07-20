@@ -480,6 +480,9 @@ const FamilyDataForm = () => {
 
   // Delete family file
   const handleDeleteFile = async (id: string, name: string) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete the family file "${name}"? This action cannot be undone.`);
+    if (!confirmDelete) return;
+
     if (id.startsWith("temp-")) {
       setRecords((prev) => prev.filter((r) => r.id !== id));
       setFileDialogOpen(false);
