@@ -724,9 +724,6 @@ const FamilyDataForm = () => {
                 <h2 className="font-heading font-semibold text-lg text-foreground">
                   Master Family Data Sheet Directory
                 </h2>
-                <p className="text-xs text-muted-foreground">
-                  Direct ledger view for bulk family entries and official barangay registry printing.
-                </p>
               </div>
               <div className="flex items-center gap-2 no-print">
                 <Button onClick={handleAddLedgerRow} size="sm" variant="outline" className="gap-1.5">
@@ -741,29 +738,29 @@ const FamilyDataForm = () => {
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-border text-left text-xs md:text-sm">
                 <thead>
-                  <tr className="bg-muted/60">
-                    <th className="border border-border p-2 font-bold text-center text-muted-foreground w-[15%]">
+                  <tr className="bg-transparent">
+                    <th className="border border-border p-2 font-bold text-center w-[15%]">
                       Family Number
                     </th>
-                    <th className="border border-border p-2 font-bold text-center text-muted-foreground w-[15%]">
+                    <th className="border border-border p-2 font-bold text-center w-[15%]">
                       Number of Households
                     </th>
-                    <th className="border border-border p-2 font-bold text-center text-muted-foreground w-[25%]">
+                    <th className="border border-border p-2 font-bold text-center w-[25%]">
                       Name of Household (Father)
                     </th>
-                    <th className="border border-border p-2 font-bold text-center text-muted-foreground w-[25%]">
+                    <th className="border border-border p-2 font-bold text-center w-[25%]">
                       Mother
                     </th>
-                    <th className="border border-border p-2 font-bold text-center text-muted-foreground w-[7%]">
+                    <th className="border border-border p-2 font-bold text-center w-[7%]">
                       Male
                     </th>
-                    <th className="border border-border p-2 font-bold text-center text-muted-foreground w-[7%]">
+                    <th className="border border-border p-2 font-bold text-center w-[7%]">
                       Female
                     </th>
-                    <th className="border border-border p-2 font-bold text-center text-muted-foreground w-[7%]">
+                    <th className="border border-border p-2 font-bold text-center w-[7%]">
                       Total
                     </th>
-                    <th className="border border-border p-2 font-bold text-center text-muted-foreground w-[8%] no-print">
+                    <th className="border border-border p-2 font-bold text-center w-[8%] no-print">
                       Open File
                     </th>
                   </tr>
@@ -851,8 +848,8 @@ const FamilyDataForm = () => {
                             min="0"
                           />
                         </td>
-                        <td className="border border-border p-2 text-center font-bold bg-muted/10">
-                          {totalMembers || rec.total_members || 0}
+                        <td className="border border-border p-2 text-center font-bold">
+                          {totalMembers > 0 || rec.total_members > 0 ? (totalMembers || rec.total_members) : ""}
                         </td>
                         <td className="border border-border p-1 text-center no-print">
                           <Button
