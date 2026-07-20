@@ -481,12 +481,12 @@ export function seedMockDatabase() {
   ];
 
   db['profiles'] = [
-    { id: "profile-1", user_id: "user-1", full_name: "Krystel Comia", username: "krystel", assigned_sitio: "Centro" },
+    { id: "profile-1", user_id: "user-1", full_name: "Krystel Comia", username: "krystel", assigned_sitio: "Maligaya" },
     { id: "profile-admin", user_id: "user-admin", full_name: "Admin Midwife", username: "admin", assigned_sitio: "Subukin Main" },
     { id: "profile-cristeta", user_id: "user-cristeta", full_name: "Cristeta R. Lanuza", username: "Cristeta", assigned_sitio: "Masigla" },
     { id: "profile-evelyn", user_id: "user-evelyn", full_name: "Evelyn T. Ilao", username: "Evelyn", assigned_sitio: "Manggahan 1" },
     { id: "profile-cecilia", user_id: "user-cecilia", full_name: "Cecilia G. Benosa", username: "Cecilia", assigned_sitio: "Maligaya" },
-    { id: "profile-merlita", user_id: "user-merlita", full_name: "Merlita R. Alonzo", username: "Merlita", assigned_sitio: "Matahimik/Punta" },
+    { id: "profile-merlita", user_id: "user-merlita", full_name: "Merlita R. Alonzo", username: "Merlita", assigned_sitio: "Matahimik / Punta" },
     { id: "profile-suzette", user_id: "user-suzette", full_name: "Suzette B. Lopez", username: "Suzette", assigned_sitio: "Makalintal 1" },
     { id: "profile-amelita", user_id: "user-amelita", full_name: "Amelita R. Sayat", username: "Amelita", assigned_sitio: "Puntor" },
     { id: "profile-wilma", user_id: "user-wilma", full_name: "Wilma D. Tanyag", username: "Wilma", assigned_sitio: "Masaya" },
@@ -494,15 +494,15 @@ export function seedMockDatabase() {
     { id: "profile-mercy", user_id: "user-mercy", full_name: "Mercy O. Abanilla", username: "Mercy", assigned_sitio: "Cama" },
     { id: "profile-renchie", user_id: "user-renchie", full_name: "Renchie V. Ilao", username: "Renchie", assigned_sitio: "Makalintal 2" },
     { id: "profile-renalyn", user_id: "user-renalyn", full_name: "Renalyn D. Laurante", username: "Renalyn", assigned_sitio: "Matahimik / Burol" },
-    { id: "profile-maribel", user_id: "user-maribel", full_name: "Maribel M. Abayon", username: "Maribel", assigned_sitio: "Centro" }
+    { id: "profile-maribel", user_id: "user-maribel", full_name: "Maribel M. Abayon", username: "Maribel", assigned_sitio: "Masigla" }
   ];
 
   db['bhw_workers'] = [
-    { id: "worker-1", name: "Krystel Comia", age: 28, address: "Sitio Centro, Subukin", gmail: "krystelcomia@gmail.com", number: "09123456789", is_online: true, user_id: "user-1", assigned_sitio: "Centro", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-1", name: "Krystel Comia", age: 28, address: "Subukin", gmail: "krystelcomia@gmail.com", number: "09123456789", is_online: true, user_id: "user-1", assigned_sitio: "Maligaya", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: "worker-cristeta", name: "Cristeta R. Lanuza", age: 0, address: "Masigla", gmail: "cristetalanuzaBHW@gmail.com", number: "0919-6980-712", is_online: false, user_id: "user-cristeta", assigned_sitio: "Masigla", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: "worker-evelyn", name: "Evelyn T. Ilao", age: 0, address: "Manggahan 1", gmail: "evelynilaoBHW@gmail.com", number: "0935-5638-247", is_online: false, user_id: "user-evelyn", assigned_sitio: "Manggahan 1", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: "worker-cecilia", name: "Cecilia G. Benosa", age: 0, address: "Maligaya", gmail: "ceciliabenosaBHW@gmail.com", number: "0921-8509-320", is_online: false, user_id: "user-cecilia", assigned_sitio: "Maligaya", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: "worker-merlita", name: "Merlita R. Alonzo", age: 0, address: "Matahimik/Punta", gmail: "merlitaalonzoBHW@gmail.com", number: "0930-9085-713", is_online: false, user_id: "user-merlita", assigned_sitio: "Matahimik/Punta", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    { id: "worker-merlita", name: "Merlita R. Alonzo", age: 0, address: "Matahimik / Punta", gmail: "merlitaalonzoBHW@gmail.com", number: "0930-9085-713", is_online: false, user_id: "user-merlita", assigned_sitio: "Matahimik / Punta", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: "worker-suzette", name: "Suzette B. Lopez", age: 0, address: "Makalintal 1", gmail: "suzettelopezBHW@gmail.com", number: "0935-2008-942", is_online: false, user_id: "user-suzette", assigned_sitio: "Makalintal 1", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: "worker-amelita", name: "Amelita R. Sayat", age: 0, address: "Puntor", gmail: "amelitasayatBHW@gmail.com", number: "0931-0232-973", is_online: false, user_id: "user-amelita", assigned_sitio: "Puntor", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: "worker-wilma", name: "Wilma D. Tanyag", age: 0, address: "Masaya", gmail: "wilmatanyagBHW@gmail.com", number: "0997-4971-138", is_online: false, user_id: "user-wilma", assigned_sitio: "Masaya", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
@@ -510,7 +510,7 @@ export function seedMockDatabase() {
     { id: "worker-mercy", name: "Mercy O. Abanilla", age: 0, address: "Cama", gmail: "mercyabanillaBHW@gmail.com", number: "0949-7768-394", is_online: false, user_id: "user-mercy", assigned_sitio: "Cama", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: "worker-renchie", name: "Renchie V. Ilao", age: 0, address: "Makalintal 2", gmail: "renchieilaoBHW@gmail.com", number: "0965-6627-031", is_online: false, user_id: "user-renchie", assigned_sitio: "Makalintal 2", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: "worker-renalyn", name: "Renalyn D. Laurante", age: 0, address: "Matahimik / Burol", gmail: "renalynlauranteBHW@gmail.com", number: "0985-1086-472", is_online: false, user_id: "user-renalyn", assigned_sitio: "Matahimik / Burol", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: "worker-maribel", name: "Maribel M. Abayon", age: 0, address: "Centro", gmail: "maribelabayonBNS@gmail.com", number: "0922-6722-134", is_online: false, user_id: "user-maribel", assigned_sitio: "Centro", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+    { id: "worker-maribel", name: "Maribel M. Abayon", age: 0, address: "Masigla", gmail: "maribelabayonBNS@gmail.com", number: "0922-6722-134", is_online: false, user_id: "user-maribel", assigned_sitio: "Masigla", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
   ];
 
   if (!db['residents']) db['residents'] = [];

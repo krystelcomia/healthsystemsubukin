@@ -33,7 +33,7 @@ const BHW_WORKERS = [
   { name: "Mercy O. Abanilla", phone: "0949-7768-394", role: "worker", sitio: "Cama" },
   { name: "Renchie V. Ilao", phone: "0965-6627-031", role: "worker", sitio: "Makalintal 2" },
   { name: "Renalyn D. Laurente", phone: "0985-1086-472", role: "worker", sitio: "Matahimik / Burol" },
-  { name: "Maribel M. Abayon", phone: "0922-6722-134", role: "bns", sitio: "Centro" }
+  { name: "Maribel M. Abayon", phone: "0922-6722-134", role: "bns", sitio: "Masigla" }
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

@@ -143,7 +143,7 @@ const ResidentRecords = () => {
     win.document.close(); win.print();
   };
 
-  const sitios = Array.from(new Set([...SUBUKIN_SITIOS, ...residents.map((r) => r.sitio).filter(Boolean)])) as string[];
+  const sitios = Array.from(new Set([...SUBUKIN_SITIOS, ...residents.map((r) => r.sitio).filter((s) => Boolean(s) && s !== "Centro" && s !== "Sitio Centro")])) as string[];
   const filtered = residents.filter((r) => {
     const matchesSearch = r.full_name.toLowerCase().includes(search.toLowerCase()) || (r.sitio || "").toLowerCase().includes(search.toLowerCase());
     const matchesSitio = sitioFilter === "all" || r.sitio === sitioFilter;

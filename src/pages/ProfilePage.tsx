@@ -51,7 +51,7 @@ const ProfilePage = () => {
           .maybeSingle();
         sitio = wData?.assigned_sitio || wData?.address || getAssignedSitio(fName || uName || "");
       }
-      setAssignedSitio(sitio || getAssignedSitio(fName || uName || "") || "Centro");
+      setAssignedSitio(sitio || getAssignedSitio(fName || uName || "") || "Maligaya");
       setLoading(false);
     })();
   }, [user]);

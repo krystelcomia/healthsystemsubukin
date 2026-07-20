@@ -84,7 +84,7 @@ const FamilyDataForm = () => {
   const [newFamNum, setNewFamNum] = useState("");
   const [newFather, setNewFather] = useState("");
   const [newMother, setNewMother] = useState("");
-  const [newSitio, setNewSitio] = useState("Centro");
+  const [newSitio, setNewSitio] = useState("Maligaya");
   const [newHouseholds, setNewHouseholds] = useState<number | string>(1);
   const [newMembers, setNewMembers] = useState<FamilyMember[]>([]);
 
@@ -914,10 +914,9 @@ const FamilyDataForm = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Centro">Sitio Centro</SelectItem>
-                            <SelectItem value="Ilaya">Sitio Ilaya</SelectItem>
-                            <SelectItem value="Ibaba">Sitio Ibaba</SelectItem>
-                            <SelectItem value="Tabing Dagat">Sitio Tabing Dagat</SelectItem>
+                            {SUBUKIN_SITIOS.map((s) => (
+                              <SelectItem key={s} value={s}>{s}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>

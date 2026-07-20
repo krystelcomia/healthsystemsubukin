@@ -38,7 +38,7 @@ const AdminResidents = () => {
     const { data, error } = await supabase.from("residents").select("*").order("full_name");
     if (error) { toast.error("Failed to load residents"); return; }
     setResidents(data || []);
-    const uniqueSitios = Array.from(new Set([...SUBUKIN_SITIOS, ...(data || []).map(r => r.sitio).filter(Boolean)])) as string[];
+    const uniqueSitios = Array.from(new Set([...SUBUKIN_SITIOS, ...(data || []).map(r => r.sitio).filter(s => Boolean(s) && s !== "Centro" && s !== "Sitio Centro")])) as string[];
     setSitios(uniqueSitios);
     setLoading(false);
   };

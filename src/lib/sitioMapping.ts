@@ -1,6 +1,5 @@
 export const SUBUKIN_SITIOS: string[] = [
   "Cama",
-  "Centro",
   "Makalintal 1",
   "Makalintal 2",
   "Maligaya",

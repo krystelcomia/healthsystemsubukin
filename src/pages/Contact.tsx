@@ -45,7 +45,7 @@ const BHW_CONTACTS: Contact[] = [
   { id: 9, name: "Mercy O. Abanilla", phone: "0949-7768-394", role: "worker", sitio: "Cama" },
   { id: 10, name: "Renchie V. Ilao", phone: "0965-6627-031", role: "worker", sitio: "Makalintal 2" },
   { id: 11, name: "Renalyn D. Laurente", phone: "0985-1086-472", role: "worker", sitio: "Matahimik / Burol" },
-  { id: 12, name: "Maribel M. Abayon", phone: "0922-6722-134", role: "bns", sitio: "Centro" }
+  { id: 12, name: "Maribel M. Abayon", phone: "0922-6722-134", role: "bns", sitio: "Masigla" }
 ];
 
 const EMERGENCY_SERVICES: EmergencyContact[] = [
