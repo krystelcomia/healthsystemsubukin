@@ -133,9 +133,9 @@ const ResidentRecords = () => {
       win.document.write(`</tbody></table><p style="margin-top:12px;font-size:12px;color:#666;">${t("common.total")}: ${filtered.length}</p>`);
     } else {
       let html = content.innerHTML;
-      html = html.replaceAll(sanjuanLogo, absSanjuan)
-                 .replaceAll(headerTextImg, absHeaderText)
-                 .replaceAll(barangayLogo, absBarangay);
+      html = html.split(sanjuanLogo).join(absSanjuan)
+                 .split(headerTextImg).join(absHeaderText)
+                 .split(barangayLogo).join(absBarangay);
       win.document.write(html);
     }
     win.document.write(`<p class="print-date">${new Date().toLocaleString()}</p></body></html>`);
