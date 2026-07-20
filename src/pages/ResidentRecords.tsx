@@ -115,18 +115,29 @@ const ResidentRecords = () => {
     if (!content) return;
     const win = window.open("", "_blank");
     if (!win) return;
+
+    const absSanjuan = new URL(sanjuanLogo, window.location.href).href;
+    const absHeaderText = new URL(headerTextImg, window.location.href).href;
+    const absBarangay = new URL(barangayLogo, window.location.href).href;
+
     win.document.write(`<!DOCTYPE html><html><head><title>${selectedResident ? `Record - ${selectedResident.full_name}` : t("residents.title")}</title>
       <style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #1a1a1a; font-size: 13px; }
-        .header-seal { display: flex !important; align-items: center !important; justify-content: center !important; gap: 24px !important; border-bottom: 4px double #000 !important; padding-bottom: 16px !important; margin-bottom: 20px !important; text-align: center !important; }
-        .header-seal img { mix-blend-mode: multiply !important; object-fit: contain !important; height: 80px !important; width: auto !important; max-height: 80px !important; }
+        .header-seal { display: flex !important; align-items: center !important; justify-content: center !important; gap: 24px !important; border-bottom: 4px double #000 !important; padding-bottom: 16px !important; margin-bottom: 20px !important; text-align: center !important; width: 100% !important; }
+        .header-seal img { mix-blend-mode: multiply !important; object-fit: contain !important; height: 80px !important; width: auto !important; max-height: 80px !important; shrink: 0 !important; }
         table { width: 100%; border-collapse: collapse; margin: 12px 0; } th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; } th { background: #f0fdfa; color: #0d9488; font-weight: 600; }
         h2 { font-size: 15px; color: #0d9488; margin: 20px 0 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; } .print-date { text-align: right; font-size: 10px; color: #999; margin-top: 20px; } @media print { body { padding: 15px; } }</style></head><body>`);
     if (!selectedResident) {
-      win.document.write(`<div class="header-seal"><img src="${sanjuanLogo}" /><img src="${headerTextImg}" /><img src="${barangayLogo}" /></div>`);
+      win.document.write(`<div class="header-seal"><img src="${absSanjuan}" alt="San Juan Seal" /><img src="${absHeaderText}" alt="Header Text" /><img src="${absBarangay}" alt="Barangay Subukin Logo" /></div>`);
       win.document.write(`<table><thead><tr><th>#</th><th>${t("residents.fullName")}</th><th>${t("residents.gender")}</th><th>${t("residents.age")}</th><th>${t("residents.birthday")}</th><th>${t("residents.civilStatus")}</th><th>${t("residents.bloodType")}</th><th>${t("residents.sitio")}</th><th>${t("residents.nationality")}</th></tr></thead><tbody>`);
       filtered.forEach((r, i) => { win.document.write(`<tr><td>${i + 1}</td><td>${r.full_name}</td><td>${r.gender}</td><td>${r.age}</td><td>${r.birthday || "—"}</td><td>${r.status}</td><td>${r.blood_type || "—"}</td><td>${r.sitio || "—"}</td><td>${r.nationality}</td></tr>`); });
       win.document.write(`</tbody></table><p style="margin-top:12px;font-size:12px;color:#666;">${t("common.total")}: ${filtered.length}</p>`);
-    } else { win.document.write(content.innerHTML); }
+    } else {
+      let html = content.innerHTML;
+      html = html.replaceAll(sanjuanLogo, absSanjuan)
+                 .replaceAll(headerTextImg, absHeaderText)
+                 .replaceAll(barangayLogo, absBarangay);
+      win.document.write(html);
+    }
     win.document.write(`<p class="print-date">${new Date().toLocaleString()}</p></body></html>`);
     win.document.close(); win.print();
   };
