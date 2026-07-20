@@ -10,6 +10,7 @@ import { Stethoscope } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ensureResidentExists } from "@/lib/residentLinker";
+import { logActivity } from "@/lib/activityLogger";
 
 const ConsultationForm = () => {
   const { t } = useSettings();
