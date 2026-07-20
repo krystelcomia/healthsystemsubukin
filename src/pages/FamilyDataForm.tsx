@@ -831,9 +831,9 @@ const FamilyDataForm = () => {
             <div className="space-y-6">
               {/* Official Barangay Printable Header */}
               <div className="print-only flex items-center justify-center gap-6 border-b-2 border-slate-900 pb-4 mb-4">
-                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 object-contain" />
-                <img src={headerTextImg} alt="Header Text" className="h-16 object-contain" />
-                <img src={barangayLogo} alt="Barangay Subukin" className="h-16 w-16 object-contain" />
+                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 object-contain mix-blend-multiply" />
+                <img src={headerTextImg} alt="Header Text" className="h-16 object-contain mix-blend-multiply" />
+                <img src={barangayLogo} alt="Barangay Subukin" className="h-16 w-16 object-contain mix-blend-multiply" />
               </div>
 
               {/* Opened File Folder Banner */}

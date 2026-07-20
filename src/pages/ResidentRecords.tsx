@@ -121,7 +121,7 @@ const ResidentRecords = () => {
         table { width: 100%; border-collapse: collapse; margin: 12px 0; } th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; } th { background: #f0fdfa; color: #0d9488; font-weight: 600; }
         h2 { font-size: 15px; color: #0d9488; margin: 20px 0 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; } .print-date { text-align: right; font-size: 10px; color: #999; margin-top: 20px; } @media print { body { padding: 15px; } }</style></head><body>`);
     if (!selectedResident) {
-      win.document.write(`<div style="display:flex;align-items:center;justify-content:center;gap:20px;border-bottom:3px double #000;padding-bottom:12px;margin-bottom:20px;text-align:center;"><img src="${sanjuanLogo}" style="height:60px;" /><img src="${headerTextImg}" style="height:60px;" /><img src="${barangayLogo}" style="height:60px;" /></div>`);
+      win.document.write(`<div style="display:flex;align-items:center;justify-content:center;gap:20px;border-bottom:3px double #000;padding-bottom:12px;margin-bottom:20px;text-align:center;"><img src="${sanjuanLogo}" style="height:60px;mix-blend-mode:multiply;" /><img src="${headerTextImg}" style="height:60px;mix-blend-mode:multiply;" /><img src="${barangayLogo}" style="height:60px;mix-blend-mode:multiply;" /></div>`);
       win.document.write(`<table><thead><tr><th>#</th><th>${t("residents.fullName")}</th><th>${t("residents.gender")}</th><th>${t("residents.age")}</th><th>${t("residents.birthday")}</th><th>${t("residents.civilStatus")}</th><th>${t("residents.bloodType")}</th><th>${t("residents.sitio")}</th><th>${t("residents.nationality")}</th></tr></thead><tbody>`);
       filtered.forEach((r, i) => { win.document.write(`<tr><td>${i + 1}</td><td>${r.full_name}</td><td>${r.gender}</td><td>${r.age}</td><td>${r.birthday || "—"}</td><td>${r.status}</td><td>${r.blood_type || "—"}</td><td>${r.sitio || "—"}</td><td>${r.nationality}</td></tr>`); });
       win.document.write(`</tbody></table><p style="margin-top:12px;font-size:12px;color:#666;">${t("common.total")}: ${filtered.length}</p>`);
@@ -147,9 +147,9 @@ const ResidentRecords = () => {
         </div>
         <div ref={printRef}>
           <div className="flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6">
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0" />
-            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0" />
-            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0" />
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
           </div>
           <h2 style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>{selectedResident.full_name}</h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16 }}>
