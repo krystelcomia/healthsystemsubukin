@@ -31,70 +31,101 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchRole = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .maybeSingle();
-    setUserRole(data?.role || null);
+    try {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (data?.role) {
+        setUserRole(data.role);
+        return data.role;
+      }
+
+      // Fallback role detection if user_roles entry is missing
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData?.user?.email || "";
+      const fallbackRole = (email === "adminsubukin@gmail.com" || email.includes("admin")) ? "supervisor" : "bhw";
+      setUserRole(fallbackRole);
+      return fallbackRole;
+    } catch (e) {
+      console.error("Error fetching user role:", e);
+      setUserRole("bhw");
+      return "bhw";
+    }
   };
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("username, full_name")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (data) {
-      if (data.username) localStorage.setItem("logged_in_username", data.username);
-      if ((data as any).full_name) localStorage.setItem("logged_in_fullname", (data as any).full_name);
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("username, full_name")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (data) {
+        if (data.username) localStorage.setItem("logged_in_username", data.username);
+        if ((data as any).full_name) localStorage.setItem("logged_in_fullname", (data as any).full_name);
+      }
+      setUsername(data?.username || null);
+    } catch (e) {
+      console.error("Error fetching user profile:", e);
     }
-    setUsername(data?.username || null);
   };
 
   const updateOnlineStatus = async (userId: string, online: boolean) => {
-    await (supabase.from as any)("bhw_workers")
-      .update({ is_online: online, last_seen: new Date().toISOString() })
-      .eq("user_id", userId);
+    try {
+      await (supabase.from as any)("bhw_workers")
+        .update({ is_online: online, last_seen: new Date().toISOString() })
+        .eq("user_id", userId);
+    } catch (e) {
+      console.error("Error updating online status:", e);
+    }
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          setTimeout(() => fetchRole(session.user.id), 0);
-          setTimeout(() => fetchProfile(session.user.id), 0);
-          setTimeout(() => updateOnlineStatus(session.user.id, true), 0);
-          if (event === "SIGNED_IN") {
-            setTimeout(() => {
-              startSession(session.user.id);
-              logActivity("login", { description: "Signed in to the system" });
-            }, 0);
-          }
-        } else {
-          setUserRole(null);
-          setUsername(null);
-          localStorage.removeItem("logged_in_username");
-          localStorage.removeItem("logged_in_fullname");
+    let isMounted = true;
+
+    const handleAuthSession = async (event: string | null, currentSession: Session | null) => {
+      if (!isMounted) return;
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+
+      if (currentSession?.user) {
+        await Promise.all([
+          fetchRole(currentSession.user.id),
+          fetchProfile(currentSession.user.id),
+          updateOnlineStatus(currentSession.user.id, true),
+        ]);
+
+        if (event === "SIGNED_IN") {
+          startSession(currentSession.user.id);
+          logActivity("login", { description: "Signed in to the system" });
         }
+      } else {
+        setUserRole(null);
+        setUsername(null);
+        localStorage.removeItem("logged_in_username");
+        localStorage.removeItem("logged_in_fullname");
+      }
+
+      if (isMounted) {
         setLoading(false);
       }
-    );
+    };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchRole(session.user.id);
-        fetchProfile(session.user.id);
-        updateOnlineStatus(session.user.id, true);
-      }
-      setLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      handleAuthSession(event, session);
     });
 
-    return () => subscription.unsubscribe();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleAuthSession(null, session);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {

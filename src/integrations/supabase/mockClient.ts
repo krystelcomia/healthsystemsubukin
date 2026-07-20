@@ -219,11 +219,13 @@ class MockAuth {
   private listeners: Array<(event: string, session: any) => void> = [];
 
   async signInWithPassword({ email, password }: any) {
+    seedMockDatabase();
     const dbStr = localStorage.getItem('supabase_mock_db');
     const db = dbStr ? JSON.parse(dbStr) : {};
     const users = db['auth_users'] || [];
     
-    const user = users.find((u: any) => u.email === email && u.password === password);
+    const cleanEmail = (email || "").trim().toLowerCase();
+    const user = users.find((u: any) => (u.email || "").trim().toLowerCase() === cleanEmail && u.password === password);
     if (!user) {
       return { data: { user: null, session: null }, error: { message: "Invalid login credentials" } };
     }
@@ -392,15 +394,57 @@ export function seedMockDatabase() {
     db = JSON.parse(dbStr);
   }
 
-  // Check if admin user exists; if not, force re-seeding / patching
-  const hasAdmin = db['auth_users']?.some((u: any) => u.email === 'adminsubukin@gmail.com');
-  const CristetaIsSupervisory = db['user_roles']?.some((r: any) => r.user_id === 'user-cristeta' && r.role === 'supervisory');
-  if (dbStr && hasAdmin && CristetaIsSupervisory) {
-    return; // Already seeded with correct user and supervisor roles
-  }
+  // Ensure default tables exist
+  if (!db['auth_users']) db['auth_users'] = [];
+  if (!db['user_roles']) db['user_roles'] = [];
+  if (!db['profiles']) db['profiles'] = [];
+  if (!db['bhw_workers']) db['bhw_workers'] = [];
 
-  // Clear stale mock session to force re-login with updated roles
-  localStorage.removeItem('supabase_mock_session');
+  const defaultUsers = [
+    { id: "user-1", email: "krystelcomia@gmail.com", password: "krystel123", user_metadata: { full_name: "Krystel Comia" } },
+    { id: "user-admin", email: "adminsubukin@gmail.com", password: "adminmidwife", user_metadata: { full_name: "Admin Midwife" } },
+    { id: "user-cristeta", email: "cristetalanuzaBHW@gmail.com", password: "bhwcristeta", user_metadata: { full_name: "Cristeta R. Lanuza" } },
+    { id: "user-evelyn", email: "evelynilaoBHW@gmail.com", password: "bhwevelyn", user_metadata: { full_name: "Evelyn T. Ilao" } },
+    { id: "user-cecilia", email: "ceciliabenosaBHW@gmail.com", password: "bhwcecilia", user_metadata: { full_name: "Cecilia G. Benosa" } },
+    { id: "user-merlita", email: "merlitaalonzoBHW@gmail.com", password: "bhwmerlita", user_metadata: { full_name: "Merlita R. Alonzo" } },
+    { id: "user-suzette", email: "suzettelopezBHW@gmail.com", password: "bhwsuzette", user_metadata: { full_name: "Suzette B. Lopez" } },
+    { id: "user-amelita", email: "amelitasayatBHW@gmail.com", password: "bhwamelita", user_metadata: { full_name: "Amelita R. Sayat" } },
+    { id: "user-wilma", email: "wilmatanyagBHW@gmail.com", password: "bhwawilma", user_metadata: { full_name: "Wilma D. Tanyag" } },
+    { id: "user-nenita", email: "nenitadimaculanganBHW@gmail.com", password: "bhwanenita", user_metadata: { full_name: "Nenita M. Dimaculangan" } },
+    { id: "user-mercy", email: "mercyabanillaBHW@gmail.com", password: "bhwmercy", user_metadata: { full_name: "Mercy O. Abanilla" } },
+    { id: "user-renchie", email: "renchieilaoBHW@gmail.com", password: "bhwrenchie", user_metadata: { full_name: "Renchie V. Ilao" } },
+    { id: "user-renalyn", email: "renalynlauranteBHW@gmail.com", password: "bhwrenalyn", user_metadata: { full_name: "Renalyn D. Laurante" } },
+    { id: "user-maribel", email: "maribelabayonBNS@gmail.com", password: "bnsmaribel", user_metadata: { full_name: "Maribel M. Abayon" } }
+  ];
+
+  const defaultRoles = [
+    { id: "role-1", user_id: "user-1", role: "bhw" },
+    { id: "role-admin", user_id: "user-admin", role: "supervisor" },
+    { id: "role-cristeta", user_id: "user-cristeta", role: "supervisory" },
+    { id: "role-evelyn", user_id: "user-evelyn", role: "bhw" },
+    { id: "role-cecilia", user_id: "user-cecilia", role: "bhw" },
+    { id: "role-merlita", user_id: "user-merlita", role: "bhw" },
+    { id: "role-suzette", user_id: "user-suzette", role: "bhw" },
+    { id: "role-amelita", user_id: "user-amelita", role: "bhw" },
+    { id: "role-wilma", user_id: "user-wilma", role: "bhw" },
+    { id: "role-nenita", user_id: "user-nenita", role: "bhw" },
+    { id: "role-mercy", user_id: "user-mercy", role: "bhw" },
+    { id: "role-renchie", user_id: "user-renchie", role: "bhw" },
+    { id: "role-renalyn", user_id: "user-renalyn", role: "bhw" },
+    { id: "role-maribel", user_id: "user-maribel", role: "bns" }
+  ];
+
+  defaultUsers.forEach(u => {
+    if (!db['auth_users'].some((existing: any) => existing.email.toLowerCase() === u.email.toLowerCase())) {
+      db['auth_users'].push(u);
+    }
+  });
+
+  defaultRoles.forEach(r => {
+    if (!db['user_roles'].some((existing: any) => existing.user_id === r.user_id)) {
+      db['user_roles'].push(r);
+    }
+  });
 
   db['auth_users'] = [
     { id: "user-1", email: "krystelcomia@gmail.com", password: "krystel123", user_metadata: { full_name: "Krystel Comia" } },
