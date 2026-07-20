@@ -117,8 +117,8 @@ const ResidentRecords = () => {
     if (!win) return;
     win.document.write(`<!DOCTYPE html><html><head><title>${selectedResident ? `Record - ${selectedResident.full_name}` : t("residents.title")}</title>
       <style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #1a1a1a; font-size: 13px; }
-        .header-seal { display: flex !important; align-items: center !important; justify-content: center !important; gap: 24px !important; border-bottom: 4px double #000 !important; padding-bottom: 16px !important; margin-bottom: 24px !important; text-align: center !important; }
-        .header-seal img { mix-blend-mode: multiply !important; object-fit: contain !important; height: 70px !important; width: auto !important; }
+        .header-seal { display: flex !important; align-items: center !important; justify-content: center !important; gap: 32px !important; border-bottom: 4px double #000 !important; padding-bottom: 16px !important; margin-bottom: 24px !important; text-align: center !important; }
+        .header-seal img { mix-blend-mode: multiply !important; object-fit: contain !important; height: 115px !important; width: auto !important; max-height: 115px !important; }
         table { width: 100%; border-collapse: collapse; margin: 12px 0; } th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; } th { background: #f0fdfa; color: #0d9488; font-weight: 600; }
         h2 { font-size: 15px; color: #0d9488; margin: 20px 0 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; } .print-date { text-align: right; font-size: 10px; color: #999; margin-top: 20px; } @media print { body { padding: 15px; } }</style></head><body>`);
     if (!selectedResident) {
@@ -148,12 +148,12 @@ const ResidentRecords = () => {
         </div>
         <div ref={printRef}>
           <div 
-            className="header-seal flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "24px", textAlign: "center" }}
+            className="header-seal flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "32px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "24px", textAlign: "center" }}
           >
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "70px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "70px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "70px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-24 w-auto md:h-32 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={headerTextImg} alt="Header Text" className="h-24 w-auto md:h-32 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-24 w-auto md:h-32 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
           </div>
           <h2 style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>{selectedResident.full_name}</h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16 }}>

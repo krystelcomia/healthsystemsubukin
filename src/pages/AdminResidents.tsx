@@ -9,6 +9,9 @@ import { Users, Printer, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
+import barangayLogo from "@/assets/barangay-logo.png";
+import sanjuanLogo from "@/assets/sanjuan_logo.png";
+import headerTextImg from "@/assets/header_text.png";
 
 interface Resident {
   id: string; full_name: string; gender: string; age: number; status: string; religion: string; blood_type: string; nationality: string; sitio: string; birthday: string | null; family_number?: string | null; created_at: string;
@@ -73,10 +76,11 @@ const AdminResidents = () => {
     if (!win) return;
     win.document.write(`<!DOCTYPE html><html><head><title>${t("residents.title")} - ${selectedSitio === "all" ? t("admin.residents.allSitios") : selectedSitio}</title>
       <style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #1a1a1a; font-size: 13px; }
-        .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #0d9488; padding-bottom: 16px; } .header h1 { font-size: 20px; color: #0d9488; } .header p { font-size: 11px; color: #666; }
+        .header-seal { display: flex !important; align-items: center !important; justify-content: center !important; gap: 32px !important; border-bottom: 4px double #000 !important; padding-bottom: 16px !important; margin-bottom: 24px !important; text-align: center !important; }
+        .header-seal img { mix-blend-mode: multiply !important; object-fit: contain !important; height: 115px !important; width: auto !important; max-height: 115px !important; }
         table { width: 100%; border-collapse: collapse; margin: 12px 0; } th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; } th { background: #f0fdfa; color: #0d9488; font-weight: 600; }
         .print-date { text-align: right; font-size: 10px; color: #999; margin-top: 20px; }</style></head><body>
-      <div class="header"><h1>Barangay Health System</h1><p>${t("residents.title")} - ${selectedSitio === "all" ? t("admin.residents.allSitios") : `Sitio: ${selectedSitio}`}</p></div>
+      <div class="header-seal"><img src="${sanjuanLogo}" /><img src="${headerTextImg}" /><img src="${barangayLogo}" /></div>
       <table><thead><tr><th>#</th><th>${t("residents.fullName")}</th><th>${t("residents.gender")}</th><th>${t("residents.age")}</th><th>${t("residents.birthday")}</th><th>${t("residents.civilStatus")}</th><th>${t("residents.bloodType")}</th><th>${t("residents.sitio")}</th><th>${t("residents.nationality")}</th><th>${t("residents.religion")}</th></tr></thead><tbody>`);
     filtered.forEach((r, i) => { win.document.write(`<tr><td>${i + 1}</td><td>${r.full_name}</td><td>${r.gender}</td><td>${r.age}</td><td>${r.birthday || "—"}</td><td>${r.status}</td><td>${r.blood_type || "—"}</td><td>${r.sitio || "—"}</td><td>${r.nationality}</td><td>${r.religion || "—"}</td></tr>`); });
     win.document.write(`</tbody></table><p style="margin-top:12px;font-size:12px;color:#666;">${t("common.total")}: ${filtered.length}</p>`);

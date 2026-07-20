@@ -830,10 +830,10 @@ const FamilyDataForm = () => {
           {selectedFile && (
             <div className="space-y-6">
               {/* Official Barangay Printable Header */}
-              <div className="print-only flex items-center justify-center gap-6 border-b-2 border-slate-900 pb-4 mb-4">
-                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 object-contain mix-blend-multiply" />
-                <img src={headerTextImg} alt="Header Text" className="h-16 object-contain mix-blend-multiply" />
-                <img src={barangayLogo} alt="Barangay Subukin" className="h-16 w-16 object-contain mix-blend-multiply" />
+              <div className="print-only flex items-center justify-center gap-8 border-b-4 border-double border-slate-900 pb-4 mb-4" style={{ display: "flex", alignItems: "center", justify: "center", gap: "32px" }}>
+                <img src={sanjuanLogo} alt="San Juan Seal" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                <img src={headerTextImg} alt="Header Text" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                <img src={barangayLogo} alt="Barangay Subukin" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
               </div>
 
               {/* Opened File Folder Banner */}
