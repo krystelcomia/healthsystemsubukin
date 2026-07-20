@@ -29,6 +29,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
 import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
+import { logActivity } from "@/lib/activityLogger";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -832,7 +833,7 @@ const FamilyDataForm = () => {
           {selectedFile && (
             <div className="space-y-6">
               {/* Official Barangay Printable Header */}
-              <div className="print-only flex items-center justify-center gap-8 border-b-4 border-double border-slate-900 pb-4 mb-4" style={{ display: "flex", alignItems: "center", justify: "center", gap: "32px" }}>
+              <div className="print-only flex items-center justify-center gap-8 border-b-4 border-double border-slate-900 pb-4 mb-4" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "32px" }}>
                 <img src={sanjuanLogo} alt="San Juan Seal" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
                 <img src={headerTextImg} alt="Header Text" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
                 <img src={barangayLogo} alt="Barangay Subukin" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
