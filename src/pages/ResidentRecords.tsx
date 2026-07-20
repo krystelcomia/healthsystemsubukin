@@ -174,37 +174,7 @@ const ResidentRecords = () => {
   return (
     <div className="w-full space-y-6">
       <div className="flex items-center justify-end">
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => { setSelectedResident(null); handlePrint(); }}><Printer className="h-4 w-4 mr-2" /> {t("residents.printList")}</Button>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> {t("residents.addResident")}</Button></DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader><DialogDescription>{t("residents.addNewDesc")}</DialogDescription></DialogHeader>
-              <div className="space-y-3">
-                <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={newResident.full_name} onChange={(e) => setNewResident({ ...newResident, full_name: e.target.value })} placeholder={t("residents.fullName")} /></div>
-                <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={newResident.birthday} onChange={(e) => {
-                  const bday = e.target.value;
-                  const computed = calculateAge(bday);
-                  setNewResident({ ...newResident, birthday: bday, age: computed > 0 ? String(computed) : newResident.age });
-                }} /></div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={newResident.gender} onValueChange={(v) => setNewResident({ ...newResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
-                  <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={newResident.age} onChange={(e) => setNewResident({ ...newResident, age: e.target.value })} placeholder="0" /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1"><Label>{t("residents.civilStatus")}</Label><Select value={newResident.status} onValueChange={(v) => setNewResident({ ...newResident, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">{t("residents.single")}</SelectItem><SelectItem value="Married">{t("residents.married")}</SelectItem><SelectItem value="Widowed">{t("residents.widowed")}</SelectItem><SelectItem value="Separated">{t("residents.separated")}</SelectItem></SelectContent></Select></div>
-                  <div className="space-y-1"><Label>{t("residents.religion")}</Label><Input value={newResident.religion} onChange={(e) => setNewResident({ ...newResident, religion: e.target.value })} placeholder={t("residents.religion")} /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1"><Label>{t("residents.bloodType")}</Label><Select value={newResident.blood_type} onValueChange={(v) => setNewResident({ ...newResident, blood_type: v })}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bt) => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}</SelectContent></Select></div>
-                  <div className="space-y-1"><Label>{t("residents.nationality")}</Label><Input value={newResident.nationality} onChange={(e) => setNewResident({ ...newResident, nationality: e.target.value })} placeholder="Filipino" /></div>
-                </div>
-                <div className="space-y-1"><Label>{t("residents.sitio")}</Label><Input value={newResident.sitio} onChange={(e) => setNewResident({ ...newResident, sitio: e.target.value })} placeholder="Sitio / Area" /></div>
-              </div>
-              <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>{t("common.cancel")}</Button><Button onClick={handleAddResident}>{t("residents.saveResident")}</Button></DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+        <Button variant="outline" onClick={() => { setSelectedResident(null); handlePrint(); }}><Printer className="h-4 w-4 mr-2" /> {t("residents.printList")}</Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
