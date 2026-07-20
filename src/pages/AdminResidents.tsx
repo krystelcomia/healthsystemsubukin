@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 
 interface Resident {
-  id: string; full_name: string; gender: string; age: number; status: string; religion: string; blood_type: string; nationality: string; sitio: string; birthday: string | null; created_at: string;
+  id: string; full_name: string; gender: string; age: number; status: string; religion: string; blood_type: string; nationality: string; sitio: string; birthday: string | null; family_number?: string | null; created_at: string;
 }
 
 interface HealthRecords {
@@ -120,6 +120,7 @@ const AdminResidents = () => {
                 <tr className="border-b border-border bg-muted/50">
                   <th className="p-3 text-left font-medium text-muted-foreground">#</th>
                   <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.fullName")}</th>
+                  <th className="p-3 text-left font-medium text-muted-foreground">Family #</th>
                   <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.gender")}</th>
                   <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.age")}</th>
                   <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.birthday")}</th>
@@ -130,8 +131,8 @@ const AdminResidents = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (<tr><td colSpan={9} className="p-6 text-center text-muted-foreground">{t("common.loading")}</td></tr>
-                ) : filtered.length === 0 ? (<tr><td colSpan={9} className="p-6 text-center text-muted-foreground">{t("residents.noResidents")}</td></tr>
+                {loading ? (<tr><td colSpan={10} className="p-6 text-center text-muted-foreground">{t("common.loading")}</td></tr>
+                ) : filtered.length === 0 ? (<tr><td colSpan={10} className="p-6 text-center text-muted-foreground">{t("residents.noResidents")}</td></tr>
                 ) : filtered.map((r, i) => (
                   <tr key={r.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                     <td className="p-3 text-muted-foreground">{i + 1}</td>
@@ -144,6 +145,7 @@ const AdminResidents = () => {
                         {r.full_name}
                       </button>
                     </td>
+                    <td className="p-3 font-mono text-xs">{r.family_number ? <Badge variant="outline" className="font-mono text-[11px] bg-primary/5 text-primary border-primary/20">{r.family_number}</Badge> : "—"}</td>
                     <td className="p-3 text-foreground">{r.gender}</td>
                     <td className="p-3 text-foreground">{r.age}</td>
                     <td className="p-3 text-foreground">{r.birthday || "—"}</td>

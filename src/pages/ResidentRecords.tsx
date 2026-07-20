@@ -225,11 +225,23 @@ const ResidentRecords = () => {
                 <div className="flex items-center gap-4 cursor-pointer flex-1" onClick={() => handleSelectResident(resident)}>
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center"><span className="text-sm font-semibold text-primary">{resident.full_name.split(" ").map((n) => n[0]).join("")}</span></div>
                   <div>
-                    <p className="font-medium text-foreground">{resident.full_name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-foreground">{resident.full_name}</p>
+                      {resident.family_number && (
+                        <Badge variant="outline" className="text-[11px] bg-primary/10 text-primary border-primary/30 font-mono">
+                          Family #: {resident.family_number}
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground">{resident.sitio ? `${resident.sitio} · ` : ""}{resident.gender} · {t("residents.age")} {resident.age} · {resident.status}{resident.birthday ? ` · ${t("residents.birthday")} ${resident.birthday}` : ""}</p>
                   </div>
                 </div>
                 <div className="flex gap-2 items-center">
+                  {resident.family_number && (
+                    <Badge variant="secondary" className="text-xs font-mono hidden sm:inline-flex">
+                      {resident.family_number}
+                    </Badge>
+                  )}
                   <Badge variant="secondary" className="text-xs">{resident.blood_type || "—"}</Badge>
                   <Badge variant="outline" className="text-xs">{resident.nationality}</Badge>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditResident(resident); setEditDialogOpen(true); }}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>

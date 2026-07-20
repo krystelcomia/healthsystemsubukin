@@ -92,6 +92,7 @@ const FamilyDataForm = () => {
   const [memName, setMemName] = useState("");
   const [memRole, setMemRole] = useState("Child");
   const [memAge, setMemAge] = useState<number | string>("");
+  const [memBirthday, setMemBirthday] = useState("");
   const [memGender, setMemGender] = useState("Male");
   const [memStatus, setMemStatus] = useState("Single");
 
@@ -311,6 +312,25 @@ const FamilyDataForm = () => {
     const femalesCount = activeMembers.filter((m) => m.gender === "Female").length;
     const totalCount = activeMembers.length;
 
+    // Link father, mother, and all family members to the family_number in residents system
+    const famNumStr = editFamNum.trim();
+    if (editFather.trim()) {
+      await ensureResidentExists({ fullName: editFather.trim(), sitio: editSitio, gender: "Male", familyNumber: famNumStr });
+    }
+    if (editMother.trim()) {
+      await ensureResidentExists({ fullName: editMother.trim(), sitio: editSitio, gender: "Female", familyNumber: famNumStr });
+    }
+    for (const mem of activeMembers) {
+      await ensureResidentExists({
+        fullName: mem.full_name,
+        sitio: editSitio,
+        gender: mem.gender,
+        age: mem.age,
+        birthday: mem.birthday,
+        familyNumber: famNumStr
+      });
+    }
+
     const updatePayload = {
       family_number: editFamNum,
       father_name: editFather,
@@ -346,7 +366,7 @@ const FamilyDataForm = () => {
       if (error) {
         toast.error("Failed to update family file");
       } else {
-        toast.success("Family file updated successfully!");
+        toast.success("Family file updated and family numbers assigned!");
         logActivity("update_family_data", {
           entity_type: "family_data",
           description: `Updated family file ${editFamNum} - ${editFather}`
@@ -370,6 +390,7 @@ const FamilyDataForm = () => {
       full_name: memName.trim(),
       relationship: memRole,
       age: memAge || "",
+      birthday: memBirthday || "",
       gender: memGender,
       civil_status: memStatus
     };
@@ -378,6 +399,7 @@ const FamilyDataForm = () => {
     setActiveMembers(updated);
     setMemName("");
     setMemAge("");
+    setMemBirthday("");
     setAddMemberDialogOpen(false);
     toast.success(`Added ${memName} to family members list`);
   };
@@ -1270,7 +1292,7 @@ const FamilyDataForm = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <Label className="text-xs">Age</Label>
                 <Input
@@ -1280,6 +1302,16 @@ const FamilyDataForm = () => {
                   placeholder="e.g. 12"
                   className="h-8 text-xs mt-1"
                   min="0"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">Birthday</Label>
+                <Input
+                  type="date"
+                  value={memBirthday}
+                  onChange={(e) => setMemBirthday(e.target.value)}
+                  className="h-8 text-xs mt-1"
                 />
               </div>
 
