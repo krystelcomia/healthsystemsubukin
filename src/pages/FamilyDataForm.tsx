@@ -1350,7 +1350,6 @@ const FamilyDataForm = () => {
                               <SelectItem value="Mother">Mother</SelectItem>
                               <SelectItem value="Child">Child</SelectItem>
                               <SelectItem value="Grandparent">Grandparent</SelectItem>
-                              <SelectItem value="Relative">Relative</SelectItem>
                             </SelectContent>
                           </Select>
                         </td>
@@ -1442,7 +1441,6 @@ const FamilyDataForm = () => {
                     <SelectItem value="Daughter">Daughter</SelectItem>
                     <SelectItem value="Grandfather">Grandfather</SelectItem>
                     <SelectItem value="Grandmother">Grandmother</SelectItem>
-                    <SelectItem value="Relative">Relative</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
