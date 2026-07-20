@@ -906,8 +906,13 @@ const FamilyDataForm = () => {
                         <Input
                           value={editFamNum}
                           onChange={(e) => setEditFamNum(e.target.value)}
-                          className="h-8 text-xs font-mono"
+                          className={`h-8 text-xs font-mono ${editFamNum.trim() !== "" && !/\d/.test(editFamNum) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                         />
+                        {editFamNum.trim() !== "" && !/\d/.test(editFamNum) && (
+                          <p className="text-[10px] text-destructive mt-1 font-medium">
+                            Must contain at least one number/digit.
+                          </p>
+                        )}
                       </div>
                       <div>
                         <Label className="text-xs">Father's Name (Household Head)</Label>
@@ -1107,8 +1112,13 @@ const FamilyDataForm = () => {
                 <Input
                   value={newFamNum}
                   onChange={(e) => setNewFamNum(e.target.value)}
-                  className="font-mono text-sm mt-1"
+                  className={`font-mono text-sm mt-1 ${newFamNum.trim() !== "" && !/\d/.test(newFamNum) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                 />
+                {newFamNum.trim() !== "" && !/\d/.test(newFamNum) && (
+                  <p className="text-[10px] text-destructive mt-1 font-medium">
+                    Must contain at least one number/digit.
+                  </p>
+                )}
               </div>
               <div>
                 <Label className="text-xs font-semibold">Sitio</Label>
