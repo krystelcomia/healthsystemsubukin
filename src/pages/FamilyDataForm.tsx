@@ -242,7 +242,7 @@ const FamilyDataForm = () => {
     }
 
     if (!/^\d+[a-zA-Z]*$/.test(newFamNum.trim())) {
-      toast.error("Must contain at least one number/digit.");
+      toast.error("Incorrect family number format.");
       return;
     }
     if (!newFather.trim() && !newMother.trim()) {
@@ -343,7 +343,7 @@ const FamilyDataForm = () => {
     }
 
     if (!/^\d+[a-zA-Z]*$/.test(editFamNum.trim())) {
-      toast.error("Must contain at least one number/digit.");
+      toast.error("Incorrect family number format.");
       return;
     }
 
@@ -942,7 +942,7 @@ const FamilyDataForm = () => {
                         />
                         {editFamNum.trim() !== "" && !/^\d+[a-zA-Z]*$/.test(editFamNum.trim()) && (
                           <p className="text-[10px] text-destructive mt-1 font-medium">
-                            Must contain at least one number/digit.
+                            Incorrect family number format.
                           </p>
                         )}
                       </div>
@@ -1148,7 +1148,7 @@ const FamilyDataForm = () => {
                 />
                 {newFamNum.trim() !== "" && !/^\d+[a-zA-Z]*$/.test(newFamNum.trim()) && (
                   <p className="text-[10px] text-destructive mt-1 font-medium">
-                    Must contain at least one number/digit.
+                    Incorrect family number format.
                   </p>
                 )}
               </div>
