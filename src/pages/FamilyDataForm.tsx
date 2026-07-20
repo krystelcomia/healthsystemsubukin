@@ -503,10 +503,11 @@ const FamilyDataForm = () => {
           body * {
             visibility: hidden !important;
           }
-          #individual-file-print-area, #individual-file-print-area * {
+          #individual-file-print-area, #individual-file-print-area *,
+          #family-print-area, #family-print-area * {
             visibility: visible !important;
           }
-          #individual-file-print-area {
+          #individual-file-print-area, #family-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
@@ -703,6 +704,13 @@ const FamilyDataForm = () => {
           className="border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden"
         >
           <CardContent className="p-6 md:p-8 space-y-6">
+            {/* Official Barangay Printable Header */}
+            <div className="print-only flex items-center justify-center gap-8 border-b-4 border-double border-slate-900 pb-4 mb-4" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "32px" }}>
+              <img src={sanjuanLogo} alt="San Juan Seal" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+              <img src={headerTextImg} alt="Header Text" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+              <img src={barangayLogo} alt="Barangay Subukin" className="h-24 md:h-32 object-contain mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            </div>
+
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
               <div>
                 <h2 className="font-heading font-semibold text-lg text-foreground">
