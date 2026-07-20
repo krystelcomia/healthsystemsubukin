@@ -1175,12 +1175,12 @@ const FamilyDataForm = () => {
               </div>
 
               <div className="overflow-x-auto border border-border/60 rounded-lg max-h-52 overflow-y-auto">
-                <table className="w-full text-xs min-w-[540px]">
+                <table className="w-full text-xs min-w-[620px]">
                   <thead>
                     <tr className="bg-muted/60 border-b border-border/50 text-muted-foreground font-semibold">
-                      <th className="p-2 text-left">Full Name</th>
+                      <th className="p-2 text-left w-48">Full Name</th>
                       <th className="p-2 text-left w-32">Birthday</th>
-                      <th className="p-2 text-center w-24">Age</th>
+                      <th className="p-2 text-center w-20">Age</th>
                       <th className="p-2 text-left w-24">Role</th>
                       <th className="p-2 text-left w-24">Gender</th>
                       <th className="p-2 text-center w-10">Action</th>
