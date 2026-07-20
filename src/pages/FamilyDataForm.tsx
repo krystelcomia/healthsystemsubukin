@@ -1082,7 +1082,7 @@ const FamilyDataForm = () => {
 
       {/* ================= CREATE NEW FAMILY FILE DIALOG ================= */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-3xl bg-card text-card-foreground border-border shadow-xl">
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto bg-card text-card-foreground border-border shadow-xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
               <FolderOpen className="h-5 w-5 text-primary" />
@@ -1094,7 +1094,7 @@ const FamilyDataForm = () => {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-semibold">Family Number *</Label>
                 <Input
@@ -1120,7 +1120,7 @@ const FamilyDataForm = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-semibold">Father's Name (Household Head)</Label>
                 <Input
@@ -1149,9 +1149,9 @@ const FamilyDataForm = () => {
               </div>
             </div>
 
-            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs">
+            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs w-full overflow-hidden">
               <span className="text-muted-foreground">Generated File Folder Name:</span>
-              <div className="font-mono font-bold text-foreground text-sm mt-0.5">
+              <div className="font-mono font-bold text-foreground text-sm mt-0.5 truncate">
                 {`${newFamNum || "FAM-???"} - ${newFather.trim() || "Unassigned Father"}`}
               </div>
             </div>
@@ -1176,120 +1176,118 @@ const FamilyDataForm = () => {
                 </Button>
               </div>
 
-              <div className="border border-border/60 rounded-lg overflow-hidden">
-                <div className="grid grid-cols-12 gap-2 bg-muted/60 p-2 text-[11px] font-semibold text-muted-foreground border-b border-border/50">
-                  <div className="col-span-4">Full Name</div>
-                  <div className="col-span-2 text-center">Age</div>
-                  <div className="col-span-3">Birthday</div>
-                  <div className="col-span-1">Role</div>
-                  <div className="col-span-1">Gender</div>
-                  <div className="col-span-1 text-center">Action</div>
-                </div>
-
-                <div className="space-y-1.5 p-2 max-h-48 overflow-y-auto">
-                  {newMembers.map((mem) => (
-                    <div key={mem.id} className="grid grid-cols-12 gap-2 items-center">
-                      <div className="col-span-4">
-                        <Input
-                          placeholder="Full Name"
-                          value={mem.full_name}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setNewMembers((prev) =>
-                              prev.map((m) => (m.id === mem.id ? { ...m, full_name: val } : m))
-                            );
-                            if (mem.relationship === "Father") setNewFather(val);
-                            if (mem.relationship === "Mother") setNewMother(val);
-                          }}
-                          className="h-8 text-xs"
-                        />
-                      </div>
-
-                      <div className="col-span-2">
-                        <Input
-                          type="number"
-                          placeholder="Age"
-                          value={mem.age || ""}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setNewMembers((prev) =>
-                              prev.map((m) => (m.id === mem.id ? { ...m, age: val } : m))
-                            );
-                          }}
-                          className="h-8 text-xs text-center"
-                          min="0"
-                        />
-                      </div>
-
-                      <div className="col-span-3">
-                        <Input
-                          type="date"
-                          value={mem.birthday || ""}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setNewMembers((prev) =>
-                              prev.map((m) => (m.id === mem.id ? { ...m, birthday: val } : m))
-                            );
-                          }}
-                          className="h-8 text-xs"
-                        />
-                      </div>
-
-                      <div className="col-span-1">
-                        <Select
-                          value={mem.relationship}
-                          onValueChange={(val) =>
-                            setNewMembers((prev) =>
-                              prev.map((m) => (m.id === mem.id ? { ...m, relationship: val } : m))
-                            )
-                          }
-                        >
-                          <SelectTrigger className="h-8 text-xs px-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Father">Father</SelectItem>
-                            <SelectItem value="Mother">Mother</SelectItem>
-                            <SelectItem value="Child">Child</SelectItem>
-                            <SelectItem value="Grandparent">Grandparent</SelectItem>
-                            <SelectItem value="Relative">Relative</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="col-span-1">
-                        <Select
-                          value={mem.gender}
-                          onValueChange={(val) =>
-                            setNewMembers((prev) =>
-                              prev.map((m) => (m.id === mem.id ? { ...m, gender: val } : m))
-                            )
-                          }
-                        >
-                          <SelectTrigger className="h-8 text-xs px-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Male">Male</SelectItem>
-                            <SelectItem value="Female">Female</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="col-span-1 text-center">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          onClick={() => setNewMembers(prev => prev.filter(m => m.id !== mem.id))}
-                        >
-                          <Trash className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div className="overflow-x-auto border border-border/60 rounded-lg max-h-52 overflow-y-auto">
+                <table className="w-full text-xs min-w-[540px]">
+                  <thead>
+                    <tr className="bg-muted/60 border-b border-border/50 text-muted-foreground font-semibold">
+                      <th className="p-2 text-left">Full Name</th>
+                      <th className="p-2 text-center w-16">Age</th>
+                      <th className="p-2 text-left w-32">Birthday</th>
+                      <th className="p-2 text-left w-24">Role</th>
+                      <th className="p-2 text-left w-24">Gender</th>
+                      <th className="p-2 text-center w-10">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {newMembers.map((mem) => (
+                      <tr key={mem.id} className="border-b border-border/30 hover:bg-muted/20">
+                        <td className="p-1.5">
+                          <Input
+                            placeholder="Full Name"
+                            value={mem.full_name}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setNewMembers((prev) =>
+                                prev.map((m) => (m.id === mem.id ? { ...m, full_name: val } : m))
+                              );
+                              if (mem.relationship === "Father") setNewFather(val);
+                              if (mem.relationship === "Mother") setNewMother(val);
+                            }}
+                            className="h-8 text-xs"
+                          />
+                        </td>
+                        <td className="p-1.5">
+                          <Input
+                            type="number"
+                            placeholder="Age"
+                            value={mem.age || ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setNewMembers((prev) =>
+                                prev.map((m) => (m.id === mem.id ? { ...m, age: val } : m))
+                              );
+                            }}
+                            className="h-8 text-xs text-center"
+                            min="0"
+                          />
+                        </td>
+                        <td className="p-1.5">
+                          <Input
+                            type="date"
+                            value={mem.birthday || ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setNewMembers((prev) =>
+                                prev.map((m) => (m.id === mem.id ? { ...m, birthday: val } : m))
+                              );
+                            }}
+                            className="h-8 text-xs"
+                          />
+                        </td>
+                        <td className="p-1.5">
+                          <Select
+                            value={mem.relationship}
+                            onValueChange={(val) =>
+                              setNewMembers((prev) =>
+                                prev.map((m) => (m.id === mem.id ? { ...m, relationship: val } : m))
+                              )
+                            }
+                          >
+                            <SelectTrigger className="h-8 text-xs px-2">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Father">Father</SelectItem>
+                              <SelectItem value="Mother">Mother</SelectItem>
+                              <SelectItem value="Child">Child</SelectItem>
+                              <SelectItem value="Grandparent">Grandparent</SelectItem>
+                              <SelectItem value="Relative">Relative</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="p-1.5">
+                          <Select
+                            value={mem.gender}
+                            onValueChange={(val) =>
+                              setNewMembers((prev) =>
+                                prev.map((m) => (m.id === mem.id ? { ...m, gender: val } : m))
+                              )
+                            }
+                          >
+                            <SelectTrigger className="h-8 text-xs px-2">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Male">Male</SelectItem>
+                              <SelectItem value="Female">Female</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="p-1.5 text-center">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                            onClick={() => setNewMembers((prev) => prev.filter((m) => m.id !== mem.id))}
+                          >
+                            <Trash className="h-3.5 w-3.5" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
