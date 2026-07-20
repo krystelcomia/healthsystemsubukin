@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { ensureResidentExists } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
@@ -224,7 +225,27 @@ const FamilyDataForm = () => {
     const femalesCount = validMembers.filter((m) => m.gender === "Female").length;
     const totalCount = validMembers.length || (newFather ? 1 : 0) + (newMother ? 1 : 0);
 
+    // Auto-link residents in system database
+    let mainResidentId: string | null = null;
+    if (newFather.trim()) {
+      mainResidentId = await ensureResidentExists({ fullName: newFather.trim(), sitio: newSitio, gender: "Male" });
+    }
+    if (newMother.trim()) {
+      const motherId = await ensureResidentExists({ fullName: newMother.trim(), sitio: newSitio, gender: "Female" });
+      if (!mainResidentId) mainResidentId = motherId;
+    }
+
+    for (const mem of validMembers) {
+      await ensureResidentExists({
+        fullName: mem.full_name,
+        sitio: newSitio,
+        gender: mem.gender,
+        age: mem.age
+      });
+    }
+
     const payload = {
+      resident_id: mainResidentId || null,
       family_number: newFamNum.trim(),
       father_name: newFather.trim(),
       mother_name: newMother.trim(),
