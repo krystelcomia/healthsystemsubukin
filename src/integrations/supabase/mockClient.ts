@@ -513,191 +513,25 @@ export function seedMockDatabase() {
     { id: "worker-maribel", name: "Maribel M. Abayon", age: 0, address: "", gmail: "maribelabayonBNS@gmail.com", number: "", is_online: false, user_id: "user-maribel", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
   ];
 
-  if (!db['residents']) {
-    db['residents'] = [
-      {
-        id: "res-1",
-        full_name: "Maria Santos",
-        gender: "Female",
-        age: 32,
-        status: "Married",
-        religion: "Roman Catholic",
-        blood_type: "A+",
-        nationality: "Filipino",
-        sitio: "Centro",
-        birthday: "1994-05-12",
-        created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-      },
-      {
-        id: "res-2",
-        full_name: "Juan dela Cruz",
-        gender: "Male",
-        age: 45,
-        status: "Married",
-        religion: "Christian",
-        blood_type: "O+",
-        nationality: "Filipino",
-        sitio: "Ilaya",
-        birthday: "1981-11-23",
-        created_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
-      },
-      {
-        id: "res-3",
-        full_name: "Baby Angelo Cruz",
-        gender: "Male",
-        age: 2,
-        status: "Single",
-        religion: "Roman Catholic",
-        blood_type: "",
-        nationality: "Filipino",
-        sitio: "Ibaba",
-        birthday: "2024-02-15",
-        created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
-      },
-      {
-        id: "res-4",
-        full_name: "Elena Roxas",
-        gender: "Female",
-        age: 67,
-        status: "Widowed",
-        religion: "Roman Catholic",
-        blood_type: "B-",
-        nationality: "Filipino",
-        sitio: "Centro",
-        birthday: "1959-08-05",
-        created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    ];
-  }
+  if (!db['residents']) db['residents'] = [];
+  if (!db['consultations']) db['consultations'] = [];
+  if (!db['family_data']) db['family_data'] = [];
+  if (!db['philpen_health']) db['philpen_health'] = [];
+  if (!db['dengue_prevention']) db['dengue_prevention'] = [];
+  if (!db['family_planning']) db['family_planning'] = [];
+  if (!db['maternal_care']) db['maternal_care'] = [];
+  if (!db['child_health']) db['child_health'] = [];
 
-  if (!db['consultations']) {
-    db['consultations'] = [
-      {
-        id: "con-1",
-        resident_id: "res-1",
-        birthdate: "1994-05-12",
-        age: 32,
-        sitio: "Centro",
-        consultation_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        temperature: "36.7",
-        pulse_rate: "72",
-        respiration_rate: "18",
-        height: "155",
-        weight: "54",
-        consultation_cause: "Routine prenatal checkup",
-        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-      },
-      {
-        id: "con-2",
-        resident_id: "res-2",
-        birthdate: "1981-11-23",
-        age: 45,
-        sitio: "Ilaya",
-        consultation_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        temperature: "38.2",
-        pulse_rate: "85",
-        respiration_rate: "22",
-        height: "170",
-        weight: "68",
-        consultation_cause: "Fever and cough",
-        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    ];
-  }
-
-  if (!db['family_data']) {
-    db['family_data'] = [
-      {
-        id: "fam-1",
-        resident_id: "res-1",
-        family_number: "FAM-001",
-        num_households: 1,
-        father_name: "Pedro Santos",
-        mother_name: "Maria Santos",
-        num_males: 1,
-        num_females: 1,
-        total_members: 2,
-        created_at: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    ];
-  }
-
-  if (!db['philpen_health']) {
-    db['philpen_health'] = [
-      {
-        id: "pen-1",
-        resident_id: "res-2",
-        address_sitio: "Ilaya",
-        age: 45,
-        birthdate: "1981-11-23",
-        record_date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        bp: "130/80",
-        height: "170",
-        weight: "68",
-        bmi: "23.5",
-        smokes: true,
-        drinks_alcohol: true,
-        high_blood_pressure: true,
-        diabetes_symptoms: false,
-        created_at: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    ];
-  }
-
-  if (!db['dengue_prevention']) {
-    db['dengue_prevention'] = [
-      {
-        id: "den-1",
-        resident_id: "res-1",
-        household_name: "Santos Household",
-        container_type: "Water Drum",
-        has_larvae: false,
-        action_plan: "Cover container tightly and clean weekly",
-        signature: "M. Santos",
-        created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    ];
-  }
-
-  if (!db['family_planning']) {
-    db['family_planning'] = [
-      {
-        id: "fp-1",
-        resident_id: "res-1",
-        method: "Pills",
-        start_date: "2025-01-10",
-        remarks: "Given 3 cycles",
-        created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    ];
-  }
-
-  if (!db['maternal_care']) {
-    db['maternal_care'] = [
-      {
-        id: "mat-1",
-        resident_id: "res-1",
-        checkup_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        remarks: "Healthy pregnancy, BP normal",
-        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    ];
-  }
-
-  if (!db['child_health']) {
-    db['child_health'] = [
-      {
-        id: "ch-1",
-        resident_id: "res-3",
-        checkup_date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        remarks: "Received basic checkup, weight and height on track",
-        created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    ];
+  // Reset dummy seed entries if present to start with a clean system
+  if (db['residents'].some((r: any) => r.id === "res-1" || r.id === "res-2")) {
+    db['residents'] = [];
+    db['family_data'] = [];
+    db['consultations'] = [];
+    db['philpen_health'] = [];
+    db['dengue_prevention'] = [];
+    db['family_planning'] = [];
+    db['maternal_care'] = [];
+    db['child_health'] = [];
   }
 
   if (!db['user_sessions']) db['user_sessions'] = [];
