@@ -38,6 +38,7 @@ export interface FamilyMember {
   full_name: string;
   relationship: string;
   age: number | string;
+  birthday?: string;
   gender: string;
   civil_status?: string;
   notes?: string;
