@@ -474,7 +474,9 @@ const FamilyDataForm = () => {
   };
 
   // Remove member inside opened file
-  const handleRemoveMember = (id: string) => {
+  const handleRemoveMember = (id: string, name: string) => {
+    const confirmRemove = window.confirm(`Are you sure you want to remove "${name}" from this family?`);
+    if (!confirmRemove) return;
     setActiveMembers((prev) => prev.filter((m) => m.id !== id));
   };
 
@@ -1114,7 +1116,7 @@ const FamilyDataForm = () => {
                             <td className="p-3 text-center">{m.gender}</td>
                             <td className="p-3 text-center no-print">
                               <Button
-                                onClick={() => handleRemoveMember(m.id)}
+                                onClick={() => handleRemoveMember(m.id, m.full_name)}
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
