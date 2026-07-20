@@ -130,7 +130,7 @@ const FamilyDataForm = () => {
       }));
       
       // Ensure minimum padded rows for ledger mode
-      const minRows = 12;
+      const minRows = 2;
       const paddedRecords = [...dbRecords];
       for (let i = dbRecords.length; i < minRows; i++) {
         paddedRecords.push({
@@ -185,6 +185,26 @@ const FamilyDataForm = () => {
       (r) => r.family_number?.trim() || r.father_name?.trim() || r.mother_name?.trim()
     );
   }, [filteredRecords]);
+
+  // Add a temporary row to the ledger view
+  const handleAddLedgerRow = () => {
+    setRecords((prev) => [
+      ...prev,
+      {
+        id: `temp-added-${Date.now()}`,
+        resident_id: null,
+        family_number: "",
+        num_households: "",
+        father_name: "",
+        mother_name: "",
+        num_males: "",
+        num_females: "",
+        total_members: 0,
+        sitio: "",
+        members_detail: []
+      }
+    ]);
+  };
 
   // Auto-generate next Family Number (e.g. FAM-001, FAM-002)
   const generateNextFamilyNumber = () => {
@@ -692,9 +712,14 @@ const FamilyDataForm = () => {
                   Direct ledger view for bulk family entries and official barangay registry printing.
                 </p>
               </div>
-              <Button onClick={handlePrintIndividualFile} size="sm" variant="outline" className="gap-1.5">
-                <Printer className="h-4 w-4" /> Print Ledger
-              </Button>
+              <div className="flex items-center gap-2 no-print">
+                <Button onClick={handleAddLedgerRow} size="sm" variant="outline" className="gap-1.5">
+                  <Plus className="h-4 w-4" /> Add Row
+                </Button>
+                <Button onClick={handlePrintIndividualFile} size="sm" variant="outline" className="gap-1.5">
+                  <Printer className="h-4 w-4" /> Print Ledger
+                </Button>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -742,7 +767,6 @@ const FamilyDataForm = () => {
                               );
                             }}
                             className="cell-input text-center font-mono"
-                            placeholder="FAM-001..."
                           />
                         </td>
                         <td className="border border-border p-0">
@@ -756,7 +780,6 @@ const FamilyDataForm = () => {
                               );
                             }}
                             className="cell-input text-center"
-                            placeholder="1"
                             min="0"
                           />
                         </td>
@@ -770,7 +793,6 @@ const FamilyDataForm = () => {
                               );
                             }}
                             className="cell-input font-medium"
-                            placeholder="Father's Name..."
                           />
                         </td>
                         <td className="border border-border p-0">
@@ -783,7 +805,6 @@ const FamilyDataForm = () => {
                               );
                             }}
                             className="cell-input"
-                            placeholder="Mother's Name..."
                           />
                         </td>
                         <td className="border border-border p-0">
@@ -797,7 +818,6 @@ const FamilyDataForm = () => {
                               );
                             }}
                             className="cell-input text-center"
-                            placeholder="0"
                             min="0"
                           />
                         </td>
@@ -812,7 +832,6 @@ const FamilyDataForm = () => {
                               );
                             }}
                             className="cell-input text-center"
-                            placeholder="0"
                             min="0"
                           />
                         </td>
