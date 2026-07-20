@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
 import { calculateAge } from "@/lib/residentLinker";
+import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -142,7 +143,7 @@ const ResidentRecords = () => {
     win.document.close(); win.print();
   };
 
-  const sitios = Array.from(new Set(residents.map((r) => r.sitio).filter(Boolean))) as string[];
+  const sitios = Array.from(new Set([...SUBUKIN_SITIOS, ...residents.map((r) => r.sitio).filter(Boolean)])) as string[];
   const filtered = residents.filter((r) => {
     const matchesSearch = r.full_name.toLowerCase().includes(search.toLowerCase()) || (r.sitio || "").toLowerCase().includes(search.toLowerCase());
     const matchesSitio = sitioFilter === "all" || r.sitio === sitioFilter;
@@ -266,7 +267,15 @@ const ResidentRecords = () => {
                 <div className="space-y-1"><Label>{t("residents.bloodType")}</Label><Select value={editResident.blood_type || ""} onValueChange={(v) => setEditResident({ ...editResident, blood_type: v })}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bt) => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}</SelectContent></Select></div>
                 <div className="space-y-1"><Label>{t("residents.nationality")}</Label><Input value={editResident.nationality} onChange={(e) => setEditResident({ ...editResident, nationality: e.target.value })} /></div>
               </div>
-              <div className="space-y-1"><Label>{t("residents.sitio")}</Label><Input value={editResident.sitio || ""} onChange={(e) => setEditResident({ ...editResident, sitio: e.target.value })} /></div>
+              <div className="space-y-1">
+                <Label>{t("residents.sitio")}</Label>
+                <Select value={editResident.sitio || ""} onValueChange={(v) => setEditResident({ ...editResident, sitio: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select Sitio" /></SelectTrigger>
+                  <SelectContent>
+                    {SUBUKIN_SITIOS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
           <DialogFooter><Button variant="outline" onClick={() => setEditDialogOpen(false)}>{t("common.cancel")}</Button><Button onClick={handleEditResident}>{t("common.saveChanges")}</Button></DialogFooter>

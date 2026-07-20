@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
 import { calculateAge } from "@/lib/residentLinker";
+import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 
 interface Resident {
   id: string;
@@ -318,13 +319,16 @@ const PhilPenHealthForm = () => {
 
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-foreground shrink-0" style={{ fontFamily: "var(--font-heading)" }}>Address/Sitio:</span>
-                  <input 
-                    type="text"
+                  <select 
                     value={form.address}
                     onChange={(e) => handleFieldChange("address", e.target.value)}
-                    className="print-input flex-1 font-medium"
-                    placeholder="Type address..."
-                  />
+                    className="print-input flex-1 font-medium bg-background text-foreground border border-border/80 rounded px-2 py-1"
+                  >
+                    <option value="">Select Sitio...</option>
+                    {SUBUKIN_SITIOS.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="flex items-center gap-2">

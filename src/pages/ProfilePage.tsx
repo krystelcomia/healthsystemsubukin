@@ -9,7 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
-import { getAssignedSitio } from "@/lib/sitioMapping";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getAssignedSitio, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 
 const ProfilePage = () => {
   const { user, userRole } = useAuth();
@@ -265,7 +266,16 @@ const ProfilePage = () => {
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wide text-muted-foreground">Assigned Sitio</Label>
                 {editing ? (
-                  <Input value={assignedSitio} onChange={(e) => setAssignedSitio(e.target.value)} placeholder="Assigned Sitio" />
+                  <Select value={assignedSitio} onValueChange={setAssignedSitio}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select Sitio" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SUBUKIN_SITIOS.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
                   <p className="text-foreground font-medium py-2 border-b border-border/50 flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-primary" /> {assignedSitio || "—"}

@@ -9,6 +9,7 @@ import { Users, Printer, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
+import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -37,7 +38,7 @@ const AdminResidents = () => {
     const { data, error } = await supabase.from("residents").select("*").order("full_name");
     if (error) { toast.error("Failed to load residents"); return; }
     setResidents(data || []);
-    const uniqueSitios = [...new Set((data || []).map(r => r.sitio).filter(Boolean))] as string[];
+    const uniqueSitios = Array.from(new Set([...SUBUKIN_SITIOS, ...(data || []).map(r => r.sitio).filter(Boolean)])) as string[];
     setSitios(uniqueSitios);
     setLoading(false);
   };

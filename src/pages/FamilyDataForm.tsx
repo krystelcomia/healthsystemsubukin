@@ -28,7 +28,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
-import { logActivity } from "@/lib/activityLogger";
+import { getAssignedSitio, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -1111,10 +1111,9 @@ const FamilyDataForm = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Centro">Sitio Centro</SelectItem>
-                    <SelectItem value="Ilaya">Sitio Ilaya</SelectItem>
-                    <SelectItem value="Ibaba">Sitio Ibaba</SelectItem>
-                    <SelectItem value="Tabing Dagat">Sitio Tabing Dagat</SelectItem>
+                    {SUBUKIN_SITIOS.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

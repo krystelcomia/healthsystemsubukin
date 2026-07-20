@@ -1,5 +1,20 @@
+export const SUBUKIN_SITIOS: string[] = [
+  "Cama",
+  "Centro",
+  "Makalintal 1",
+  "Makalintal 2",
+  "Maligaya",
+  "Manggahan 1",
+  "Manggahan 2",
+  "Masaya",
+  "Masigla",
+  "Matahimik / Burol",
+  "Matahimik / Punta",
+  "Puntor"
+];
+
 export const BHW_SITIO_MAPPING: Record<string, string> = {
-  "merlita r. alonzo": "Matahimik/Punta",
+  "merlita r. alonzo": "Matahimik / Punta",
   "renalyn d. laurente": "Matahimik / Burol",
   "cecilia g. benosa": "Maligaya",
   "cristeta r. lanuza": "Masigla",

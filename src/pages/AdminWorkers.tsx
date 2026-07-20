@@ -10,7 +10,8 @@ import { Users, Plus, Printer, Pencil, Trash2, UserCheck, UserX, Eye, EyeOff } f
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
-import { getAssignedSitio } from "@/lib/sitioMapping";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getAssignedSitio, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 
 interface BHWWorker {
   id: string; name: string; age: number; address: string; gmail: string; number: string; is_online: boolean; last_seen: string | null; user_id: string | null; created_at: string; assigned_sitio?: string;
@@ -151,6 +152,13 @@ const AdminWorkers = () => {
             <div className="space-y-1"><Label>{t("workers.gmail")} *</Label><Input type="email" value={newWorker.gmail} onChange={e => setNewWorker({ ...newWorker, gmail: e.target.value })} placeholder="worker@gmail.com" /></div>
             <div className="space-y-1"><Label>{t("workers.username")} *</Label><Input value={newWorker.username} onChange={e => setNewWorker({ ...newWorker, username: e.target.value })} placeholder="worker_username" /></div>
             <div className="space-y-1"><Label>{t("workers.password")} *</Label><div className="relative"><Input type={showPassword ? "text" : "password"} value={newWorker.password} onChange={e => setNewWorker({ ...newWorker, password: e.target.value })} placeholder="Min 6 characters" /><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button></div></div>
+            <div className="space-y-1">
+              <Label>Assigned Sitio</Label>
+              <Select value={newWorker.assigned_sitio} onValueChange={v => setNewWorker({ ...newWorker, assigned_sitio: v, address: v })}>
+                <SelectTrigger><SelectValue placeholder="Select Sitio" /></SelectTrigger>
+                <SelectContent>{SUBUKIN_SITIOS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
             <div className="space-y-1"><Label>{t("workers.address")}</Label><Input value={newWorker.address} onChange={e => setNewWorker({ ...newWorker, address: e.target.value })} placeholder={t("workers.address")} /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>{t("common.cancel")}</Button><Button onClick={handleAddWorker} disabled={submitting}>{submitting ? t("workers.creating") : t("workers.addWorker")}</Button></DialogFooter>
@@ -171,7 +179,7 @@ const AdminWorkers = () => {
                 <div><p className="text-muted-foreground">{t("workers.age")}</p><p className="font-medium text-foreground">{viewWorker.age}</p></div>
                 <div><p className="text-muted-foreground">{t("workers.contact")}</p><p className="font-medium text-foreground">{viewWorker.number || "—"}</p></div>
                 <div><p className="text-muted-foreground">{t("workers.gmail")}</p><p className="font-medium text-foreground">{viewWorker.gmail || "—"}</p></div>
-                <div><p className="text-muted-foreground">{t("workers.address")}</p><p className="font-medium text-foreground">{viewWorker.address || "—"}</p></div>
+                <div><p className="text-muted-foreground">Assigned Sitio</p><p className="font-medium text-foreground">{viewWorker.assigned_sitio || getAssignedSitio(viewWorker.name) || "—"}</p></div>
                 <div><p className="text-muted-foreground">{t("workers.lastSeen")}</p><p className="font-medium text-foreground">{formatLastSeen(viewWorker.last_seen)}</p></div>
                 <div><p className="text-muted-foreground">{t("workers.account")}</p><p className="font-medium text-foreground">{viewWorker.user_id ? t("workers.linked") : t("workers.noAccount")}</p></div>
               </div>
@@ -193,7 +201,13 @@ const AdminWorkers = () => {
                 <div className="space-y-1"><Label>{t("workers.contact")}</Label><Input value={editWorker.number} onChange={e => setEditWorker({ ...editWorker, number: e.target.value })} /></div>
               </div>
               <div className="space-y-1"><Label>{t("workers.gmail")}</Label><Input type="email" value={editWorker.gmail} onChange={e => setEditWorker({ ...editWorker, gmail: e.target.value })} /></div>
-              <div className="space-y-1"><Label>{t("workers.address")}</Label><Input value={editWorker.address} onChange={e => setEditWorker({ ...editWorker, address: e.target.value })} /></div>
+              <div className="space-y-1">
+                <Label>Assigned Sitio</Label>
+                <Select value={editWorker.assigned_sitio || ""} onValueChange={v => setEditWorker({ ...editWorker, assigned_sitio: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select Sitio" /></SelectTrigger>
+                  <SelectContent>{SUBUKIN_SITIOS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
             </div>
           )}
           <DialogFooter><Button variant="outline" onClick={() => setEditDialogOpen(false)}>{t("common.cancel")}</Button><Button onClick={handleEditWorker}>{t("common.saveChanges")}</Button></DialogFooter>
