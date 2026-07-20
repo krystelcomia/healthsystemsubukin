@@ -602,8 +602,8 @@ const FamilyDataForm = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {activeFamilyFiles.map((rec) => {
-                const famNum = rec.family_number || "FAM-???";
-                const fatherName = rec.father_name || "Unassigned Father";
+                const famNum = rec.family_number || "FN";
+                const fatherName = rec.father_name || "Father's Name";
                 const motherName = rec.mother_name || "";
                 const fileName = `${famNum} - ${fatherName}`;
                 const membersList = parseMembers(rec.members_detail);
@@ -863,14 +863,14 @@ const FamilyDataForm = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-amber-600 text-white font-mono text-xs">
-                        {editFamNum || "FAM-???"}
+                        {editFamNum || "FN"}
                       </Badge>
                       <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                         Official Family File Record
                       </span>
                     </div>
                     <h2 className="text-lg md:text-xl font-heading font-bold text-foreground mt-0.5">
-                      {`${editFamNum || "FAM-???"} - ${editFather || "Family File"}`}
+                      {`${editFamNum || "FN"} - ${editFather || "Father's Name"}`}
                     </h2>
                   </div>
                 </div>
@@ -1165,7 +1165,7 @@ const FamilyDataForm = () => {
             <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs w-full overflow-hidden">
               <span className="text-muted-foreground">Generated File Folder Name:</span>
               <div className="font-mono font-bold text-foreground text-sm mt-0.5 truncate">
-                {`${newFamNum || "FAM-???"} - ${newFather.trim() || "Unassigned Father"}`}
+                {`${newFamNum || "FN"} - ${newFather.trim() || "Father's Name"}`}
               </div>
             </div>
 
