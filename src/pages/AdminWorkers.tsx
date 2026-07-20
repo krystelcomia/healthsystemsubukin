@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getAssignedSitio, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
+import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 
 interface BHWWorker {
   id: string; name: string; age: number; address: string; gmail: string; number: string; is_online: boolean; last_seen: string | null; user_id: string | null; created_at: string; assigned_sitio?: string;
@@ -31,9 +31,12 @@ const AdminWorkers = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [newWorker, setNewWorker] = useState({ name: "", age: "", address: "", gmail: "", number: "", username: "", password: "", assigned_sitio: "" });
 
+  const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
+
   useEffect(() => { fetchWorkers(); }, []);
 
   const fetchWorkers = async () => {
+    getDatabaseSitios().then(sits => setSitioOptions(sits));
     const { data, error } = await (supabase.from as any)("bhw_workers").select("*").order("name");
     if (error) { toast.error("Failed to load workers"); return; }
     setWorkers(data || []); setLoading(false);
@@ -156,7 +159,7 @@ const AdminWorkers = () => {
               <Label>Assigned Sitio</Label>
               <Select value={newWorker.assigned_sitio} onValueChange={v => setNewWorker({ ...newWorker, assigned_sitio: v, address: v })}>
                 <SelectTrigger><SelectValue placeholder="Select Sitio" /></SelectTrigger>
-                <SelectContent>{SUBUKIN_SITIOS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                <SelectContent>{sitioOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-1"><Label>{t("workers.address")}</Label><Input value={newWorker.address} onChange={e => setNewWorker({ ...newWorker, address: e.target.value })} placeholder={t("workers.address")} /></div>
@@ -205,7 +208,7 @@ const AdminWorkers = () => {
                 <Label>Assigned Sitio</Label>
                 <Select value={editWorker.assigned_sitio || ""} onValueChange={v => setEditWorker({ ...editWorker, assigned_sitio: v })}>
                   <SelectTrigger><SelectValue placeholder="Select Sitio" /></SelectTrigger>
-                  <SelectContent>{SUBUKIN_SITIOS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  <SelectContent>{sitioOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>

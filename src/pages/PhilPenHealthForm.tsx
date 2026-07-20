@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
 import { calculateAge } from "@/lib/residentLinker";
-import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
+import { SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 
 interface Resident {
   id: string;
@@ -24,6 +24,11 @@ interface Resident {
 const PhilPenHealthForm = () => {
   const { t } = useSettings();
   const [residents, setResidents] = useState<Resident[]>([]);
+  const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
+
+  useEffect(() => {
+    getDatabaseSitios().then(sits => setSitioOptions(sits));
+  }, []);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     resident_id: "",
@@ -325,7 +330,7 @@ const PhilPenHealthForm = () => {
                     className="print-input flex-1 font-medium bg-background text-foreground border border-border/80 rounded px-2 py-1"
                   >
                     <option value="">Select Sitio...</option>
-                    {SUBUKIN_SITIOS.map((s) => (
+                    {sitioOptions.map((s) => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>

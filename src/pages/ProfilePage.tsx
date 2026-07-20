@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getAssignedSitio, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
+import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 
 const ProfilePage = () => {
   const { user, userRole } = useAuth();
@@ -21,6 +21,11 @@ const ProfilePage = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [assignedSitio, setAssignedSitio] = useState("");
+  const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
+
+  useEffect(() => {
+    getDatabaseSitios().then(sits => setSitioOptions(sits));
+  }, []);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -271,7 +276,7 @@ const ProfilePage = () => {
                       <SelectValue placeholder="Select Sitio" />
                     </SelectTrigger>
                     <SelectContent>
-                      {SUBUKIN_SITIOS.map((s) => (
+                      {sitioOptions.map((s) => (
                         <SelectItem key={s} value={s}>{s}</SelectItem>
                       ))}
                     </SelectContent>

@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export const SUBUKIN_SITIOS: string[] = [
   "Cama",
   "Makalintal 1",
@@ -32,7 +34,7 @@ export const getAssignedSitio = (name: string): string => {
   if (!name) return "";
   const lower = name.toLowerCase().trim();
 
-  if (lower.includes("alonzo")) return "Matahimik/Punta";
+  if (lower.includes("alonzo")) return "Matahimik / Punta";
   if (lower.includes("laurente")) return "Matahimik / Burol";
   if (lower.includes("benosa")) return "Maligaya";
   if (lower.includes("lanuza")) return "Masigla";
@@ -47,4 +49,28 @@ export const getAssignedSitio = (name: string): string => {
   if (lower.includes("lopez")) return "Makalintal 1";
 
   return BHW_SITIO_MAPPING[lower] || "";
+};
+
+export const getDatabaseSitios = async (): Promise<string[]> => {
+  try {
+    const [resData, workerData, famData] = await Promise.all([
+      supabase.from("residents").select("sitio"),
+      supabase.from("bhw_workers").select("assigned_sitio, address"),
+      supabase.from("family_data").select("sitio"),
+    ]);
+
+    const resSitios = (resData.data || []).map((r: any) => r.sitio).filter(Boolean);
+    const workerSitios = (workerData.data || []).flatMap((w: any) => [w.assigned_sitio, w.address]).filter(Boolean);
+    const famSitios = (famData.data || []).map((f: any) => f.sitio).filter(Boolean);
+
+    const foundSitios = Array.from(new Set([...resSitios, ...workerSitios, ...famSitios]))
+      .map((s: string) => s.trim())
+      .filter((s: string) => Boolean(s) && s !== "Centro" && s !== "Sitio Centro")
+      .sort();
+
+    return foundSitios.length > 0 ? foundSitios : SUBUKIN_SITIOS;
+  } catch (e) {
+    console.error("Error loading sitios from database:", e);
+    return SUBUKIN_SITIOS;
+  }
 };

@@ -28,7 +28,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
-import { getAssignedSitio, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
+import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -110,8 +110,11 @@ const FamilyDataForm = () => {
     return [];
   };
 
+  const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
+
   const fetchRecords = async () => {
     setLoading(true);
+    getDatabaseSitios().then(sits => setSitioOptions(sits));
     const { data, error } = await supabase
       .from("family_data")
       .select("*")
@@ -139,7 +142,7 @@ const FamilyDataForm = () => {
           num_males: "",
           num_females: "",
           total_members: 0,
-          sitio: "Centro",
+          sitio: "",
           members_detail: []
         });
       }
@@ -914,7 +917,7 @@ const FamilyDataForm = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {SUBUKIN_SITIOS.map((s) => (
+                            {sitioOptions.map((s) => (
                               <SelectItem key={s} value={s}>{s}</SelectItem>
                             ))}
                           </SelectContent>
@@ -1110,7 +1113,7 @@ const FamilyDataForm = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {SUBUKIN_SITIOS.map((s) => (
+                    {sitioOptions.map((s) => (
                       <SelectItem key={s} value={s}>{s}</SelectItem>
                     ))}
                   </SelectContent>
