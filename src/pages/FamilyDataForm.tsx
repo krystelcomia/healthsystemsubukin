@@ -98,6 +98,22 @@ const FamilyDataForm = () => {
   const [memGender, setMemGender] = useState("Male");
   const [memStatus, setMemStatus] = useState("Single");
 
+  const isNewFamNumDuplicate = useMemo(() => {
+    return records.some(
+      (r) => r.family_number && r.family_number.trim().toLowerCase() === newFamNum.trim().toLowerCase()
+    );
+  }, [records, newFamNum]);
+
+  const isEditFamNumDuplicate = useMemo(() => {
+    if (!selectedFile) return false;
+    return records.some(
+      (r) =>
+        r.id !== selectedFile.id &&
+        r.family_number &&
+        r.family_number.trim().toLowerCase() === editFamNum.trim().toLowerCase()
+    );
+  }, [records, selectedFile, editFamNum]);
+
   const parseMembers = (membersData: any): FamilyMember[] => {
     if (!membersData) return [];
     if (Array.isArray(membersData)) return membersData;
@@ -245,6 +261,11 @@ const FamilyDataForm = () => {
       toast.error("Incorrect family number format.");
       return;
     }
+
+    if (isNewFamNumDuplicate) {
+      toast.error("Family number already exists.");
+      return;
+    }
     if (!newFather.trim() && !newMother.trim()) {
       toast.error("Please enter at least the Father's or Mother's name");
       return;
@@ -346,6 +367,11 @@ const FamilyDataForm = () => {
 
     if (!/^\d+[a-zA-Z]*$/.test(editFamNum.trim())) {
       toast.error("Incorrect family number format.");
+      return;
+    }
+
+    if (isEditFamNumDuplicate) {
+      toast.error("Family number already exists.");
       return;
     }
 
@@ -932,11 +958,16 @@ const FamilyDataForm = () => {
                         <Input
                           value={editFamNum}
                           onChange={(e) => setEditFamNum(e.target.value)}
-                          className={`h-8 text-xs font-mono ${editFamNum.trim() !== "" && !/^\d+[a-zA-Z]*$/.test(editFamNum.trim()) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
+                          className={`h-8 text-xs font-mono ${editFamNum.trim() !== "" && (!/^\d+[a-zA-Z]*$/.test(editFamNum.trim()) || isEditFamNumDuplicate) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                         />
                         {editFamNum.trim() !== "" && !/^\d+[a-zA-Z]*$/.test(editFamNum.trim()) && (
                           <p className="text-[10px] text-destructive mt-1 font-medium">
                             Incorrect family number format.
+                          </p>
+                        )}
+                        {editFamNum.trim() !== "" && /^\d+[a-zA-Z]*$/.test(editFamNum.trim()) && isEditFamNumDuplicate && (
+                          <p className="text-[10px] text-destructive mt-1 font-medium">
+                            Family number already exists.
                           </p>
                         )}
                       </div>
@@ -1144,11 +1175,16 @@ const FamilyDataForm = () => {
                 <Input
                   value={newFamNum}
                   onChange={(e) => setNewFamNum(e.target.value)}
-                  className={`font-mono text-sm mt-1 ${newFamNum.trim() !== "" && !/^\d+[a-zA-Z]*$/.test(newFamNum.trim()) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
+                  className={`font-mono text-sm mt-1 ${newFamNum.trim() !== "" && (!/^\d+[a-zA-Z]*$/.test(newFamNum.trim()) || isNewFamNumDuplicate) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                 />
                 {newFamNum.trim() !== "" && !/^\d+[a-zA-Z]*$/.test(newFamNum.trim()) && (
                   <p className="text-[10px] text-destructive mt-1 font-medium">
                     Incorrect family number format.
+                  </p>
+                )}
+                {newFamNum.trim() !== "" && /^\d+[a-zA-Z]*$/.test(newFamNum.trim()) && isNewFamNumDuplicate && (
+                  <p className="text-[10px] text-destructive mt-1 font-medium">
+                    Family number already exists.
                   </p>
                 )}
               </div>
