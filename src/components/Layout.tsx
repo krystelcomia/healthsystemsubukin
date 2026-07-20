@@ -312,8 +312,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <main className="flex-1 flex flex-col min-h-screen">
           <header 
-            className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6 shrink-0"
-            style={sidebarHeaderHeight ? { height: `${sidebarHeaderHeight}px` } : { height: "73px" }}
+            className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 shrink-0"
+            style={sidebarHeaderHeight ? { height: `${sidebarHeaderHeight}px` } : { height: "58px" }}
           >
             <div className="flex items-center gap-4">
               <SidebarTrigger className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />

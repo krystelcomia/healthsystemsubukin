@@ -112,9 +112,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r-0">
-      <SidebarHeader className="p-5 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-11 w-11 rounded-full object-cover" />
+      <SidebarHeader className="py-3.5 px-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-2.5">
+          <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-9 w-9 rounded-full object-cover" />
           <div>
             <h2 className="font-heading text-sm font-bold text-sidebar-foreground">
               {isAdmin ? t("sidebar.adminPanel") : t("sidebar.bhwSystem")}
