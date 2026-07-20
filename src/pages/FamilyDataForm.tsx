@@ -1084,17 +1084,7 @@ const FamilyDataForm = () => {
 
       {/* ================= CREATE NEW FAMILY FILE DIALOG ================= */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto bg-card text-card-foreground border-border shadow-xl p-4 sm:p-6">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
-              <FolderOpen className="h-5 w-5 text-primary" />
-              Create New Family Data File
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Create a new family folder file named using the Family Number and Father's Name standard.
-            </DialogDescription>
-          </DialogHeader>
-
+        <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto bg-card text-card-foreground border-border shadow-xl p-4 sm:p-6">
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
