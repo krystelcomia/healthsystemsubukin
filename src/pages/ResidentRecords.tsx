@@ -173,17 +173,13 @@ const ResidentRecords = () => {
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2"><Users className="h-6 w-6 text-primary" />{t("residents.title")}</h1>
-          <p className="text-muted-foreground mt-1">{t("residents.desc")}</p>
-        </div>
+      <div className="flex items-center justify-end">
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => { setSelectedResident(null); handlePrint(); }}><Printer className="h-4 w-4 mr-2" /> {t("residents.printList")}</Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> {t("residents.addResident")}</Button></DialogTrigger>
             <DialogContent className="max-w-md">
-              <DialogHeader><DialogTitle>{t("residents.addNew")}</DialogTitle><DialogDescription>{t("residents.addNewDesc")}</DialogDescription></DialogHeader>
+              <DialogHeader><DialogDescription>{t("residents.addNewDesc")}</DialogDescription></DialogHeader>
               <div className="space-y-3">
                 <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={newResident.full_name} onChange={(e) => setNewResident({ ...newResident, full_name: e.target.value })} placeholder={t("residents.fullName")} /></div>
                 <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={newResident.birthday} onChange={(e) => {
