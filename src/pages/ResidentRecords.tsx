@@ -18,7 +18,7 @@ interface Resident {
 }
 
 interface HealthRecords {
-  consultations: any[]; family_data: any[]; philpen_health: any[]; dengue_prevention: any[];
+  consultations: any[]; family_data: any[]; philpen_health: any[]; dengue_prevention: any[]; maternal_care: any[]; child_health: any[]; family_planning: any[];
 }
 
 const ResidentRecords = () => {
@@ -84,13 +84,24 @@ const ResidentRecords = () => {
   };
 
   const fetchHealthRecords = async (residentId: string) => {
-    const [c, f, p, d] = await Promise.all([
+    const [c, f, p, d, m, ch, fp] = await Promise.all([
       supabase.from("consultations").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
       supabase.from("family_data").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
       supabase.from("philpen_health").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
       supabase.from("dengue_prevention").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
+      supabase.from("maternal_care" as any).select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
+      supabase.from("child_health" as any).select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
+      supabase.from("family_planning").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
     ]);
-    setHealthRecords({ consultations: c.data || [], family_data: f.data || [], philpen_health: p.data || [], dengue_prevention: d.data || [] });
+    setHealthRecords({
+      consultations: c.data || [],
+      family_data: f.data || [],
+      philpen_health: p.data || [],
+      dengue_prevention: d.data || [],
+      maternal_care: (m.data as any[]) || [],
+      child_health: (ch.data as any[]) || [],
+      family_planning: fp.data || [],
+    });
   };
 
   const handleSelectResident = (resident: Resident) => { setSelectedResident(resident); fetchHealthRecords(resident.id); };
@@ -123,7 +134,7 @@ const ResidentRecords = () => {
   });
 
   if (selectedResident && healthRecords) {
-    const totalRecords = healthRecords.consultations.length + healthRecords.family_data.length + healthRecords.philpen_health.length + healthRecords.dengue_prevention.length;
+    const totalRecords = healthRecords.consultations.length + healthRecords.family_data.length + healthRecords.philpen_health.length + healthRecords.dengue_prevention.length + healthRecords.maternal_care.length + healthRecords.child_health.length + healthRecords.family_planning.length;
     return (
       <div className="w-full space-y-6">
         <div className="flex items-center justify-between">
@@ -150,6 +161,9 @@ const ResidentRecords = () => {
           {healthRecords.philpen_health.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>{t("nav.philpenHealth")} ({healthRecords.philpen_health.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>{t("consultation.date")}</th><th style={thStyle}>{t("philpen.bp")}</th><th style={thStyle}>{t("consultation.height")}</th><th style={thStyle}>{t("consultation.weight")}</th><th style={thStyle}>{t("philpen.bmi")}</th><th style={thStyle}>{t("philpen.smoke")}</th><th style={thStyle}>{t("philpen.alcohol")}</th><th style={thStyle}>{t("philpen.highBP")}</th><th style={thStyle}>{t("philpen.diabetes")}</th></tr></thead><tbody>{healthRecords.philpen_health.map((p: any) => (<tr key={p.id}><td style={tdStyle}>{p.record_date}</td><td style={tdStyle}>{p.bp || "—"}</td><td style={tdStyle}>{p.height || "—"}</td><td style={tdStyle}>{p.weight || "—"}</td><td style={tdStyle}>{p.bmi || "—"}</td><td style={tdStyle}>{p.smokes ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.drinks_alcohol ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.high_blood_pressure ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.diabetes_symptoms ? t("common.yes") : t("common.no")}</td></tr>))}</tbody></table></>)}
           {healthRecords.family_data.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>{t("nav.familyData")} ({healthRecords.family_data.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>{t("familyData.familyNumber")}</th><th style={thStyle}>{t("familyData.numHouseholds")}</th><th style={thStyle}>{t("familyData.father")}</th><th style={thStyle}>{t("familyData.mother")}</th><th style={thStyle}>{t("familyData.males")}</th><th style={thStyle}>{t("familyData.females")}</th><th style={thStyle}>{t("familyData.totalMembers")}</th></tr></thead><tbody>{healthRecords.family_data.map((f: any) => (<tr key={f.id}><td style={tdStyle}>{f.family_number || "—"}</td><td style={tdStyle}>{f.num_households}</td><td style={tdStyle}>{f.father_name || "—"}</td><td style={tdStyle}>{f.mother_name || "—"}</td><td style={tdStyle}>{f.num_males}</td><td style={tdStyle}>{f.num_females}</td><td style={tdStyle}>{f.total_members}</td></tr>))}</tbody></table></>)}
           {healthRecords.dengue_prevention.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>{t("nav.denguePrevention")} ({healthRecords.dengue_prevention.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>{t("dengue.householdName")}</th><th style={thStyle}>{t("dengue.containerType")}</th><th style={thStyle}>{t("dengue.hasLarvae")}</th><th style={thStyle}>{t("dengue.actionPlan")}</th><th style={thStyle}>{t("dengue.signature")}</th></tr></thead><tbody>{healthRecords.dengue_prevention.map((d: any) => (<tr key={d.id}><td style={tdStyle}>{d.household_name || "—"}</td><td style={tdStyle}>{d.container_type || "—"}</td><td style={tdStyle}>{d.has_larvae ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{d.action_plan || "—"}</td><td style={tdStyle}>{d.signature || "—"}</td></tr>))}</tbody></table></>)}
+          {healthRecords.maternal_care.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>{t("nav.maternalCare")} ({healthRecords.maternal_care.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>Checkup Date</th><th style={thStyle}>Remarks</th></tr></thead><tbody>{healthRecords.maternal_care.map((m: any) => (<tr key={m.id}><td style={tdStyle}>{m.checkup_date}</td><td style={tdStyle}>{m.remarks || "—"}</td></tr>))}</tbody></table></>)}
+          {healthRecords.child_health.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>{t("nav.childHealth")} ({healthRecords.child_health.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>Checkup Date</th><th style={thStyle}>Remarks</th></tr></thead><tbody>{healthRecords.child_health.map((ch: any) => (<tr key={ch.id}><td style={tdStyle}>{ch.checkup_date}</td><td style={tdStyle}>{ch.remarks || "—"}</td></tr>))}</tbody></table></>)}
+          {healthRecords.family_planning.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#0d9488", marginTop: 20, borderBottom: "1px solid #e5e7eb", paddingBottom: 4 }}>{t("nav.familyPlanning")} ({healthRecords.family_planning.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "#f0fdfa" }}><th style={thStyle}>{t("fp.method")}</th><th style={thStyle}>{t("fp.startDate")}</th><th style={thStyle}>{t("fp.remarks")}</th></tr></thead><tbody>{healthRecords.family_planning.map((fp: any) => (<tr key={fp.id}><td style={tdStyle}>{fp.method}</td><td style={tdStyle}>{fp.start_date || "—"}</td><td style={tdStyle}>{fp.remarks || "—"}</td></tr>))}</tbody></table></>)}
           {totalRecords === 0 && <p style={{ color: "#888", marginTop: 16, fontStyle: "italic" }}>{t("residents.noHealthRecords")}</p>}
         </div>
       </div>
