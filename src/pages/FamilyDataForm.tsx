@@ -983,8 +983,8 @@ const FamilyDataForm = () => {
                       <tr className="bg-muted/70 border-b border-border/80">
                         <th className="p-3 font-semibold text-muted-foreground">Full Name</th>
                         <th className="p-3 font-semibold text-muted-foreground">Relationship / Role</th>
-                        <th className="p-3 font-semibold text-muted-foreground text-center">Age</th>
                         <th className="p-3 font-semibold text-muted-foreground text-center">Birthday</th>
+                        <th className="p-3 font-semibold text-muted-foreground text-center">Age</th>
                         <th className="p-3 font-semibold text-muted-foreground text-center">Gender</th>
                         <th className="p-3 font-semibold text-muted-foreground text-center no-print">Action</th>
                       </tr>
@@ -1005,8 +1005,8 @@ const FamilyDataForm = () => {
                                 {m.relationship}
                               </Badge>
                             </td>
-                            <td className="p-3 text-center">{m.age || "—"}</td>
                             <td className="p-3 text-center">{m.birthday || "—"}</td>
+                            <td className="p-3 text-center">{m.age || "—"}</td>
                             <td className="p-3 text-center">
                               <span
                                 className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
@@ -1179,8 +1179,8 @@ const FamilyDataForm = () => {
                   <thead>
                     <tr className="bg-muted/60 border-b border-border/50 text-muted-foreground font-semibold">
                       <th className="p-2 text-left">Full Name</th>
-                      <th className="p-2 text-center w-16">Age</th>
                       <th className="p-2 text-left w-32">Birthday</th>
+                      <th className="p-2 text-center w-24">Age</th>
                       <th className="p-2 text-left w-24">Role</th>
                       <th className="p-2 text-left w-24">Gender</th>
                       <th className="p-2 text-center w-10">Action</th>
@@ -1206,21 +1206,6 @@ const FamilyDataForm = () => {
                         </td>
                         <td className="p-1.5">
                           <Input
-                            type="number"
-                            placeholder="Age"
-                            value={mem.age || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setNewMembers((prev) =>
-                                prev.map((m) => (m.id === mem.id ? { ...m, age: val } : m))
-                              );
-                            }}
-                            className="h-8 text-xs text-center"
-                            min="0"
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Input
                             type="date"
                             value={mem.birthday || ""}
                             onChange={(e) => {
@@ -1235,6 +1220,21 @@ const FamilyDataForm = () => {
                               );
                             }}
                             className="h-8 text-xs"
+                          />
+                        </td>
+                        <td className="p-1.5">
+                          <Input
+                            type="number"
+                            placeholder="Age"
+                            value={mem.age || ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setNewMembers((prev) =>
+                                prev.map((m) => (m.id === mem.id ? { ...m, age: val } : m))
+                              );
+                            }}
+                            className="h-8 text-xs text-center"
+                            min="0"
                           />
                         </td>
                         <td className="p-1.5">
@@ -1367,18 +1367,6 @@ const FamilyDataForm = () => {
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <Label className="text-xs">Age</Label>
-                <Input
-                  type="number"
-                  value={memAge}
-                  onChange={(e) => setMemAge(e.target.value)}
-                  placeholder="e.g. 12"
-                  className="h-8 text-xs mt-1"
-                  min="0"
-                />
-              </div>
-
-              <div>
                 <Label className="text-xs">Birthday</Label>
                 <Input
                   type="date"
@@ -1392,6 +1380,18 @@ const FamilyDataForm = () => {
                     }
                   }}
                   className="h-8 text-xs mt-1"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">Age</Label>
+                <Input
+                  type="number"
+                  value={memAge}
+                  onChange={(e) => setMemAge(e.target.value)}
+                  placeholder="e.g. 12"
+                  className="h-8 text-xs mt-1"
+                  min="0"
                 />
               </div>
 
