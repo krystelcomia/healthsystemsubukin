@@ -76,8 +76,8 @@ const AdminResidents = () => {
     if (!win) return;
     win.document.write(`<!DOCTYPE html><html><head><title>${t("residents.title")} - ${selectedSitio === "all" ? t("admin.residents.allSitios") : selectedSitio}</title>
       <style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #1a1a1a; font-size: 13px; }
-        .header-seal { display: flex !important; align-items: center !important; justify-content: center !important; gap: 32px !important; border-bottom: 4px double #000 !important; padding-bottom: 16px !important; margin-bottom: 24px !important; text-align: center !important; }
-        .header-seal img { mix-blend-mode: multiply !important; object-fit: contain !important; height: 115px !important; width: auto !important; max-height: 115px !important; }
+        .header-seal { display: flex !important; align-items: center !important; justify-content: center !important; gap: 24px !important; border-bottom: 4px double #000 !important; padding-bottom: 16px !important; margin-bottom: 20px !important; text-align: center !important; }
+        .header-seal img { mix-blend-mode: multiply !important; object-fit: contain !important; height: 80px !important; width: auto !important; max-height: 80px !important; }
         table { width: 100%; border-collapse: collapse; margin: 12px 0; } th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; } th { background: #f0fdfa; color: #0d9488; font-weight: 600; }
         .print-date { text-align: right; font-size: 10px; color: #999; margin-top: 20px; }</style></head><body>
       <div class="header-seal"><img src="${sanjuanLogo}" /><img src="${headerTextImg}" /><img src="${barangayLogo}" /></div>
