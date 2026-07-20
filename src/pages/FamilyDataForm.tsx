@@ -241,8 +241,8 @@ const FamilyDataForm = () => {
       return;
     }
 
-    if (!/\d/.test(newFamNum)) {
-      toast.error("Family number cannot consist solely of letters. It must contain at least one number.");
+    if (!/^\d+[a-zA-Z]*$/.test(newFamNum.trim())) {
+      toast.error("Must contain at least one number/digit.");
       return;
     }
     if (!newFather.trim() && !newMother.trim()) {
@@ -342,8 +342,8 @@ const FamilyDataForm = () => {
       return;
     }
 
-    if (!/\d/.test(editFamNum)) {
-      toast.error("Family number cannot consist solely of letters. It must contain at least one number.");
+    if (!/^\d+[a-zA-Z]*$/.test(editFamNum.trim())) {
+      toast.error("Must contain at least one number/digit.");
       return;
     }
 
@@ -941,9 +941,9 @@ const FamilyDataForm = () => {
                         <Input
                           value={editFamNum}
                           onChange={(e) => setEditFamNum(e.target.value)}
-                          className={`h-8 text-xs font-mono ${editFamNum.trim() !== "" && !/\d/.test(editFamNum) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
+                          className={`h-8 text-xs font-mono ${editFamNum.trim() !== "" && !/^\d+[a-zA-Z]*$/.test(editFamNum.trim()) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                         />
-                        {editFamNum.trim() !== "" && !/\d/.test(editFamNum) && (
+                        {editFamNum.trim() !== "" && !/^\d+[a-zA-Z]*$/.test(editFamNum.trim()) && (
                           <p className="text-[10px] text-destructive mt-1 font-medium">
                             Must contain at least one number/digit.
                           </p>
@@ -1147,9 +1147,9 @@ const FamilyDataForm = () => {
                 <Input
                   value={newFamNum}
                   onChange={(e) => setNewFamNum(e.target.value)}
-                  className={`font-mono text-sm mt-1 ${newFamNum.trim() !== "" && !/\d/.test(newFamNum) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
+                  className={`font-mono text-sm mt-1 ${newFamNum.trim() !== "" && !/^\d+[a-zA-Z]*$/.test(newFamNum.trim()) ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                 />
-                {newFamNum.trim() !== "" && !/\d/.test(newFamNum) && (
+                {newFamNum.trim() !== "" && !/^\d+[a-zA-Z]*$/.test(newFamNum.trim()) && (
                   <p className="text-[10px] text-destructive mt-1 font-medium">
                     Must contain at least one number/digit.
                   </p>
