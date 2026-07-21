@@ -919,7 +919,7 @@ const FamilyDataForm = () => {
       <Dialog open={fileDialogOpen} onOpenChange={setFileDialogOpen}>
         <DialogContent 
           id="individual-file-print-area"
-          className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card text-card-foreground border-border shadow-2xl p-6 md:p-8"
+          className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-card text-card-foreground border-border shadow-2xl p-6 md:p-8"
         >
           {selectedFile && (
             <div className="space-y-6">
@@ -1180,7 +1180,7 @@ const FamilyDataForm = () => {
 
       {/* ================= CREATE NEW FAMILY FILE DIALOG ================= */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto bg-card text-card-foreground border-border shadow-xl p-4 sm:p-6">
+        <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-card text-card-foreground border-border shadow-xl p-4 sm:p-6">
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>

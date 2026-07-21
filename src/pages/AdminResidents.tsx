@@ -181,7 +181,7 @@ const AdminResidents = () => {
 
       {/* Dialog showing selected resident's health records */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-5xl max-h-[85vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
             <DialogTitle className="text-xl font-heading font-bold text-foreground">
               {selectedResident?.full_name} — Health Records
