@@ -835,72 +835,34 @@ const FamilyDataForm = () => {
                     const displayFemales = hasData ? derivedFemales : "";
                     const displayTotal = hasData ? (derivedMales + derivedFemales) : "";
                     return (
-                      <tr key={rec.id} className="transition-colors">
-                        <td className="border border-border p-0">
-                          <input
-                            type="text"
-                            value={rec.family_number || ""}
-                            onChange={(e) => {
-                              setRecords((prev) =>
-                                prev.map((r) => (r.id === rec.id ? { ...r, family_number: e.target.value } : r))
-                              );
-                            }}
-                            className="cell-input text-center font-mono"
-                          />
+                      <tr key={rec.id} className="transition-colors hover:bg-muted/10">
+                        <td className="border border-border p-2.5 text-center font-mono text-foreground font-semibold">
+                          {rec.family_number || "—"}
                         </td>
-                        <td className="border border-border p-0">
-                          <input
-                            type="number"
-                            value={rec.num_households === "" ? "" : (rec.num_households ?? "")}
-                            onChange={(e) => {
-                              const val = e.target.value === "" ? "" : Number(e.target.value);
-                              setRecords((prev) =>
-                                prev.map((r) => (r.id === rec.id ? { ...r, num_households: val } : r))
-                              );
-                            }}
-                            className="cell-input text-center"
-                            min="0"
-                          />
+                        <td className="border border-border p-2.5 text-center text-foreground">
+                          {rec.num_households === "" ? "—" : (rec.num_households ?? "—")}
                         </td>
-                        <td className="border border-border p-0">
-                          <input
-                            type="text"
-                            value={rec.father_name || ""}
-                            onChange={(e) => {
-                              setRecords((prev) =>
-                                prev.map((r) => (r.id === rec.id ? { ...r, father_name: e.target.value } : r))
-                              );
-                            }}
-                            className="cell-input font-medium"
-                          />
+                        <td className="border border-border p-2.5 text-foreground font-medium">
+                          {rec.father_name || "—"}
                         </td>
-                        <td className="border border-border p-0">
-                          <input
-                            type="text"
-                            value={rec.mother_name || ""}
-                            onChange={(e) => {
-                              setRecords((prev) =>
-                                prev.map((r) => (r.id === rec.id ? { ...r, mother_name: e.target.value } : r))
-                              );
-                            }}
-                            className="cell-input"
-                          />
+                        <td className="border border-border p-2.5 text-foreground">
+                          {rec.mother_name || "—"}
                         </td>
-                        <td className="border border-border p-2 text-center">
+                        <td className="border border-border p-2.5 text-center text-foreground/80">
                           {displayMales}
                         </td>
-                        <td className="border border-border p-2 text-center">
+                        <td className="border border-border p-2.5 text-center text-foreground/80">
                           {displayFemales}
                         </td>
-                        <td className="border border-border p-2 text-center font-bold">
+                        <td className="border border-border p-2.5 text-center font-bold text-foreground">
                           {displayTotal}
                         </td>
-                        <td className="border border-border p-1 text-center no-print">
+                        <td className="border border-border p-1.5 text-center no-print">
                           <Button
                             onClick={() => handleOpenFile(rec)}
                             variant="ghost"
                             size="sm"
-                            className="h-7 text-xs px-2 text-primary hover:bg-primary/10"
+                            className="h-7 text-xs px-2.5 text-primary hover:bg-primary/10"
                           >
                             <FolderOpen className="h-3.5 w-3.5 mr-1" /> Open
                           </Button>
