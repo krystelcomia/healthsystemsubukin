@@ -202,25 +202,6 @@ const FamilyDataForm = () => {
     );
   }, [filteredRecords]);
 
-  // Add a temporary row to the ledger view
-  const handleAddLedgerRow = () => {
-    setRecords((prev) => [
-      ...prev,
-      {
-        id: `temp-added-${Date.now()}`,
-        resident_id: null,
-        family_number: "",
-        num_households: "",
-        father_name: "",
-        mother_name: "",
-        num_males: "",
-        num_females: "",
-        total_members: 0,
-        sitio: "",
-        members_detail: []
-      }
-    ]);
-  };
 
   // Auto-generate next Family Number (e.g. FAM-001, FAM-002)
   const generateNextFamilyNumber = () => {
@@ -780,9 +761,6 @@ const FamilyDataForm = () => {
                 </h2>
               </div>
               <div className="flex items-center gap-2 no-print">
-                <Button onClick={handleAddLedgerRow} size="sm" variant="outline" className="gap-1.5">
-                  <Plus className="h-4 w-4" /> Add Row
-                </Button>
                 <Button onClick={handlePrintIndividualFile} size="sm" variant="outline" className="gap-1.5">
                   <Printer className="h-4 w-4" /> Print Ledger
                 </Button>
