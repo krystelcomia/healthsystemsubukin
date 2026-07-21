@@ -473,11 +473,28 @@ const FamilyDataForm = () => {
       return;
     }
 
+    const fileToDelete = records.find((r) => r.id === id);
+    const famNumToDelete = fileToDelete?.family_number;
+
     const { error } = await supabase.from("family_data").delete().eq("id", id);
     if (error) {
       toast.error("Failed to delete family file");
     } else {
-      toast.success("Family file deleted successfully");
+      if (famNumToDelete) {
+        const { error: resDeleteError } = await supabase
+          .from("residents")
+          .delete()
+          .eq("family_number", famNumToDelete);
+        
+        if (resDeleteError) {
+          console.error("Failed to delete corresponding resident records:", resDeleteError);
+          toast.warning("Family file deleted, but failed to remove some resident records.");
+        } else {
+          toast.success("Family file and associated resident records deleted successfully");
+        }
+      } else {
+        toast.success("Family file deleted successfully");
+      }
       logActivity("delete_family_data", {
         entity_type: "family_data",
         description: `Deleted family file: ${name}`
