@@ -269,18 +269,25 @@ const PhilPenHealthForm = () => {
             border: none !important;
           }
           #philpen-print-area * {
-            color: black !important;
-            border-color: #94a3b8 !important; /* slate-400 */
+            color: #000000 !important;
+            border-color: #000000 !important;
           }
           .no-print {
             display: none !important;
           }
-          .print-input {
-            border-bottom: 1px solid #94a3b8 !important;
-            padding: 2px 4px !important;
-          }
-          .print-input::placeholder {
+          ::placeholder, .print-input::placeholder {
             color: transparent !important;
+            opacity: 0 !important;
+          }
+          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit,
+          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper {
+            color: transparent !important;
+            opacity: 0 !important;
+          }
+          .print-input {
+            border-bottom: 1px solid #000000 !important;
+            padding: 2px 4px !important;
+            color: #000000 !important;
           }
           select, select * {
             display: none !important;
