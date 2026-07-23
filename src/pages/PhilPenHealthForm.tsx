@@ -276,8 +276,8 @@ const PhilPenHealthForm = () => {
             display: none !important;
           }
           .print-input {
-            border-bottom: none !important;
-            padding: 0 !important;
+            border-bottom: 1px solid #94a3b8 !important;
+            padding: 2px 4px !important;
           }
           .print-input::placeholder {
             color: transparent !important;
@@ -326,7 +326,7 @@ const PhilPenHealthForm = () => {
                   </div>
                   {/* Print representation of name select */}
                   <span className="hidden print:inline border-b border-slate-400 flex-1 px-1 font-medium min-h-6">
-                    {residents.find(r => r.id === form.resident_id)?.full_name || "____________________________________"}
+                    {residents.find(r => r.id === form.resident_id)?.full_name || ""}
                   </span>
                 </div>
 
@@ -414,7 +414,7 @@ const PhilPenHealthForm = () => {
 
                 <div className="flex items-center gap-2">
                   <span className="text-foreground shrink-0">BMI:</span>
-                  <span className="flex-1 text-center font-semibold bg-muted/30 py-0.5 px-3 rounded text-primary border border-border/50">
+                  <span className="print-input flex-1 text-center font-semibold border-b border-slate-400">
                     {bmi}
                   </span>
                 </div>
