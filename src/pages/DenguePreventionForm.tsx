@@ -42,33 +42,19 @@ const DenguePreventionForm = () => {
 
       const headsMap = new Map<string, HouseholdHeadOption>();
 
+      // Household heads refer ONLY to father_name (household head) in family_data
       famData.forEach((fam: any) => {
         if (fam.father_name && fam.father_name.trim()) {
-          const nameKey = fam.father_name.trim().toLowerCase();
+          const nameClean = fam.father_name.trim();
+          const nameKey = nameClean.toLowerCase();
           const matchedRes = resData.find(
             (r: any) => (r.id && r.id === fam.resident_id) || r.full_name.trim().toLowerCase() === nameKey
           );
           headsMap.set(nameKey, {
             id: matchedRes ? matchedRes.id : (fam.resident_id || null),
-            full_name: fam.father_name.trim(),
+            full_name: nameClean,
             sitio: fam.sitio || matchedRes?.sitio || "",
           });
-        }
-      });
-
-      resData.forEach((r: any) => {
-        if (r.full_name && r.full_name.trim()) {
-          const nameKey = r.full_name.trim().toLowerCase();
-          if (!headsMap.has(nameKey)) {
-            headsMap.set(nameKey, {
-              id: r.id,
-              full_name: r.full_name.trim(),
-              sitio: r.sitio || "",
-            });
-          } else {
-            const existing = headsMap.get(nameKey)!;
-            if (!existing.id) existing.id = r.id;
-          }
         }
       });
 
@@ -591,6 +577,14 @@ const DenguePreventionForm = () => {
             background-color: transparent !important;
             padding: 0 !important;
             color: black !important;
+          }
+          .cell-input::placeholder,
+          .cell-input::-webkit-input-placeholder,
+          .cell-input:-ms-input-placeholder,
+          ::placeholder {
+            color: transparent !important;
+            opacity: 0 !important;
+            -webkit-text-fill-color: transparent !important;
           }
           * {
             -webkit-print-color-adjust: exact !important;
