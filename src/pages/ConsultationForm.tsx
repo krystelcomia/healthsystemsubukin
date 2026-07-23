@@ -122,8 +122,8 @@ const ConsultationForm = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <span className="hidden print:inline border-b border-slate-400 flex-1 px-1 font-medium min-h-6">
-                  {residents.find(r => r.id === form.resident_id)?.full_name || "____________________________________"}
+                <span className="hidden print:block border-b-2 border-slate-300 w-full min-h-[1.5rem] px-1 font-medium">
+                  {residents.find(r => r.id === form.resident_id)?.full_name || ""}
                 </span>
               </div>
             </div>
