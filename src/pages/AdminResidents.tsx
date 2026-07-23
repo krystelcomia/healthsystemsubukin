@@ -74,25 +74,7 @@ const AdminResidents = () => {
   const filtered = selectedSitio === "all" ? residents : residents.filter(r => r.sitio === selectedSitio);
 
   const handlePrint = () => {
-    const win = window.open("", "_blank");
-    if (!win) return;
-
-    const absSanjuan = new URL(sanjuanLogo, window.location.href).href;
-    const absHeaderText = new URL(headerTextImg, window.location.href).href;
-    const absBarangay = new URL(barangayLogo, window.location.href).href;
-
-    win.document.write(`<!DOCTYPE html><html><head><title>${t("residents.title")} - ${selectedSitio === "all" ? t("admin.residents.allSitios") : selectedSitio}</title>
-      <style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #1a1a1a; font-size: 13px; }
-        .header-seal { display: flex !important; align-items: center !important; justify-content: center !important; gap: 24px !important; border-bottom: 4px double #000 !important; padding-bottom: 16px !important; margin-bottom: 20px !important; text-align: center !important; width: 100% !important; }
-        .header-seal img { mix-blend-mode: multiply !important; object-fit: contain !important; height: 80px !important; width: auto !important; max-height: 80px !important; shrink: 0 !important; }
-        table { width: 100%; border-collapse: collapse; margin: 12px 0; } th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; color: #000000; } th { background: transparent !important; color: #000000 !important; font-weight: 600; }
-        .print-date { text-align: right; font-size: 10px; color: #000000; margin-top: 20px; }</style></head><body>
-      <div class="header-seal"><img src="${absSanjuan}" alt="San Juan Seal" /><img src="${absHeaderText}" alt="Header Text" /><img src="${absBarangay}" alt="Barangay Subukin Logo" /></div>
-      <table><thead><tr><th>#</th><th>${t("residents.fullName")}</th><th>${t("residents.gender")}</th><th>${t("residents.age")}</th><th>${t("residents.birthday")}</th><th>${t("residents.civilStatus")}</th><th>${t("residents.bloodType")}</th><th>${t("residents.sitio")}</th><th>${t("residents.nationality")}</th><th>${t("residents.religion")}</th></tr></thead><tbody>`);
-    filtered.forEach((r, i) => { win.document.write(`<tr><td>${i + 1}</td><td>${r.full_name}</td><td>${r.gender}</td><td>${r.age}</td><td>${r.birthday || "—"}</td><td>${r.status}</td><td>${r.blood_type || "—"}</td><td>${r.sitio || "—"}</td><td>${r.nationality}</td><td>${r.religion || "—"}</td></tr>`); });
-    win.document.write(`</tbody></table><p style="margin-top:12px;font-size:12px;color:#666;">${t("common.total")}: ${filtered.length}</p>`);
-    win.document.write(`<p class="print-date">${new Date().toLocaleString()}</p></body></html>`);
-    win.document.close(); win.print();
+    window.print();
   };
 
   const totalRecords = healthRecords ? (
@@ -107,8 +89,36 @@ const AdminResidents = () => {
 
   return (
     <div className="w-full space-y-6">
+      <style>{`
+        .print-only { display: none !important; }
+        .print-only-table { display: none !important; }
+        #admin-residents-print-area { background-color: #ffffff !important; color: #000000 !important; }
+        #admin-residents-print-area table, #admin-residents-print-area th, #admin-residents-print-area td { color: #000000 !important; border-color: #000000 !important; }
+        #admin-residents-print-area h2, #admin-residents-print-area p, #admin-residents-print-area span, #admin-residents-print-area strong { color: #000000 !important; }
+        @media print {
+          body * { visibility: hidden !important; }
+          #admin-residents-print-area, #admin-residents-print-area * { visibility: visible !important; }
+          #admin-residents-print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            padding: 20px !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            color: black !important;
+          }
+          .no-print { display: none !important; }
+          .print-only { display: flex !important; }
+          .print-only-table { display: table !important; }
+          .header-seal img { mix-blend-mode: multiply !important; }
+          @page { size: A4 landscape; margin: 10mm; }
+        }
+      `}</style>
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 no-print">
         <div className="flex items-center gap-3">
           <Label className="text-sm whitespace-nowrap">{t("admin.residents.filterBySitio")}</Label>
           <Select value={selectedSitio} onValueChange={setSelectedSitio}>
@@ -118,6 +128,23 @@ const AdminResidents = () => {
         </div>
         <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> {t("common.print")}</Button>
       </div>
+
+      <div id="admin-residents-print-area">
+        {/* Printable Official Header Seal */}
+        <div 
+          className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
+          style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
+        >
+          <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+        </div>
+
+        <div className="print-only flex justify-between items-center mb-4">
+          <h2 style={{ fontSize: 16, fontWeight: "bold" }}>
+            {t("residents.title")} — {selectedSitio === "all" ? t("admin.residents.allSitios") : selectedSitio}
+          </h2>
+        </div>
 
       <Card className="border-border/50">
         <CardContent className="p-0">
@@ -177,7 +204,13 @@ const AdminResidents = () => {
           </div>
         </CardContent>
       </Card>
-      <p className="text-sm text-muted-foreground">{t("common.showing")} {filtered.length} {t("common.of")} {residents.length}</p>
+      <div className="print-only flex justify-between items-center mt-4">
+        <p style={{ fontSize: 12, color: "#4b5563" }}>{t("common.total")}: {filtered.length}</p>
+        <p className="print-date" style={{ fontSize: 10, color: "#6b7280" }}>{new Date().toLocaleString()}</p>
+      </div>
+    </div>
+
+    <p className="text-sm text-muted-foreground no-print">{t("common.showing")} {filtered.length} {t("common.of")} {residents.length}</p>
 
       {/* Dialog showing selected resident's health records */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
