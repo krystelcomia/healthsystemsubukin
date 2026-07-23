@@ -89,12 +89,30 @@ const ConsultationForm = () => {
     <div className="w-full space-y-6">
       <style>{`
         input[type="date"]:invalid::-webkit-datetime-edit,
-        input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper {
+        input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper,
+        input[type="date"]:invalid::-webkit-datetime-edit-text,
+        input[type="date"]:invalid::-webkit-datetime-edit-month-field,
+        input[type="date"]:invalid::-webkit-datetime-edit-day-field,
+        input[type="date"]:invalid::-webkit-datetime-edit-year-field {
           color: transparent !important;
         }
         input[type="date"]:focus::-webkit-datetime-edit,
-        input[type="date"]:valid::-webkit-datetime-edit {
+        input[type="date"]:valid::-webkit-datetime-edit,
+        input[type="date"]:focus::-webkit-datetime-edit-fields-wrapper,
+        input[type="date"]:valid::-webkit-datetime-edit-fields-wrapper,
+        input[type="date"]:focus::-webkit-datetime-edit-text,
+        input[type="date"]:valid::-webkit-datetime-edit-text,
+        input[type="date"]:focus::-webkit-datetime-edit-month-field,
+        input[type="date"]:valid::-webkit-datetime-edit-month-field,
+        input[type="date"]:focus::-webkit-datetime-edit-day-field,
+        input[type="date"]:valid::-webkit-datetime-edit-day-field,
+        input[type="date"]:focus::-webkit-datetime-edit-year-field,
+        input[type="date"]:valid::-webkit-datetime-edit-year-field {
           color: inherit !important;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+          opacity: 1 !important;
+          cursor: pointer;
         }
         @media print {
           body * { visibility: hidden !important; }
@@ -163,11 +181,11 @@ const ConsultationForm = () => {
               <div className="space-y-2"><Label>{t("consultation.date")}</Label><Input className={lineInputClass} type="date" value={form.date} onChange={(e) => handleChange("date", e.target.value)} /></div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2"><Label>{t("consultation.birthdate")}</Label><Input className={lineInputClass} type="date" value={form.birthdate} onChange={(e) => {
+              <div className="space-y-2"><Label>{t("consultation.birthdate")}</Label><Input className={lineInputClass} type="text" value={form.birthdate} onChange={(e) => {
                 const bday = e.target.value;
                 const computed = calculateAge(bday);
                 setForm(prev => ({ ...prev, birthdate: bday, age: computed > 0 ? String(computed) : prev.age }));
-              }} /></div>
+              }} placeholder="" /></div>
               <div className="space-y-2"><Label>{t("consultation.age")}</Label><Input className={lineInputClass} type="number" value={form.age} onChange={(e) => handleChange("age", e.target.value)} placeholder="" /></div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

@@ -242,12 +242,30 @@ const PhilPenHealthForm = () => {
           border-bottom-color: hsl(var(--primary));
         }
         input[type="date"]:invalid::-webkit-datetime-edit,
-        input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper {
+        input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper,
+        input[type="date"]:invalid::-webkit-datetime-edit-text,
+        input[type="date"]:invalid::-webkit-datetime-edit-month-field,
+        input[type="date"]:invalid::-webkit-datetime-edit-day-field,
+        input[type="date"]:invalid::-webkit-datetime-edit-year-field {
           color: transparent !important;
         }
         input[type="date"]:focus::-webkit-datetime-edit,
-        input[type="date"]:valid::-webkit-datetime-edit {
+        input[type="date"]:valid::-webkit-datetime-edit,
+        input[type="date"]:focus::-webkit-datetime-edit-fields-wrapper,
+        input[type="date"]:valid::-webkit-datetime-edit-fields-wrapper,
+        input[type="date"]:focus::-webkit-datetime-edit-text,
+        input[type="date"]:valid::-webkit-datetime-edit-text,
+        input[type="date"]:focus::-webkit-datetime-edit-month-field,
+        input[type="date"]:valid::-webkit-datetime-edit-month-field,
+        input[type="date"]:focus::-webkit-datetime-edit-day-field,
+        input[type="date"]:valid::-webkit-datetime-edit-day-field,
+        input[type="date"]:focus::-webkit-datetime-edit-year-field,
+        input[type="date"]:valid::-webkit-datetime-edit-year-field {
           color: inherit !important;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+          opacity: 1 !important;
+          cursor: pointer;
         }
         @media print {
           body * {
@@ -280,7 +298,11 @@ const PhilPenHealthForm = () => {
             opacity: 0 !important;
           }
           #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit,
-          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper {
+          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper,
+          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-text,
+          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-month-field,
+          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-day-field,
+          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-year-field {
             color: transparent !important;
             opacity: 0 !important;
           }
@@ -362,7 +384,7 @@ const PhilPenHealthForm = () => {
                 <div className="flex items-center gap-2">
                   <span className="text-foreground shrink-0">Birthdate:</span>
                   <input 
-                    type="date"
+                    type="text"
                     value={form.birthdate}
                     onChange={(e) => {
                       const bday = e.target.value;
@@ -370,6 +392,7 @@ const PhilPenHealthForm = () => {
                       setForm(prev => ({ ...prev, birthdate: bday, age: computed > 0 ? String(computed) : prev.age }));
                     }}
                     className="print-input flex-1 font-medium"
+                    placeholder=""
                   />
                 </div>
 
