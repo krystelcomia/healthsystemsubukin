@@ -50,7 +50,24 @@ const ConsultationForm = () => {
     e.preventDefault();
     const targetId = form.resident_id;
 
-    if (!targetId) { toast.error(t("consultation.selectResident")); return; }
+    if (!targetId) { 
+      toast.error(t("consultation.selectResident") || "Please select a resident."); 
+      return; 
+    }
+
+    const hasInfo = Boolean(
+      form.consultationCause?.trim() ||
+      form.temperature?.trim() ||
+      form.pulseRate?.trim() ||
+      form.respirationRate?.trim() ||
+      form.height?.trim() ||
+      form.weight?.trim()
+    );
+
+    if (!hasInfo) {
+      toast.error("Cannot save consultation without any information entered.");
+      return;
+    }
 
     const { error } = await supabase.from("consultations").insert({
       resident_id: targetId, birthdate: form.birthdate || null, age: Number(form.age) || null, sitio: form.sitio,
@@ -68,8 +85,7 @@ const ConsultationForm = () => {
     <div className="w-full space-y-6">
 
       <Card className="border-border/50 shadow-sm">
-        <CardHeader><CardTitle className="text-lg font-heading">{t("consultation.patientInfo")}</CardTitle></CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
