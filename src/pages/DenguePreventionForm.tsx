@@ -15,7 +15,6 @@ const DenguePreventionForm = () => {
   const { t } = useSettings();
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -356,7 +355,7 @@ const DenguePreventionForm = () => {
     if (hasError) {
       toast.error("Some records failed to save. Please try again.");
     } else {
-      toast.success("All information has been saved successfully to the database!");
+      toast.success("Save successfully.");
       logActivity("update_dengue", {
         entity_type: "dengue_prevention",
         description: "Saved all records in Dengue prevention checklist form"
@@ -400,25 +399,6 @@ const DenguePreventionForm = () => {
         description: `Deleted Dengue prevention record row for: ${displayName}`
       });
       toast.success("Row deleted successfully");
-      fetchRecords();
-    }
-  };
-
-  const handleDeleteAll = async () => {
-    const { error } = await supabase
-      .from("dengue_prevention")
-      .delete()
-      .neq("id", "0");
-
-    if (error) {
-      toast.error("Failed to clear entries");
-    } else {
-      logActivity("delete_all_dengue", {
-        entity_type: "dengue_prevention",
-        description: "Cleared all entries in the Dengue prevention form"
-      });
-      toast.success("All entries cleared successfully!");
-      setDeleteConfirmOpen(false);
       fetchRecords();
     }
   };
@@ -681,16 +661,6 @@ const DenguePreventionForm = () => {
             >
               <Plus className="h-4 w-4" /> Add Row
             </Button>
-            {records.length > 0 && (
-              <Button 
-                onClick={() => setDeleteConfirmOpen(true)} 
-                size="sm" 
-                variant="outline" 
-                className="gap-1 text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium shadow-sm"
-              >
-                <Trash2 className="h-4 w-4" /> Clear All
-              </Button>
-            )}
             <Button 
               onClick={handlePrint} 
               size="sm" 
@@ -702,27 +672,6 @@ const DenguePreventionForm = () => {
           </div>
         </CardContent>
       </Card>
-
-      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-heading font-bold text-destructive">
-              Clear All Entries?
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-2 text-sm text-slate-500">
-            This will permanently delete all records in the Dengue Prevention form checklist. This action cannot be undone.
-          </div>
-          <DialogFooter className="gap-2">
-            <Button type="button" variant="ghost" onClick={() => setDeleteConfirmOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="button" variant="destructive" onClick={handleDeleteAll}>
-              Delete All
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={signatureModalOpen} onOpenChange={setSignatureModalOpen}>
         <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200">
