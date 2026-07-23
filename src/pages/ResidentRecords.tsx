@@ -313,12 +313,10 @@ const ResidentRecords = () => {
                   </div>
                   <div className="flex gap-2 items-center">
                     {resident.family_number && (
-                      <Badge variant="secondary" className="text-xs font-mono hidden sm:inline-flex">
+                      <Badge variant="secondary" className="text-xs font-mono">
                         {resident.family_number}
                       </Badge>
                     )}
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditResident(resident); setEditDialogOpen(true); }}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(resident.id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
                 </CardContent>
               </Card>
