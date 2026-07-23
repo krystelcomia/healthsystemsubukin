@@ -402,6 +402,12 @@ const DenguePreventionForm = () => {
   };
 
   const handleSaveAll = async () => {
+    const nonEmptyRecords = records.filter(r => !isRowEmpty(r));
+    if (nonEmptyRecords.length === 0) {
+      toast.error(t("dengue.noRecordsToSave"));
+      return;
+    }
+
     setSaving(true);
     let hasError = false;
 
@@ -451,7 +457,7 @@ const DenguePreventionForm = () => {
     if (hasError) {
       toast.error("Some records failed to save. Please try again.");
     } else {
-      toast.success("Save successfully.");
+      toast.success(t("dengue.saveSuccess"));
       logActivity("update_dengue", {
         entity_type: "dengue_prevention",
         description: "Saved all records in Dengue prevention checklist form"

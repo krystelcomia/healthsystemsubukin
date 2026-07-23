@@ -358,7 +358,9 @@ export const translations: Record<Language, Record<string, string>> = {
     "dengue.limitDesc1": "You have reached the 20-row limit for Dengue Prevention records.",
     "dengue.limitDesc2": "Please print the page to keep a physical copy, then clear previous records to start a new list.",
     "dengue.printAndDelete": "Print and Delete",
-    "dengue.printAndDeleteSuccess": "Printed and previous records cleared successfully."
+    "dengue.printAndDeleteSuccess": "Printed and previous records cleared successfully.",
+    "dengue.noRecordsToSave": "No records to save. Please enter or add a record first.",
+    "dengue.saveSuccess": "Records saved successfully."
   },
   tl: {
     // Sidebar
@@ -717,6 +719,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "dengue.limitDesc1": "Naka-abot na sa limitasyon na 20 rows ang pormularyo ng Dengue Prevention.",
     "dengue.limitDesc2": "Mangyaring i-print ang pahina upang mai-save ang kopya, at pagkatapos ay i-clear ang mga lumang rekor upang magsimula ng bagong listahan.",
     "dengue.printAndDelete": "I-print at Burahin",
-    "dengue.printAndDeleteSuccess": "Na-print at matagumpay na na-clear ang mga lumang rekor."
+    "dengue.printAndDeleteSuccess": "Na-print at matagumpay na na-clear ang mga lumang rekor.",
+    "dengue.noRecordsToSave": "Walang i-sa-save na rekor. Maglagay o magdagdag muna ng datos.",
+    "dengue.saveSuccess": "Matagumpay na na-save ang mga rekor."
   },
 };
