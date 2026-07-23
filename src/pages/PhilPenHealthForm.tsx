@@ -303,10 +303,10 @@ const PhilPenHealthForm = () => {
               {/* Left Side Group */}
               <div className="md:col-span-8 space-y-3.5">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-foreground shrink-0" style={{ fontFamily: "var(--font-heading)" }}>Name:</span>
+                  <span className="text-foreground shrink-0">Name:</span>
                   <div className="flex-1 no-print">
                     <Select value={form.resident_id} onValueChange={handleResidentChange}>
-                      <SelectTrigger className="h-8 border-border bg-background text-sm">
+                      <SelectTrigger className="h-8 border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 shadow-none focus:ring-0 text-sm">
                         <SelectValue placeholder="Select a resident..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -323,32 +323,29 @@ const PhilPenHealthForm = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-foreground shrink-0" style={{ fontFamily: "var(--font-heading)" }}>Address/Sitio:</span>
-                  <select 
+                  <span className="text-foreground shrink-0">Address/Sitio:</span>
+                  <input 
+                    type="text"
                     value={form.address}
                     onChange={(e) => handleFieldChange("address", e.target.value)}
-                    className="print-input flex-1 font-medium bg-background text-foreground border border-border/80 rounded px-2 py-1"
-                  >
-                    <option value="">Select Sitio...</option>
-                    {sitioOptions.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
+                    className="print-input flex-1 font-medium"
+                    placeholder=""
+                  />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-foreground shrink-0" style={{ fontFamily: "var(--font-heading)" }}>Age:</span>
+                  <span className="text-foreground shrink-0">Age:</span>
                   <input 
                     type="text"
                     value={form.age}
                     onChange={(e) => handleFieldChange("age", e.target.value)}
                     className="print-input flex-1 font-medium"
-                    placeholder="Type age..."
+                    placeholder=""
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-foreground shrink-0" style={{ fontFamily: "var(--font-heading)" }}>Birthdate:</span>
+                  <span className="text-foreground shrink-0">Birthdate:</span>
                   <input 
                     type="date"
                     value={form.birthdate}
@@ -362,7 +359,7 @@ const PhilPenHealthForm = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-foreground shrink-0" style={{ fontFamily: "var(--font-heading)" }}>Date:</span>
+                  <span className="text-foreground shrink-0">Date:</span>
                   <input 
                     type="date"
                     value={form.currentDate}
@@ -375,7 +372,7 @@ const PhilPenHealthForm = () => {
               {/* Right Side Group */}
               <div className="md:col-span-4 space-y-3.5 md:border-l md:border-border/60 md:pl-6">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-foreground shrink-0" style={{ fontFamily: "var(--font-heading)" }}>BP:</span>
+                  <span className="text-foreground shrink-0">BP:</span>
                   <input 
                     type="text"
                     value={form.bp}
@@ -386,7 +383,7 @@ const PhilPenHealthForm = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-foreground shrink-0" style={{ fontFamily: "var(--font-heading)" }}>Ht:</span>
+                  <span className="text-foreground shrink-0">Ht:</span>
                   <input 
                     type="text"
                     value={form.height}
@@ -397,7 +394,7 @@ const PhilPenHealthForm = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-foreground shrink-0" style={{ fontFamily: "var(--font-heading)" }}>Wt:</span>
+                  <span className="text-foreground shrink-0">Wt:</span>
                   <input 
                     type="text"
                     value={form.weight}
@@ -408,7 +405,7 @@ const PhilPenHealthForm = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-foreground shrink-0" style={{ fontFamily: "var(--font-heading)" }}>BMI:</span>
+                  <span className="text-foreground shrink-0">BMI:</span>
                   <span className="flex-1 text-center font-semibold bg-muted/30 py-0.5 px-3 rounded text-primary border border-border/50">
                     {bmi}
                   </span>
