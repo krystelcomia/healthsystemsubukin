@@ -79,6 +79,7 @@ const AdminResidents = () => {
 
   const totalRecords = healthRecords ? (
     healthRecords.consultations.length +
+    healthRecords.family_data.length +
     healthRecords.philpen_health.length +
     healthRecords.dengue_prevention.length +
     healthRecords.maternal_care.length +
@@ -293,6 +294,31 @@ const AdminResidents = () => {
               )}
 
 
+
+              {healthRecords.family_data.length > 0 && (
+                <div className="space-y-2">
+                  <table className="w-full text-xs border-collapse border border-border">
+                    <thead>
+                      <tr className="bg-muted/40 font-semibold">
+                        <th className="p-2 border">Family #</th>
+                        <th className="p-2 border">Father</th>
+                        <th className="p-2 border">Mother</th>
+                        <th className="p-2 border">Total Members</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {healthRecords.family_data.map((f: any) => (
+                        <tr key={f.id}>
+                          <td className="p-2 border">{f.family_number || "—"}</td>
+                          <td className="p-2 border">{f.father_name || "—"}</td>
+                          <td className="p-2 border">{f.mother_name || "—"}</td>
+                          <td className="p-2 border">{f.total_members}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
               {healthRecords.dengue_prevention.length > 0 && (
                 <div className="space-y-2">

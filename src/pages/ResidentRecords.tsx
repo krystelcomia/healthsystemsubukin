@@ -125,7 +125,7 @@ const ResidentRecords = () => {
   });
 
   if (selectedResident && healthRecords) {
-    const totalRecords = healthRecords.consultations.length + healthRecords.philpen_health.length + healthRecords.dengue_prevention.length + healthRecords.maternal_care.length + healthRecords.child_health.length + healthRecords.family_planning.length;
+    const totalRecords = healthRecords.consultations.length + healthRecords.family_data.length + healthRecords.philpen_health.length + healthRecords.dengue_prevention.length + healthRecords.maternal_care.length + healthRecords.child_health.length + healthRecords.family_planning.length;
     return (
       <div className="w-full space-y-6">
         <style>{`
@@ -180,6 +180,34 @@ const ResidentRecords = () => {
             <p style={{ fontSize: 13 }}><strong>{t("residents.civilStatus")}:</strong> {selectedResident.status}</p>
             <p style={{ fontSize: 13 }}><strong>{t("residents.sitio")}:</strong> {selectedResident.sitio || "—"}</p>
           </div>
+          {healthRecords.family_data.length > 0 && (
+            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 16 }}>
+              <thead>
+                <tr style={{ background: "transparent" }}>
+                  <th style={thStyle}>{t("familyData.familyNumber")}</th>
+                  <th style={thStyle}>{t("familyData.numHouseholds")}</th>
+                  <th style={thStyle}>{t("familyData.father")}</th>
+                  <th style={thStyle}>{t("familyData.mother")}</th>
+                  <th style={thStyle}>{t("familyData.males")}</th>
+                  <th style={thStyle}>{t("familyData.females")}</th>
+                  <th style={thStyle}>{t("familyData.totalMembers")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {healthRecords.family_data.map((f: any) => (
+                  <tr key={f.id}>
+                    <td style={tdStyle}>{f.family_number || "—"}</td>
+                    <td style={tdStyle}>{f.num_households}</td>
+                    <td style={tdStyle}>{f.father_name || "—"}</td>
+                    <td style={tdStyle}>{f.mother_name || "—"}</td>
+                    <td style={tdStyle}>{f.num_males}</td>
+                    <td style={tdStyle}>{f.num_females}</td>
+                    <td style={tdStyle}>{f.total_members}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
           {healthRecords.consultations.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#000000", marginTop: 20, borderBottom: "1px solid #000000", paddingBottom: 4 }}>{t("dashboard.consultations")} ({healthRecords.consultations.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "transparent" }}><th style={thStyle}>{t("consultation.date")}</th><th style={thStyle}>{t("consultation.temp")}</th><th style={thStyle}>PR</th><th style={thStyle}>RR</th><th style={thStyle}>{t("consultation.height")}</th><th style={thStyle}>{t("consultation.weight")}</th><th style={thStyle}>{t("consultation.cause")}</th></tr></thead><tbody>{healthRecords.consultations.map((c: any) => (<tr key={c.id}><td style={tdStyle}>{c.consultation_date}</td><td style={tdStyle}>{c.temperature || "—"}</td><td style={tdStyle}>{c.pulse_rate || "—"}</td><td style={tdStyle}>{c.respiration_rate || "—"}</td><td style={tdStyle}>{c.height || "—"}</td><td style={tdStyle}>{c.weight || "—"}</td><td style={tdStyle}>{c.consultation_cause || "—"}</td></tr>))}</tbody></table></>)}
           {healthRecords.philpen_health.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#000000", marginTop: 20, borderBottom: "1px solid #000000", paddingBottom: 4 }}>{t("nav.philpenHealth")} ({healthRecords.philpen_health.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "transparent" }}><th style={thStyle}>{t("consultation.date")}</th><th style={thStyle}>{t("philpen.bp")}</th><th style={thStyle}>{t("consultation.height")}</th><th style={thStyle}>{t("consultation.weight")}</th><th style={thStyle}>{t("philpen.bmi")}</th><th style={thStyle}>{t("philpen.smoke")}</th><th style={thStyle}>{t("philpen.alcohol")}</th><th style={thStyle}>{t("philpen.highBP")}</th><th style={thStyle}>{t("philpen.diabetes")}</th></tr></thead><tbody>{healthRecords.philpen_health.map((p: any) => (<tr key={p.id}><td style={tdStyle}>{p.record_date}</td><td style={tdStyle}>{p.bp || "—"}</td><td style={tdStyle}>{p.height || "—"}</td><td style={tdStyle}>{p.weight || "—"}</td><td style={tdStyle}>{p.bmi || "—"}</td><td style={tdStyle}>{p.smokes ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.drinks_alcohol ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.high_blood_pressure ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.diabetes_symptoms ? t("common.yes") : t("common.no")}</td></tr>))}</tbody></table></>)}
           {healthRecords.dengue_prevention.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#000000", marginTop: 20, borderBottom: "1px solid #000000", paddingBottom: 4 }}>{t("nav.denguePrevention")} ({healthRecords.dengue_prevention.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "transparent" }}><th style={thStyle}>{t("dengue.householdName")}</th><th style={thStyle}>{t("dengue.containerType")}</th><th style={thStyle}>{t("dengue.hasLarvae")}</th><th style={thStyle}>{t("dengue.actionPlan")}</th><th style={thStyle}>{t("dengue.signature")}</th></tr></thead><tbody>{healthRecords.dengue_prevention.map((d: any) => (<tr key={d.id}><td style={tdStyle}>{d.household_name || "—"}</td><td style={tdStyle}>{d.container_type || "—"}</td><td style={tdStyle}>{d.has_larvae ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{d.action_plan || "—"}</td><td style={tdStyle}>{d.signature || "—"}</td></tr>))}</tbody></table></>)}
