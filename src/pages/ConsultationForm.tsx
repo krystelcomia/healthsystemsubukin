@@ -20,7 +20,6 @@ const lineTextareaClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dar
 const ConsultationForm = () => {
   const { t } = useSettings();
   const [residents, setResidents] = useState<{ id: string; full_name: string; sitio?: string; age?: number; birthday?: string }[]>([]);
-  const [customResidentName, setCustomResidentName] = useState("");
   const [form, setForm] = useState({
     resident_id: "", birthdate: "", age: "", sitio: "", date: new Date().toISOString().split("T")[0],
     temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "",
@@ -33,10 +32,6 @@ const ConsultationForm = () => {
   const handleChange = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSelectResident = (id: string) => {
-    if (id === "new_custom") {
-      setForm(prev => ({ ...prev, resident_id: "new_custom" }));
-      return;
-    }
     const found = residents.find(r => r.id === id);
     if (found) {
       setForm(prev => ({
@@ -53,21 +48,7 @@ const ConsultationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let targetId = form.resident_id;
-
-    if (targetId === "new_custom" || !targetId) {
-      if (!customResidentName.trim()) {
-        toast.error(t("consultation.selectResident"));
-        return;
-      }
-      const linkedId = await ensureResidentExists({
-        fullName: customResidentName,
-        sitio: form.sitio,
-        age: form.age,
-        birthday: form.birthdate,
-      });
-      if (linkedId) targetId = linkedId;
-    }
+    const targetId = form.resident_id;
 
     if (!targetId) { toast.error(t("consultation.selectResident")); return; }
 
@@ -77,11 +58,10 @@ const ConsultationForm = () => {
     });
     if (error) { toast.error("Failed to save consultation"); return; }
     const selectedResident = residents.find(r => r.id === targetId);
-    const resName = selectedResident ? selectedResident.full_name : customResidentName || targetId;
+    const resName = selectedResident ? selectedResident.full_name : targetId;
     logActivity("submit_consultation", { entity_type: "consultation", description: `Recorded a health consultation for resident: ${resName}` });
     toast.success("Consultation recorded and linked to resident records!");
     setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: new Date().toISOString().split("T")[0], temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
-    setCustomResidentName("");
   };
 
   return (
@@ -98,22 +78,9 @@ const ConsultationForm = () => {
                   <SelectTrigger className={lineSelectClass}><SelectValue placeholder={t("consultation.selectResident")} /></SelectTrigger>
                   <SelectContent>
                     {residents.map((r) => <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>)}
-                    <SelectItem value="new_custom">+ Add / Type New Resident Name</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
-              {form.resident_id === "new_custom" && (
-                <div className="space-y-2">
-                  <Label>Resident Full Name *</Label>
-                  <Input 
-                    className={lineInputClass}
-                    value={customResidentName} 
-                    onChange={(e) => setCustomResidentName(e.target.value)} 
-                    placeholder="Enter resident full name" 
-                  />
-                </div>
-              )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2"><Label>{t("consultation.sitio")}</Label><Input className={lineInputClass} value={form.sitio} onChange={(e) => handleChange("sitio", e.target.value)} placeholder="Sitio / Area" /></div>
