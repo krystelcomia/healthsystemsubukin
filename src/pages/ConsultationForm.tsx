@@ -182,7 +182,15 @@ const ConsultationForm = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2"><Label>{t("consultation.sitio")}</Label><Input className={lineInputClass} value={form.sitio} onChange={(e) => handleChange("sitio", e.target.value)} placeholder="Sitio / Area" /></div>
-              <div className="space-y-2"><Label>{t("consultation.date")}</Label><Input className={lineInputClass} type="date" value={form.date} onChange={(e) => handleChange("date", e.target.value)} /></div>
+              <div className="space-y-2">
+                <Label>{t("consultation.date")}</Label>
+                <div className="no-print">
+                  <Input className={lineInputClass} type="date" value={form.date} onChange={(e) => handleChange("date", e.target.value)} />
+                </div>
+                <span className="hidden print:block border-b-2 border-slate-300 w-full min-h-[1.5rem] px-1 font-medium">
+                  {form.date || ""}
+                </span>
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2"><Label>{t("consultation.birthdate")}</Label><Input className={lineInputClass} type="text" value={form.birthdate} onChange={(e) => {
