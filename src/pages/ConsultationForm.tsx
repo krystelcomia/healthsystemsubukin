@@ -13,6 +13,10 @@ import { ensureResidentExists } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import { calculateAge } from "@/lib/residentLinker";
 
+const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-9";
+const lineSelectClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus:ring-0 focus:border-slate-800 dark:focus:border-slate-200 shadow-none h-9";
+const lineTextareaClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none resize-y min-h-[60px]";
+
 const ConsultationForm = () => {
   const { t } = useSettings();
   const [residents, setResidents] = useState<{ id: string; full_name: string; sitio?: string; age?: number; birthday?: string }[]>([]);
@@ -91,7 +95,7 @@ const ConsultationForm = () => {
               <div className="space-y-2">
                 <Label>{t("consultation.resident")} *</Label>
                 <Select value={form.resident_id} onValueChange={handleSelectResident}>
-                  <SelectTrigger><SelectValue placeholder={t("consultation.selectResident")} /></SelectTrigger>
+                  <SelectTrigger className={lineSelectClass}><SelectValue placeholder={t("consultation.selectResident")} /></SelectTrigger>
                   <SelectContent>
                     {residents.map((r) => <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>)}
                     <SelectItem value="new_custom">+ Add / Type New Resident Name</SelectItem>
@@ -103,6 +107,7 @@ const ConsultationForm = () => {
                 <div className="space-y-2">
                   <Label>Resident Full Name *</Label>
                   <Input 
+                    className={lineInputClass}
                     value={customResidentName} 
                     onChange={(e) => setCustomResidentName(e.target.value)} 
                     placeholder="Enter resident full name" 
@@ -111,25 +116,25 @@ const ConsultationForm = () => {
               )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{t("consultation.sitio")}</Label><Input value={form.sitio} onChange={(e) => handleChange("sitio", e.target.value)} placeholder="Sitio / Area" /></div>
-              <div className="space-y-2"><Label>{t("consultation.date")}</Label><Input type="date" value={form.date} onChange={(e) => handleChange("date", e.target.value)} /></div>
+              <div className="space-y-2"><Label>{t("consultation.sitio")}</Label><Input className={lineInputClass} value={form.sitio} onChange={(e) => handleChange("sitio", e.target.value)} placeholder="Sitio / Area" /></div>
+              <div className="space-y-2"><Label>{t("consultation.date")}</Label><Input className={lineInputClass} type="date" value={form.date} onChange={(e) => handleChange("date", e.target.value)} /></div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2"><Label>{t("consultation.birthdate")}</Label><Input type="date" value={form.birthdate} onChange={(e) => {
+              <div className="space-y-2"><Label>{t("consultation.birthdate")}</Label><Input className={lineInputClass} type="date" value={form.birthdate} onChange={(e) => {
                 const bday = e.target.value;
                 const computed = calculateAge(bday);
                 setForm(prev => ({ ...prev, birthdate: bday, age: computed > 0 ? String(computed) : prev.age }));
               }} /></div>
-              <div className="space-y-2"><Label>{t("consultation.age")}</Label><Input type="number" value={form.age} onChange={(e) => handleChange("age", e.target.value)} placeholder="0" /></div>
+              <div className="space-y-2"><Label>{t("consultation.age")}</Label><Input className={lineInputClass} type="number" value={form.age} onChange={(e) => handleChange("age", e.target.value)} placeholder="0" /></div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="space-y-2"><Label>{t("consultation.temp")}</Label><Input value={form.temperature} onChange={(e) => handleChange("temperature", e.target.value)} placeholder="36.5" /></div>
-              <div className="space-y-2"><Label>{t("consultation.pulseRate")}</Label><Input value={form.pulseRate} onChange={(e) => handleChange("pulseRate", e.target.value)} placeholder="bpm" /></div>
-              <div className="space-y-2"><Label>{t("consultation.respRate")}</Label><Input value={form.respirationRate} onChange={(e) => handleChange("respirationRate", e.target.value)} placeholder="bpm" /></div>
-              <div className="space-y-2"><Label>{t("consultation.height")}</Label><Input value={form.height} onChange={(e) => handleChange("height", e.target.value)} placeholder="cm" /></div>
+              <div className="space-y-2"><Label>{t("consultation.temp")}</Label><Input className={lineInputClass} value={form.temperature} onChange={(e) => handleChange("temperature", e.target.value)} placeholder="36.5" /></div>
+              <div className="space-y-2"><Label>{t("consultation.pulseRate")}</Label><Input className={lineInputClass} value={form.pulseRate} onChange={(e) => handleChange("pulseRate", e.target.value)} placeholder="bpm" /></div>
+              <div className="space-y-2"><Label>{t("consultation.respRate")}</Label><Input className={lineInputClass} value={form.respirationRate} onChange={(e) => handleChange("respirationRate", e.target.value)} placeholder="bpm" /></div>
+              <div className="space-y-2"><Label>{t("consultation.height")}</Label><Input className={lineInputClass} value={form.height} onChange={(e) => handleChange("height", e.target.value)} placeholder="cm" /></div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="space-y-2"><Label>{t("consultation.weight")}</Label><Input value={form.weight} onChange={(e) => handleChange("weight", e.target.value)} placeholder="kg" /></div></div>
-            <div className="space-y-2"><Label>{t("consultation.cause")}</Label><Textarea value={form.consultationCause} onChange={(e) => handleChange("consultationCause", e.target.value)} placeholder={t("consultation.causeDesc")} rows={3} /></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="space-y-2"><Label>{t("consultation.weight")}</Label><Input className={lineInputClass} value={form.weight} onChange={(e) => handleChange("weight", e.target.value)} placeholder="kg" /></div></div>
+            <div className="space-y-2"><Label>{t("consultation.cause")}</Label><Textarea className={lineTextareaClass} value={form.consultationCause} onChange={(e) => handleChange("consultationCause", e.target.value)} placeholder={t("consultation.causeDesc")} rows={3} /></div>
             <div className="pt-4 flex gap-3"><Button type="submit">{t("consultation.saveConsultation")}</Button><Button type="button" variant="outline" onClick={() => setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: new Date().toISOString().split("T")[0], temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" })}>{t("common.clear")}</Button></div>
           </form>
         </CardContent>
