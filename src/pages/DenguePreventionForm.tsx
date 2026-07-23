@@ -2,28 +2,98 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Bug, Plus, Printer, Trash2, Trash, Save } from "lucide-react";
+import { Bug, Plus, Printer, Trash2, Trash, Save, Users, Search, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
+import { ensureResidentExists } from "@/lib/residentLinker";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+
+interface HouseholdHeadOption {
+  id: string | null;
+  name: string;
+  info: string;
+}
 
 const DenguePreventionForm = () => {
   const { t } = useSettings();
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [householdHeads, setHouseholdHeads] = useState<HouseholdHeadOption[]>([]);
+
+  // Household Head picker modal state
+  const [headPickerOpen, setHeadPickerOpen] = useState(false);
+  const [pickerTargetRecordId, setPickerTargetRecordId] = useState<string | null>(null);
+  const [pickerSearch, setPickerSearch] = useState("");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
   const [activeSignRecordId, setActiveSignRecordId] = useState<string | null>(null);
 
+  const fetchHouseholdHeads = async () => {
+    try {
+      const [{ data: famData }, { data: resData }] = await Promise.all([
+        supabase.from("family_data").select("*"),
+        supabase.from("residents").select("*")
+      ]);
+
+      const familyRecords = famData || [];
+      const residentRecords = resData || [];
+
+      const map = new Map<string, HouseholdHeadOption>();
+
+      // 1. Process family_data for household heads (father_name & mother_name)
+      familyRecords.forEach((fam: any) => {
+        if (fam.father_name && fam.father_name.trim()) {
+          const name = fam.father_name.trim();
+          const match = residentRecords.find((r: any) => r.full_name.trim().toLowerCase() === name.toLowerCase());
+          map.set(name.toLowerCase(), {
+            id: match ? match.id : fam.resident_id || null,
+            name: name,
+            info: fam.family_number ? `Family #${fam.family_number}` : (fam.sitio ? `Sitio ${fam.sitio}` : "Household Head")
+          });
+        }
+        if (fam.mother_name && fam.mother_name.trim()) {
+          const name = fam.mother_name.trim();
+          if (!map.has(name.toLowerCase())) {
+            const match = residentRecords.find((r: any) => r.full_name.trim().toLowerCase() === name.toLowerCase());
+            map.set(name.toLowerCase(), {
+              id: match ? match.id : null,
+              name: name,
+              info: fam.family_number ? `Family #${fam.family_number}` : (fam.sitio ? `Sitio ${fam.sitio}` : "Household Head")
+            });
+          }
+        }
+      });
+
+      // 2. Process residents table for all registered residents
+      residentRecords.forEach((res: any) => {
+        const name = res.full_name.trim();
+        if (name && !map.has(name.toLowerCase())) {
+          map.set(name.toLowerCase(), {
+            id: res.id,
+            name: name,
+            info: res.family_number ? `Family #${res.family_number}` : (res.sitio ? `Sitio ${res.sitio}` : "Resident")
+          });
+        }
+      });
+
+      setHouseholdHeads(Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name)));
+    } catch (err) {
+      console.error("Error loading household heads:", err);
+    }
+  };
+
   const fetchRecords = async () => {
     setLoading(true);
+    await fetchHouseholdHeads();
     const { data, error } = await supabase
       .from("dengue_prevention")
       .select("*")
@@ -55,6 +125,19 @@ const DenguePreventionForm = () => {
   useEffect(() => {
     fetchRecords();
   }, []);
+
+  const resolveResidentId = async (record: any): Promise<string | null> => {
+    if (record.resident_id) return record.resident_id;
+    const name = record.household_name?.trim();
+    if (!name) return null;
+
+    const match = householdHeads.find(h => h.name.toLowerCase() === name.toLowerCase());
+    if (match?.id) return match.id;
+
+    // Call ensureResidentExists to link/create resident in residents table
+    const newId = await ensureResidentExists({ fullName: name });
+    return newId;
+  };
 
   const isRowEmpty = (row: any) => {
     return (
@@ -139,8 +222,10 @@ const DenguePreventionForm = () => {
     const record = records.find(r => r.id === activeSignRecordId);
     if (!record) return;
 
+    const residentId = await resolveResidentId(record);
+
     if (activeSignRecordId.startsWith("temp-")) {
-      setRecords(prev => prev.map(r => r.id === activeSignRecordId ? { ...r, signature: dataUrl } : r));
+      setRecords(prev => prev.map(r => r.id === activeSignRecordId ? { ...r, signature: dataUrl, resident_id: residentId } : r));
 
       const isCurrentlyEmpty = 
         !record.household_name?.trim() &&
@@ -150,7 +235,7 @@ const DenguePreventionForm = () => {
       if (isCurrentlyEmpty) return;
 
       const newRow = {
-        resident_id: null,
+        resident_id: residentId,
         household_name: record.household_name,
         container_type: record.container_type,
         has_larvae: record.has_larvae,
@@ -176,17 +261,68 @@ const DenguePreventionForm = () => {
     } else {
       const { error } = await supabase
         .from("dengue_prevention")
-        .update({ signature: dataUrl })
+        .update({ signature: dataUrl, resident_id: residentId })
         .eq("id", activeSignRecordId);
 
       if (error) {
         toast.error("Failed to save signature");
       } else {
-        setRecords(prev => prev.map(r => r.id === activeSignRecordId ? { ...r, signature: dataUrl } : r));
+        setRecords(prev => prev.map(r => r.id === activeSignRecordId ? { ...r, signature: dataUrl, resident_id: residentId } : r));
         logActivity("update_dengue", {
           entity_type: "dengue_prevention",
           description: `Updated signature for Dengue checklist row`
         });
+      }
+    }
+  };
+
+  const handleSelectHouseholdHead = async (recordId: string, head: HouseholdHeadOption) => {
+    let resId = head.id;
+    if (!resId && head.name) {
+      resId = await ensureResidentExists({ fullName: head.name });
+    }
+
+    setRecords(prev => prev.map(r => r.id === recordId ? {
+      ...r,
+      household_name: head.name,
+      resident_id: resId
+    } : r));
+
+    setHeadPickerOpen(false);
+
+    // Trigger save if it's an existing record or has other content
+    const record = records.find(r => r.id === recordId);
+    if (!record) return;
+
+    if (!recordId.startsWith("temp-")) {
+      const { error } = await supabase
+        .from("dengue_prevention")
+        .update({ household_name: head.name, resident_id: resId })
+        .eq("id", recordId);
+
+      if (!error) {
+        toast.success(`Linked record to Household Head: ${head.name}`);
+      }
+    } else {
+      const updatedRow = { ...record, household_name: head.name, resident_id: resId };
+      if (!isRowEmpty(updatedRow)) {
+        const { data, error } = await supabase
+          .from("dengue_prevention")
+          .insert({
+            resident_id: resId,
+            household_name: head.name,
+            container_type: updatedRow.container_type,
+            has_larvae: updatedRow.has_larvae,
+            action_plan: updatedRow.action_plan,
+            signature: updatedRow.signature
+          })
+          .select()
+          .single();
+
+        if (!error && data) {
+          setRecords(prev => prev.map(r => r.id === recordId ? data : r));
+          toast.success(`Linked and saved record for: ${head.name}`);
+        }
       }
     }
   };
@@ -197,6 +333,9 @@ const DenguePreventionForm = () => {
 
     // Check if the actual value didn't change
     if (record[field] === value && !id.startsWith("temp-")) return;
+
+    const updatedRecord = { ...record, [field]: value };
+    const residentId = await resolveResidentId(updatedRecord);
 
     if (id.startsWith("temp-")) {
       // Don't save if row is empty on blur
@@ -210,7 +349,7 @@ const DenguePreventionForm = () => {
 
       // Insert new row to DB
       const newRow = {
-        resident_id: null,
+        resident_id: residentId,
         household_name: field === "household_name" ? value : record.household_name,
         container_type: field === "container_type" ? value : record.container_type,
         has_larvae: field === "has_larvae" ? value : record.has_larvae,
@@ -237,13 +376,13 @@ const DenguePreventionForm = () => {
       // It's an existing row, update it
       const { error } = await supabase
         .from("dengue_prevention")
-        .update({ [field]: value })
+        .update({ [field]: value, resident_id: residentId })
         .eq("id", id);
 
       if (error) {
         toast.error("Failed to save changes");
       } else {
-        setRecords(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
+        setRecords(prev => prev.map(r => r.id === id ? { ...r, [field]: value, resident_id: residentId } : r));
         logActivity("update_dengue", {
           entity_type: "dengue_prevention",
           description: `Updated ${field.replace('_', ' ')} for Dengue checklist row`
@@ -257,9 +396,10 @@ const DenguePreventionForm = () => {
     if (!record) return;
 
     const targetVal = record.has_larvae === hasLarvae ? null : hasLarvae;
+    const residentId = await resolveResidentId(record);
 
     if (id.startsWith("temp-")) {
-      setRecords(prev => prev.map(r => r.id === id ? { ...r, has_larvae: targetVal } : r));
+      setRecords(prev => prev.map(r => r.id === id ? { ...r, has_larvae: targetVal, resident_id: residentId } : r));
 
       const otherFieldsEmpty = 
         !record.household_name?.trim() &&
@@ -270,7 +410,7 @@ const DenguePreventionForm = () => {
       if (otherFieldsEmpty) return;
 
       const newRow = {
-        resident_id: null,
+        resident_id: residentId,
         household_name: record.household_name,
         container_type: record.container_type,
         has_larvae: targetVal,
@@ -290,13 +430,13 @@ const DenguePreventionForm = () => {
     } else {
       const { error } = await supabase
         .from("dengue_prevention")
-        .update({ has_larvae: targetVal })
+        .update({ has_larvae: targetVal, resident_id: residentId })
         .eq("id", id);
 
       if (error) {
         toast.error("Failed to save larvae status");
       } else {
-        setRecords(prev => prev.map(r => r.id === id ? { ...r, has_larvae: targetVal } : r));
+        setRecords(prev => prev.map(r => r.id === id ? { ...r, has_larvae: targetVal, resident_id: residentId } : r));
         logActivity("update_dengue", {
           entity_type: "dengue_prevention",
           description: `Set larvae status to ${targetVal === null ? "unspecified" : targetVal ? "Meron" : "Wala"} in Dengue prevention form`
@@ -315,10 +455,12 @@ const DenguePreventionForm = () => {
         // Skip if empty
         if (isRowEmpty(record)) continue;
 
+        const residentId = await resolveResidentId(record);
+
         const { data, error } = await supabase
           .from("dengue_prevention")
           .insert({
-            resident_id: null,
+            resident_id: residentId,
             household_name: record.household_name,
             container_type: record.container_type,
             has_larvae: record.has_larvae,
@@ -334,9 +476,12 @@ const DenguePreventionForm = () => {
           setRecords(prev => prev.map(r => r.id === record.id ? data : r));
         }
       } else {
+        const residentId = await resolveResidentId(record);
+
         const { error } = await supabase
           .from("dengue_prevention")
           .update({
+            resident_id: residentId,
             household_name: record.household_name,
             container_type: record.container_type,
             has_larvae: record.has_larvae,
@@ -406,6 +551,11 @@ const DenguePreventionForm = () => {
   const handlePrint = () => {
     window.print();
   };
+
+  const filteredPickerHeads = householdHeads.filter(h =>
+    h.name.toLowerCase().includes(pickerSearch.toLowerCase()) ||
+    h.info.toLowerCase().includes(pickerSearch.toLowerCase())
+  );
 
   return (
     <div className="w-full space-y-6">
@@ -495,7 +645,14 @@ const DenguePreventionForm = () => {
         }
       `}</style>
 
-
+      {/* Shared Datalist for Autocomplete */}
+      <datalist id="household-heads-datalist">
+        {householdHeads.map((head, idx) => (
+          <option key={idx} value={head.name}>
+            {head.name} {head.info ? `(${head.info})` : ""}
+          </option>
+        ))}
+      </datalist>
 
       <Card 
         id="dengue-print-area" 
@@ -527,16 +684,16 @@ const DenguePreventionForm = () => {
             <table className="w-full border-collapse border border-border text-left text-xs md:text-sm">
               <thead>
                 <tr>
-                  <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[28%]" rowSpan={2}>
+                  <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[32%]" rowSpan={2}>
                     PANGALAN NG MAYBAHAY
                   </th>
-                  <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[28%]" rowSpan={2}>
+                  <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[26%]" rowSpan={2}>
                     URI NG LALAGYAN O TIRAHAN NG LAMOK
                   </th>
                   <th className="border border-border bg-muted/40 p-1.5 font-bold text-center text-muted-foreground w-[14%]" colSpan={2}>
                     KITI-KITI
                   </th>
-                  <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[20%]" rowSpan={2}>
+                  <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[18%]" rowSpan={2}>
                     ACTION PLAN/DAPAT NA GAWIN
                   </th>
                   <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[10%]" rowSpan={2}>
@@ -558,17 +715,40 @@ const DenguePreventionForm = () => {
               <tbody>
                 {records.map((rec) => (
                   <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="border border-border p-0 font-medium">
-                      <input
-                        type="text"
-                        value={rec.household_name || ""}
-                        onChange={(e) => {
-                          setRecords(prev => prev.map(r => r.id === rec.id ? { ...r, household_name: e.target.value } : r));
-                        }}
-                        onBlur={(e) => handleCellBlur(rec.id, "household_name", e.target.value)}
-                        className="cell-input"
-                        placeholder=""
-                      />
+                    <td className="border border-border p-0 font-medium relative group">
+                      <div className="flex items-center w-full h-full">
+                        <input
+                          type="text"
+                          list="household-heads-datalist"
+                          value={rec.household_name || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const match = householdHeads.find(h => h.name.toLowerCase() === val.trim().toLowerCase());
+                            setRecords(prev => prev.map(r => r.id === rec.id ? { 
+                              ...r, 
+                              household_name: val,
+                              resident_id: match ? match.id : r.resident_id
+                            } : r));
+                          }}
+                          onBlur={(e) => handleCellBlur(rec.id, "household_name", e.target.value)}
+                          className="cell-input flex-1 min-w-0"
+                          placeholder="Pumili o i-type ang maybahay..."
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setPickerTargetRecordId(rec.id);
+                            setPickerSearch(rec.household_name || "");
+                            setHeadPickerOpen(true);
+                          }}
+                          className="h-7 w-7 shrink-0 mr-1 opacity-60 hover:opacity-100 no-print text-muted-foreground hover:text-primary"
+                          title="Pumili ng Maybahay mula sa Database"
+                        >
+                          <Users className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </td>
                     <td className="border border-border p-0">
                       <input
@@ -673,6 +853,72 @@ const DenguePreventionForm = () => {
         </CardContent>
       </Card>
 
+      {/* Household Head Quick Selector Dialog */}
+      <Dialog open={headPickerOpen} onOpenChange={setHeadPickerOpen}>
+        <DialogContent className="max-w-md bg-card text-card-foreground border border-border">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Pumili ng Maybahay (Household Head)
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Maghanap ng pangalan o sitio..."
+                value={pickerSearch}
+                onChange={(e) => setPickerSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
+            <div className="max-h-60 overflow-y-auto space-y-1 border rounded-md p-1 divide-y divide-border/40">
+              {filteredPickerHeads.length > 0 ? (
+                filteredPickerHeads.map((head, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      if (pickerTargetRecordId) {
+                        handleSelectHouseholdHead(pickerTargetRecordId, head);
+                      }
+                    }}
+                    className="p-2.5 hover:bg-muted/60 rounded cursor-pointer transition-colors flex items-center justify-between group"
+                  >
+                    <div>
+                      <div className="font-semibold text-sm group-hover:text-primary transition-colors">
+                        {head.name}
+                      </div>
+                      {head.info && (
+                        <div className="text-xs text-muted-foreground">
+                          {head.info}
+                        </div>
+                      )}
+                    </div>
+                    <Badge variant="outline" className="text-[10px] opacity-70 group-hover:opacity-100">
+                      Pumili
+                    </Badge>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-sm text-muted-foreground">
+                  Walang nahanap na maybahay sa database.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHeadPickerOpen(false)}>
+              Isara
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Signature Modal */}
       <Dialog open={signatureModalOpen} onOpenChange={setSignatureModalOpen}>
         <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200">
           <DialogHeader>
@@ -713,3 +959,4 @@ const DenguePreventionForm = () => {
 };
 
 export default DenguePreventionForm;
+
