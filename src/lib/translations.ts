@@ -352,7 +352,13 @@ export const translations: Record<Language, Record<string, string>> = {
     "attendance.noticeDesc": "Please clock in now so your official 'In' time is recorded for today's attendance. Failing to do so means your 'In' time will not be recorded.",
     "attendance.clockInNow": "Clock In / Check In Now",
     "attendance.remindLater": "Remind Me Later",
-    "attendance.bannerWarning": "Attendance Reminder: You have not checked in yet! Failing to check in means your 'In' time won't be recorded."
+    "attendance.bannerWarning": "Attendance Reminder: You have not checked in yet! Failing to check in means your 'In' time won't be recorded.",
+    // Dengue Prevention Notice & Form
+    "dengue.limitTitle": "Limit Reached (20 Rows)",
+    "dengue.limitDesc1": "You have reached the 20-row limit for Dengue Prevention records.",
+    "dengue.limitDesc2": "Please print the page to keep a physical copy, then clear previous records to start a new list.",
+    "dengue.printAndDelete": "Print and Delete",
+    "dengue.printAndDeleteSuccess": "Printed and previous records cleared successfully."
   },
   tl: {
     // Sidebar
@@ -705,6 +711,12 @@ export const translations: Record<Language, Record<string, string>> = {
     "attendance.noticeDesc": "Mag-clock in na ngayon upang maitala ang iyong opisyal na oras ng pagpasok ('In' time). Ang hindi pag-check in ay nangangahulugang hindi maire-record ang iyong oras.",
     "attendance.clockInNow": "Mag-Check In Na",
     "attendance.remindLater": "Ipaalala Mamaya",
-    "attendance.bannerWarning": "Paalala sa Attendance: Hindi ka pa nakakapag-check in! Ang hindi pag-check in ay nangangahulugang hindi maitala ang iyong oras."
+    "attendance.bannerWarning": "Paalala sa Attendance: Hindi ka pa nakakapag-check in! Ang hindi pag-check in ay nangangahulugang hindi maitala ang iyong oras.",
+    // Dengue Prevention Notice & Form
+    "dengue.limitTitle": "Naka-abot na sa Limitasyon (20 Rows)",
+    "dengue.limitDesc1": "Naka-abot na sa limitasyon na 20 rows ang pormularyo ng Dengue Prevention.",
+    "dengue.limitDesc2": "Mangyaring i-print ang pahina upang mai-save ang kopya, at pagkatapos ay i-clear ang mga lumang rekor upang magsimula ng bagong listahan.",
+    "dengue.printAndDelete": "I-print at Burahin",
+    "dengue.printAndDeleteSuccess": "Na-print at matagumpay na na-clear ang mga lumang rekor."
   },
 };

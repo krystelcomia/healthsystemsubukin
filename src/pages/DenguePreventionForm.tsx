@@ -486,7 +486,7 @@ const DenguePreventionForm = () => {
         description: "Printed and cleared Dengue prevention records (20-row limit reset)"
       });
 
-      toast.success("Printed and records successfully reset.");
+      toast.success(t("dengue.printAndDeleteSuccess"));
       await fetchRecords();
     } catch (err) {
       console.error("Failed to clear records:", err);
@@ -862,23 +862,23 @@ const DenguePreventionForm = () => {
         <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200">
           <DialogHeader>
             <DialogTitle className="text-lg font-heading font-bold text-foreground">
-              Limit Reached (20 Rows)
+              {t("dengue.limitTitle")}
             </DialogTitle>
           </DialogHeader>
           <div className="py-2 text-sm text-slate-600 space-y-2">
             <p>
-              Naka-abot na sa limitasyon na <strong>20 rows</strong> ang pormularyo ng Dengue Prevention.
+              {t("dengue.limitDesc1")}
             </p>
             <p>
-              Mangyaring i-print ang pahina upang mai-save ang kopya, at pagkatapos ay i-clear ang mga lumang rekor upang magsimula ng bagong listahan.
+              {t("dengue.limitDesc2")}
             </p>
           </div>
           <DialogFooter className="gap-2 mt-4">
             <Button type="button" variant="outline" onClick={() => setLimitModalOpen(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="button" onClick={handlePrintAndDelete} className="bg-destructive text-white hover:bg-destructive/90 font-medium">
-              Print and Delete
+              {t("dengue.printAndDelete")}
             </Button>
           </DialogFooter>
         </DialogContent>
