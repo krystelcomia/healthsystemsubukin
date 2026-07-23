@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Stethoscope } from "lucide-react";
+import { Stethoscope, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ensureResidentExists } from "@/lib/residentLinker";
@@ -46,6 +46,10 @@ const ConsultationForm = () => {
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const targetId = form.resident_id;
@@ -83,19 +87,44 @@ const ConsultationForm = () => {
 
   return (
     <div className="w-full space-y-6">
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          #consultation-print-area, #consultation-print-area * { visibility: visible !important; }
+          #consultation-print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            color: black !important;
+            padding: 20px !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+          }
+          .no-print { display: none !important; }
+          @page { size: A4 portrait; margin: 10mm; }
+        }
+      `}</style>
 
-      <Card className="border-border/50 shadow-sm">
+      <Card id="consultation-print-area" className="border-border/50 shadow-sm">
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>{t("consultation.resident")} *</Label>
-                <Select value={form.resident_id} onValueChange={handleSelectResident}>
-                  <SelectTrigger className={lineSelectClass}><SelectValue placeholder={t("consultation.selectResident")} /></SelectTrigger>
-                  <SelectContent>
-                    {residents.map((r) => <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <div className="no-print">
+                  <Select value={form.resident_id} onValueChange={handleSelectResident}>
+                    <SelectTrigger className={lineSelectClass}><SelectValue placeholder={t("consultation.selectResident")} /></SelectTrigger>
+                    <SelectContent>
+                      {residents.map((r) => <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <span className="hidden print:inline border-b border-slate-400 flex-1 px-1 font-medium min-h-6">
+                  {residents.find(r => r.id === form.resident_id)?.full_name || "____________________________________"}
+                </span>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -118,7 +147,15 @@ const ConsultationForm = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="space-y-2"><Label>{t("consultation.weight")}</Label><Input className={lineInputClass} value={form.weight} onChange={(e) => handleChange("weight", e.target.value)} placeholder="kg" /></div></div>
             <div className="space-y-2"><Label>{t("consultation.cause")}</Label><Textarea className={lineTextareaClass} value={form.consultationCause} onChange={(e) => handleChange("consultationCause", e.target.value)} placeholder={t("consultation.causeDesc")} rows={3} /></div>
-            <div className="pt-4 flex gap-3"><Button type="submit">{t("consultation.saveConsultation")}</Button><Button type="button" variant="outline" onClick={() => setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: new Date().toISOString().split("T")[0], temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" })}>{t("common.clear")}</Button></div>
+            <div className="pt-4 flex gap-3 no-print">
+              <Button type="submit">{t("consultation.saveConsultation")}</Button>
+              <Button type="button" variant="outline" onClick={handlePrint}>
+                <Printer className="h-4 w-4 mr-2" /> Print Form
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: new Date().toISOString().split("T")[0], temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" })}>
+                {t("common.clear")}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
