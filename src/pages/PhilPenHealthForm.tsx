@@ -35,7 +35,7 @@ const PhilPenHealthForm = () => {
     address: "",
     age: "",
     birthdate: "",
-    currentDate: new Date().toISOString().split("T")[0],
+    currentDate: "",
     bp: "",
     height: "",
     weight: "",
@@ -128,7 +128,7 @@ const PhilPenHealthForm = () => {
       address: "",
       age: "",
       birthdate: "",
-      currentDate: new Date().toISOString().split("T")[0],
+      currentDate: "",
       bp: "",
       height: "",
       weight: "",
@@ -171,7 +171,7 @@ const PhilPenHealthForm = () => {
       address_sitio: form.address,
       age: Number(form.age) || null,
       birthdate: form.birthdate || null,
-      record_date: form.currentDate,
+      record_date: form.currentDate || new Date().toISOString().split("T")[0],
       bp: form.bp,
       height: form.height,
       weight: form.weight,
@@ -240,6 +240,14 @@ const PhilPenHealthForm = () => {
         .print-input:focus {
           border-bottom-style: solid;
           border-bottom-color: hsl(var(--primary));
+        }
+        input[type="date"]:invalid::-webkit-datetime-edit,
+        input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper {
+          color: transparent !important;
+        }
+        input[type="date"]:focus::-webkit-datetime-edit,
+        input[type="date"]:valid::-webkit-datetime-edit {
+          color: inherit !important;
         }
         @media print {
           body * {

@@ -21,7 +21,7 @@ const ConsultationForm = () => {
   const { t } = useSettings();
   const [residents, setResidents] = useState<{ id: string; full_name: string; sitio?: string; age?: number; birthday?: string }[]>([]);
   const [form, setForm] = useState({
-    resident_id: "", birthdate: "", age: "", sitio: "", date: new Date().toISOString().split("T")[0],
+    resident_id: "", birthdate: "", age: "", sitio: "", date: "",
     temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "",
   });
 
@@ -75,19 +75,27 @@ const ConsultationForm = () => {
 
     const { error } = await supabase.from("consultations").insert({
       resident_id: targetId, birthdate: form.birthdate || null, age: Number(form.age) || null, sitio: form.sitio,
-      consultation_date: form.date, temperature: form.temperature, pulse_rate: form.pulseRate, respiration_rate: form.respirationRate, height: form.height, weight: form.weight, consultation_cause: form.consultationCause,
+      consultation_date: form.date || new Date().toISOString().split("T")[0], temperature: form.temperature, pulse_rate: form.pulseRate, respiration_rate: form.respirationRate, height: form.height, weight: form.weight, consultation_cause: form.consultationCause,
     });
     if (error) { toast.error("Failed to save consultation"); return; }
     const selectedResident = residents.find(r => r.id === targetId);
     const resName = selectedResident ? selectedResident.full_name : targetId;
     logActivity("submit_consultation", { entity_type: "consultation", description: `Recorded a health consultation for resident: ${resName}` });
     toast.success("Consultation recorded and linked to resident records!");
-    setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: new Date().toISOString().split("T")[0], temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
+    setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: "", temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
   };
 
   return (
     <div className="w-full space-y-6">
       <style>{`
+        input[type="date"]:invalid::-webkit-datetime-edit,
+        input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper {
+          color: transparent !important;
+        }
+        input[type="date"]:focus::-webkit-datetime-edit,
+        input[type="date"]:valid::-webkit-datetime-edit {
+          color: inherit !important;
+        }
         @media print {
           body * { visibility: hidden !important; }
           #consultation-print-area, #consultation-print-area * { visibility: visible !important; }
