@@ -81,7 +81,7 @@ const PhilPenHealthForm = () => {
   // Calculate BMI
   const bmi = form.height && form.weight 
     ? (Number(form.weight) / Math.pow(Number(form.height) / 100, 2)).toFixed(1) 
-    : "—";
+    : "";
 
   const handleResidentChange = (residentId: string) => {
     const res = residents.find(r => r.id === residentId);
@@ -271,8 +271,12 @@ const PhilPenHealthForm = () => {
           body * {
             visibility: hidden !important;
           }
-          #philpen-print-area, #philpen-print-area * {
+          #philpen-print-area, #philpen-print-area *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
+          }
+          #philpen-print-area .no-print, #philpen-print-area .no-print * {
+            display: none !important;
+            visibility: hidden !important;
           }
           #philpen-print-area {
             position: absolute !important;
@@ -289,9 +293,6 @@ const PhilPenHealthForm = () => {
           #philpen-print-area * {
             color: #000000 !important;
             border-color: #000000 !important;
-          }
-          .no-print {
-            display: none !important;
           }
           ::placeholder, .print-input::placeholder {
             color: transparent !important;

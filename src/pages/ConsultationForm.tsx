@@ -120,10 +120,14 @@ const ConsultationForm = () => {
         }
         @media print {
           body * { visibility: hidden !important; }
-          #consultation-print-area, #consultation-print-area * {
+          #consultation-print-area, #consultation-print-area *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
             color: #000000 !important;
             border-color: #000000 !important;
+          }
+          #consultation-print-area .no-print, #consultation-print-area .no-print * {
+            display: none !important;
+            visibility: hidden !important;
           }
           #consultation-print-area {
             position: absolute !important;
