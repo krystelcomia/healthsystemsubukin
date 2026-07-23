@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Stethoscope, Printer } from "lucide-react";
+import { Stethoscope, Printer, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ensureResidentExists } from "@/lib/residentLinker";
@@ -48,6 +48,10 @@ const ConsultationForm = () => {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleReset = () => {
+    setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: "", temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -201,8 +205,14 @@ const ConsultationForm = () => {
               <Button type="button" variant="outline" onClick={handlePrint}>
                 <Printer className="h-4 w-4 mr-2" /> Print Form
               </Button>
-              <Button type="button" variant="outline" onClick={() => setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: new Date().toISOString().split("T")[0], temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" })}>
-                {t("common.clear")}
+              <Button 
+                type="button" 
+                onClick={handleReset}
+                className="gap-1.5 text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium shadow-sm"
+                variant="outline"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Reset
               </Button>
             </div>
           </form>
