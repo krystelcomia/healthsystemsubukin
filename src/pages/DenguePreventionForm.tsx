@@ -24,6 +24,9 @@ const DenguePreventionForm = () => {
   const [householdHeads, setHouseholdHeads] = useState<HouseholdHeadOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
+
+  const MAX_ROWS = 20;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -79,10 +82,9 @@ const DenguePreventionForm = () => {
       toast.error("Failed to load records");
     } else {
       const dbRecords = data || [];
-      // Pad to a minimum of 15 rows in state
-      const minRows = 15;
-      const paddedRecords = [...dbRecords];
-      for (let i = dbRecords.length; i < minRows; i++) {
+      // Pad to exactly 20 rows in state
+      const paddedRecords = dbRecords.slice(0, MAX_ROWS);
+      for (let i = paddedRecords.length; i < MAX_ROWS; i++) {
         paddedRecords.push({
           id: `temp-${i}-${Date.now()}`,
           resident_id: null,
@@ -458,7 +460,45 @@ const DenguePreventionForm = () => {
     }
   };
 
+  const handlePrintAndDelete = async () => {
+    setLimitModalOpen(false);
+
+    // 1. Trigger print window
+    window.print();
+
+    // 2. Clear records from database
+    try {
+      const dbRecordIds = records.filter(r => !r.id.startsWith("temp-")).map(r => r.id);
+      if (dbRecordIds.length > 0) {
+        await supabase
+          .from("dengue_prevention")
+          .delete()
+          .in("id", dbRecordIds);
+      } else {
+        await supabase
+          .from("dengue_prevention")
+          .delete()
+          .neq("id", "");
+      }
+
+      logActivity("delete_dengue", {
+        entity_type: "dengue_prevention",
+        description: "Printed and cleared Dengue prevention records (20-row limit reset)"
+      });
+
+      toast.success("Printed and records successfully reset.");
+      await fetchRecords();
+    } catch (err) {
+      console.error("Failed to clear records:", err);
+      toast.error("Failed to clear records after print.");
+    }
+  };
+
   const handleAddRow = () => {
+    if (records.length >= MAX_ROWS) {
+      setLimitModalOpen(true);
+      return;
+    }
     const tempId = `temp-${Date.now()}`;
     const newRow = {
       id: tempId,
@@ -668,7 +708,7 @@ const DenguePreventionForm = () => {
                         onChange={(e) => handleHouseholdNameChange(rec.id, e.target.value)}
                         onBlur={(e) => handleCellBlur(rec.id, "household_name", e.target.value)}
                         className="cell-input"
-                        placeholder="Pumili ng maybahay..."
+                        placeholder=""
                       />
                     </td>
                     <td className="border border-border p-0">
@@ -813,6 +853,32 @@ const DenguePreventionForm = () => {
             </Button>
             <Button type="button" onClick={saveSignature} className="bg-primary text-white">
               Save Signature
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={limitModalOpen} onOpenChange={setLimitModalOpen}>
+        <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-heading font-bold text-foreground">
+              Limit Reached (20 Rows)
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 text-sm text-slate-600 space-y-2">
+            <p>
+              Naka-abot na sa limitasyon na <strong>20 rows</strong> ang pormularyo ng Dengue Prevention.
+            </p>
+            <p>
+              Mangyaring i-print ang pahina upang mai-save ang kopya, at pagkatapos ay i-clear ang mga lumang rekor upang magsimula ng bagong listahan.
+            </p>
+          </div>
+          <DialogFooter className="gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setLimitModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handlePrintAndDelete} className="bg-destructive text-white hover:bg-destructive/90 font-medium">
+              Print and Delete
             </Button>
           </DialogFooter>
         </DialogContent>
