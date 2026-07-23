@@ -15,7 +15,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 
 interface Resident {
-  id: string; full_name: string; gender: string; age: number; status: string; religion: string; blood_type: string; nationality: string; sitio: string; birthday: string | null; family_number?: string | null; created_at: string;
+  id: string; full_name: string; gender: string; age: number; status: string; sitio: string; birthday: string | null; family_number?: string | null; created_at: string;
 }
 
 interface HealthRecords {
@@ -160,13 +160,12 @@ const AdminResidents = () => {
                   <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.birthday")}</th>
                   <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.civilStatus")}</th>
                   <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.sitio")}</th>
-                  <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.bloodType")}</th>
                   <th className="p-3 text-center font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {loading ? (<tr><td colSpan={10} className="p-6 text-center text-muted-foreground">{t("common.loading")}</td></tr>
-                ) : filtered.length === 0 ? (<tr><td colSpan={10} className="p-6 text-center text-muted-foreground">{t("residents.noResidents")}</td></tr>
+                {loading ? (<tr><td colSpan={9} className="p-6 text-center text-muted-foreground">{t("common.loading")}</td></tr>
+                ) : filtered.length === 0 ? (<tr><td colSpan={9} className="p-6 text-center text-muted-foreground">{t("residents.noResidents")}</td></tr>
                 ) : filtered.map((r, i) => (
                   <tr key={r.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                     <td className="p-3 text-muted-foreground">{i + 1}</td>
@@ -185,7 +184,6 @@ const AdminResidents = () => {
                     <td className="p-3 text-foreground">{r.birthday || "—"}</td>
                     <td className="p-3"><Badge variant="secondary" className="text-xs">{r.status}</Badge></td>
                     <td className="p-3 text-foreground">{r.sitio || "—"}</td>
-                    <td className="p-3 text-foreground">{r.blood_type || "—"}</td>
                     <td className="p-3 text-center">
                       <Button
                         variant="ghost"

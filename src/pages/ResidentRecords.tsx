@@ -12,14 +12,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
-import { calculateAge } from "@/lib/residentLinker";
+import { calculateAge, syncFamilyDataToResidents } from "@/lib/residentLinker";
 import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 
 interface Resident {
-  id: string; full_name: string; gender: string; age: number; status: string; religion: string; blood_type: string; nationality: string; sitio: string; birthday: string | null; family_number?: string | null; created_at: string;
+  id: string; full_name: string; gender: string; age: number; status: string; sitio: string; birthday: string | null; family_number?: string | null; created_at: string;
 }
 
 interface HealthRecords {
@@ -41,10 +41,11 @@ const ResidentRecords = () => {
   const [sitioFilter, setSitioFilter] = useState<string>("all");
 
   const [newResident, setNewResident] = useState({
-    full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "", birthday: "",
+    full_name: "", gender: "Male", age: "", status: "Single", sitio: "", birthday: "",
   });
 
   const fetchResidents = async () => {
+    await syncFamilyDataToResidents();
     const { data, error } = await supabase.from("residents").select("*").order("created_at", { ascending: false });
     if (error) { toast.error("Failed to load residents"); return; }
     setResidents(data || []);
@@ -57,12 +58,12 @@ const ResidentRecords = () => {
     if (!newResident.full_name.trim()) { toast.error(t("residents.fullName") + " required"); return; }
     const { error } = await supabase.from("residents").insert({
       full_name: newResident.full_name.trim(), gender: newResident.gender, age: Number(newResident.age) || 0, status: newResident.status,
-      religion: newResident.religion, blood_type: newResident.blood_type, nationality: newResident.nationality, sitio: newResident.sitio, birthday: newResident.birthday || null,
+      sitio: newResident.sitio, birthday: newResident.birthday || null,
     });
     if (error) { toast.error("Failed to add resident"); return; }
     logActivity("create_resident", { entity_type: "resident", description: `Added resident: ${newResident.full_name.trim()}` });
     toast.success("Resident added successfully!");
-    setNewResident({ full_name: "", gender: "Male", age: "", status: "Single", religion: "", blood_type: "", nationality: "Filipino", sitio: "", birthday: "" });
+    setNewResident({ full_name: "", gender: "Male", age: "", status: "Single", sitio: "", birthday: "" });
     setDialogOpen(false);
     fetchResidents();
   };
@@ -71,7 +72,7 @@ const ResidentRecords = () => {
     if (!editResident) return;
     const { error } = await supabase.from("residents").update({
       full_name: editResident.full_name, gender: editResident.gender, age: editResident.age, status: editResident.status,
-      religion: editResident.religion, blood_type: editResident.blood_type, nationality: editResident.nationality, sitio: editResident.sitio, birthday: editResident.birthday || null,
+      sitio: editResident.sitio, birthday: editResident.birthday || null,
     }).eq("id", editResident.id);
     if (error) { toast.error("Failed to update resident"); return; }
     logActivity("update_resident", { entity_type: "resident", entity_id: editResident.id, description: `Updated resident record: ${editResident.full_name.trim()}` });
@@ -177,9 +178,6 @@ const ResidentRecords = () => {
             <p style={{ fontSize: 13 }}><strong>{t("residents.age")}:</strong> {selectedResident.age}</p>
             <p style={{ fontSize: 13 }}><strong>{t("residents.birthday")}:</strong> {selectedResident.birthday || "—"}</p>
             <p style={{ fontSize: 13 }}><strong>{t("residents.civilStatus")}:</strong> {selectedResident.status}</p>
-            <p style={{ fontSize: 13 }}><strong>{t("residents.religion")}:</strong> {selectedResident.religion || "—"}</p>
-            <p style={{ fontSize: 13 }}><strong>{t("residents.bloodType")}:</strong> {selectedResident.blood_type || "—"}</p>
-            <p style={{ fontSize: 13 }}><strong>{t("residents.nationality")}:</strong> {selectedResident.nationality}</p>
             <p style={{ fontSize: 13 }}><strong>{t("residents.sitio")}:</strong> {selectedResident.sitio || "—"}</p>
           </div>
           {healthRecords.consultations.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#000000", marginTop: 20, borderBottom: "1px solid #000000", paddingBottom: 4 }}>{t("dashboard.consultations")} ({healthRecords.consultations.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "transparent" }}><th style={thStyle}>{t("consultation.date")}</th><th style={thStyle}>{t("consultation.temp")}</th><th style={thStyle}>PR</th><th style={thStyle}>RR</th><th style={thStyle}>{t("consultation.height")}</th><th style={thStyle}>{t("consultation.weight")}</th><th style={thStyle}>{t("consultation.cause")}</th></tr></thead><tbody>{healthRecords.consultations.map((c: any) => (<tr key={c.id}><td style={tdStyle}>{c.consultation_date}</td><td style={tdStyle}>{c.temperature || "—"}</td><td style={tdStyle}>{c.pulse_rate || "—"}</td><td style={tdStyle}>{c.respiration_rate || "—"}</td><td style={tdStyle}>{c.height || "—"}</td><td style={tdStyle}>{c.weight || "—"}</td><td style={tdStyle}>{c.consultation_cause || "—"}</td></tr>))}</tbody></table></>)}
@@ -271,9 +269,7 @@ const ResidentRecords = () => {
               <th style={thStyle}>{t("residents.age")}</th>
               <th style={thStyle}>{t("residents.birthday")}</th>
               <th style={thStyle}>{t("residents.civilStatus")}</th>
-              <th style={thStyle}>{t("residents.bloodType")}</th>
               <th style={thStyle}>{t("residents.sitio")}</th>
-              <th style={thStyle}>{t("residents.nationality")}</th>
             </tr>
           </thead>
           <tbody>
@@ -285,9 +281,7 @@ const ResidentRecords = () => {
                 <td style={tdStyle}>{r.age}</td>
                 <td style={tdStyle}>{r.birthday || "—"}</td>
                 <td style={tdStyle}>{r.status}</td>
-                <td style={tdStyle}>{r.blood_type || "—"}</td>
                 <td style={tdStyle}>{r.sitio || "—"}</td>
-                <td style={tdStyle}>{r.nationality}</td>
               </tr>
             ))}
           </tbody>
@@ -323,8 +317,6 @@ const ResidentRecords = () => {
                         {resident.family_number}
                       </Badge>
                     )}
-                    <Badge variant="secondary" className="text-xs">{resident.blood_type || "—"}</Badge>
-                    <Badge variant="outline" className="text-xs">{resident.nationality}</Badge>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditResident(resident); setEditDialogOpen(true); }}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(resident.id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
@@ -350,14 +342,7 @@ const ResidentRecords = () => {
                 <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={editResident.gender} onValueChange={(v) => setEditResident({ ...editResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
                 <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={editResident.age} onChange={(e) => setEditResident({ ...editResident, age: Number(e.target.value) })} /></div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1"><Label>{t("residents.civilStatus")}</Label><Select value={editResident.status} onValueChange={(v) => setEditResident({ ...editResident, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">{t("residents.single")}</SelectItem><SelectItem value="Married">{t("residents.married")}</SelectItem><SelectItem value="Widowed">{t("residents.widowed")}</SelectItem><SelectItem value="Separated">{t("residents.separated")}</SelectItem></SelectContent></Select></div>
-                <div className="space-y-1"><Label>{t("residents.religion")}</Label><Input value={editResident.religion || ""} onChange={(e) => setEditResident({ ...editResident, religion: e.target.value })} /></div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1"><Label>{t("residents.bloodType")}</Label><Select value={editResident.blood_type || ""} onValueChange={(v) => setEditResident({ ...editResident, blood_type: v })}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bt) => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}</SelectContent></Select></div>
-                <div className="space-y-1"><Label>{t("residents.nationality")}</Label><Input value={editResident.nationality} onChange={(e) => setEditResident({ ...editResident, nationality: e.target.value })} /></div>
-              </div>
+              <div className="space-y-1"><Label>{t("residents.civilStatus")}</Label><Select value={editResident.status} onValueChange={(v) => setEditResident({ ...editResident, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">{t("residents.single")}</SelectItem><SelectItem value="Married">{t("residents.married")}</SelectItem><SelectItem value="Widowed">{t("residents.widowed")}</SelectItem><SelectItem value="Separated">{t("residents.separated")}</SelectItem></SelectContent></Select></div>
               <div className="space-y-1">
                 <Label>{t("residents.sitio")}</Label>
                 <Select value={editResident.sitio || ""} onValueChange={(v) => setEditResident({ ...editResident, sitio: v })}>
