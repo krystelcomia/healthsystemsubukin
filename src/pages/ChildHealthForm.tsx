@@ -1534,124 +1534,184 @@ const ChildHealthForm = () => {
                   </div>
 
                   {/* 11. SURIIN ANG PAGPAPAKAIN */}
-                  <div className="border-b pb-3 space-y-2">
-                    <div className="font-bold uppercase text-[11px] text-slate-800 dark:text-slate-200">SURIIN ANG PAGPAPAKAIN</div>
-                    <p className="text-[10px] text-slate-500">(Para sa batang wala pang 2 buwan o may anemia o lubhang kulang sa timbang)</p>
-                    <div className="space-y-1.5 text-xs pl-1">
-                      <div className="flex items-center justify-between">
-                        <span>Sumususo ba ang bata sa ina?</span>
-                        <div className="flex gap-3">
-                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="breastfeeding" checked={sickForm.breastfeeding === true} onChange={() => setSickForm(p => ({ ...p, breastfeeding: true }))} /> Oo</label>
-                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="breastfeeding" checked={sickForm.breastfeeding === false} onChange={() => setSickForm(p => ({ ...p, breastfeeding: false }))} /> Hindi</label>
+                  <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                      SURIIN ANG PAGPAPAKAIN
+                    </div>
+                    <div className="p-2.5 space-y-1.5 text-xs">
+                      <p className="text-[10px] text-slate-500 italic">(Para sa batang wala pang 2 buwan o may anemia o lubhang kulang sa timbang )</p>
+                      
+                      <div className="space-y-1.5 pl-1">
+                        <div className="flex items-center justify-between">
+                          <span>Sumususo ba ang bata sa ina?</span>
+                          <div className="flex gap-3 text-xs">
+                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="breastfeeding" checked={sickForm.breastfeeding === true} onChange={() => setSickForm(p => ({ ...p, breastfeeding: true }))} /> Oo</label>
+                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="breastfeeding" checked={sickForm.breastfeeding === false} onChange={() => setSickForm(p => ({ ...p, breastfeeding: false }))} /> Hindi</label>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>Mayroon bang ibang kinakain o iniinom ang bata?</span>
-                        <div className="flex gap-3">
-                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="other_food_drinks" checked={sickForm.other_food_drinks === true} onChange={() => setSickForm(p => ({ ...p, other_food_drinks: true }))} /> Oo</label>
-                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="other_food_drinks" checked={sickForm.other_food_drinks === false} onChange={() => setSickForm(p => ({ ...p, other_food_drinks: false }))} /> Hindi</label>
+                        <div className="flex items-center justify-between pl-3">
+                          <span>Kung oo, ilang beses sa 24 na oras?</span>
+                          <div className="flex items-center gap-1">
+                            <Input type="text" value={sickForm.breastfeed_times} onChange={e => setSickForm(p => ({ ...p, breastfeed_times: e.target.value }))} className="w-20 h-5 text-xs text-center border-b rounded-none" />
+                            <span>beses</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-1 border-t">
-                        <div>
-                          <Label className="text-[10px] text-slate-500">Kung oo, ano ito?</Label>
-                          <Input type="text" value={sickForm.other_food_details} onChange={e => setSickForm(p => ({ ...p, other_food_details: e.target.value }))} className={lineInputClass} />
+
+                        <div className="flex items-center justify-between pt-1 border-t">
+                          <span>Mayroon bang ibang kinakain o iniinom ang bata?</span>
+                          <div className="flex gap-3 text-xs">
+                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="other_food_drinks" checked={sickForm.other_food_drinks === true} onChange={() => setSickForm(p => ({ ...p, other_food_drinks: true }))} /> Oo</label>
+                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="other_food_drinks" checked={sickForm.other_food_drinks === false} onChange={() => setSickForm(p => ({ ...p, other_food_drinks: false }))} /> Hindi</label>
+                          </div>
                         </div>
-                        <div>
-                          <Label className="text-[10px] text-slate-500">Ilang beses sa loob ng 24 na oras?</Label>
-                          <Input type="text" value={sickForm.other_food_times} onChange={e => setSickForm(p => ({ ...p, other_food_times: e.target.value }))} placeholder="___ beses" className={lineInputClass} />
+                        <div className="space-y-1 pl-3">
+                          <div className="flex items-center justify-between">
+                            <span>Kung oo, ano ito?</span>
+                            <Input type="text" value={sickForm.other_food_details} onChange={e => setSickForm(p => ({ ...p, other_food_details: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Ilang beses sa loob ng 24 na oras?</span>
+                            <div className="flex items-center gap-1">
+                              <Input type="text" value={sickForm.other_food_times} onChange={e => setSickForm(p => ({ ...p, other_food_times: e.target.value }))} className="w-16 h-5 text-xs text-center border-b rounded-none" />
+                              <span>beses</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Ano'ng ginagamit sa pagpapakain sa bata?</span>
+                            <Input type="text" value={sickForm.feeding_utensils} onChange={e => setSickForm(p => ({ ...p, feeding_utensils: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                          </div>
                         </div>
-                        <div>
-                          <Label className="text-[10px] text-slate-500">Ano'ng ginagamit sa pagpapakain?</Label>
-                          <Input type="text" value={sickForm.feeding_utensils} onChange={e => setSickForm(p => ({ ...p, feeding_utensils: e.target.value }))} className={lineInputClass} />
+
+                        <div className="pt-1 border-t space-y-1">
+                          <span className="font-semibold block">Kung lubhang kulang sa timbang,</span>
+                          <div className="flex items-center justify-between pl-3">
+                            <span>Gaano karami ang pinapakain sa bata?</span>
+                            <Input type="text" value={sickForm.food_amount} onChange={e => setSickForm(p => ({ ...p, food_amount: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                          </div>
                         </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-1">
-                        <div>
-                          <Label className="text-[10px] text-slate-500">Gaano karami ang pinapakain sa bata?</Label>
-                          <Input type="text" value={sickForm.food_amount} onChange={e => setSickForm(p => ({ ...p, food_amount: e.target.value }))} className={lineInputClass} />
+
+                        <div className="flex items-center justify-between pt-1 border-t">
+                          <span>Mayroon bang sariling pinggan ang bata 'pag kumakain?</span>
+                          <div className="flex gap-3 text-xs">
+                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="own_plate" checked={sickForm.own_plate === true} onChange={() => setSickForm(p => ({ ...p, own_plate: true }))} /> Oo</label>
+                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="own_plate" checked={sickForm.own_plate === false} onChange={() => setSickForm(p => ({ ...p, own_plate: false }))} /> Hindi</label>
+                          </div>
                         </div>
-                        <div>
-                          <Label className="text-[10px] text-slate-500">Sino ang nagpapakain sa bata?</Label>
-                          <Input type="text" value={sickForm.person_feeding} onChange={e => setSickForm(p => ({ ...p, person_feeding: e.target.value }))} className={lineInputClass} />
+                        <div className="flex items-center justify-between pl-3">
+                          <span>Sino ang nagpapakain sa bata?</span>
+                          <Input type="text" value={sickForm.person_feeding} onChange={e => setSickForm(p => ({ ...p, person_feeding: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
                         </div>
-                        <div>
-                          <Label className="text-[10px] text-slate-500">Paano pinapakain ang bata?</Label>
-                          <Input type="text" value={sickForm.how_fed} onChange={e => setSickForm(p => ({ ...p, how_fed: e.target.value }))} className={lineInputClass} />
+                        <div className="flex items-center justify-between pl-3">
+                          <span>Paano pinapakain ang bata?</span>
+                          <Input type="text" value={sickForm.how_fed} onChange={e => setSickForm(p => ({ ...p, how_fed: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between pt-1">
-                        <span>Mayroon bang sariling pinggan ang bata 'pag kumakain?</span>
-                        <div className="flex gap-3">
-                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="own_plate" checked={sickForm.own_plate === true} onChange={() => setSickForm(p => ({ ...p, own_plate: true }))} /> Oo</label>
-                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="own_plate" checked={sickForm.own_plate === false} onChange={() => setSickForm(p => ({ ...p, own_plate: false }))} /> Hindi</label>
+
+                        <div className="flex items-center justify-between pt-1 border-t">
+                          <span>Habang may sakit ang bata, nagbago ba ang pagpapakain sa kanya?</span>
+                          <div className="flex gap-3 text-xs">
+                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="feeding_changed_during_illness" checked={sickForm.feeding_changed_during_illness === true} onChange={() => setSickForm(p => ({ ...p, feeding_changed_during_illness: true }))} /> Oo</label>
+                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="feeding_changed_during_illness" checked={sickForm.feeding_changed_during_illness === false} onChange={() => setSickForm(p => ({ ...p, feeding_changed_during_illness: false }))} /> Hindi</label>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between pt-1">
-                        <span>Habang may sakit ang bata, nagbago ba ang pagpapakain sa kanya?</span>
-                        <div className="flex gap-3">
-                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="feeding_changed_during_illness" checked={sickForm.feeding_changed_during_illness === true} onChange={() => setSickForm(p => ({ ...p, feeding_changed_during_illness: true }))} /> Oo</label>
-                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="feeding_changed_during_illness" checked={sickForm.feeding_changed_during_illness === false} onChange={() => setSickForm(p => ({ ...p, feeding_changed_during_illness: false }))} /> Hindi</label>
+                        <div className="flex items-center justify-between pl-3">
+                          <span>Kung oo, paano?</span>
+                          <Input type="text" value={sickForm.feeding_change_details} onChange={e => setSickForm(p => ({ ...p, feeding_change_details: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* 12. SURIIN ANG PAMAMARAAN NG PAG-AARUGA SA BATA */}
-                  <div className="border-b pb-3 space-y-2">
-                    <div className="font-bold uppercase text-[11px] text-slate-800 dark:text-slate-200">SURIIN ANG PAMAMARAAN NG PAG-AARUGA SA BATA</div>
-                    <p className="text-[10px] text-slate-500">Ikumpara ang mga sagot ng magulang sa mga Rekomendasyon ng Pag-aalaga sa bata para sa kanyang edad.</p>
-                    <div className="space-y-2 text-xs">
-                      <div>
-                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Paano nakikilaro sa bata?</Label>
-                        <Input type="text" value={sickForm.how_plays} onChange={e => setSickForm(p => ({ ...p, how_plays: e.target.value }))} className={lineInputClass} />
-                      </div>
-                      <div>
-                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Paano nakikipag-usap sa bata?</Label>
-                        <Input type="text" value={sickForm.how_talks} onChange={e => setSickForm(p => ({ ...p, how_talks: e.target.value }))} className={lineInputClass} />
+                  <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                      SURIIN ANG PAMAMARAAN NG PAG-AARUGA SA BATA
+                    </div>
+                    <div className="p-2.5 space-y-2 text-xs">
+                      <p className="text-[10px] text-slate-500 italic">Ikumpara ang mga sagot ng magulang sa mga Rekomendasyon ng Pag-aalaga sa bata para sa kanyang edad.</p>
+                      <div className="space-y-1.5 pl-1">
+                        <div>
+                          <span className="font-semibold block">Paano nakikilaro sa bata?</span>
+                          <Input type="text" value={sickForm.how_plays} onChange={e => setSickForm(p => ({ ...p, how_plays: e.target.value }))} className="w-full h-6 text-xs border-b rounded-none" />
+                        </div>
+                        <div>
+                          <span className="font-semibold block">Paano nakikipag-usap sa bata?</span>
+                          <Input type="text" value={sickForm.how_talks} onChange={e => setSickForm(p => ({ ...p, how_talks: e.target.value }))} className="w-full h-6 text-xs border-b rounded-none" />
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* 13. ANG BATA BA AY MAY IBA PANG PROBLEMA? */}
-                  <div className="border-b pb-3 space-y-1.5">
-                    <div className="font-bold uppercase text-[11px] text-slate-800 dark:text-slate-200">ANG BATA BA AY MAY IBA PANG PROBLEMA?</div>
-                    <Input type="text" value={sickForm.other_problems} onChange={e => setSickForm(p => ({ ...p, other_problems: e.target.value }))} className={lineInputClass} />
+                  <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                      ANG BATA BA AY MAY IBA PANG PROBLEMA?
+                    </div>
+                    <div className="p-2.5">
+                      <Input type="text" value={sickForm.other_problems} onChange={e => setSickForm(p => ({ ...p, other_problems: e.target.value }))} className="w-full h-6 text-xs border-b rounded-none" />
+                    </div>
                   </div>
 
-                  {/* 14. DOCTOR EVALUATION & TREATMENT SUMMARY */}
-                  <div className="space-y-3 pt-1">
-                    <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 p-2 rounded">
-                      <span className="font-bold text-slate-800 dark:text-slate-200">DOCTOR EVALUATION & TREATMENT RECORD:</span>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-1.5 font-semibold cursor-pointer">
-                          <input type="radio" name="doctor_see" checked={sickForm.doctor_see === true} onChange={() => setSickForm(p => ({ ...p, doctor_see: true }))} /> Titingnan ng Doktor
-                        </label>
-                        <label className="flex items-center gap-1.5 font-semibold cursor-pointer">
-                          <input type="radio" name="doctor_see" checked={sickForm.doctor_see === false} onChange={() => setSickForm(p => ({ ...p, doctor_see: false }))} /> Hindi titingnan ng Doktor
-                        </label>
-                      </div>
+                  {/* 14. DOCTOR EVALUATION & 5-BOX TREATMENT/ADVICE GRID */}
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center justify-center gap-8 py-1 text-xs">
+                      <label className="flex items-center gap-1.5 font-semibold cursor-pointer">
+                        <input type="radio" name="doctor_see" checked={sickForm.doctor_see === true} onChange={() => setSickForm(p => ({ ...p, doctor_see: true }))} /> ( ) Titingnan ng Doktor
+                      </label>
+                      <label className="flex items-center gap-1.5 font-semibold cursor-pointer">
+                        <input type="radio" name="doctor_see" checked={sickForm.doctor_see === false} onChange={() => setSickForm(p => ({ ...p, doctor_see: false }))} /> ( ) Hindi titingnan ng Doktor
+                      </label>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">PAGGAMOT (Treatments, Paracetamol, ORS, Antibiotics, etc.):</Label>
-                        <Textarea value={sickForm.treatment_notes} onChange={e => setSickForm(p => ({ ...p, treatment_notes: e.target.value }))} placeholder="Hal. Paracetamol syr 125mg/5ml..." className="h-16 text-xs" />
-                      </div>
-                      <div>
-                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">MGA PAYO KUNG KAILAN DAPAT BUMALIK KAAGAD:</Label>
-                        <Textarea value={sickForm.urgent_return_advice} onChange={e => setSickForm(p => ({ ...p, urgent_return_advice: e.target.value }))} placeholder="Kapag lumala ang lagnat, hirap huminga, o di makainom..." className="h-16 text-xs" />
-                      </div>
-                    </div>
+                      {/* Left Column: PAGGAMOT & PAGPAPAYO */}
+                      <div className="space-y-3">
+                        <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+                          <div className="bg-slate-800 text-white text-[11px] font-bold px-2 py-0.5 uppercase">
+                            PAGGAMOT:
+                          </div>
+                          <div className="p-2">
+                            <Textarea value={sickForm.treatment_notes} onChange={e => setSickForm(p => ({ ...p, treatment_notes: e.target.value }))} placeholder="Isulat ang mga gamot..." className="h-20 text-xs resize-none" />
+                          </div>
+                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                      <div>
-                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">PAGPAPAYO / PAYO SA PAGPAPAKAIN & PAG-AARUGA:</Label>
-                        <Textarea value={sickForm.advice_notes} onChange={e => setSickForm(p => ({ ...p, advice_notes: e.target.value }))} placeholder="Patuloy ang pagpapakain, pag-inom ng tubig at sabaw..." className="h-14 text-xs" />
+                        <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+                          <div className="bg-slate-800 text-white text-[11px] font-bold px-2 py-0.5 uppercase">
+                            PAGPAPAYO:
+                          </div>
+                          <div className="p-2">
+                            <Textarea value={sickForm.advice_notes} onChange={e => setSickForm(p => ({ ...p, advice_notes: e.target.value }))} placeholder="Isulat ang mga payo..." className="h-20 text-xs resize-none" />
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">PETSA NG PAGBALIK SA HEALTH CENTER:</Label>
-                        <Input type="date" value={sickForm.return_health_center_date} onChange={e => setSickForm(p => ({ ...p, return_health_center_date: e.target.value }))} className={`${lineInputClass} ${!sickForm.return_health_center_date ? "empty-date" : ""}`} />
+
+                      {/* Right Column: MGA PAYO KUNG KAILAN DAPAT BUMALIK KAAGAD, PAYO SA PAGPAPAKAIN, PETSA NG PAGBALIK */}
+                      <div className="space-y-3">
+                        <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+                          <div className="bg-slate-800 text-white text-[11px] font-bold px-2 py-0.5 uppercase">
+                            MGA PAYO KUNG KAILAN DAPAT BUMALIK KAAGAD:
+                          </div>
+                          <div className="p-2">
+                            <Textarea value={sickForm.urgent_return_advice} onChange={e => setSickForm(p => ({ ...p, urgent_return_advice: e.target.value }))} placeholder="Kailan dapat bumalik agad..." className="h-14 text-xs resize-none" />
+                          </div>
+                        </div>
+
+                        <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+                          <div className="bg-slate-800 text-white text-[11px] font-bold px-2 py-0.5 uppercase">
+                            PAYO SA PAGPAPAKAIN:
+                          </div>
+                          <div className="p-2">
+                            <Textarea value={sickForm.feeding_advice} onChange={e => setSickForm(p => ({ ...p, feeding_advice: e.target.value }))} placeholder="Payo sa pagpapakain..." className="h-14 text-xs resize-none" />
+                          </div>
+                        </div>
+
+                        <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+                          <div className="bg-slate-800 text-white text-[11px] font-bold px-2 py-0.5 uppercase">
+                            PETSA NG PAGBALIK SA HEALTH CENTER:
+                          </div>
+                          <div className="p-2">
+                            <Input type="date" value={sickForm.return_health_center_date} onChange={e => setSickForm(p => ({ ...p, return_health_center_date: e.target.value }))} className={`${lineInputClass} ${!sickForm.return_health_center_date ? "empty-date" : ""}`} />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
