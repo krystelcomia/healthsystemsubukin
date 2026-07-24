@@ -173,14 +173,24 @@ export interface SickChildFormFull {
 export interface VitaminARow {
   id: string;
   child_name: string;
-  sex: string;
   dob: string;
-  age_months: string;
-  mother_name: string;
-  vit_a_blue: string;
-  vit_a_red: string;
-  deworming_date: string;
-  remarks: string;
+  v6m_1st: string;
+  v12_23_v1: string;
+  v12_23_v2: string;
+  v12_23_d1: string;
+  v12_23_d2: string;
+  v24_35_v1: string;
+  v24_35_v2: string;
+  v24_35_d1: string;
+  v24_35_d2: string;
+  v36_47_v1: string;
+  v36_47_v2: string;
+  v36_47_d1: string;
+  v36_47_d2: string;
+  v48_59_v1: string;
+  v48_59_v2: string;
+  v48_59_d1: string;
+  v48_59_d2: string;
 }
 
 export interface SIARow {
@@ -333,24 +343,21 @@ const ChildHealthForm = () => {
   const [sickForm, setSickForm] = useState<SickChildFormFull>(initialSickForm);
   const [selectedResidentId, setSelectedResidentId] = useState<string>("");
 
-  // FORM 2 State (Vitamin A)
+  // FORM 2 State (Vitamin A & Deworming Master List - RHU2)
   const [vitAInfo, setVitAInfo] = useState({
     sitio: "Subukin",
-    target_period: "1st Round (April)",
     year: new Date().getFullYear().toString(),
   });
   const [vitARows, setVitARows] = useState<VitaminARow[]>([
     {
       id: "vrow-1",
       child_name: "",
-      sex: "Male",
       dob: "",
-      age_months: "",
-      mother_name: "",
-      vit_a_blue: "",
-      vit_a_red: "",
-      deworming_date: "",
-      remarks: "",
+      v6m_1st: "",
+      v12_23_v1: "", v12_23_v2: "", v12_23_d1: "", v12_23_d2: "",
+      v24_35_v1: "", v24_35_v2: "", v24_35_d1: "", v24_35_d2: "",
+      v36_47_v1: "", v36_47_v2: "", v36_47_d1: "", v36_47_d2: "",
+      v48_59_v1: "", v48_59_v2: "", v48_59_d1: "", v48_59_d2: "",
     }
   ]);
 
@@ -509,7 +516,19 @@ const ChildHealthForm = () => {
 
   // Form 2 & Form 3 logic handlers
   const handleAddVitARow = () => {
-    setVitARows(prev => [...prev, { id: `vrow-${Date.now()}`, child_name: "", sex: "Male", dob: "", age_months: "", mother_name: "", vit_a_blue: "", vit_a_red: "", deworming_date: "", remarks: "" }]);
+    setVitARows(prev => [
+      ...prev,
+      {
+        id: `vrow-${Date.now()}`,
+        child_name: "",
+        dob: "",
+        v6m_1st: "",
+        v12_23_v1: "", v12_23_v2: "", v12_23_d1: "", v12_23_d2: "",
+        v24_35_v1: "", v24_35_v2: "", v24_35_d1: "", v24_35_d2: "",
+        v36_47_v1: "", v36_47_v2: "", v36_47_d1: "", v36_47_d2: "",
+        v48_59_v1: "", v48_59_v2: "", v48_59_d1: "", v48_59_d2: "",
+      }
+    ]);
   };
   const handleRemoveVitARow = (id: string) => setVitARows(prev => prev.filter(r => r.id !== id));
 
@@ -527,15 +546,14 @@ const ChildHealthForm = () => {
         const resId = await ensureResidentExists({
           fullName: row.child_name,
           sitio: vitAInfo.sitio,
-          gender: row.sex,
           birthday: row.dob,
         });
 
-        const remarksText = `[Vitamin A & RHU2 Masterlist - ${vitAInfo.target_period} ${vitAInfo.year}] Blue: ${row.vit_a_blue || "N/A"}, Red: ${row.vit_a_red || "N/A"}, Deworming: ${row.deworming_date || "N/A"}`;
+        const remarksText = `[Vitamin A & Deworming Master List RHU2] Child: ${row.child_name}, DOB: ${row.dob || "N/A"}`;
 
         const payload = {
           resident_id: resId,
-          checkup_date: row.vit_a_red || row.vit_a_blue || new Date().toISOString().split("T")[0],
+          checkup_date: new Date().toISOString().split("T")[0],
           remarks: remarksText,
           details: JSON.stringify({ form_type: "vitamin_a_rhu2_masterlist", header: vitAInfo, row_data: row }),
         };
@@ -544,8 +562,8 @@ const ChildHealthForm = () => {
         if (!error) savedCount++;
       }
 
-      toast.success(`Successfully saved ${savedCount} Vitamin A entries.`);
-      logActivity("submit_child_health", { entity_type: "child_health", description: `Saved ${savedCount} Vitamin A records` });
+      toast.success(`Successfully saved ${savedCount} Vitamin A & Deworming entries.`);
+      logActivity("submit_child_health", { entity_type: "child_health", description: `Saved ${savedCount} Vitamin A & Deworming records` });
       fetchSavedRecords();
     } catch (err) {
       console.error(err);
@@ -1380,29 +1398,23 @@ const ChildHealthForm = () => {
 
             </TabsContent>
 
-            {/* TAB 2: Children's Master List for Vitamin A and RHU2 */}
-            <TabsContent value="vitamin-a" className="mt-6 space-y-6">
-              <div className="border-b pb-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-base font-bold text-foreground flex items-center gap-2 font-heading uppercase">
-                    <Pill className="h-5 w-5 text-amber-600" /> Children's Master List for Vitamin A & RHU2
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Semestral Vitamin A Supplementation (6-59 Months) & Deworming Master Registry
-                  </p>
+            {/* TAB 2: Children's Master List for Vitamin A and RHU2 (Official Paper Form Replica) */}
+            <TabsContent value="vitamin-a" className="mt-4 space-y-4">
+              
+              {/* Form Title Banner */}
+              <div className="text-center py-2 bg-amber-50 dark:bg-amber-950/40 rounded-md border border-amber-300 dark:border-amber-700/60 relative">
+                <h1 className="text-sm font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200 font-heading">
+                  VITAMIN A AND DEWORMING MASTER LIST - RHU2
+                </h1>
+                <div className="absolute left-3 top-2 text-xs font-semibold text-amber-800 dark:text-amber-300">
+                  BARANGAY: <strong>SUBUKIN</strong>
                 </div>
+              </div>
 
-                <div className="flex items-center gap-2 no-print">
-                  <Select value={vitAInfo.target_period} onValueChange={v => setVitAInfo(p => ({ ...p, target_period: v }))}>
-                    <SelectTrigger className="h-8 text-xs bg-background w-44">
-                      <SelectValue placeholder="Period" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1st Round (April)" className="text-xs">1st Round (April)</SelectItem>
-                      <SelectItem value="2nd Round (October)" className="text-xs">2nd Round (October)</SelectItem>
-                    </SelectContent>
-                  </Select>
-
+              {/* Toolbar Controls */}
+              <div className="flex items-center justify-between no-print bg-muted/40 p-2.5 rounded-md border">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-primary">Sitio:</span>
                   <Select value={vitAInfo.sitio} onValueChange={v => setVitAInfo(p => ({ ...p, sitio: v }))}>
                     <SelectTrigger className="h-8 text-xs bg-background w-36">
                       <SelectValue placeholder="Sitio" />
@@ -1414,29 +1426,84 @@ const ChildHealthForm = () => {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <Button type="button" variant="outline" size="sm" onClick={handleAddVitARow} className="gap-1 text-xs">
+                  <Plus className="h-3.5 w-3.5" /> Add Child Row
+                </Button>
               </div>
 
-              {/* Masterlist Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs border-collapse border border-border">
+              {/* Masterlist 20-Column Table */}
+              <div className="overflow-x-auto border border-slate-300 dark:border-slate-700 rounded-md">
+                <table className="w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
                   <thead>
-                    <tr className="bg-muted/40 text-muted-foreground font-semibold text-center">
-                      <th className="border border-border p-2 w-8">#</th>
-                      <th className="border border-border p-2 w-[22%]">Child's Full Name</th>
-                      <th className="border border-border p-2 w-[8%]">Sex</th>
-                      <th className="border border-border p-2 w-[12%]">DOB</th>
-                      <th className="border border-border p-2 w-[10%]">Vit A (6-11m) Blue</th>
-                      <th className="border border-border p-2 w-[10%]">Vit A (12-59m) Red</th>
-                      <th className="border border-border p-2 w-[12%]">Deworming Date</th>
-                      <th className="border border-border p-2 w-[18%]">Remarks / RHU2</th>
-                      <th className="border border-border p-2 w-8 no-print"></th>
+                    <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
+                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-8">NO.</th>
+                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[180px]">
+                        NAME OF CHILD<br/><span className="text-[10px] font-normal text-slate-600 dark:text-slate-400">(First Name, MI, Last Name)</span>
+                      </th>
+                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px]">BIRTH DATE</th>
+                      
+                      <th colSpan={1} rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200">6 MOS.</th>
+                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-sky-100 dark:bg-sky-950/60 text-sky-900 dark:text-sky-200">12-23 MONTHS</th>
+                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200">24-35 MONTHS</th>
+                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200">36-47 MONTHS</th>
+                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200">48-59 MONTHS</th>
+                      
+                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-8 no-print"></th>
+                    </tr>
+                    
+                    <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-[10px] font-bold text-center border-b border-slate-300 dark:border-slate-700">
+                      {/* 12-23 mos */}
+                      <th colSpan={2} className="border border-slate-300 dark:border-slate-700 p-0.5">VITAMIN A</th>
+                      <th colSpan={2} className="border border-slate-300 dark:border-slate-700 p-0.5">DEWORMING</th>
+                      {/* 24-35 mos */}
+                      <th colSpan={2} className="border border-slate-300 dark:border-slate-700 p-0.5">VITAMIN A</th>
+                      <th colSpan={2} className="border border-slate-300 dark:border-slate-700 p-0.5">DEWORMING</th>
+                      {/* 36-47 mos */}
+                      <th colSpan={2} className="border border-slate-300 dark:border-slate-700 p-0.5">VITAMIN A</th>
+                      <th colSpan={2} className="border border-slate-300 dark:border-slate-700 p-0.5">DEWORMING</th>
+                      {/* 48-59 mos */}
+                      <th colSpan={2} className="border border-slate-300 dark:border-slate-700 p-0.5">VITAMIN A</th>
+                      <th colSpan={2} className="border border-slate-300 dark:border-slate-700 p-0.5">DEWORMING</th>
+                    </tr>
+                    
+                    <tr className="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-[9px] font-semibold text-center border-b border-slate-300 dark:border-slate-700">
+                      {/* 6 mos */}
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">VITAMIN A<br/>1ST DOSE</th>
+
+                      {/* 12-23 mos */}
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
+
+                      {/* 24-35 mos */}
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
+
+                      {/* 36-47 mos */}
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
+
+                      {/* 48-59 mos */}
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
                     </tr>
                   </thead>
+                  
                   <tbody>
                     {vitARows.map((row, idx) => (
                       <tr key={row.id} className="hover:bg-muted/20">
-                        <td className="border border-border p-1 text-center font-bold text-muted-foreground">{idx + 1}</td>
-                        <td className="border border-border p-1">
+                        <td className="border border-slate-300 dark:border-slate-700 p-1 text-center font-bold text-slate-500">{idx + 1}</td>
+                        
+                        {/* Child Name */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-1">
                           <input 
                             type="text" 
                             value={row.child_name} 
@@ -1445,79 +1512,54 @@ const ChildHealthForm = () => {
                               setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, child_name: val } : r));
                             }} 
                             placeholder="" 
-                            className="cell-input w-full bg-transparent border-0 outline-none text-xs px-1"
+                            className="cell-input w-full bg-transparent border-0 outline-none text-xs px-1 font-medium"
                           />
                         </td>
-                        <td className="border border-border p-1">
-                          <select 
-                            value={row.sex} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, sex: val } : r));
-                            }} 
-                            className="w-full bg-transparent border-0 outline-none text-xs text-center"
-                          >
-                            <option value="Male">M</option>
-                            <option value="Female">F</option>
-                          </select>
-                        </td>
-                        <td className="border border-border p-1">
+                        
+                        {/* Birth Date */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-1">
                           <input 
-                            type="date" 
+                            type="text" 
                             value={row.dob} 
                             onChange={e => {
                               const val = e.target.value;
                               setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, dob: val } : r));
                             }} 
-                            className={`w-full bg-transparent border-0 outline-none text-xs text-center ${!row.dob ? "empty-date" : ""}`}
-                          />
-                        </td>
-                        <td className="border border-border p-1">
-                          <input 
-                            type="date" 
-                            value={row.vit_a_blue} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, vit_a_blue: val } : r));
-                            }} 
-                            className={`w-full bg-transparent border-0 outline-none text-xs text-center ${!row.vit_a_blue ? "empty-date" : ""}`}
-                          />
-                        </td>
-                        <td className="border border-border p-1">
-                          <input 
-                            type="date" 
-                            value={row.vit_a_red} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, vit_a_red: val } : r));
-                            }} 
-                            className={`w-full bg-transparent border-0 outline-none text-xs text-center ${!row.vit_a_red ? "empty-date" : ""}`}
-                          />
-                        </td>
-                        <td className="border border-border p-1">
-                          <input 
-                            type="date" 
-                            value={row.deworming_date} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, deworming_date: val } : r));
-                            }} 
-                            className={`w-full bg-transparent border-0 outline-none text-xs text-center ${!row.deworming_date ? "empty-date" : ""}`}
-                          />
-                        </td>
-                        <td className="border border-border p-1">
-                          <input 
-                            type="text" 
-                            value={row.remarks} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, remarks: val } : r));
-                            }} 
                             placeholder="" 
-                            className="cell-input w-full bg-transparent border-0 outline-none text-xs px-1"
+                            className="w-full bg-transparent border-0 outline-none text-[11px] text-center"
                           />
                         </td>
-                        <td className="border border-border p-1 text-center no-print">
+
+                        {/* 6 mos - Vit A 1st */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5">
+                          <input type="text" value={row.v6m_1st} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v6m_1st: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" />
+                        </td>
+
+                        {/* 12-23 mos */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v12_23_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v12_23_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v12_23_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v12_23_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+
+                        {/* 24-35 mos */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v24_35_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v24_35_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v24_35_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v24_35_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+
+                        {/* 36-47 mos */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v36_47_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v36_47_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v36_47_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v36_47_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+
+                        {/* 48-59 mos */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+
+                        <td className="border border-slate-300 dark:border-slate-700 p-1 text-center no-print">
                           {vitARows.length > 1 && (
                             <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveVitARow(row.id)} className="h-6 w-6 text-muted-foreground hover:text-destructive">
                               <Trash className="h-3.5 w-3.5" />
@@ -1532,7 +1574,7 @@ const ChildHealthForm = () => {
 
               <div className="flex items-center justify-between no-print pt-2 border-t">
                 <Button type="button" variant="outline" size="sm" onClick={handleAddVitARow} className="gap-1 text-xs">
-                  <Plus className="h-3.5 w-3.5" /> Add Row
+                  <Plus className="h-3.5 w-3.5" /> Add Child Row
                 </Button>
 
                 <Button type="button" onClick={handleSaveVitAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
