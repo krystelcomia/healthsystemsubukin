@@ -21,8 +21,10 @@ import {
   UserCheck,
   AlertTriangle,
   Calendar as CalendarIcon,
-  FileText
+  FileText,
+  Check
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
@@ -846,53 +848,86 @@ const MaternalCareForm = () => {
                 
                 {/* Column 1 */}
                 <div className="space-y-2.5">
-                  {RISK_FACTORS_COLUMN_1.map(factor => (
-                    <div key={factor} className="flex items-start space-x-2 cursor-pointer hover:text-foreground transition-colors" onClick={() => toggleRiskFactor(factor)}>
-                      <Checkbox 
-                        id={`rf-${factor}`} 
-                        checked={form.risk_factors.includes(factor)} 
-                        onCheckedChange={() => toggleRiskFactor(factor)}
-                        className="mt-0.5"
-                      />
-                      <label htmlFor={`rf-${factor}`} className="text-xs leading-none cursor-pointer font-medium select-none">
-                        {factor}
-                      </label>
-                    </div>
-                  ))}
+                  {RISK_FACTORS_COLUMN_1.map(factor => {
+                    const isSelected = form.risk_factors.includes(factor);
+                    return (
+                      <div 
+                        key={factor} 
+                        className="flex items-start space-x-2.5 cursor-pointer hover:text-foreground transition-colors group select-none py-0.5" 
+                        onClick={() => toggleRiskFactor(factor)}
+                      >
+                        <div 
+                          className={cn(
+                            "mt-0.5 h-4 w-4 shrink-0 rounded-full border border-slate-400 dark:border-slate-500 flex items-center justify-center transition-all",
+                            isSelected 
+                              ? "bg-rose-600 border-rose-600 text-white font-bold shadow-xs" 
+                              : "bg-background group-hover:border-rose-500"
+                          )}
+                        >
+                          {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                        </div>
+                        <span className={cn("text-xs leading-tight cursor-pointer font-medium select-none", isSelected ? "text-foreground font-semibold" : "text-muted-foreground")}>
+                          {factor}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Column 2 */}
                 <div className="space-y-2.5">
-                  {RISK_FACTORS_COLUMN_2.map(factor => (
-                    <div key={factor} className="flex items-start space-x-2 cursor-pointer hover:text-foreground transition-colors" onClick={() => toggleRiskFactor(factor)}>
-                      <Checkbox 
-                        id={`rf-${factor}`} 
-                        checked={form.risk_factors.includes(factor)} 
-                        onCheckedChange={() => toggleRiskFactor(factor)}
-                        className="mt-0.5"
-                      />
-                      <label htmlFor={`rf-${factor}`} className="text-xs leading-none cursor-pointer font-medium select-none">
-                        {factor}
-                      </label>
-                    </div>
-                  ))}
+                  {RISK_FACTORS_COLUMN_2.map(factor => {
+                    const isSelected = form.risk_factors.includes(factor);
+                    return (
+                      <div 
+                        key={factor} 
+                        className="flex items-start space-x-2.5 cursor-pointer hover:text-foreground transition-colors group select-none py-0.5" 
+                        onClick={() => toggleRiskFactor(factor)}
+                      >
+                        <div 
+                          className={cn(
+                            "mt-0.5 h-4 w-4 shrink-0 rounded-full border border-slate-400 dark:border-slate-500 flex items-center justify-center transition-all",
+                            isSelected 
+                              ? "bg-rose-600 border-rose-600 text-white font-bold shadow-xs" 
+                              : "bg-background group-hover:border-rose-500"
+                          )}
+                        >
+                          {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                        </div>
+                        <span className={cn("text-xs leading-tight cursor-pointer font-medium select-none", isSelected ? "text-foreground font-semibold" : "text-muted-foreground")}>
+                          {factor}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Column 3 */}
                 <div className="space-y-2.5">
-                  {RISK_FACTORS_COLUMN_3.map(factor => (
-                    <div key={factor} className="flex items-start space-x-2 cursor-pointer hover:text-foreground transition-colors" onClick={() => toggleRiskFactor(factor)}>
-                      <Checkbox 
-                        id={`rf-${factor}`} 
-                        checked={form.risk_factors.includes(factor)} 
-                        onCheckedChange={() => toggleRiskFactor(factor)}
-                        className="mt-0.5"
-                      />
-                      <label htmlFor={`rf-${factor}`} className="text-xs leading-none cursor-pointer font-medium select-none">
-                        {factor}
-                      </label>
-                    </div>
-                  ))}
+                  {RISK_FACTORS_COLUMN_3.map(factor => {
+                    const isSelected = form.risk_factors.includes(factor);
+                    return (
+                      <div 
+                        key={factor} 
+                        className="flex items-start space-x-2.5 cursor-pointer hover:text-foreground transition-colors group select-none py-0.5" 
+                        onClick={() => toggleRiskFactor(factor)}
+                      >
+                        <div 
+                          className={cn(
+                            "mt-0.5 h-4 w-4 shrink-0 rounded-full border border-slate-400 dark:border-slate-500 flex items-center justify-center transition-all",
+                            isSelected 
+                              ? "bg-rose-600 border-rose-600 text-white font-bold shadow-xs" 
+                              : "bg-background group-hover:border-rose-500"
+                          )}
+                        >
+                          {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                        </div>
+                        <span className={cn("text-xs leading-tight cursor-pointer font-medium select-none", isSelected ? "text-foreground font-semibold" : "text-muted-foreground")}>
+                          {factor}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
