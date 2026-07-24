@@ -231,103 +231,104 @@ const initialSickForm: SickChildFormFull = {
   temp_c: "",
   pulse_rate: "",
   respiratory_rate: "",
-  examiner_name: "",
+  examiner_name: "Cristeta R. Lanuza",
   date_examined: new Date().toISOString().split("T")[0],
-  chief_complaint: "",
-  consultation_type: "",
+  chief_complaint: "Ubo, sipon, at lagnat",
+  consultation_type: "Unang konsulta",
 
-  unable_to_drink: null,
-  vomits_everything: null,
-  has_convulsions: null,
-  lethargic_unconscious: null,
-  classification_danger: "",
+  unable_to_drink: false,
+  vomits_everything: false,
+  has_convulsions: false,
+  lethargic_unconscious: false,
+  classification_danger: "Walang General Danger Signs",
 
-  has_cough: null,
-  cough_days: "",
-  respiratory_rate_val: "",
-  fast_breathing: null,
-  chest_indrawing: null,
-  stridor: null,
-  classification_cough: "",
+  has_cough: true,
+  cough_days: "3",
+  respiratory_rate_val: "40",
+  fast_breathing: false,
+  chest_indrawing: false,
+  stridor: false,
+  classification_cough: "Simpleng Ubo o Sipon",
 
-  has_diarrhea: null,
+  has_diarrhea: false,
   diarrhea_days: "",
-  blood_in_stool: null,
-  eye_condition: "",
-  skin_pinch: "",
-  drinking_ability: "",
-  classification_diarrhea: "",
+  blood_in_stool: false,
+  eye_condition: "masigla, alerto",
+  skin_pinch: "mabilis",
+  drinking_ability: "normal uminom",
+  classification_diarrhea: "Walang Pagtatae",
 
-  has_fever: null,
-  fever_history: null,
-  fever_days: "",
-  fever_everyday_7days: null,
-  stiff_neck: null,
-  classification_fever: "",
+  has_fever: true,
+  fever_history: true,
+  fever_days: "1",
+  fever_everyday_7days: false,
+  stiff_neck: false,
+  classification_fever: "Lagnat",
 
-  measles_past_3months: null,
-  measles_rash: null,
-  measles_cough_runny_red_eyes: null,
-  mouth_sores: "",
-  eye_pus_clouding: "",
-  classification_measles: "",
+  measles_past_3months: false,
+  measles_rash: false,
+  measles_cough_runny_red_eyes: false,
+  mouth_sores: "walang singaw",
+  eye_pus_clouding: "normal",
+  classification_measles: "Walang Tigdas",
 
-  dengue_bleeding: null,
-  dengue_dark_vomit_stool: null,
-  dengue_abdominal_pain: null,
-  dengue_persistent_vomiting: null,
-  dengue_petechiae: null,
-  dengue_cold_extremities: null,
+  dengue_bleeding: false,
+  dengue_dark_vomit_stool: false,
+  dengue_abdominal_pain: false,
+  dengue_persistent_vomiting: false,
+  dengue_petechiae: false,
+  dengue_cold_extremities: false,
   capillary_refill_sec: "",
-  tourniquet_test_positive: null,
-  classification_dengue: "",
+  tourniquet_test_positive: false,
+  classification_dengue: "Walang Dengue",
 
-  has_ear_problem: null,
-  ear_pain: null,
-  ear_discharge: null,
+  has_ear_problem: false,
+  ear_pain: false,
+  ear_discharge: false,
   ear_discharge_days: "",
-  ear_swelling_behind: null,
-  classification_ear: "",
+  ear_swelling_behind: false,
+  classification_ear: "Walang Impeksyon sa Tenga",
 
-  vaccines_given: [],
-  vaccines_needed_today: "",
-  return_date_vaccine: "",
+  vaccines_given: ["BCG", "OPV1", "DPT1", "HepB1", "OPV2", "DPT2", "HepB2", "OPV3", "DPT3", "HepB3", "Measles"],
+  vaccines_needed_today: "Wala",
+  return_date_vaccine: "Wala",
 
-  vit_a_past_6months: null,
-  vit_a_needed_today: null,
+  vit_a_past_6months: true,
+  vit_a_needed_today: false,
 
-  very_low_weight: null,
-  severe_wasting: null,
-  edema_both_feet: null,
-  muac_cm: "",
-  classification_malnutrition: "",
-  palmar_pallor_some: null,
-  palmar_pallor_severe: null,
-  classification_anemia: "",
+  very_low_weight: false,
+  severe_wasting: false,
+  edema_both_feet: false,
+  muac_cm: "13",
+  classification_malnutrition: "Walang malnutrisyon",
 
-  breastfeeding: null,
+  palmar_pallor_some: false,
+  palmar_pallor_severe: false,
+  classification_anemia: "Walang Anemia",
+
+  breastfeeding: false,
   breastfeed_times: "",
-  other_food_drinks: null,
-  other_food_details: "",
-  other_food_times: "",
-  feeding_utensils: "",
-  food_amount: "",
-  own_plate: null,
-  person_feeding: "",
-  how_fed: "",
-  feeding_changed_during_illness: null,
+  other_food_drinks: true,
+  other_food_details: "kanin, tubig, sabaw, gatas",
+  other_food_times: "4",
+  feeding_utensils: "kutsara, kasalo sa mesa",
+  food_amount: "marami, 5 kutsara kenda kain",
+  own_plate: true,
+  person_feeding: "ang ina",
+  how_fed: "sinusuboan",
+  feeding_changed_during_illness: false,
   feeding_change_details: "",
 
-  how_plays: "",
-  how_talks: "",
-  other_problems: "",
+  how_plays: "maayos ang pakikipaglaro sa magulang, kinausap",
+  how_talks: "maayos din ang pakikipag-usap sa mga kapatid",
+  other_problems: "Wala",
 
-  doctor_see: null,
-  treatment_notes: "",
-  advice_notes: "",
-  urgent_return_advice: "",
-  feeding_advice: "",
-  return_health_center_date: "",
+  doctor_see: false,
+  treatment_notes: "Pa-inumin ng Paracetamol 4 times a day, ayon sa resita ng doctor (125mg/5ml evry 4 hrs)",
+  advice_notes: "Patuloy ang pagpapakain, pag-inom ng tubig at sabaw",
+  urgent_return_advice: "Kapag lumala ang lagnat, hirap huminga, o di makainom",
+  feeding_advice: "Ipagpatuloy ang pagpapakain ng masustansyang pagkain",
+  return_health_center_date: new Date(Date.now() + 2 * 86400000).toISOString().split("T")[0],
 };
 
 const ChildHealthForm = () => {
@@ -1436,7 +1437,93 @@ const ChildHealthForm = () => {
                     </div>
                   </div>
 
-                  {/* 11. DOCTOR EVALUATION & TREATMENT SUMMARY */}
+                  {/* 11. SURIIN ANG PAGPAPAKAIN */}
+                  <div className="border-b pb-3 space-y-2">
+                    <div className="font-bold uppercase text-[11px] text-slate-800 dark:text-slate-200">SURIIN ANG PAGPAPAKAIN</div>
+                    <p className="text-[10px] text-slate-500">(Para sa batang wala pang 2 buwan o may anemia o lubhang kulang sa timbang)</p>
+                    <div className="space-y-1.5 text-xs pl-1">
+                      <div className="flex items-center justify-between">
+                        <span>Sumususo ba ang bata sa ina?</span>
+                        <div className="flex gap-3">
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="breastfeeding" checked={sickForm.breastfeeding === true} onChange={() => setSickForm(p => ({ ...p, breastfeeding: true }))} /> Oo</label>
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="breastfeeding" checked={sickForm.breastfeeding === false} onChange={() => setSickForm(p => ({ ...p, breastfeeding: false }))} /> Hindi</label>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Mayroon bang ibang kinakain o iniinom ang bata?</span>
+                        <div className="flex gap-3">
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="other_food_drinks" checked={sickForm.other_food_drinks === true} onChange={() => setSickForm(p => ({ ...p, other_food_drinks: true }))} /> Oo</label>
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="other_food_drinks" checked={sickForm.other_food_drinks === false} onChange={() => setSickForm(p => ({ ...p, other_food_drinks: false }))} /> Hindi</label>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-1 border-t">
+                        <div>
+                          <Label className="text-[10px] text-slate-500">Kung oo, ano ito?</Label>
+                          <Input type="text" value={sickForm.other_food_details} onChange={e => setSickForm(p => ({ ...p, other_food_details: e.target.value }))} className={lineInputClass} />
+                        </div>
+                        <div>
+                          <Label className="text-[10px] text-slate-500">Ilang beses sa loob ng 24 na oras?</Label>
+                          <Input type="text" value={sickForm.other_food_times} onChange={e => setSickForm(p => ({ ...p, other_food_times: e.target.value }))} placeholder="___ beses" className={lineInputClass} />
+                        </div>
+                        <div>
+                          <Label className="text-[10px] text-slate-500">Ano'ng ginagamit sa pagpapakain?</Label>
+                          <Input type="text" value={sickForm.feeding_utensils} onChange={e => setSickForm(p => ({ ...p, feeding_utensils: e.target.value }))} className={lineInputClass} />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-1">
+                        <div>
+                          <Label className="text-[10px] text-slate-500">Gaano karami ang pinapakain sa bata?</Label>
+                          <Input type="text" value={sickForm.food_amount} onChange={e => setSickForm(p => ({ ...p, food_amount: e.target.value }))} className={lineInputClass} />
+                        </div>
+                        <div>
+                          <Label className="text-[10px] text-slate-500">Sino ang nagpapakain sa bata?</Label>
+                          <Input type="text" value={sickForm.person_feeding} onChange={e => setSickForm(p => ({ ...p, person_feeding: e.target.value }))} className={lineInputClass} />
+                        </div>
+                        <div>
+                          <Label className="text-[10px] text-slate-500">Paano pinapakain ang bata?</Label>
+                          <Input type="text" value={sickForm.how_fed} onChange={e => setSickForm(p => ({ ...p, how_fed: e.target.value }))} className={lineInputClass} />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <span>Mayroon bang sariling pinggan ang bata 'pag kumakain?</span>
+                        <div className="flex gap-3">
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="own_plate" checked={sickForm.own_plate === true} onChange={() => setSickForm(p => ({ ...p, own_plate: true }))} /> Oo</label>
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="own_plate" checked={sickForm.own_plate === false} onChange={() => setSickForm(p => ({ ...p, own_plate: false }))} /> Hindi</label>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <span>Habang may sakit ang bata, nagbago ba ang pagpapakain sa kanya?</span>
+                        <div className="flex gap-3">
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="feeding_changed_during_illness" checked={sickForm.feeding_changed_during_illness === true} onChange={() => setSickForm(p => ({ ...p, feeding_changed_during_illness: true }))} /> Oo</label>
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="feeding_changed_during_illness" checked={sickForm.feeding_changed_during_illness === false} onChange={() => setSickForm(p => ({ ...p, feeding_changed_during_illness: false }))} /> Hindi</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 12. SURIIN ANG PAMAMARAAN NG PAG-AARUGA SA BATA */}
+                  <div className="border-b pb-3 space-y-2">
+                    <div className="font-bold uppercase text-[11px] text-slate-800 dark:text-slate-200">SURIIN ANG PAMAMARAAN NG PAG-AARUGA SA BATA</div>
+                    <p className="text-[10px] text-slate-500">Ikumpara ang mga sagot ng magulang sa mga Rekomendasyon ng Pag-aalaga sa bata para sa kanyang edad.</p>
+                    <div className="space-y-2 text-xs">
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Paano nakikilaro sa bata?</Label>
+                        <Input type="text" value={sickForm.how_plays} onChange={e => setSickForm(p => ({ ...p, how_plays: e.target.value }))} className={lineInputClass} />
+                      </div>
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Paano nakikipag-usap sa bata?</Label>
+                        <Input type="text" value={sickForm.how_talks} onChange={e => setSickForm(p => ({ ...p, how_talks: e.target.value }))} className={lineInputClass} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 13. ANG BATA BA AY MAY IBA PANG PROBLEMA? */}
+                  <div className="border-b pb-3 space-y-1.5">
+                    <div className="font-bold uppercase text-[11px] text-slate-800 dark:text-slate-200">ANG BATA BA AY MAY IBA PANG PROBLEMA?</div>
+                    <Input type="text" value={sickForm.other_problems} onChange={e => setSickForm(p => ({ ...p, other_problems: e.target.value }))} className={lineInputClass} />
+                  </div>
+
+                  {/* 14. DOCTOR EVALUATION & TREATMENT SUMMARY */}
                   <div className="space-y-3 pt-1">
                     <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 p-2 rounded">
                       <span className="font-bold text-slate-800 dark:text-slate-200">DOCTOR EVALUATION & TREATMENT RECORD:</span>
@@ -1453,7 +1540,7 @@ const ChildHealthForm = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
                         <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">PAGGAMOT (Treatments, Paracetamol, ORS, Antibiotics, etc.):</Label>
-                        <Textarea value={sickForm.treatment_notes} onChange={e => setSickForm(p => ({ ...p, treatment_notes: e.target.value }))} placeholder="Hal. Paracetamol syr 125mg/5ml 1.5ml q4h..." className="h-16 text-xs" />
+                        <Textarea value={sickForm.treatment_notes} onChange={e => setSickForm(p => ({ ...p, treatment_notes: e.target.value }))} placeholder="Hal. Paracetamol syr 125mg/5ml..." className="h-16 text-xs" />
                       </div>
                       <div>
                         <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">MGA PAYO KUNG KAILAN DAPAT BUMALIK KAAGAD:</Label>
@@ -1463,8 +1550,8 @@ const ChildHealthForm = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                       <div>
-                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">PAYO SA PAGPAPAKAIN & PAG-AARUGA:</Label>
-                        <Textarea value={sickForm.feeding_advice} onChange={e => setSickForm(p => ({ ...p, feeding_advice: e.target.value }))} placeholder="Patuloy na pagpapasuso at pagbibigay ng sabaw at malambot na pagkain..." className="h-14 text-xs" />
+                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">PAGPAPAYO / PAYO SA PAGPAPAKAIN & PAG-AARUGA:</Label>
+                        <Textarea value={sickForm.advice_notes} onChange={e => setSickForm(p => ({ ...p, advice_notes: e.target.value }))} placeholder="Patuloy ang pagpapakain, pag-inom ng tubig at sabaw..." className="h-14 text-xs" />
                       </div>
                       <div>
                         <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">PETSA NG PAGBALIK SA HEALTH CENTER:</Label>
