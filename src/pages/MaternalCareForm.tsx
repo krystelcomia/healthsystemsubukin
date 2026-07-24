@@ -547,26 +547,14 @@ const MaternalCareForm = () => {
             <img src={barangayLogo} alt="Subukin Logo" className="h-24 md:h-32 object-contain shrink-0 mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
           </div>
 
-          {/* Form Header Title */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b pb-4">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground uppercase font-heading flex items-center gap-2">
-                <Heart className="h-6 w-6 text-rose-500 fill-rose-500/20" /> MATERNAL CARE DATA
-              </h1>
-              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                Barangay: <strong className="text-foreground">Subukin</strong> | Official Health Form (FN Registration & Risk Assessment)
-              </p>
-            </div>
-
-            {/* Quick Action Toolbar (Hidden when printing) */}
-            <div className="flex items-center gap-2 no-print shrink-0">
-              <Button type="button" variant="outline" size="sm" onClick={handleResetForm} className="gap-1 text-xs">
-                <RefreshCw className="h-3.5 w-3.5" /> Reset
-              </Button>
-              <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
-                <Printer className="h-3.5 w-3.5" /> Print Form
-              </Button>
-            </div>
+          {/* Quick Action Toolbar (Hidden when printing) */}
+          <div className="flex items-center justify-end gap-2 no-print">
+            <Button type="button" variant="outline" size="sm" onClick={handleResetForm} className="gap-1 text-xs">
+              <RefreshCw className="h-3.5 w-3.5" /> Reset
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
+              <Printer className="h-3.5 w-3.5" /> Print Form
+            </Button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
