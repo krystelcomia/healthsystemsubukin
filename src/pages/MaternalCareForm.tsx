@@ -162,7 +162,7 @@ const MaternalCareForm = () => {
   const fetchResidents = async () => {
     const { data } = await supabase
       .from("residents")
-      .select("id, full_name, age, birthday, sitio, gender")
+      .select("id, full_name, first_name, last_name, middle_name, age, birthday, sitio, gender, family_number")
       .order("full_name");
     setResidents(data || []);
   };
@@ -204,7 +204,7 @@ const MaternalCareForm = () => {
     return { last: parts[parts.length - 1], first: parts.slice(0, -1).join(" "), middle: "" };
   };
 
-  const handleSelectResident = (residentId: string) => {
+  const handleSelectResident = async (residentId: string) => {
     const res = residents.find(r => r.id === residentId);
     if (!res) {
       setForm(prev => ({ ...prev, resident_id: residentId }));
@@ -219,12 +219,47 @@ const MaternalCareForm = () => {
       computedAge = String(res.age);
     }
 
+    // Query family_data database to find linked family_number (from household head or father)
+    let linkedFamilyNumber = res.family_number || "";
+    try {
+      const { data: familyRecords } = await supabase
+        .from("family_data")
+        .select("*");
+
+      if (familyRecords && familyRecords.length > 0) {
+        const cleanResName = (res.full_name || "").trim().toLowerCase();
+        
+        const matchedFam = familyRecords.find((fam: any) => {
+          if (fam.resident_id === res.id) return true;
+          if (fam.father_name && fam.father_name.trim().toLowerCase() === cleanResName) return true;
+          if (fam.mother_name && fam.mother_name.trim().toLowerCase() === cleanResName) return true;
+
+          // Check inside members_detail list
+          let members: any[] = [];
+          if (Array.isArray(fam.members_detail)) {
+            members = fam.members_detail;
+          } else if (typeof fam.members_detail === "string") {
+            try { members = JSON.parse(fam.members_detail); } catch (e) {}
+          }
+
+          return members.some((m: any) => m.full_name && m.full_name.trim().toLowerCase() === cleanResName);
+        });
+
+        if (matchedFam?.family_number) {
+          linkedFamilyNumber = matchedFam.family_number;
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to query family_data for family_number link:", err);
+    }
+
     setForm(prev => ({
       ...prev,
       resident_id: res.id,
-      patient_last_name: last || prev.patient_last_name,
-      patient_first_name: first || prev.patient_first_name,
-      patient_middle_name: middle || prev.patient_middle_name,
+      family_number: linkedFamilyNumber || prev.family_number,
+      patient_last_name: res.last_name || last || prev.patient_last_name,
+      patient_first_name: res.first_name || first || prev.patient_first_name,
+      patient_middle_name: res.middle_name || middle || prev.patient_middle_name,
       age: computedAge || prev.age,
       sitio: res.sitio || prev.sitio,
     }));
