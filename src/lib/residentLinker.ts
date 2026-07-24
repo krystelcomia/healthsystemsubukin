@@ -21,6 +21,8 @@ export async function ensureResidentExists(opts: {
   birthday?: string;
   familyNumber?: string;
   status?: string;
+  fatherName?: string;
+  motherName?: string;
 }): Promise<string | null> {
   const cleanName = (opts.fullName || "").trim();
   if (!cleanName) return null;
