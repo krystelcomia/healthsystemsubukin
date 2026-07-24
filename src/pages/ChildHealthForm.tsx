@@ -231,103 +231,103 @@ const initialSickForm: SickChildFormFull = {
   temp_c: "",
   pulse_rate: "",
   respiratory_rate: "",
-  examiner_name: "Cristeta R. Lanuza",
+  examiner_name: "",
   date_examined: new Date().toISOString().split("T")[0],
-  chief_complaint: "Ubo, sipon, at lagnat",
-  consultation_type: "Unang konsulta",
+  chief_complaint: "",
+  consultation_type: "",
 
-  unable_to_drink: false,
-  vomits_everything: false,
-  has_convulsions: false,
-  lethargic_unconscious: false,
-  classification_danger: "Walang General Danger Signs",
+  unable_to_drink: null,
+  vomits_everything: null,
+  has_convulsions: null,
+  lethargic_unconscious: null,
+  classification_danger: "",
 
-  has_cough: true,
-  cough_days: "3",
-  respiratory_rate_val: "40",
-  fast_breathing: false,
-  chest_indrawing: false,
-  stridor: false,
-  classification_cough: "Simpleng Ubo o Sipon",
+  has_cough: null,
+  cough_days: "",
+  respiratory_rate_val: "",
+  fast_breathing: null,
+  chest_indrawing: null,
+  stridor: null,
+  classification_cough: "",
 
-  has_diarrhea: false,
+  has_diarrhea: null,
   diarrhea_days: "",
-  blood_in_stool: false,
-  eye_condition: "masigla, alerto",
-  skin_pinch: "mabilis",
-  drinking_ability: "normal uminom",
-  classification_diarrhea: "Walang Pagtatae",
+  blood_in_stool: null,
+  eye_condition: "",
+  skin_pinch: "",
+  drinking_ability: "",
+  classification_diarrhea: "",
 
-  has_fever: true,
-  fever_history: true,
-  fever_days: "1",
-  fever_everyday_7days: false,
-  stiff_neck: false,
-  classification_fever: "Lagnat",
+  has_fever: null,
+  fever_history: null,
+  fever_days: "",
+  fever_everyday_7days: null,
+  stiff_neck: null,
+  classification_fever: "",
 
-  measles_past_3months: false,
-  measles_rash: false,
-  measles_cough_runny_red_eyes: false,
-  mouth_sores: "walang singaw",
-  eye_pus_clouding: "normal",
-  classification_measles: "Walang Tigdas",
+  measles_past_3months: null,
+  measles_rash: null,
+  measles_cough_runny_red_eyes: null,
+  mouth_sores: "",
+  eye_pus_clouding: "",
+  classification_measles: "",
 
-  dengue_bleeding: false,
-  dengue_dark_vomit_stool: false,
-  dengue_abdominal_pain: false,
-  dengue_persistent_vomiting: false,
-  dengue_petechiae: false,
-  dengue_cold_extremities: false,
+  dengue_bleeding: null,
+  dengue_dark_vomit_stool: null,
+  dengue_abdominal_pain: null,
+  dengue_persistent_vomiting: null,
+  dengue_petechiae: null,
+  dengue_cold_extremities: null,
   capillary_refill_sec: "",
-  tourniquet_test_positive: false,
-  classification_dengue: "Walang Dengue",
+  tourniquet_test_positive: null,
+  classification_dengue: "",
 
-  has_ear_problem: false,
-  ear_pain: false,
-  ear_discharge: false,
+  has_ear_problem: null,
+  ear_pain: null,
+  ear_discharge: null,
   ear_discharge_days: "",
-  ear_swelling_behind: false,
-  classification_ear: "Walang Impeksyon sa Tenga",
+  ear_swelling_behind: null,
+  classification_ear: "",
 
-  vaccines_given: ["BCG", "OPV1", "DPT1", "HepB1", "OPV2", "DPT2", "HepB2", "OPV3", "DPT3", "HepB3", "Measles"],
-  vaccines_needed_today: "Wala (KUMPLETO)",
+  vaccines_given: [],
+  vaccines_needed_today: "",
   return_date_vaccine: "",
 
-  vit_a_past_6months: true,
-  vit_a_needed_today: false,
+  vit_a_past_6months: null,
+  vit_a_needed_today: null,
 
-  very_low_weight: false,
-  severe_wasting: false,
-  edema_both_feet: false,
-  muac_cm: "14.5",
-  classification_malnutrition: "Walang malnutrisyon",
-  palmar_pallor_some: false,
-  palmar_pallor_severe: false,
-  classification_anemia: "Walang Anemia",
+  very_low_weight: null,
+  severe_wasting: null,
+  edema_both_feet: null,
+  muac_cm: "",
+  classification_malnutrition: "",
+  palmar_pallor_some: null,
+  palmar_pallor_severe: null,
+  classification_anemia: "",
 
-  breastfeeding: true,
-  breastfeed_times: "5",
-  other_food_drinks: true,
-  other_food_details: "Lugaw, sopas, kanin",
-  other_food_times: "3",
-  feeding_utensils: "Kutsara at mangkok",
-  food_amount: "1 mangkok",
-  own_plate: true,
-  person_feeding: "Ina",
-  how_fed: "Pinapakain ng ina",
-  feeding_changed_during_illness: false,
+  breastfeeding: null,
+  breastfeed_times: "",
+  other_food_drinks: null,
+  other_food_details: "",
+  other_food_times: "",
+  feeding_utensils: "",
+  food_amount: "",
+  own_plate: null,
+  person_feeding: "",
+  how_fed: "",
+  feeding_changed_during_illness: null,
   feeding_change_details: "",
 
-  how_plays: "Masigla at naglalaro",
-  how_talks: "Nagsasalita nang maayos",
-  other_problems: "Wala",
+  how_plays: "",
+  how_talks: "",
+  other_problems: "",
 
-  doctor_see: false,
-  treatment_notes: "Paracetamol syrup 125mg/5ml, 5ml tuwing 4-6 oras para sa lagnat. Patuloy na pagpapainom ng maraming tubig at malinis na sabaw.",
-  advice_notes: "Panatilihing malinis ang paligid at bigyan ng sapat na pahinga ang bata.",
-  urgent_return_advice: "Bumalik agad kapag nagkaroon ng hirap sa paghinga, patuloy na mataas na lagnat, o di makainom.",
-  feeding_advice: "Ipagpatuloy ang pagpapasuso at pagbibigay ng masustansyang pagkain.",
-  return_health_center_date: new Date(Date.now() + 2 * 86400000).toISOString().split("T")[0],
+  doctor_see: null,
+  treatment_notes: "",
+  advice_notes: "",
+  urgent_return_advice: "",
+  feeding_advice: "",
+  return_health_center_date: "",
 };
 
 const ChildHealthForm = () => {
@@ -968,7 +968,7 @@ const ChildHealthForm = () => {
                       {["Walang General Danger Signs", "May General Danger Signs"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_danger" checked={sickForm.classification_danger === c} onChange={() => setSickForm(p => ({ ...p, classification_danger: c }))} />
-                          <span className={cn(c.includes("May") ? "font-bold" : "")}>{c}</span>
+                          <span>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1021,7 +1021,7 @@ const ChildHealthForm = () => {
                       {["Walang Ubo o Sipon", "Simpleng Ubo o Sipon", "Pulmonya", "Malalang Pulmonya"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_cough" checked={sickForm.classification_cough === c} onChange={() => setSickForm(p => ({ ...p, classification_cough: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold" : c.includes("Pulmonya") ? "font-semibold" : "")}>{c}</span>
+                          <span>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1088,7 +1088,7 @@ const ChildHealthForm = () => {
                       {["Walang Pagtatae", "Pagtatae na Walang Panunuyo", "Pagtatae na May Panunuyo", "Pagtatae na May Malalang Panunuyo"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_diarrhea" checked={sickForm.classification_diarrhea === c} onChange={() => setSickForm(p => ({ ...p, classification_diarrhea: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold" : c.includes("May Panunuyo") ? "font-semibold" : "")}>{c}</span>
+                          <span>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1141,7 +1141,7 @@ const ChildHealthForm = () => {
                       {["Walang lagnat", "Lagnat", "Malalang Lagnat"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_fever" checked={sickForm.classification_fever === c} onChange={() => setSickForm(p => ({ ...p, classification_fever: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold" : c === "Lagnat" ? "font-semibold" : "")}>{c}</span>
+                          <span>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1198,7 +1198,7 @@ const ChildHealthForm = () => {
                       {["Walang Tigdas", "Tigdas", "Tigdas na May Komplikasyon sa Mata o Bibig", "Malalang Komplikadong Tigdas"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_measles" checked={sickForm.classification_measles === c} onChange={() => setSickForm(p => ({ ...p, classification_measles: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold" : c.includes("Komplikasyon") ? "font-semibold" : "")}>{c}</span>
+                          <span>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1272,7 +1272,7 @@ const ChildHealthForm = () => {
                       {["Walang Dengue", "Lagnat: Malamang Hindi Dengue Hemorrhagic Fever", "Malalang Dengue Hemorrhagic Fever"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_dengue" checked={sickForm.classification_dengue === c} onChange={() => setSickForm(p => ({ ...p, classification_dengue: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold" : c.includes("Malamang") ? "font-medium" : "")}>{c}</span>
+                          <span>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1328,7 +1328,7 @@ const ChildHealthForm = () => {
                       {["Walang Impeksyon sa Tenga", "Bagong Impeksyon sa Tenga", "Matagal na Impeksyon sa Tenga", "Mastoiditis"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_ear" checked={sickForm.classification_ear === c} onChange={() => setSickForm(p => ({ ...p, classification_ear: c }))} />
-                          <span className={cn(c.includes("Mastoiditis") ? "font-bold" : "")}>{c}</span>
+                          <span>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1423,14 +1423,14 @@ const ChildHealthForm = () => {
                       {["Walang malnutrisyon", "Napakababang timbang", "Matinding malnutrisyon"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_malnutrition" checked={sickForm.classification_malnutrition === c} onChange={() => setSickForm(p => ({ ...p, classification_malnutrition: c }))} />
-                          <span className={cn(c.includes("Matinding") ? "font-bold" : "")}>{c}</span>
+                          <span>{c}</span>
                         </label>
                       ))}
                       <div className="font-bold text-[10px] text-slate-500 uppercase pt-1">Anemia:</div>
                       {["Walang Anemia", "Anemia", "Malalang Anemia"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_anemia" checked={sickForm.classification_anemia === c} onChange={() => setSickForm(p => ({ ...p, classification_anemia: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold" : "")}>{c}</span>
+                          <span>{c}</span>
                         </label>
                       ))}
                     </div>
