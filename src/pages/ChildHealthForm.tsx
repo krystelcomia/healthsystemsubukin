@@ -968,7 +968,7 @@ const ChildHealthForm = () => {
                       {["Walang General Danger Signs", "May General Danger Signs"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_danger" checked={sickForm.classification_danger === c} onChange={() => setSickForm(p => ({ ...p, classification_danger: c }))} />
-                          <span className={cn(c.includes("May") ? "font-bold text-rose-600" : "")}>{c}</span>
+                          <span className={cn(c.includes("May") ? "font-bold" : "")}>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1023,7 +1023,7 @@ const ChildHealthForm = () => {
                       {["Walang Ubo o Sipon", "Simpleng Ubo o Sipon", "Pulmonya", "Malalang Pulmonya"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_cough" checked={sickForm.classification_cough === c} onChange={() => setSickForm(p => ({ ...p, classification_cough: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold text-rose-600" : c.includes("Pulmonya") ? "font-semibold text-amber-600" : "")}>{c}</span>
+                          <span className={cn(c.includes("Malalang") ? "font-bold" : c.includes("Pulmonya") ? "font-semibold" : "")}>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1092,7 +1092,7 @@ const ChildHealthForm = () => {
                       {["Walang Pagtatae", "Pagtatae na Walang Panunuyo", "Pagtatae na May Panunuyo", "Pagtatae na May Malalang Panunuyo"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_diarrhea" checked={sickForm.classification_diarrhea === c} onChange={() => setSickForm(p => ({ ...p, classification_diarrhea: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold text-rose-600" : c.includes("May Panunuyo") ? "font-semibold text-amber-600" : "")}>{c}</span>
+                          <span className={cn(c.includes("Malalang") ? "font-bold" : c.includes("May Panunuyo") ? "font-semibold" : "")}>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1137,7 +1137,7 @@ const ChildHealthForm = () => {
                       {["Walang lagnat", "Lagnat", "Malalang Lagnat"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_fever" checked={sickForm.classification_fever === c} onChange={() => setSickForm(p => ({ ...p, classification_fever: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold text-rose-600" : c === "Lagnat" ? "font-semibold text-amber-600" : "")}>{c}</span>
+                          <span className={cn(c.includes("Malalang") ? "font-bold" : c === "Lagnat" ? "font-semibold" : "")}>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1176,7 +1176,7 @@ const ChildHealthForm = () => {
                       {["Walang Tigdas", "Tigdas", "Tigdas na May Komplikasyon sa Mata o Bibig", "Malalang Komplikadong Tigdas"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_measles" checked={sickForm.classification_measles === c} onChange={() => setSickForm(p => ({ ...p, classification_measles: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold text-rose-600" : c.includes("Komplikasyon") ? "font-semibold text-amber-600" : "")}>{c}</span>
+                          <span className={cn(c.includes("Malalang") ? "font-bold" : c.includes("Komplikasyon") ? "font-semibold" : "")}>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1222,7 +1222,7 @@ const ChildHealthForm = () => {
                       {["Walang Dengue", "Lagnat: Malamang Hindi Dengue Hemorrhagic Fever", "Malalang Dengue Hemorrhagic Fever"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_dengue" checked={sickForm.classification_dengue === c} onChange={() => setSickForm(p => ({ ...p, classification_dengue: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold text-rose-600" : c.includes("Malamang") ? "font-medium text-slate-700 dark:text-slate-300" : "")}>{c}</span>
+                          <span className={cn(c.includes("Malalang") ? "font-bold" : c.includes("Malamang") ? "font-medium" : "")}>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1270,7 +1270,7 @@ const ChildHealthForm = () => {
                       {["Walang Impeksyon sa Tenga", "Bagong Impeksyon sa Tenga", "Matagal na Impeksyon sa Tenga", "Mastoiditis"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_ear" checked={sickForm.classification_ear === c} onChange={() => setSickForm(p => ({ ...p, classification_ear: c }))} />
-                          <span className={cn(c.includes("Mastoiditis") ? "font-bold text-rose-600" : "")}>{c}</span>
+                          <span className={cn(c.includes("Mastoiditis") ? "font-bold" : "")}>{c}</span>
                         </label>
                       ))}
                     </div>
@@ -1319,7 +1319,7 @@ const ChildHealthForm = () => {
                           <input type="radio" name="vit_a_needed_today" checked={sickForm.vit_a_needed_today === false} onChange={() => setSickForm(p => ({ ...p, vit_a_needed_today: false }))} />
                           <span>Hindi Kailangan ng Vitamin A ngayon</span>
                         </label>
-                        <label className="flex items-center space-x-2 cursor-pointer font-semibold text-amber-600">
+                        <label className="flex items-center space-x-2 cursor-pointer font-semibold">
                           <input type="radio" name="vit_a_needed_today" checked={sickForm.vit_a_needed_today === true} onChange={() => setSickForm(p => ({ ...p, vit_a_needed_today: true }))} />
                           <span>Kailangan ng Vitamin A ngayon</span>
                         </label>
@@ -1365,14 +1365,14 @@ const ChildHealthForm = () => {
                       {["Walang malnutrisyon", "Napakababang timbang", "Matinding malnutrisyon"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_malnutrition" checked={sickForm.classification_malnutrition === c} onChange={() => setSickForm(p => ({ ...p, classification_malnutrition: c }))} />
-                          <span className={cn(c.includes("Matinding") ? "font-bold text-rose-600" : "")}>{c}</span>
+                          <span className={cn(c.includes("Matinding") ? "font-bold" : "")}>{c}</span>
                         </label>
                       ))}
                       <div className="font-bold text-[10px] text-slate-500 uppercase pt-1">Anemia:</div>
                       {["Walang Anemia", "Anemia", "Malalang Anemia"].map(c => (
                         <label key={c} className="flex items-center space-x-2 cursor-pointer">
                           <input type="radio" name="classification_anemia" checked={sickForm.classification_anemia === c} onChange={() => setSickForm(p => ({ ...p, classification_anemia: c }))} />
-                          <span className={cn(c.includes("Malalang") ? "font-bold text-rose-600" : "")}>{c}</span>
+                          <span className={cn(c.includes("Malalang") ? "font-bold" : "")}>{c}</span>
                         </label>
                       ))}
                     </div>
