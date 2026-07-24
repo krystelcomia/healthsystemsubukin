@@ -547,14 +547,20 @@ const MaternalCareForm = () => {
             <img src={barangayLogo} alt="Subukin Logo" className="h-24 md:h-32 object-contain shrink-0 mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
           </div>
 
-          {/* Quick Action Toolbar (Hidden when printing) */}
-          <div className="flex items-center justify-end gap-2 no-print">
-            <Button type="button" variant="outline" size="sm" onClick={handleResetForm} className="gap-1 text-xs">
-              <RefreshCw className="h-3.5 w-3.5" /> Reset
-            </Button>
-            <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
-              <Printer className="h-3.5 w-3.5" /> Print Form
-            </Button>
+          {/* Header Bar with Barangay Subukin note & Action Toolbar (Hidden when printing) */}
+          <div className="flex items-center justify-between gap-2 no-print pb-2 border-b border-border/40">
+            <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+              BRGY: <strong className="text-foreground">SUBUKIN</strong>
+            </span>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={handleResetForm} className="gap-1 text-xs">
+                <RefreshCw className="h-3.5 w-3.5" /> Reset
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
+                <Printer className="h-3.5 w-3.5" /> Print Form
+              </Button>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
