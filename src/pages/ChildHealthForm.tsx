@@ -941,8 +941,11 @@ const ChildHealthForm = () => {
 
                   {/* 1. GENERAL DANGER SIGNS */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
-                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
-                      TANUNGIN KUNG MAY GENERAL DANGER SIGNS
+                    <div className="grid grid-cols-12 border-b border-slate-200 dark:border-slate-700">
+                      <div className="col-span-8 bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                        TANUNGIN KUNG MAY GENERAL DANGER SIGNS
+                      </div>
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 bg-transparent"></div>
                     </div>
                     <div className="grid grid-cols-12 p-2.5">
                       <div className="col-span-8 space-y-1.5 pr-2">
@@ -981,12 +984,15 @@ const ChildHealthForm = () => {
 
                   {/* 2. ANG BATA BA AY INUUBO O NAHIHIRAPANG HUMINGA? */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
-                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase flex items-center justify-between">
-                      <span>ANG BATA BA AY INUUBO O NAHIHIRAPANG HUMINGA?</span>
-                      <div className="flex gap-3 text-xs text-white">
-                        <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_cough" checked={sickForm.has_cough === true} onChange={() => setSickForm(p => ({ ...p, has_cough: true }))} /> OO</label>
-                        <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_cough" checked={sickForm.has_cough === false} onChange={() => setSickForm(p => ({ ...p, has_cough: false }))} /> HINDI</label>
+                    <div className="grid grid-cols-12 border-b border-slate-200 dark:border-slate-700">
+                      <div className="col-span-8 bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase flex items-center justify-between">
+                        <span>ANG BATA BA AY INUUBO O NAHIHIRAPANG HUMINGA?</span>
+                        <div className="flex gap-3 text-xs text-white">
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_cough" checked={sickForm.has_cough === true} onChange={() => setSickForm(p => ({ ...p, has_cough: true }))} /> OO</label>
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_cough" checked={sickForm.has_cough === false} onChange={() => setSickForm(p => ({ ...p, has_cough: false }))} /> HINDI</label>
+                        </div>
                       </div>
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 bg-transparent"></div>
                     </div>
                     <div className="grid grid-cols-12 p-2.5">
                       <div className="col-span-8 space-y-1.5 pr-2">
@@ -1035,12 +1041,15 @@ const ChildHealthForm = () => {
 
                   {/* 3. ANG BATA BA AY NAGTATAE? */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
-                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase flex items-center justify-between">
-                      <span>ANG BATA BA AY NAGTATAE?</span>
-                      <div className="flex gap-3 text-xs text-white">
-                        <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_diarrhea" checked={sickForm.has_diarrhea === true} onChange={() => setSickForm(p => ({ ...p, has_diarrhea: true }))} /> OO</label>
-                        <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_diarrhea" checked={sickForm.has_diarrhea === false} onChange={() => setSickForm(p => ({ ...p, has_diarrhea: false }))} /> HINDI</label>
+                    <div className="grid grid-cols-12 border-b border-slate-200 dark:border-slate-700">
+                      <div className="col-span-8 bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase flex items-center justify-between">
+                        <span>ANG BATA BA AY NAGTATAE?</span>
+                        <div className="flex gap-3 text-xs text-white">
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_diarrhea" checked={sickForm.has_diarrhea === true} onChange={() => setSickForm(p => ({ ...p, has_diarrhea: true }))} /> OO</label>
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_diarrhea" checked={sickForm.has_diarrhea === false} onChange={() => setSickForm(p => ({ ...p, has_diarrhea: false }))} /> HINDI</label>
+                        </div>
                       </div>
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 bg-transparent"></div>
                     </div>
                     <div className="grid grid-cols-12 p-2.5">
                       <div className="col-span-8 space-y-1.5 pr-2">
@@ -1103,12 +1112,15 @@ const ChildHealthForm = () => {
 
                   {/* 4. ANG BATA BA AY NILALAGNAT? */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
-                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase flex items-center justify-between">
-                      <span>ANG BATA BA AY NILALAGNAT?</span>
-                      <div className="flex gap-3 text-xs text-white">
-                        <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_fever" checked={sickForm.has_fever === true} onChange={() => setSickForm(p => ({ ...p, has_fever: true }))} /> OO</label>
-                        <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_fever" checked={sickForm.has_fever === false} onChange={() => setSickForm(p => ({ ...p, has_fever: false }))} /> HINDI</label>
+                    <div className="grid grid-cols-12 border-b border-slate-200 dark:border-slate-700">
+                      <div className="col-span-8 bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase flex items-center justify-between">
+                        <span>ANG BATA BA AY NILALAGNAT?</span>
+                        <div className="flex gap-3 text-xs text-white">
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_fever" checked={sickForm.has_fever === true} onChange={() => setSickForm(p => ({ ...p, has_fever: true }))} /> OO</label>
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_fever" checked={sickForm.has_fever === false} onChange={() => setSickForm(p => ({ ...p, has_fever: false }))} /> HINDI</label>
+                        </div>
                       </div>
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 bg-transparent"></div>
                     </div>
                     <div className="grid grid-cols-12 p-2.5">
                       <div className="col-span-8 space-y-1.5 pr-2">
@@ -1157,8 +1169,11 @@ const ChildHealthForm = () => {
 
                   {/* 5. TIGDAS */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
-                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
-                      ALAMIN KUNG MAY SENYALES NG TIGDAS
+                    <div className="grid grid-cols-12 border-b border-slate-200 dark:border-slate-700">
+                      <div className="col-span-8 bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                        ALAMIN KUNG MAY SENYALES NG TIGDAS
+                      </div>
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 bg-transparent"></div>
                     </div>
                     <div className="grid grid-cols-12 p-2.5">
                       <div className="col-span-8 space-y-1.5 pr-2">
@@ -1218,8 +1233,11 @@ const ChildHealthForm = () => {
 
                   {/* 6. DENGUE */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
-                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
-                      ALAMIN KUNG MAY SENYALES NG DENGUE
+                    <div className="grid grid-cols-12 border-b border-slate-200 dark:border-slate-700">
+                      <div className="col-span-8 bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                        ALAMIN KUNG MAY SENYALES NG DENGUE
+                      </div>
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 bg-transparent"></div>
                     </div>
                     <div className="grid grid-cols-12 p-2.5">
                       <div className="col-span-8 space-y-1.5 pr-2">
@@ -1296,12 +1314,15 @@ const ChildHealthForm = () => {
 
                   {/* 7. PROBLEMA SA TENGA */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
-                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase flex items-center justify-between">
-                      <span>ANG BATA BA AY MAY PROBLEMA SA TENGA?</span>
-                      <div className="flex gap-3 text-xs text-white">
-                        <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_ear_problem" checked={sickForm.has_ear_problem === true} onChange={() => setSickForm(p => ({ ...p, has_ear_problem: true }))} /> OO</label>
-                        <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_ear_problem" checked={sickForm.has_ear_problem === false} onChange={() => setSickForm(p => ({ ...p, has_ear_problem: false }))} /> HINDI</label>
+                    <div className="grid grid-cols-12 border-b border-slate-200 dark:border-slate-700">
+                      <div className="col-span-8 bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase flex items-center justify-between">
+                        <span>ANG BATA BA AY MAY PROBLEMA SA TENGA?</span>
+                        <div className="flex gap-3 text-xs text-white">
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_ear_problem" checked={sickForm.has_ear_problem === true} onChange={() => setSickForm(p => ({ ...p, has_ear_problem: true }))} /> OO</label>
+                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="has_ear_problem" checked={sickForm.has_ear_problem === false} onChange={() => setSickForm(p => ({ ...p, has_ear_problem: false }))} /> HINDI</label>
+                        </div>
                       </div>
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 bg-transparent"></div>
                     </div>
                     <div className="grid grid-cols-12 p-2.5">
                       <div className="col-span-8 space-y-1.5 pr-2">
@@ -1358,8 +1379,11 @@ const ChildHealthForm = () => {
                   
                   {/* 8. BAKUNA (VACCINES) */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
-                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
-                      SURIIN ANG MGA BAKUNA NG BATA
+                    <div className="grid grid-cols-12 border-b border-slate-200 dark:border-slate-700">
+                      <div className="col-span-8 bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                        SURIIN ANG MGA BAKUNA NG BATA
+                      </div>
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 bg-transparent"></div>
                     </div>
                     <div className="grid grid-cols-12 p-2.5 gap-2">
                       <div className="col-span-8 space-y-1 pr-2">
@@ -1427,8 +1451,11 @@ const ChildHealthForm = () => {
 
                   {/* 9. VITAMIN A */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
-                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
-                      SURIIN KUNG NABIGYAN NA NG VITAMIN A
+                    <div className="grid grid-cols-12 border-b border-slate-200 dark:border-slate-700">
+                      <div className="col-span-8 bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                        SURIIN KUNG NABIGYAN NA NG VITAMIN A
+                      </div>
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 bg-transparent"></div>
                     </div>
                     <div className="grid grid-cols-12 p-2.5 gap-2">
                       <div className="col-span-8 space-y-1.5 pr-2">
@@ -1457,14 +1484,17 @@ const ChildHealthForm = () => {
 
                   {/* 10. MALNUTRISYON AT ANEMIA */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
-                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
-                      SURIIN KUNG MAY MALNUTRISYON O ANEMIA
+                    <div className="grid grid-cols-12 border-b border-slate-200 dark:border-slate-700">
+                      <div className="col-span-8 bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                        SURIIN KUNG MAY MALNUTRISYON O ANEMIA
+                      </div>
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 bg-transparent"></div>
                     </div>
 
                     {/* ALAMIN KUNG MAY MALNUTRISYON */}
                     <div className="grid grid-cols-12 p-2.5 border-b border-slate-200 dark:border-slate-700">
                       <div className="col-span-8 space-y-1.5 pr-2">
-                        <div className="bg-slate-700 text-white px-2 py-0.5 font-bold text-[10px] uppercase rounded-sm mb-1.5 inline-block">ALAMIN KUNG MAY MALNUTRISYON</div>
+                        <div className="font-bold text-[11px] uppercase text-slate-800 dark:text-slate-200">ALAMIN KUNG MAY MALNUTRISYON</div>
                         <div className="space-y-1 pl-1 text-xs">
                           <div>
                             <span>Tingnan sa talaan ang timbang:</span>
@@ -1516,7 +1546,7 @@ const ChildHealthForm = () => {
                     {/* ALAMIN KUNG MAY ANEMIA */}
                     <div className="grid grid-cols-12 p-2.5">
                       <div className="col-span-8 space-y-1.5 pr-2">
-                        <div className="bg-slate-700 text-white px-2 py-0.5 font-bold text-[10px] uppercase rounded-sm mb-1.5 inline-block">ALAMIN KUNG MAY ANEMIA</div>
+                        <div className="font-bold text-[11px] uppercase text-slate-800 dark:text-slate-200">ALAMIN KUNG MAY ANEMIA</div>
                         <div className="space-y-1 pl-1 text-xs">
                           <div>
                             <span className="font-semibold">Suriin ang palad:</span>
