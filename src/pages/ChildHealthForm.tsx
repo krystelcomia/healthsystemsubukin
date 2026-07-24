@@ -195,16 +195,22 @@ export interface VitaminARow {
 
 export interface SIARow {
   id: string;
-  child_name: string;
-  sex: string;
+  child_family_name: string;
+  child_given_name: string;
+  child_middle_name: string;
   dob: string;
   age_months: string;
-  mother_name: string;
-  sitio: string;
-  mr_vaccine_date: string;
-  bopv_vaccine_date: string;
-  status: string;
-  remarks: string;
+  gender: string;
+  barangay: string;
+  purok_sitio_street: string;
+  mother_family_name: string;
+  mother_given_name: string;
+  mother_middle_name: string;
+  vaccine_given: string;
+  vaccination_date: string;
+  vaccinator_family_name: string;
+  vaccinator_given_name: string;
+  vaccinator_middle_name: string;
 }
 
 const initialSickForm: SickChildFormFull = {
@@ -361,26 +367,32 @@ const ChildHealthForm = () => {
     }
   ]);
 
-  // FORM 3 State (SIA)
+  // FORM 3 State (Supplemental Immunization Activity - SIA Masterlist)
   const [siaInfo, setSiaInfo] = useState({
-    campaign_name: "MR-OPV SIA Campaign",
-    sitio: "Subukin",
-    activity_date: new Date().toISOString().split("T")[0],
-    coordinator: "",
+    region: "IV-A CALABARZON",
+    province: "BATANGAS",
+    municipality: "SAN JUAN",
+    activity_date: "SEPT 2021 - FEB 2024",
   });
   const [siaRows, setSiaRows] = useState<SIARow[]>([
     {
       id: "srow-1",
-      child_name: "",
-      sex: "Female",
+      child_family_name: "",
+      child_given_name: "",
+      child_middle_name: "",
       dob: "",
       age_months: "",
-      mother_name: "",
-      sitio: "Subukin",
-      mr_vaccine_date: "",
-      bopv_vaccine_date: "",
-      status: "Fully Immunized",
-      remarks: "",
+      gender: "M",
+      barangay: "Subukin",
+      purok_sitio_street: "",
+      mother_family_name: "",
+      mother_given_name: "",
+      mother_middle_name: "",
+      vaccine_given: "",
+      vaccination_date: "",
+      vaccinator_family_name: "",
+      vaccinator_given_name: "",
+      vaccinator_middle_name: "",
     }
   ]);
 
@@ -574,12 +586,33 @@ const ChildHealthForm = () => {
   };
 
   const handleAddSIARow = () => {
-    setSiaRows(prev => [...prev, { id: `srow-${Date.now()}`, child_name: "", sex: "Female", dob: "", age_months: "", mother_name: "", sitio: "Subukin", mr_vaccine_date: "", bopv_vaccine_date: "", status: "Fully Immunized", remarks: "" }]);
+    setSiaRows(prev => [
+      ...prev,
+      {
+        id: `srow-${Date.now()}`,
+        child_family_name: "",
+        child_given_name: "",
+        child_middle_name: "",
+        dob: "",
+        age_months: "",
+        gender: "M",
+        barangay: "Subukin",
+        purok_sitio_street: "",
+        mother_family_name: "",
+        mother_given_name: "",
+        mother_middle_name: "",
+        vaccine_given: "",
+        vaccination_date: "",
+        vaccinator_family_name: "",
+        vaccinator_given_name: "",
+        vaccinator_middle_name: "",
+      }
+    ]);
   };
   const handleRemoveSIARow = (id: string) => setSiaRows(prev => prev.filter(r => r.id !== id));
 
   const handleSaveSIAMasterlist = async () => {
-    const validRows = siaRows.filter(r => r.child_name.trim());
+    const validRows = siaRows.filter(r => r.child_family_name.trim() || r.child_given_name.trim());
     if (validRows.length === 0) {
       toast.error("Please enter at least one child's name.");
       return;
@@ -589,18 +622,19 @@ const ChildHealthForm = () => {
     try {
       let savedCount = 0;
       for (const row of validRows) {
+        const fullChildName = `${row.child_given_name} ${row.child_middle_name} ${row.child_family_name}`.trim();
         const resId = await ensureResidentExists({
-          fullName: row.child_name,
-          sitio: row.sitio || siaInfo.sitio,
-          gender: row.sex,
+          fullName: fullChildName,
+          sitio: row.purok_sitio_street || "Subukin",
+          gender: row.gender === "M" ? "Male" : "Female",
           birthday: row.dob,
         });
 
-        const remarksText = `[SIA Masterlist (6-59m) - ${siaInfo.campaign_name}] MR: ${row.mr_vaccine_date || "N/A"}, bOPV: ${row.bopv_vaccine_date || "N/A"}, Status: ${row.status}`;
+        const remarksText = `[SIA Masterlist (6-59m)] Child: ${fullChildName}, Vaccine: ${row.vaccine_given || "N/A"}, Date: ${row.vaccination_date || "N/A"}`;
 
         const payload = {
           resident_id: resId,
-          checkup_date: siaInfo.activity_date || new Date().toISOString().split("T")[0],
+          checkup_date: row.vaccination_date || new Date().toISOString().split("T")[0],
           remarks: remarksText,
           details: JSON.stringify({ form_type: "sia_masterlist_6_59m", campaign_info: siaInfo, row_data: row }),
         };
@@ -609,7 +643,7 @@ const ChildHealthForm = () => {
         if (!error) savedCount++;
       }
 
-      toast.success(`Successfully saved ${savedCount} SIA entries.`);
+      toast.success(`Successfully saved ${savedCount} SIA masterlist entries.`);
       logActivity("submit_child_health", { entity_type: "child_health", description: `Saved ${savedCount} SIA records` });
       fetchSavedRecords();
     } catch (err) {
@@ -1583,138 +1617,128 @@ const ChildHealthForm = () => {
               </div>
             </TabsContent>
 
-            {/* TAB 3: Supplemental Immunization Activity (SIA) Master List (6-59 Months) */}
-            <TabsContent value="sia-masterlist" className="mt-6 space-y-6">
-              <div className="border-b pb-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-base font-bold text-foreground flex items-center gap-2 font-heading uppercase">
-                    <Syringe className="h-5 w-5 text-emerald-600" /> Supplemental Immunization Activity (SIA) Master List (6–59 Months)
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    MR (Measles-Rubella) & bOPV (Oral Polio) Campaign Supplemental Vaccination Registry
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 no-print">
-                  <Select value={siaInfo.sitio} onValueChange={v => setSiaInfo(p => ({ ...p, sitio: v }))}>
-                    <SelectTrigger className="h-8 text-xs bg-background w-36">
-                      <SelectValue placeholder="Sitio" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sitioOptions.map(s => (
-                        <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            {/* TAB 3: Supplemental Immunization Activity (SIA) Master List (Official Paper Form Replica) */}
+            <TabsContent value="sia-masterlist" className="mt-4 space-y-4">
+              
+              {/* Title Banner */}
+              <div className="text-center py-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-md border border-emerald-300 dark:border-emerald-700/60 relative">
+                <h1 className="text-sm font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-200 font-heading">
+                  Supplemental Immunization Activity (SIA)
+                </h1>
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                  Masterlist of Children 6-59 months old
+                </p>
+                <div className="absolute right-3 top-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                  Date: <Input type="text" value={siaInfo.activity_date} onChange={e => setSiaInfo(p => ({ ...p, activity_date: e.target.value }))} placeholder="SEPT 2021 - FEB 2024" className="inline-block w-36 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center" />
                 </div>
               </div>
 
-              {/* SIA Masterlist Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs border-collapse border border-border">
+              {/* Meta Location Fields Bar */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-muted/40 p-2.5 rounded-md border text-xs">
+                <div>
+                  <Label className="text-[10px] text-slate-500 font-medium">Region:</Label>
+                  <Input type="text" value={siaInfo.region} onChange={e => setSiaInfo(p => ({ ...p, region: e.target.value }))} className={lineInputClass} />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-slate-500 font-medium">Province/City:</Label>
+                  <Input type="text" value={siaInfo.province} onChange={e => setSiaInfo(p => ({ ...p, province: e.target.value }))} className={lineInputClass} />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-slate-500 font-medium">Municipality:</Label>
+                  <Input type="text" value={siaInfo.municipality} onChange={e => setSiaInfo(p => ({ ...p, municipality: e.target.value }))} className={lineInputClass} />
+                </div>
+                <div className="flex items-end justify-end no-print">
+                  <Button type="button" variant="outline" size="sm" onClick={handleAddSIARow} className="gap-1 text-xs">
+                    <Plus className="h-3.5 w-3.5" /> Add Child Row
+                  </Button>
+                </div>
+              </div>
+
+              {/* SIA Masterlist Table matching exact photo */}
+              <div className="overflow-x-auto border border-slate-300 dark:border-slate-700 rounded-md">
+                <table className="w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
                   <thead>
-                    <tr className="bg-muted/40 text-muted-foreground font-semibold text-center">
-                      <th className="border border-border p-2 w-8">#</th>
-                      <th className="border border-border p-2 w-[22%]">Child's Full Name</th>
-                      <th className="border border-border p-2 w-[8%]">Sex</th>
-                      <th className="border border-border p-2 w-[12%]">DOB</th>
-                      <th className="border border-border p-2 w-[12%]">MR Vaccine Date</th>
-                      <th className="border border-border p-2 w-[12%]">bOPV Vaccine Date</th>
-                      <th className="border border-border p-2 w-[14%]">SIA Status</th>
-                      <th className="border border-border p-2 w-[14%]">Remarks</th>
-                      <th className="border border-border p-2 w-8 no-print"></th>
+                    <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-6">#</th>
+                      <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[240px]">NAME</th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[85px]">Date of Birth<br/><span className="text-[9px] font-normal">(YYYY-MM-DD)</span></th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-14">Age in Months</th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-12">Gender<br/><span className="text-[9px] font-normal">(M/F)</span></th>
+                      <th colSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[160px]">Address</th>
+                      <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[240px]">Name of Mother</th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px]">Vaccine Given</th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[85px]">Date of Vaccination<br/><span className="text-[9px] font-normal">(YYYY-MM-DD)</span></th>
+                      <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[240px]">Name of Vaccinator</th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-6 no-print"></th>
+                    </tr>
+
+                    <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-[10px] font-semibold text-center border-b border-slate-300 dark:border-slate-700">
+                      {/* Name of Child */}
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Family Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Given Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Middle Name</th>
+
+                      {/* Address */}
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Barangay</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Purok/Sitio/Street</th>
+
+                      {/* Name of Mother */}
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Family Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Given Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Middle Name</th>
+
+                      {/* Name of Vaccinator */}
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Family Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Given Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Middle Name</th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {siaRows.map((row, idx) => (
                       <tr key={row.id} className="hover:bg-muted/20">
-                        <td className="border border-border p-1 text-center font-bold text-muted-foreground">{idx + 1}</td>
-                        <td className="border border-border p-1">
-                          <input 
-                            type="text" 
-                            value={row.child_name} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, child_name: val } : r));
-                            }} 
-                            placeholder="" 
-                            className="cell-input w-full bg-transparent border-0 outline-none text-xs px-1"
-                          />
-                        </td>
-                        <td className="border border-border p-1">
-                          <select 
-                            value={row.sex} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, sex: val } : r));
-                            }} 
-                            className="w-full bg-transparent border-0 outline-none text-xs text-center"
-                          >
-                            <option value="Male">M</option>
-                            <option value="Female">F</option>
+                        <td className="border border-slate-300 dark:border-slate-700 p-1 text-center font-bold text-slate-500">{idx + 1}</td>
+
+                        {/* Child Name */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.child_family_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, child_family_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.child_given_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, child_given_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.child_middle_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, child_middle_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+
+                        {/* DOB */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.dob} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, dob: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center" /></td>
+
+                        {/* Age Months */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.age_months} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, age_months: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center" /></td>
+
+                        {/* Gender */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5">
+                          <select value={row.gender} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, gender: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center">
+                            <option value="M">M</option>
+                            <option value="F">F</option>
                           </select>
                         </td>
-                        <td className="border border-border p-1">
-                          <input 
-                            type="date" 
-                            value={row.dob} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, dob: val } : r));
-                            }} 
-                            className={`w-full bg-transparent border-0 outline-none text-xs text-center ${!row.dob ? "empty-date" : ""}`}
-                          />
-                        </td>
-                        <td className="border border-border p-1">
-                          <input 
-                            type="date" 
-                            value={row.mr_vaccine_date} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, mr_vaccine_date: val } : r));
-                            }} 
-                            className={`w-full bg-transparent border-0 outline-none text-xs text-center ${!row.mr_vaccine_date ? "empty-date" : ""}`}
-                          />
-                        </td>
-                        <td className="border border-border p-1">
-                          <input 
-                            type="date" 
-                            value={row.bopv_vaccine_date} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, bopv_vaccine_date: val } : r));
-                            }} 
-                            className={`w-full bg-transparent border-0 outline-none text-xs text-center ${!row.bopv_vaccine_date ? "empty-date" : ""}`}
-                          />
-                        </td>
-                        <td className="border border-border p-1">
-                          <select 
-                            value={row.status} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, status: val } : r));
-                            }} 
-                            className="w-full bg-transparent border-0 outline-none text-xs"
-                          >
-                            <option value="Fully Immunized">Fully Immunized</option>
-                            <option value="Deferred">Deferred</option>
-                            <option value="Refused">Refused</option>
-                            <option value="Moved Out">Moved Out</option>
-                          </select>
-                        </td>
-                        <td className="border border-border p-1">
-                          <input 
-                            type="text" 
-                            value={row.remarks} 
-                            onChange={e => {
-                              const val = e.target.value;
-                              setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, remarks: val } : r));
-                            }} 
-                            placeholder="" 
-                            className="cell-input w-full bg-transparent border-0 outline-none text-xs px-1"
-                          />
-                        </td>
-                        <td className="border border-border p-1 text-center no-print">
+
+                        {/* Address */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.barangay} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, barangay: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1 text-center" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.purok_sitio_street} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, purok_sitio_street: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+
+                        {/* Mother Name */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.mother_family_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, mother_family_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.mother_given_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, mother_given_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.mother_middle_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, mother_middle_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+
+                        {/* Vaccine Given */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccine_given} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccine_given: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+
+                        {/* Vaccination Date */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccination_date} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccination_date: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center" /></td>
+
+                        {/* Vaccinator Name */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_family_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_family_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_given_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_given_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_middle_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_middle_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+
+                        <td className="border border-slate-300 dark:border-slate-700 p-1 text-center no-print">
                           {siaRows.length > 1 && (
                             <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveSIARow(row.id)} className="h-6 w-6 text-muted-foreground hover:text-destructive">
                               <Trash className="h-3.5 w-3.5" />
@@ -1729,7 +1753,7 @@ const ChildHealthForm = () => {
 
               <div className="flex items-center justify-between no-print pt-2 border-t">
                 <Button type="button" variant="outline" size="sm" onClick={handleAddSIARow} className="gap-1 text-xs">
-                  <Plus className="h-3.5 w-3.5" /> Add Row
+                  <Plus className="h-3.5 w-3.5" /> Add Child Row
                 </Button>
 
                 <Button type="button" onClick={handleSaveSIAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
