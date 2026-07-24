@@ -63,63 +63,63 @@ export interface SickChildFormFull {
   consultation_type: string; // Unang konsulta / Follow-up
 
   // 1. General Danger Signs
-  unable_to_drink: boolean;
-  vomits_everything: boolean;
-  has_convulsions: boolean;
-  lethargic_unconscious: boolean;
+  unable_to_drink: boolean | null;
+  vomits_everything: boolean | null;
+  has_convulsions: boolean | null;
+  lethargic_unconscious: boolean | null;
   classification_danger: string;
 
   // 2. Ubo / Nahihirapang Huminga
-  has_cough: boolean;
+  has_cough: boolean | null;
   cough_days: string;
   respiratory_rate_val: string;
-  fast_breathing: boolean;
-  chest_indrawing: boolean;
-  stridor: boolean;
+  fast_breathing: boolean | null;
+  chest_indrawing: boolean | null;
+  stridor: boolean | null;
   classification_cough: string;
 
   // 3. Pagtatae (Diarrhea)
-  has_diarrhea: boolean;
+  has_diarrhea: boolean | null;
   diarrhea_days: string;
-  blood_in_stool: boolean;
+  blood_in_stool: boolean | null;
   eye_condition: string; // masigla / irritable / tutulog-tulog / hindi lubog / lubog
   skin_pinch: string; // mabilis / mabagal / napakabagal
   drinking_ability: string; // normal / sabik / di makainom
   classification_diarrhea: string;
 
   // 4. Nilalagnat (Fever)
-  has_fever: boolean;
-  fever_history: boolean;
+  has_fever: boolean | null;
+  fever_history: boolean | null;
   fever_days: string;
-  fever_everyday_7days: boolean;
-  stiff_neck: boolean;
+  fever_everyday_7days: boolean | null;
+  stiff_neck: boolean | null;
   classification_fever: string;
 
   // 5. Tigdas (Measles)
-  measles_past_3months: boolean;
-  measles_rash: boolean;
-  measles_cough_runny_red_eyes: boolean;
+  measles_past_3months: boolean | null;
+  measles_rash: boolean | null;
+  measles_cough_runny_red_eyes: boolean | null;
   mouth_sores: string;
   eye_pus_clouding: string;
   classification_measles: string;
 
   // 6. Dengue
-  dengue_bleeding: boolean;
-  dengue_dark_vomit_stool: boolean;
-  dengue_abdominal_pain: boolean;
-  dengue_persistent_vomiting: boolean;
-  dengue_petechiae: boolean;
-  dengue_cold_extremities: boolean;
+  dengue_bleeding: boolean | null;
+  dengue_dark_vomit_stool: boolean | null;
+  dengue_abdominal_pain: boolean | null;
+  dengue_persistent_vomiting: boolean | null;
+  dengue_petechiae: boolean | null;
+  dengue_cold_extremities: boolean | null;
   capillary_refill_sec: string;
-  tourniquet_test_positive: boolean;
+  tourniquet_test_positive: boolean | null;
   classification_dengue: string;
 
   // 7. Problema sa Tenga (Ear Problem)
-  has_ear_problem: boolean;
-  ear_pain: boolean;
-  ear_discharge: boolean;
+  has_ear_problem: boolean | null;
+  ear_pain: boolean | null;
+  ear_discharge: boolean | null;
   ear_discharge_days: string;
-  ear_swelling_behind: boolean;
+  ear_swelling_behind: boolean | null;
   classification_ear: string;
 
   // PAGE 2:
@@ -129,31 +129,31 @@ export interface SickChildFormFull {
   return_date_vaccine: string;
 
   // 9. Vitamin A
-  vit_a_past_6months: boolean;
-  vit_a_needed_today: boolean;
+  vit_a_past_6months: boolean | null;
+  vit_a_needed_today: boolean | null;
 
   // 10. Malnutrisyon at Anemia
-  very_low_weight: boolean;
-  severe_wasting: boolean;
-  edema_both_feet: boolean;
+  very_low_weight: boolean | null;
+  severe_wasting: boolean | null;
+  edema_both_feet: boolean | null;
   muac_cm: string;
   classification_malnutrition: string;
-  palmar_pallor_some: boolean;
-  palmar_pallor_severe: boolean;
+  palmar_pallor_some: boolean | null;
+  palmar_pallor_severe: boolean | null;
   classification_anemia: string;
 
   // 11. Pagpapakain
-  breastfeeding: boolean;
+  breastfeeding: boolean | null;
   breastfeed_times: string;
-  other_food_drinks: boolean;
+  other_food_drinks: boolean | null;
   other_food_details: string;
   other_food_times: string;
   feeding_utensils: string;
   food_amount: string;
-  own_plate: boolean;
+  own_plate: boolean | null;
   person_feeding: string;
   how_fed: string;
-  feeding_changed_during_illness: boolean;
+  feeding_changed_during_illness: boolean | null;
   feeding_change_details: string;
 
   // 12. Pag-aaruga & Iba Pang Problema
@@ -162,7 +162,7 @@ export interface SickChildFormFull {
   other_problems: string;
 
   // 13. Doktor & Paggamot Summary
-  doctor_see: boolean;
+  doctor_see: boolean | null;
   treatment_notes: string;
   advice_notes: string;
   urgent_return_advice: string;
@@ -234,95 +234,95 @@ const initialSickForm: SickChildFormFull = {
   examiner_name: "",
   date_examined: new Date().toISOString().split("T")[0],
   chief_complaint: "",
-  consultation_type: "Unang konsulta",
+  consultation_type: "",
 
-  unable_to_drink: false,
-  vomits_everything: false,
-  has_convulsions: false,
-  lethargic_unconscious: false,
-  classification_danger: "Walang General Danger Signs",
+  unable_to_drink: null,
+  vomits_everything: null,
+  has_convulsions: null,
+  lethargic_unconscious: null,
+  classification_danger: "",
 
-  has_cough: false,
+  has_cough: null,
   cough_days: "",
   respiratory_rate_val: "",
-  fast_breathing: false,
-  chest_indrawing: false,
-  stridor: false,
-  classification_cough: "Walang Ubo o Sipon",
+  fast_breathing: null,
+  chest_indrawing: null,
+  stridor: null,
+  classification_cough: "",
 
-  has_diarrhea: false,
+  has_diarrhea: null,
   diarrhea_days: "",
-  blood_in_stool: false,
-  eye_condition: "masigla, alerto",
-  skin_pinch: "mabilis",
-  drinking_ability: "normal uminom",
-  classification_diarrhea: "Walang Pagtatae",
+  blood_in_stool: null,
+  eye_condition: "",
+  skin_pinch: "",
+  drinking_ability: "",
+  classification_diarrhea: "",
 
-  has_fever: false,
-  fever_history: false,
+  has_fever: null,
+  fever_history: null,
   fever_days: "",
-  fever_everyday_7days: false,
-  stiff_neck: false,
-  classification_fever: "Walang lagnat",
+  fever_everyday_7days: null,
+  stiff_neck: null,
+  classification_fever: "",
 
-  measles_past_3months: false,
-  measles_rash: false,
-  measles_cough_runny_red_eyes: false,
-  mouth_sores: "walang singaw",
-  eye_pus_clouding: "normal",
-  classification_measles: "Walang Tigdas",
+  measles_past_3months: null,
+  measles_rash: null,
+  measles_cough_runny_red_eyes: null,
+  mouth_sores: "",
+  eye_pus_clouding: "",
+  classification_measles: "",
 
-  dengue_bleeding: false,
-  dengue_dark_vomit_stool: false,
-  dengue_abdominal_pain: false,
-  dengue_persistent_vomiting: false,
-  dengue_petechiae: false,
-  dengue_cold_extremities: false,
+  dengue_bleeding: null,
+  dengue_dark_vomit_stool: null,
+  dengue_abdominal_pain: null,
+  dengue_persistent_vomiting: null,
+  dengue_petechiae: null,
+  dengue_cold_extremities: null,
   capillary_refill_sec: "",
-  tourniquet_test_positive: false,
-  classification_dengue: "Walang Dengue",
+  tourniquet_test_positive: null,
+  classification_dengue: "",
 
-  has_ear_problem: false,
-  ear_pain: false,
-  ear_discharge: false,
+  has_ear_problem: null,
+  ear_pain: null,
+  ear_discharge: null,
   ear_discharge_days: "",
-  ear_swelling_behind: false,
-  classification_ear: "Walang Impeksyon sa Tenga",
+  ear_swelling_behind: null,
+  classification_ear: "",
 
   vaccines_given: [],
   vaccines_needed_today: "",
   return_date_vaccine: "",
 
-  vit_a_past_6months: false,
-  vit_a_needed_today: false,
+  vit_a_past_6months: null,
+  vit_a_needed_today: null,
 
-  very_low_weight: false,
-  severe_wasting: false,
-  edema_both_feet: false,
+  very_low_weight: null,
+  severe_wasting: null,
+  edema_both_feet: null,
   muac_cm: "",
-  classification_malnutrition: "Walang malnutrisyon",
-  palmar_pallor_some: false,
-  palmar_pallor_severe: false,
-  classification_anemia: "Walang Anemia",
+  classification_malnutrition: "",
+  palmar_pallor_some: null,
+  palmar_pallor_severe: null,
+  classification_anemia: "",
 
-  breastfeeding: false,
+  breastfeeding: null,
   breastfeed_times: "",
-  other_food_drinks: false,
+  other_food_drinks: null,
   other_food_details: "",
   other_food_times: "",
   feeding_utensils: "",
   food_amount: "",
-  own_plate: false,
+  own_plate: null,
   person_feeding: "",
   how_fed: "",
-  feeding_changed_during_illness: false,
+  feeding_changed_during_illness: null,
   feeding_change_details: "",
 
   how_plays: "",
   how_talks: "",
   other_problems: "",
 
-  doctor_see: false,
+  doctor_see: null,
   treatment_notes: "",
   advice_notes: "",
   urgent_return_advice: "",
