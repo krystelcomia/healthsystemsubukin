@@ -583,6 +583,13 @@ const MaternalCareForm = () => {
           input[type="date"][value=""]::-webkit-datetime-edit,
           .empty-date::-webkit-datetime-edit {
             color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+          }
+
+          /* Force empty inputs with placeholders to hide placeholder text on print */
+          input:placeholder-shown {
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
           }
 
           /* Clean input rendering for print */
@@ -665,7 +672,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.family_number} 
                     onChange={e => handleFormChange("family_number", e.target.value)} 
-                    placeholder="" 
+                    placeholder="e.g. FN-512A" 
                     className={lineInputClass}
                   />
                 </div>
@@ -676,7 +683,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.patient_last_name} 
                     onChange={e => handleFormChange("patient_last_name", e.target.value)} 
-                    placeholder="" 
+                    placeholder="Apelyido" 
                     className={lineInputClass}
                     required
                   />
@@ -688,7 +695,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.patient_first_name} 
                     onChange={e => handleFormChange("patient_first_name", e.target.value)} 
-                    placeholder="" 
+                    placeholder="Pangalan" 
                     className={lineInputClass}
                     required
                   />
@@ -700,7 +707,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.patient_middle_name} 
                     onChange={e => handleFormChange("patient_middle_name", e.target.value)} 
-                    placeholder="" 
+                    placeholder="Gitnang Apelyido" 
                     className={lineInputClass}
                   />
                 </div>
@@ -711,7 +718,7 @@ const MaternalCareForm = () => {
                     type="number" 
                     value={form.age} 
                     onChange={e => handleFormChange("age", e.target.value)} 
-                    placeholder="" 
+                    placeholder="Edad" 
                     className={lineInputClass}
                   />
                 </div>
@@ -756,7 +763,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.obstetric_score} 
                     onChange={e => handleFormChange("obstetric_score", e.target.value)} 
-                    placeholder="" 
+                    placeholder="e.g. G2/P2" 
                     className={lineInputClass}
                   />
                 </div>
@@ -767,7 +774,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.fpal} 
                     onChange={e => handleFormChange("fpal", e.target.value)} 
-                    placeholder="" 
+                    placeholder="e.g. 1-0-0-1" 
                     className={lineInputClass}
                   />
                 </div>
@@ -778,7 +785,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.patient_height} 
                     onChange={e => handleFormChange("patient_height", e.target.value)} 
-                    placeholder="" 
+                    placeholder="e.g. 148 cm" 
                     className={lineInputClass}
                   />
                 </div>
@@ -802,23 +809,23 @@ const MaternalCareForm = () => {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs pt-2 border-t border-border/40">
                 <div className="space-y-1">
                   <Label className="text-[11px] font-medium text-muted-foreground">End of 1st Trim:</Label>
-                  <Input type="text" value={form.end_1st_trim} onChange={e => handleFormChange("end_1st_trim", e.target.value)} placeholder="" className={lineInputClass} />
+                  <Input type="text" value={form.end_1st_trim} onChange={e => handleFormChange("end_1st_trim", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[11px] font-medium text-muted-foreground">End of 2nd Trim:</Label>
-                  <Input type="text" value={form.end_2nd_trim} onChange={e => handleFormChange("end_2nd_trim", e.target.value)} placeholder="" className={lineInputClass} />
+                  <Input type="text" value={form.end_2nd_trim} onChange={e => handleFormChange("end_2nd_trim", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[11px] font-medium text-muted-foreground">End of 3rd Trim:</Label>
-                  <Input type="text" value={form.end_3rd_trim} onChange={e => handleFormChange("end_3rd_trim", e.target.value)} placeholder="" className={lineInputClass} />
+                  <Input type="text" value={form.end_3rd_trim} onChange={e => handleFormChange("end_3rd_trim", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[11px] font-medium text-muted-foreground">End of Postpartum:</Label>
-                  <Input type="text" value={form.end_postpartum} onChange={e => handleFormChange("end_postpartum", e.target.value)} placeholder="" className={lineInputClass} />
+                  <Input type="text" value={form.end_postpartum} onChange={e => handleFormChange("end_postpartum", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[11px] font-medium text-muted-foreground">Period:</Label>
-                  <Input type="text" value={form.period} onChange={e => handleFormChange("period", e.target.value)} placeholder="" className={lineInputClass} />
+                  <Input type="text" value={form.period} onChange={e => handleFormChange("period", e.target.value)} placeholder="Period" className={lineInputClass} />
                 </div>
               </div>
             </div>
@@ -944,7 +951,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.visit_number} 
                             onChange={e => handleUpdateVisit(index, "visit_number", e.target.value)} 
-                            placeholder="" 
+                            placeholder="e.g. 1" 
                             className={lineInputClass}
                           />
                         </div>
@@ -955,7 +962,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.aog} 
                             onChange={e => handleUpdateVisit(index, "aog", e.target.value)} 
-                            placeholder="" 
+                            placeholder="e.g. 13 weeks 1 day" 
                             className={lineInputClass}
                           />
                         </div>
@@ -966,7 +973,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.blood_pressure} 
                             onChange={e => handleUpdateVisit(index, "blood_pressure", e.target.value)} 
-                            placeholder="" 
+                            placeholder="e.g. 90/60" 
                             className={lineInputClass}
                           />
                         </div>
@@ -977,7 +984,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.weight} 
                             onChange={e => handleUpdateVisit(index, "weight", e.target.value)} 
-                            placeholder="" 
+                            placeholder="e.g. 35.5 kg" 
                             className={lineInputClass}
                           />
                         </div>
@@ -988,7 +995,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.fundic_height} 
                             onChange={e => handleUpdateVisit(index, "fundic_height", e.target.value)} 
-                            placeholder="" 
+                            placeholder="Fundic height" 
                             className={lineInputClass}
                           />
                         </div>
@@ -999,7 +1006,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.fhr} 
                             onChange={e => handleUpdateVisit(index, "fhr", e.target.value)} 
-                            placeholder="" 
+                            placeholder="FHR" 
                             className={lineInputClass}
                           />
                         </div>
@@ -1010,7 +1017,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.presentation} 
                             onChange={e => handleUpdateVisit(index, "presentation", e.target.value)} 
-                            placeholder="" 
+                            placeholder="Presentation" 
                             className={lineInputClass}
                           />
                         </div>
@@ -1021,7 +1028,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.notes} 
                             onChange={e => handleUpdateVisit(index, "notes", e.target.value)} 
-                            placeholder="" 
+                            placeholder="e.g. BMI: 16.2 (S), Ideal weight: 47.6 kg, Vitamin prescription..." 
                             className={lineInputClass}
                           />
                         </div>
