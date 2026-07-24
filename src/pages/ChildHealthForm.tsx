@@ -1584,26 +1584,27 @@ const ChildHealthForm = () => {
 
                         <div className="pt-1 border-t space-y-1">
                           <span className="font-semibold block">Kung lubhang kulang sa timbang,</span>
-                          <div className="flex items-center justify-between pl-3">
-                            <span>Gaano karami ang pinapakain sa bata?</span>
-                            <Input type="text" value={sickForm.food_amount} onChange={e => setSickForm(p => ({ ...p, food_amount: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                          <div className="space-y-1 pl-3">
+                            <div className="flex items-center justify-between">
+                              <span>Gaano karami ang pinapakain sa bata?</span>
+                              <Input type="text" value={sickForm.food_amount} onChange={e => setSickForm(p => ({ ...p, food_amount: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span>Mayroon bang sariling pinggan ang bata 'pag kumakain?</span>
+                              <div className="flex gap-3 text-xs">
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="own_plate" checked={sickForm.own_plate === true} onChange={() => setSickForm(p => ({ ...p, own_plate: true }))} /> Oo</label>
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="own_plate" checked={sickForm.own_plate === false} onChange={() => setSickForm(p => ({ ...p, own_plate: false }))} /> Hindi</label>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span>Sino ang nagpapakain sa bata?</span>
+                              <Input type="text" value={sickForm.person_feeding} onChange={e => setSickForm(p => ({ ...p, person_feeding: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span>Paano pinapakain ang bata?</span>
+                              <Input type="text" value={sickForm.how_fed} onChange={e => setSickForm(p => ({ ...p, how_fed: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                            </div>
                           </div>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-1 border-t">
-                          <span>Mayroon bang sariling pinggan ang bata 'pag kumakain?</span>
-                          <div className="flex gap-3 text-xs">
-                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="own_plate" checked={sickForm.own_plate === true} onChange={() => setSickForm(p => ({ ...p, own_plate: true }))} /> Oo</label>
-                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="own_plate" checked={sickForm.own_plate === false} onChange={() => setSickForm(p => ({ ...p, own_plate: false }))} /> Hindi</label>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between pl-3">
-                          <span>Sino ang nagpapakain sa bata?</span>
-                          <Input type="text" value={sickForm.person_feeding} onChange={e => setSickForm(p => ({ ...p, person_feeding: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
-                        </div>
-                        <div className="flex items-center justify-between pl-3">
-                          <span>Paano pinapakain ang bata?</span>
-                          <Input type="text" value={sickForm.how_fed} onChange={e => setSickForm(p => ({ ...p, how_fed: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
                         </div>
 
                         <div className="flex items-center justify-between pt-1 border-t">
