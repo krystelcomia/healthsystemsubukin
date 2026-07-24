@@ -529,6 +529,33 @@ const MaternalCareForm = () => {
           .print-only {
             display: flex !important;
           }
+
+          /* Hide all placeholders and guide text when printing */
+          ::placeholder,
+          ::-webkit-input-placeholder,
+          ::-moz-placeholder,
+          :-ms-input-placeholder,
+          input::placeholder,
+          textarea::placeholder {
+            color: transparent !important;
+            opacity: 0 !important;
+            -webkit-text-fill-color: transparent !important;
+          }
+
+          /* Hide default Chrome date picker mm/dd/yyyy when empty */
+          input[type="date"]:invalid::-webkit-datetime-edit,
+          input[type="date"]:not([value])::-webkit-datetime-edit,
+          input[type="date"][value=""]::-webkit-datetime-edit,
+          .empty-date::-webkit-datetime-edit {
+            color: transparent !important;
+          }
+
+          /* Clean input rendering for print */
+          input, textarea, select {
+            background-color: transparent !important;
+            box-shadow: none !important;
+          }
+
           @page {
             size: A4 portrait;
             margin: 10mm;
@@ -668,7 +695,7 @@ const MaternalCareForm = () => {
                     type="date" 
                     value={form.edc} 
                     onChange={e => handleFormChange("edc", e.target.value)} 
-                    className={lineInputClass}
+                    className={`${lineInputClass} ${!form.edc ? "empty-date" : ""}`}
                   />
                 </div>
 
@@ -678,7 +705,7 @@ const MaternalCareForm = () => {
                     type="date" 
                     value={form.lmp} 
                     onChange={e => handleFormChange("lmp", e.target.value)} 
-                    className={lineInputClass}
+                    className={`${lineInputClass} ${!form.lmp ? "empty-date" : ""}`}
                   />
                 </div>
 
@@ -718,7 +745,7 @@ const MaternalCareForm = () => {
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold text-muted-foreground">Blood Type</Label>
                   <Select value={form.blood_type} onValueChange={v => handleFormChange("blood_type", v)}>
-                    <SelectTrigger className="h-8 text-xs bg-background">
+                    <SelectTrigger className={`h-8 text-xs bg-background ${form.blood_type === "Unspecified" ? "print:text-transparent" : ""}`}>
                       <SelectValue placeholder="Blood Type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -866,7 +893,7 @@ const MaternalCareForm = () => {
                             type="date" 
                             value={visit.visit_date} 
                             onChange={e => handleUpdateVisit(index, "visit_date", e.target.value)} 
-                            className={lineInputClass}
+                            className={`${lineInputClass} ${!visit.visit_date ? "empty-date" : ""}`}
                           />
                         </div>
 
