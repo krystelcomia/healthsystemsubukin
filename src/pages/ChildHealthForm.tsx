@@ -1340,45 +1340,98 @@ const ChildHealthForm = () => {
                 {/* PAGE 2: IMMUNIZATION, VITAMIN A, NUTRITION, FEEDING & TREATMENT */}
                 <div className="border border-slate-300 dark:border-slate-700 rounded-md p-3 space-y-4 bg-card">
                   
-                  {/* 8. BAKUNA (VACCINES) & VITAMIN A */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-3 border-b">
-                    <div className="space-y-2">
-                      <div className="font-bold uppercase text-[11px] text-slate-800 dark:text-slate-200">SURIIN ANG MGA BAKUNA NG BATA</div>
-                      <p className="text-[10px] text-slate-500">Lagyan ng check ang mga bakunang naibigay na sa bata:</p>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        {[
-                          "BCG", "OPV1", "DPT1", "HepB1",
-                          "OPV2", "DPT2", "HepB2",
-                          "OPV3", "DPT3", "HepB3", "Measles"
-                        ].map(vac => (
-                          <label key={vac} className="flex items-center space-x-1.5 cursor-pointer">
-                            <Checkbox checked={sickForm.vaccines_given.includes(vac)} onCheckedChange={() => toggleVaccine(vac)} />
-                            <span>{vac}</span>
-                          </label>
-                        ))}
-                      </div>
-                      <div className="pt-1">
-                        <Label className="text-[10px] text-slate-500">Bakuna na maaaring ibigay ngayon:</Label>
-                        <Input type="text" value={sickForm.vaccines_needed_today} onChange={e => setSickForm(p => ({ ...p, vaccines_needed_today: e.target.value }))} placeholder="Hal. Measles dose 2" className={lineInputClass} />
-                      </div>
+                  {/* 8. BAKUNA (VACCINES) */}
+                  <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                      SURIIN ANG MGA BAKUNA NG BATA
                     </div>
-
-                    <div className="space-y-2 border-l border-slate-200 dark:border-slate-700 pl-3">
-                      <div className="font-bold uppercase text-[11px] text-slate-800 dark:text-slate-200">SURIIN KUNG NABIGYAN NA NG VITAMIN A</div>
-                      <p className="text-[10px] text-slate-500">(Para sa batang 6 na buwang gulang o higit pa):</p>
-                      <div className="flex items-center justify-between text-xs pt-1">
-                        <span>Nabigyan na ng Vitamin A nitong nakaraang 6 buwan?</span>
-                        <div className="flex gap-3">
-                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="vit_a_past_6months" checked={sickForm.vit_a_past_6months === true} onChange={() => setSickForm(p => ({ ...p, vit_a_past_6months: true }))} /> Oo</label>
-                          <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="vit_a_past_6months" checked={sickForm.vit_a_past_6months === false} onChange={() => setSickForm(p => ({ ...p, vit_a_past_6months: false }))} /> Hindi</label>
+                    <div className="grid grid-cols-12 p-2.5 gap-2">
+                      <div className="col-span-8 space-y-1 pr-2">
+                        <p className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Lagyan ng check ang mga bakunang naibigay na sa bata.</p>
+                        <p className="text-[10px] text-slate-500 italic">Bilugan ang mga bakunang hindi pa naibibigay sa bata.</p>
+                        
+                        <div className="grid grid-cols-5 gap-1.5 text-xs pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                          <div>
+                            <span className="font-semibold underline text-[10px] block">Pagkapanganak</span>
+                            <label className="flex items-center space-x-1 cursor-pointer mt-1">
+                              <Checkbox checked={sickForm.vaccines_given.includes("BCG")} onCheckedChange={() => toggleVaccine("BCG")} />
+                              <span>BCG</span>
+                            </label>
+                          </div>
+                          <div>
+                            <span className="font-semibold underline text-[10px] block">6 linggo</span>
+                            {["OPV1", "DPT1", "HepB1"].map(vac => (
+                              <label key={vac} className="flex items-center space-x-1 cursor-pointer mt-1">
+                                <Checkbox checked={sickForm.vaccines_given.includes(vac)} onCheckedChange={() => toggleVaccine(vac)} />
+                                <span>{vac}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div>
+                            <span className="font-semibold underline text-[10px] block">10 linggo</span>
+                            {["OPV2", "DPT2", "HepB2"].map(vac => (
+                              <label key={vac} className="flex items-center space-x-1 cursor-pointer mt-1">
+                                <Checkbox checked={sickForm.vaccines_given.includes(vac)} onCheckedChange={() => toggleVaccine(vac)} />
+                                <span>{vac}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div>
+                            <span className="font-semibold underline text-[10px] block">14 linggo</span>
+                            {["OPV3", "DPT3", "HepB3"].map(vac => (
+                              <label key={vac} className="flex items-center space-x-1 cursor-pointer mt-1">
+                                <Checkbox checked={sickForm.vaccines_given.includes(vac)} onCheckedChange={() => toggleVaccine(vac)} />
+                                <span>{vac}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div>
+                            <span className="font-semibold underline text-[10px] block">9 buwan</span>
+                            <label className="flex items-center space-x-1 cursor-pointer mt-1">
+                              <Checkbox checked={sickForm.vaccines_given.includes("Measles")} onCheckedChange={() => toggleVaccine("Measles")} />
+                              <span>measles</span>
+                            </label>
+                          </div>
                         </div>
                       </div>
-                      <div className="space-y-1 text-xs pt-2">
-                        <label className="flex items-center space-x-2 cursor-pointer">
+
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 pl-3 space-y-2 flex flex-col justify-center">
+                        <div>
+                          <Label className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">Bakuna na maaaring ibigay ngayon:</Label>
+                          <Input type="text" value={sickForm.vaccines_needed_today} onChange={e => setSickForm(p => ({ ...p, vaccines_needed_today: e.target.value }))} className={lineInputClass} />
+                        </div>
+                        <div>
+                          <Label className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">Bumalik para sa bakuna sa:</Label>
+                          <Input type="text" value={sickForm.return_date_vaccine} onChange={e => setSickForm(p => ({ ...p, return_date_vaccine: e.target.value }))} className={lineInputClass} />
+                          <p className="text-center text-[9px] text-slate-400 mt-0.5">(Petsa)</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 9. VITAMIN A */}
+                  <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                      SURIIN KUNG NABIGYAN NA NG VITAMIN A
+                    </div>
+                    <div className="grid grid-cols-12 p-2.5 gap-2">
+                      <div className="col-span-8 space-y-1.5 pr-2">
+                        <p className="text-[10px] text-slate-500 italic">(Para sa batang 6 na buwang gulang o higit pa)</p>
+                        <div className="flex items-center justify-between text-xs pt-1">
+                          <span>Nabigyan na ba ng Vitamin A nitong nakaraang 6 na buwan?</span>
+                          <div className="flex gap-3 text-xs">
+                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="vit_a_past_6months" checked={sickForm.vit_a_past_6months === true} onChange={() => setSickForm(p => ({ ...p, vit_a_past_6months: true }))} /> Oo</label>
+                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="vit_a_past_6months" checked={sickForm.vit_a_past_6months === false} onChange={() => setSickForm(p => ({ ...p, vit_a_past_6months: false }))} /> Hindi</label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 pl-3 space-y-1.5 justify-center flex flex-col">
+                        <label className="flex items-center space-x-2 cursor-pointer text-xs">
                           <input type="radio" name="vit_a_needed_today" checked={sickForm.vit_a_needed_today === false} onChange={() => setSickForm(p => ({ ...p, vit_a_needed_today: false }))} />
                           <span>Hindi Kailangan ng Vitamin A ngayon</span>
                         </label>
-                        <label className="flex items-center space-x-2 cursor-pointer font-semibold">
+                        <label className="flex items-center space-x-2 cursor-pointer text-xs">
                           <input type="radio" name="vit_a_needed_today" checked={sickForm.vit_a_needed_today === true} onChange={() => setSickForm(p => ({ ...p, vit_a_needed_today: true }))} />
                           <span>Kailangan ng Vitamin A ngayon</span>
                         </label>
@@ -1387,53 +1440,96 @@ const ChildHealthForm = () => {
                   </div>
 
                   {/* 10. MALNUTRISYON AT ANEMIA */}
-                  <div className="grid grid-cols-12 border-b pb-3">
-                    <div className="col-span-8 space-y-1.5 pr-2">
-                      <div className="font-bold uppercase text-[11px] text-slate-800 dark:text-slate-200">SURIIN KUNG MAY MALNUTRISYON O ANEMIA</div>
-                      <div className="space-y-1 pl-1">
-                        <div className="flex items-center justify-between">
-                          <span>Lubhang mababa ang timbang para sa edad? (very low weight)</span>
-                          <div className="flex gap-3 text-xs">
-                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="very_low_weight" checked={sickForm.very_low_weight === true} onChange={() => setSickForm(p => ({ ...p, very_low_weight: true }))} /> Oo</label>
-                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="very_low_weight" checked={sickForm.very_low_weight === false} onChange={() => setSickForm(p => ({ ...p, very_low_weight: false }))} /> Hindi</label>
+                  <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
+                    <div className="bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 uppercase">
+                      SURIIN KUNG MAY MALNUTRISYON O ANEMIA
+                    </div>
+
+                    {/* ALAMIN KUNG MAY MALNUTRISYON */}
+                    <div className="grid grid-cols-12 p-2.5 border-b border-slate-200 dark:border-slate-700">
+                      <div className="col-span-8 space-y-1.5 pr-2">
+                        <div className="font-bold text-[11px] uppercase text-slate-800 dark:text-slate-200">ALAMIN KUNG MAY MALNUTRISYON</div>
+                        <div className="space-y-1 pl-1 text-xs">
+                          <div>
+                            <span>Tingnan sa talaan ang timbang:</span>
+                            <div className="flex items-center justify-between pl-3 mt-0.5">
+                              <span>Lubhang mababa para sa edad?(<u>very low weight for age</u>)</span>
+                              <div className="flex gap-3 text-xs">
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="very_low_weight" checked={sickForm.very_low_weight === true} onChange={() => setSickForm(p => ({ ...p, very_low_weight: true }))} /> Oo</label>
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="very_low_weight" checked={sickForm.very_low_weight === false} onChange={() => setSickForm(p => ({ ...p, very_low_weight: false }))} /> Hindi</label>
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <span className="font-semibold">Suriin ang bata:</span>
+                            <div className="flex items-center justify-between pl-3 mt-0.5">
+                              <span>May malubha bang pangangayayat?</span>
+                              <div className="flex gap-3 text-xs">
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="severe_wasting" checked={sickForm.severe_wasting === true} onChange={() => setSickForm(p => ({ ...p, severe_wasting: true }))} /> Oo</label>
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="severe_wasting" checked={sickForm.severe_wasting === false} onChange={() => setSickForm(p => ({ ...p, severe_wasting: false }))} /> Hindi</label>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between pl-3 mt-0.5">
+                              <span>Manas ba ang mga paa?</span>
+                              <div className="flex gap-3 text-xs">
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="edema_both_feet" checked={sickForm.edema_both_feet === true} onChange={() => setSickForm(p => ({ ...p, edema_both_feet: true }))} /> Oo</label>
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="edema_both_feet" checked={sickForm.edema_both_feet === false} onChange={() => setSickForm(p => ({ ...p, edema_both_feet: false }))} /> Hindi</label>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between pl-3 mt-0.5">
+                              <span>Mid-upper Arm Circumference (MUAC)</span>
+                              <div className="flex items-center gap-1">
+                                <Input type="text" value={sickForm.muac_cm} onChange={e => setSickForm(p => ({ ...p, muac_cm: e.target.value }))} className="w-16 h-5 text-xs text-center border-b rounded-none" />
+                                <span>cm</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span>May malubha bang pangangayayat?</span>
-                          <div className="flex gap-3 text-xs">
-                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="severe_wasting" checked={sickForm.severe_wasting === true} onChange={() => setSickForm(p => ({ ...p, severe_wasting: true }))} /> Oo</label>
-                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="severe_wasting" checked={sickForm.severe_wasting === false} onChange={() => setSickForm(p => ({ ...p, severe_wasting: false }))} /> Hindi</label>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span>Manas ba ang dalawang paa (edema)?</span>
-                          <div className="flex gap-3 text-xs">
-                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="edema_both_feet" checked={sickForm.edema_both_feet === true} onChange={() => setSickForm(p => ({ ...p, edema_both_feet: true }))} /> Oo</label>
-                            <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="edema_both_feet" checked={sickForm.edema_both_feet === false} onChange={() => setSickForm(p => ({ ...p, edema_both_feet: false }))} /> Hindi</label>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span>Mid-Upper Arm Circumference (MUAC):</span>
-                          <Input type="text" value={sickForm.muac_cm} onChange={e => setSickForm(p => ({ ...p, muac_cm: e.target.value }))} placeholder="___ cm" className="w-20 h-5 text-xs border-b text-center" />
-                        </div>
+                      </div>
+
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 pl-3 space-y-1.5 justify-center flex flex-col text-xs">
+                        {["Walang malnutrisyon", "Napakababang timbang", "Matinding malnutrisyon"].map(c => (
+                          <label key={c} className="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="classification_malnutrition" checked={sickForm.classification_malnutrition === c} onChange={() => setSickForm(p => ({ ...p, classification_malnutrition: c }))} />
+                            <span>{c}</span>
+                          </label>
+                        ))}
                       </div>
                     </div>
 
-                    <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 pl-3 space-y-1.5 justify-center flex flex-col">
-                      <div className="font-bold text-[10px] text-slate-500 uppercase">Malnutrisyon:</div>
-                      {["Walang malnutrisyon", "Napakababang timbang", "Matinding malnutrisyon"].map(c => (
-                        <label key={c} className="flex items-center space-x-2 cursor-pointer">
-                          <input type="radio" name="classification_malnutrition" checked={sickForm.classification_malnutrition === c} onChange={() => setSickForm(p => ({ ...p, classification_malnutrition: c }))} />
-                          <span>{c}</span>
-                        </label>
-                      ))}
-                      <div className="font-bold text-[10px] text-slate-500 uppercase pt-1">Anemia:</div>
-                      {["Walang Anemia", "Anemia", "Malalang Anemia"].map(c => (
-                        <label key={c} className="flex items-center space-x-2 cursor-pointer">
-                          <input type="radio" name="classification_anemia" checked={sickForm.classification_anemia === c} onChange={() => setSickForm(p => ({ ...p, classification_anemia: c }))} />
-                          <span>{c}</span>
-                        </label>
-                      ))}
+                    {/* ALAMIN KUNG MAY ANEMIA */}
+                    <div className="grid grid-cols-12 p-2.5">
+                      <div className="col-span-8 space-y-1.5 pr-2">
+                        <div className="font-bold text-[11px] uppercase text-slate-800 dark:text-slate-200">ALAMIN KUNG MAY ANEMIA</div>
+                        <div className="space-y-1 pl-1 text-xs">
+                          <div>
+                            <span className="font-semibold">Suriin ang palad:</span>
+                            <div className="flex items-center justify-between pl-3 mt-0.5">
+                              <span>Mayroon konting pamumutla?</span>
+                              <div className="flex gap-3 text-xs">
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="palmar_pallor_some" checked={sickForm.palmar_pallor_some === true} onChange={() => setSickForm(p => ({ ...p, palmar_pallor_some: true }))} /> Oo</label>
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="palmar_pallor_some" checked={sickForm.palmar_pallor_some === false} onChange={() => setSickForm(p => ({ ...p, palmar_pallor_some: false }))} /> Hindi</label>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between pl-3 mt-0.5">
+                              <span>Halos kulay puti ang palad?</span>
+                              <div className="flex gap-3 text-xs">
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="palmar_pallor_severe" checked={sickForm.palmar_pallor_severe === true} onChange={() => setSickForm(p => ({ ...p, palmar_pallor_severe: true }))} /> Oo</label>
+                                <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="palmar_pallor_severe" checked={sickForm.palmar_pallor_severe === false} onChange={() => setSickForm(p => ({ ...p, palmar_pallor_severe: false }))} /> Hindi</label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col-span-4 border-l border-slate-200 dark:border-slate-700 pl-3 space-y-1.5 justify-center flex flex-col text-xs">
+                        {["Walang Anemia", "Anemia", "Malalang Anemia"].map(c => (
+                          <label key={c} className="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="classification_anemia" checked={sickForm.classification_anemia === c} onChange={() => setSickForm(p => ({ ...p, classification_anemia: c }))} />
+                            <span>{c}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
