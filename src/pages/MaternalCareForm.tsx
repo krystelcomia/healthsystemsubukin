@@ -665,7 +665,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.family_number} 
                     onChange={e => handleFormChange("family_number", e.target.value)} 
-                    placeholder="e.g. FN-512A" 
+                    placeholder="" 
                     className={lineInputClass}
                   />
                 </div>
@@ -676,7 +676,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.patient_last_name} 
                     onChange={e => handleFormChange("patient_last_name", e.target.value)} 
-                    placeholder="Apelyido" 
+                    placeholder="" 
                     className={lineInputClass}
                     required
                   />
@@ -688,7 +688,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.patient_first_name} 
                     onChange={e => handleFormChange("patient_first_name", e.target.value)} 
-                    placeholder="Pangalan" 
+                    placeholder="" 
                     className={lineInputClass}
                     required
                   />
@@ -700,7 +700,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.patient_middle_name} 
                     onChange={e => handleFormChange("patient_middle_name", e.target.value)} 
-                    placeholder="Gitnang Apelyido" 
+                    placeholder="" 
                     className={lineInputClass}
                   />
                 </div>
@@ -711,7 +711,7 @@ const MaternalCareForm = () => {
                     type="number" 
                     value={form.age} 
                     onChange={e => handleFormChange("age", e.target.value)} 
-                    placeholder="Edad" 
+                    placeholder="" 
                     className={lineInputClass}
                   />
                 </div>
@@ -756,7 +756,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.obstetric_score} 
                     onChange={e => handleFormChange("obstetric_score", e.target.value)} 
-                    placeholder="e.g. G2/P2" 
+                    placeholder="" 
                     className={lineInputClass}
                   />
                 </div>
@@ -767,7 +767,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.fpal} 
                     onChange={e => handleFormChange("fpal", e.target.value)} 
-                    placeholder="e.g. 1-0-0-1" 
+                    placeholder="" 
                     className={lineInputClass}
                   />
                 </div>
@@ -778,7 +778,7 @@ const MaternalCareForm = () => {
                     type="text" 
                     value={form.patient_height} 
                     onChange={e => handleFormChange("patient_height", e.target.value)} 
-                    placeholder="e.g. 148 cm" 
+                    placeholder="" 
                     className={lineInputClass}
                   />
                 </div>
@@ -802,23 +802,23 @@ const MaternalCareForm = () => {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs pt-2 border-t border-border/40">
                 <div className="space-y-1">
                   <Label className="text-[11px] font-medium text-muted-foreground">End of 1st Trim:</Label>
-                  <Input type="text" value={form.end_1st_trim} onChange={e => handleFormChange("end_1st_trim", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
+                  <Input type="text" value={form.end_1st_trim} onChange={e => handleFormChange("end_1st_trim", e.target.value)} placeholder="" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[11px] font-medium text-muted-foreground">End of 2nd Trim:</Label>
-                  <Input type="text" value={form.end_2nd_trim} onChange={e => handleFormChange("end_2nd_trim", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
+                  <Input type="text" value={form.end_2nd_trim} onChange={e => handleFormChange("end_2nd_trim", e.target.value)} placeholder="" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[11px] font-medium text-muted-foreground">End of 3rd Trim:</Label>
-                  <Input type="text" value={form.end_3rd_trim} onChange={e => handleFormChange("end_3rd_trim", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
+                  <Input type="text" value={form.end_3rd_trim} onChange={e => handleFormChange("end_3rd_trim", e.target.value)} placeholder="" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[11px] font-medium text-muted-foreground">End of Postpartum:</Label>
-                  <Input type="text" value={form.end_postpartum} onChange={e => handleFormChange("end_postpartum", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
+                  <Input type="text" value={form.end_postpartum} onChange={e => handleFormChange("end_postpartum", e.target.value)} placeholder="" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[11px] font-medium text-muted-foreground">Period:</Label>
-                  <Input type="text" value={form.period} onChange={e => handleFormChange("period", e.target.value)} placeholder="Period" className={lineInputClass} />
+                  <Input type="text" value={form.period} onChange={e => handleFormChange("period", e.target.value)} placeholder="" className={lineInputClass} />
                 </div>
               </div>
             </div>
@@ -829,7 +829,7 @@ const MaternalCareForm = () => {
                 <h3 className="text-sm font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5 font-heading">
                   <AlertTriangle className="h-4 w-4" /> RISK FACTORS
                 </h3>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground no-print">
                   {form.risk_factors.length} selected
                 </span>
               </div>
@@ -897,7 +897,7 @@ const MaternalCareForm = () => {
                   <h3 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 font-heading">
                     <CalendarIcon className="h-4 w-4" /> PRENATAL VISITS
                   </h3>
-                  <p className="text-[11px] text-muted-foreground">Record prenatal checkup dates, vital signs, AOG, and notes.</p>
+                  <p className="text-[11px] text-muted-foreground no-print">Record prenatal checkup dates, vital signs, AOG, and notes.</p>
                 </div>
                 <Button type="button" onClick={handleAddVisit} size="sm" className="gap-1 text-xs no-print bg-secondary text-secondary-foreground hover:bg-secondary/80">
                   <Plus className="h-3.5 w-3.5" /> Add Prenatal Visit
@@ -905,7 +905,7 @@ const MaternalCareForm = () => {
               </div>
 
               {form.prenatal_visits.length === 0 ? (
-                <div className="text-center py-6 text-xs text-muted-foreground italic bg-background/50 rounded-md border border-dashed border-border/80">
+                <div className="text-center py-6 text-xs text-muted-foreground italic bg-background/50 rounded-md border border-dashed border-border/80 no-print">
                   No prenatal visit entries added yet. Click "+ Add Prenatal Visit" to record checkups.
                 </div>
               ) : (
@@ -944,7 +944,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.visit_number} 
                             onChange={e => handleUpdateVisit(index, "visit_number", e.target.value)} 
-                            placeholder="e.g. 1" 
+                            placeholder="" 
                             className={lineInputClass}
                           />
                         </div>
@@ -955,7 +955,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.aog} 
                             onChange={e => handleUpdateVisit(index, "aog", e.target.value)} 
-                            placeholder="e.g. 13 weeks 1 day" 
+                            placeholder="" 
                             className={lineInputClass}
                           />
                         </div>
@@ -966,7 +966,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.blood_pressure} 
                             onChange={e => handleUpdateVisit(index, "blood_pressure", e.target.value)} 
-                            placeholder="e.g. 90/60" 
+                            placeholder="" 
                             className={lineInputClass}
                           />
                         </div>
@@ -977,7 +977,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.weight} 
                             onChange={e => handleUpdateVisit(index, "weight", e.target.value)} 
-                            placeholder="e.g. 35.5 kg" 
+                            placeholder="" 
                             className={lineInputClass}
                           />
                         </div>
@@ -988,7 +988,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.fundic_height} 
                             onChange={e => handleUpdateVisit(index, "fundic_height", e.target.value)} 
-                            placeholder="Fundic height" 
+                            placeholder="" 
                             className={lineInputClass}
                           />
                         </div>
@@ -999,7 +999,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.fhr} 
                             onChange={e => handleUpdateVisit(index, "fhr", e.target.value)} 
-                            placeholder="FHR" 
+                            placeholder="" 
                             className={lineInputClass}
                           />
                         </div>
@@ -1010,7 +1010,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.presentation} 
                             onChange={e => handleUpdateVisit(index, "presentation", e.target.value)} 
-                            placeholder="Presentation" 
+                            placeholder="" 
                             className={lineInputClass}
                           />
                         </div>
@@ -1021,7 +1021,7 @@ const MaternalCareForm = () => {
                             type="text" 
                             value={visit.notes} 
                             onChange={e => handleUpdateVisit(index, "notes", e.target.value)} 
-                            placeholder="e.g. BMI: 16.2 (S), Ideal weight: 47.6 kg, Vitamin prescription..." 
+                            placeholder="" 
                             className={lineInputClass}
                           />
                         </div>
