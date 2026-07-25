@@ -669,6 +669,14 @@ const ChildHealthForm = () => {
 
   const handlePrint = () => window.print();
 
+  const handlePrintSummary = () => {
+    document.body.classList.add("printing-summary");
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove("printing-summary");
+    }, 1000);
+  };
+
   const lineInputClass = "w-full text-xs border-0 border-b border-slate-400 dark:border-slate-500 bg-transparent rounded-none shadow-none focus-visible:ring-0 focus:outline-none px-1 h-6";
   const lineInputInlineClass = "inline-block text-xs border-0 border-b border-slate-400 dark:border-slate-500 bg-transparent rounded-none shadow-none focus-visible:ring-0 focus:outline-none px-1 h-5 text-center";
 
@@ -682,10 +690,24 @@ const ChildHealthForm = () => {
           body * {
             visibility: hidden !important;
           }
-          #child-print-area, #child-print-area *,
-          #summary-print-area, #summary-print-area * {
+          
+          /* If printing summary modal, hide child-print-area completely */
+          body.printing-summary #child-print-area,
+          body.printing-summary #child-print-area * {
+            display: none !important;
+            visibility: hidden !important;
+          }
+          body.printing-summary #summary-print-area,
+          body.printing-summary #summary-print-area * {
             visibility: visible !important;
           }
+
+          /* If printing main form, make child-print-area visible */
+          body:not(.printing-summary) #child-print-area,
+          body:not(.printing-summary) #child-print-area * {
+            visibility: visible !important;
+          }
+
           #child-print-area {
             position: absolute !important;
             left: 0 !important;
@@ -708,6 +730,7 @@ const ChildHealthForm = () => {
             margin: 0 !important;
             max-height: none !important;
             overflow: visible !important;
+            z-index: 99999 !important;
           }
           html, body {
             height: 100% !important;
@@ -2217,7 +2240,7 @@ const ChildHealthForm = () => {
               <DialogTitle className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
                 <Baby className="h-5 w-5 text-sky-600" /> Child Health Record Summary
               </DialogTitle>
-              <Button type="button" variant="outline" size="sm" onClick={() => window.print()} className="gap-1.5 text-xs">
+              <Button type="button" variant="outline" size="sm" onClick={handlePrintSummary} className="gap-1.5 text-xs">
                 <Printer className="h-3.5 w-3.5" /> Print Summary
               </Button>
             </div>
@@ -2446,7 +2469,7 @@ const ChildHealthForm = () => {
           <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
             <span className="text-[10px] text-slate-500 font-medium">Official Health Summary — Barangay Subukin</span>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => window.print()} className="gap-1 text-xs">
+              <Button type="button" variant="outline" size="sm" onClick={handlePrintSummary} className="gap-1 text-xs">
                 <Printer className="h-3.5 w-3.5" /> Print Summary
               </Button>
               <Button type="button" variant="secondary" size="sm" onClick={() => setViewRecordModalOpen(false)}>
