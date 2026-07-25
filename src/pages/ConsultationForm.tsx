@@ -11,6 +11,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
 import { calculateAge } from "@/lib/residentLinker";
+import sanjuanLogo from "@/assets/sanjuan_logo.png";
+import headerTextImg from "@/assets/header_text.png";
+import barangayLogo from "@/assets/barangay-logo.png";
 
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary dark:focus-visible:border-primary shadow-none h-9 transition-colors placeholder:text-muted-foreground/50";
 const lineSelectClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus:ring-0 focus:border-primary dark:focus:border-primary shadow-none h-9 transition-colors";
@@ -173,6 +176,8 @@ const ConsultationForm = () => {
             color: #000000 !important;
           }
           .no-print { display: none !important; }
+          .print-only { display: flex !important; }
+          .header-seal img { mix-blend-mode: multiply !important; }
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -201,6 +206,17 @@ const ConsultationForm = () => {
       {/* Main Consultation Form Card */}
       <Card id="consultation-print-area" className="border-border/60 shadow-md bg-card rounded-2xl overflow-hidden">
         <CardContent className="p-6 md:p-8">
+          
+          {/* Official Barangay Printable Header */}
+          <div 
+            className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
+            style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
+          >
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             
             {/* Section 1: Patient Identification */}
