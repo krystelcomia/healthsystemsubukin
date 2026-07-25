@@ -5,12 +5,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Activity, Save, Printer, RefreshCw } from "lucide-react";
+import { Activity, Save, Printer, RefreshCw, HeartPulse, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
 import { calculateAge } from "@/lib/residentLinker";
 import { SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
+import sanjuanLogo from "@/assets/sanjuan_logo.png";
+import headerTextImg from "@/assets/header_text.png";
+import barangayLogo from "@/assets/barangay-logo.png";
+
+// Input sanitizers
+const sanitizeDigitsOnly = (val: string) => val.replace(/[^0-9]/g, "");
+const sanitizeDecimalNumber = (val: string) => {
+  const cleaned = val.replace(/[^0-9.]/g, "");
+  const parts = cleaned.split(".");
+  if (parts.length > 2) return `${parts[0]}.${parts.slice(1).join("")}`;
+  return cleaned;
+};
+const sanitizeDateString = (val: string) => val.replace(/[^0-9-]/g, "");
+const sanitizeBpString = (val: string) => val.replace(/[^0-9/\s]/g, "");
 
 interface Resident {
   id: string;
@@ -226,7 +240,7 @@ const PhilPenHealthForm = () => {
           transition: background-color 0.15s;
         }
         .check-cell:hover {
-          background-color: hsl(var(--primary) / 0.05);
+          background-color: hsl(var(--primary) / 0.1);
         }
         .print-input {
           width: 100%;
@@ -299,11 +313,7 @@ const PhilPenHealthForm = () => {
             opacity: 0 !important;
           }
           #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit,
-          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper,
-          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-text,
-          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-month-field,
-          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-day-field,
-          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-year-field {
+          #philpen-print-area input[type="date"]:invalid::-webkit-datetime-edit-fields-wrapper {
             color: transparent !important;
             opacity: 0 !important;
           }
@@ -315,6 +325,8 @@ const PhilPenHealthForm = () => {
           select, select * {
             display: none !important;
           }
+          .print-only { display: flex !important; }
+          .header-seal img { mix-blend-mode: multiply !important; }
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -326,13 +338,41 @@ const PhilPenHealthForm = () => {
         }
       `}</style>
 
+      {/* Dynamic Theme Banner */}
+      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+            <HeartPulse className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
+              PhilPen Health Assessment Form
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              PhilPEN Risk Assessment & Lifestyle Health Checklist for Barangay Subukin registry.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Printable Sheet Canvas */}
       <Card 
         id="philpen-print-area" 
-        className="border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden w-full"
+        className="border border-border/60 shadow-md bg-card text-card-foreground rounded-2xl overflow-hidden w-full"
         style={{ fontFamily: "var(--font-body)" }}
       >
-        <CardContent className="p-8 space-y-6">
+        <CardContent className="p-6 md:p-8 space-y-6">
+          
+          {/* Official Barangay Printable Header */}
+          <div 
+            className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
+            style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
+          >
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             
             {/* Top Personal Fields Header Grid */}
@@ -341,10 +381,10 @@ const PhilPenHealthForm = () => {
               {/* Left Side Group */}
               <div className="md:col-span-8 space-y-3.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0">Name:</span>
+                  <span className="text-foreground shrink-0 font-medium">Name:</span>
                   <div className="flex-1 no-print">
                     <Select value={form.resident_id} onValueChange={handleResidentChange}>
-                      <SelectTrigger className="h-8 border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 shadow-none focus:ring-0 text-sm">
+                      <SelectTrigger className="h-8 border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 shadow-none focus:ring-0 focus:border-primary text-sm transition-colors">
                         <SelectValue placeholder="Select a resident..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -361,7 +401,7 @@ const PhilPenHealthForm = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0">Address/Sitio:</span>
+                  <span className="text-foreground shrink-0 font-medium">Address/Sitio:</span>
                   <input 
                     type="text"
                     value={form.address}
@@ -372,33 +412,34 @@ const PhilPenHealthForm = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0">Age:</span>
+                  <span className="text-foreground shrink-0 font-medium">Age:</span>
                   <input 
                     type="text"
+                    inputMode="numeric"
                     value={form.age}
-                    onChange={(e) => handleFieldChange("age", e.target.value)}
+                    onChange={(e) => handleFieldChange("age", sanitizeDigitsOnly(e.target.value))}
                     className="print-input flex-1 font-medium"
                     placeholder=""
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0">Birthdate:</span>
+                  <span className="text-foreground shrink-0 font-medium">Birthdate:</span>
                   <input 
                     type="text"
                     value={form.birthdate}
                     onChange={(e) => {
-                      const bday = e.target.value;
+                      const bday = sanitizeDateString(e.target.value);
                       const computed = calculateAge(bday);
                       setForm(prev => ({ ...prev, birthdate: bday, age: computed > 0 ? String(computed) : prev.age }));
                     }}
                     className="print-input flex-1 font-medium"
-                    placeholder=""
+                    placeholder="YYYY-MM-DD"
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0">Date:</span>
+                  <span className="text-foreground shrink-0 font-medium">Date:</span>
                   <div className="flex-1 no-print">
                     <input 
                       type="date"
@@ -416,63 +457,64 @@ const PhilPenHealthForm = () => {
               {/* Right Side Group */}
               <div className="md:col-span-4 space-y-3.5 md:border-l md:border-border/60 md:pl-6">
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0">BP:</span>
+                  <span className="text-foreground shrink-0 font-medium">BP:</span>
                   <input 
                     type="text"
                     value={form.bp}
-                    onChange={(e) => handleFieldChange("bp", e.target.value)}
+                    onChange={(e) => handleFieldChange("bp", sanitizeBpString(e.target.value))}
                     className="print-input flex-1 text-center font-medium"
                     placeholder="120/80"
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0">Ht:</span>
+                  <span className="text-foreground shrink-0 font-medium">Ht:</span>
                   <input 
                     type="text"
+                    inputMode="decimal"
                     value={form.height}
-                    onChange={(e) => handleFieldChange("height", e.target.value)}
+                    onChange={(e) => handleFieldChange("height", sanitizeDecimalNumber(e.target.value))}
                     className="print-input flex-1 text-center font-medium"
                     placeholder="cm"
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0">Wt:</span>
+                  <span className="text-foreground shrink-0 font-medium">Wt:</span>
                   <input 
                     type="text"
+                    inputMode="decimal"
                     value={form.weight}
-                    onChange={(e) => handleFieldChange("weight", e.target.value)}
+                    onChange={(e) => handleFieldChange("weight", sanitizeDecimalNumber(e.target.value))}
                     className="print-input flex-1 text-center font-medium"
                     placeholder="kg"
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0">BMI:</span>
-                  <span className="print-input flex-1 text-center font-semibold border-b border-slate-400">
-                    {bmi}
-                  </span>
+                  <span className="text-foreground shrink-0 font-medium">BMI:</span>
+                  <div className="flex-1 font-mono font-bold text-center text-primary border-b border-dashed border-border/80 min-h-[28px] flex items-center justify-center">
+                    {bmi || "—"}
+                  </div>
                 </div>
               </div>
-
             </div>
 
             {/* Checklist Table */}
             <div className="overflow-x-auto pt-2">
               <table className="w-full border-collapse border border-border text-left text-sm">
                 <thead>
-                  <tr className="bg-muted/40 font-heading">
-                    <th className="border border-border p-2 font-bold text-foreground text-left w-[55%]">
+                  <tr className="bg-primary/10 text-primary border-b-2 border-primary/30 font-heading">
+                    <th className="border border-border p-2.5 font-bold text-left w-[55%]">
                       Description/Question
                     </th>
-                    <th className="border border-border p-2 font-bold text-foreground text-center w-[10%]">
+                    <th className="border border-border p-2.5 font-bold text-center w-[10%]">
                       Yes
                     </th>
-                    <th className="border border-border p-2 font-bold text-foreground text-center w-[10%]">
+                    <th className="border border-border p-2.5 font-bold text-center w-[10%]">
                       No
                     </th>
-                    <th className="border border-border p-2 font-bold text-foreground text-left w-[25%]">
+                    <th className="border border-border p-2.5 font-bold text-left w-[25%]">
                       Remarks
                     </th>
                   </tr>
@@ -702,34 +744,34 @@ const PhilPenHealthForm = () => {
             </div>
 
             {/* Bottom Form Actions Row - Hidden in Print */}
-            <div className="flex items-center justify-end gap-2.5 pt-4 no-print border-t border-border/40">
+            <div className="flex flex-wrap items-center justify-end gap-3 pt-6 no-print border-t border-border/40">
               <Button 
                 type="submit" 
                 disabled={loading} 
-                className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm"
+                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all duration-200 px-6"
               >
-                <Save className="h-4.5 w-4.5" />
+                <CheckCircle2 className="h-4 w-4" />
                 {loading ? "Saving..." : "Save Record"}
+              </Button>
+
+              <Button 
+                type="button" 
+                onClick={handleReset}
+                className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4"
+                variant="outline"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Reset
               </Button>
               
               <Button 
                 type="button" 
                 onClick={handlePrint}
-                className="gap-1.5 border-primary/20 text-primary hover:bg-primary/10 font-medium shadow-sm"
+                className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-5"
                 variant="outline"
               >
-                <Printer className="h-4.5 w-4.5" />
+                <Printer className="h-4 w-4" />
                 Print Form
-              </Button>
-              
-              <Button 
-                type="button" 
-                onClick={handleReset}
-                className="gap-1.5 text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium shadow-sm"
-                variant="outline"
-              >
-                <RefreshCw className="h-4.5 w-4.5" />
-                Reset
               </Button>
             </div>
 
