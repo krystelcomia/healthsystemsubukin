@@ -16,6 +16,23 @@ const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:b
 const lineSelectClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus:ring-0 focus:border-primary dark:focus:border-primary shadow-none h-9 transition-colors";
 const lineTextareaClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary dark:focus-visible:border-primary shadow-none resize-y min-h-[70px] transition-colors placeholder:text-muted-foreground/50";
 
+// Strict input sanitizers based on field requirements:
+// 1. Integer numbers only (Age, Pulse Rate, Resp Rate) -> blocks all letters, symbols, decimals
+const sanitizeDigitsOnly = (val: string) => val.replace(/[^0-9]/g, "");
+
+// 2. Decimal numbers only (Temp, Height, Weight) -> blocks all letters and symbols except single decimal point
+const sanitizeDecimalNumber = (val: string) => {
+  const cleaned = val.replace(/[^0-9.]/g, "");
+  const parts = cleaned.split(".");
+  if (parts.length > 2) {
+    return `${parts[0]}.${parts.slice(1).join("")}`;
+  }
+  return cleaned;
+};
+
+// 3. Date string format digits and hyphens (YYYY-MM-DD) -> blocks all letters
+const sanitizeDateString = (val: string) => val.replace(/[^0-9-]/g, "");
+
 const ConsultationForm = () => {
   const { t } = useSettings();
   const [residents, setResidents] = useState<{ id: string; full_name: string; sitio?: string; age?: number; birthday?: string }[]>([]);
@@ -234,14 +251,14 @@ const ConsultationForm = () => {
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.birthdate")}</Label>
                   <Input className={lineInputClass} type="text" value={form.birthdate} onChange={(e) => {
-                    const bday = e.target.value;
+                    const bday = sanitizeDateString(e.target.value);
                     const computed = calculateAge(bday);
                     setForm(prev => ({ ...prev, birthdate: bday, age: computed > 0 ? String(computed) : prev.age }));
                   }} placeholder="YYYY-MM-DD" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.age")}</Label>
-                  <Input className={lineInputClass} type="number" value={form.age} onChange={(e) => handleChange("age", e.target.value)} placeholder="Age" />
+                  <Input className={lineInputClass} type="text" inputMode="numeric" value={form.age} onChange={(e) => handleChange("age", sanitizeDigitsOnly(e.target.value))} placeholder="Age" />
                 </div>
               </div>
             </div>
@@ -258,26 +275,26 @@ const ConsultationForm = () => {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.temp")}</Label>
-                  <Input className={lineInputClass} value={form.temperature} onChange={(e) => handleChange("temperature", e.target.value)} placeholder="36.5 °C" />
+                  <Input className={lineInputClass} type="text" inputMode="decimal" value={form.temperature} onChange={(e) => handleChange("temperature", sanitizeDecimalNumber(e.target.value))} placeholder="36.5 °C" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.pulseRate")}</Label>
-                  <Input className={lineInputClass} value={form.pulseRate} onChange={(e) => handleChange("pulseRate", e.target.value)} placeholder="bpm" />
+                  <Input className={lineInputClass} type="text" inputMode="numeric" value={form.pulseRate} onChange={(e) => handleChange("pulseRate", sanitizeDigitsOnly(e.target.value))} placeholder="bpm" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.respRate")}</Label>
-                  <Input className={lineInputClass} value={form.respirationRate} onChange={(e) => handleChange("respirationRate", e.target.value)} placeholder="bpm" />
+                  <Input className={lineInputClass} type="text" inputMode="numeric" value={form.respirationRate} onChange={(e) => handleChange("respirationRate", sanitizeDigitsOnly(e.target.value))} placeholder="bpm" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.height")}</Label>
-                  <Input className={lineInputClass} value={form.height} onChange={(e) => handleChange("height", e.target.value)} placeholder="cm" />
+                  <Input className={lineInputClass} type="text" inputMode="decimal" value={form.height} onChange={(e) => handleChange("height", sanitizeDecimalNumber(e.target.value))} placeholder="cm" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.weight")}</Label>
-                  <Input className={lineInputClass} value={form.weight} onChange={(e) => handleChange("weight", e.target.value)} placeholder="kg" />
+                  <Input className={lineInputClass} type="text" inputMode="decimal" value={form.weight} onChange={(e) => handleChange("weight", sanitizeDecimalNumber(e.target.value))} placeholder="kg" />
                 </div>
               </div>
             </div>
