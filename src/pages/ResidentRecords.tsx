@@ -729,27 +729,6 @@ const ResidentRecords = () => {
                           </div>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                          onClick={() => { setEditResident(resident); setEditDialogOpen(true); }}
-                          title="Edit Resident"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          onClick={() => setDeleteConfirmId(resident.id)}
-                          title="Delete Resident"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
                     </div>
 
                     <div className="text-xs text-muted-foreground pt-1 flex items-center justify-between border-t border-border/30">
@@ -800,12 +779,6 @@ const ResidentRecords = () => {
                             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary" onClick={() => handleSelectResident(r)}>
                               <FileText className="h-3.5 w-3.5" /> Records
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => { setEditResident(r); setEditDialogOpen(true); }}>
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setDeleteConfirmId(r.id)}>
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
                           </div>
                         </td>
                       </tr>
@@ -817,45 +790,6 @@ const ResidentRecords = () => {
           )}
         </div>
       </div>
-
-      {/* Edit Resident Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{t("residents.editResident")}</DialogTitle><DialogDescription>{t("residents.editResidentDesc")}</DialogDescription></DialogHeader>
-          {editResident && (
-            <div className="space-y-3">
-              <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={editResident.full_name} onChange={(e) => setEditResident({ ...editResident, full_name: e.target.value })} /></div>
-              <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={editResident.birthday || ""} onChange={(e) => {
-                const bday = e.target.value;
-                const computed = calculateAge(bday);
-                setEditResident({ ...editResident, birthday: bday, age: computed > 0 ? computed : editResident.age });
-              }} /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={editResident.gender} onValueChange={(v) => setEditResident({ ...editResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
-                <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={editResident.age} onChange={(e) => setEditResident({ ...editResident, age: Number(e.target.value) })} /></div>
-              </div>
-              <div className="space-y-1">
-                <Label>{t("residents.sitio")}</Label>
-                <Select value={editResident.sitio || ""} onValueChange={(v) => setEditResident({ ...editResident, sitio: v })}>
-                  <SelectTrigger><SelectValue placeholder="Select Sitio" /></SelectTrigger>
-                  <SelectContent>
-                    {SUBUKIN_SITIOS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-          <DialogFooter><Button variant="outline" onClick={() => setEditDialogOpen(false)}>{t("common.cancel")}</Button><Button onClick={handleEditResident}>{t("common.saveChanges")}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Alert */}
-      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>{t("residents.deleteResident")}</AlertDialogTitle><AlertDialogDescription>{t("residents.deleteResidentDesc")}</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel><AlertDialogAction onClick={() => deleteConfirmId && handleDeleteResident(deleteConfirmId)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t("common.delete")}</AlertDialogAction></AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
