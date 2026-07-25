@@ -1064,82 +1064,97 @@ const ChildHealthForm = () => {
             <img src={barangayLogo} alt="Subukin Logo" className="h-24 md:h-28 object-contain shrink-0 mix-blend-multiply" style={{ height: "105px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
           </div>
 
-          {/* Action Bar & Barangay note */}
-          <div className="flex items-center justify-between gap-2 no-print pb-2 border-b border-border/40">
-            <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-              <span className="inline-block w-2 h-2 rounded-full bg-sky-500"></span>
-              BRGY: <strong className="text-foreground">SUBUKIN</strong>
-            </span>
-            <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
-                <Printer className="h-3.5 w-3.5" /> Print Form
-              </Button>
-            </div>
-          </div>
-
-          {/* Child Health Form Navigation Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-1 md:grid-cols-3 h-auto p-1 bg-muted/60 rounded-lg no-print">
-              <TabsTrigger value="sick-children" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-                <Stethoscope className="h-3.5 w-3.5 text-sky-600" />
-                <span>Care for Sick Children (2m - 5y)</span>
-                <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4 bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-semibold border-sky-200">
-                  {sickRecordsCount}
-                </Badge>
-              </TabsTrigger>
-              <TabsTrigger value="vitamin-a" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-                <Pill className="h-3.5 w-3.5 text-amber-600" />
-                <span>Vitamin A & RHU2 Master List</span>
-                <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-semibold border-amber-200">
-                  {vitARecordsCount}
-                </Badge>
-              </TabsTrigger>
-              <TabsTrigger value="sia-masterlist" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-                <Syringe className="h-3.5 w-3.5 text-emerald-600" />
-                <span>SIA Master List (6–59 Months)</span>
-                <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold border-emerald-200">
-                  {siaRecordsCount}
-                </Badge>
-              </TabsTrigger>
-            </TabsList>
-
-            {/* TAB 1: Care for Sick Children (Aged 2 Months to 5 Years) - Official Form Replica */}
-            <TabsContent value="sick-children" className="mt-4 space-y-4 w-full max-w-full">
+            
+            {/* Sticky Header Section (Stays fixed & stationary at top of screen when scrolling page) */}
+            <div className="sticky top-[58px] z-20 bg-card/95 backdrop-blur-xs pt-1 pb-3 space-y-3 border-b border-border/40 shadow-xs no-print">
               
-              {/* Stationary Header Container (Stays fixed when scrolling form up/down) */}
-              <div className="w-full max-w-full space-y-3 shrink-0 no-print">
-                {/* Form Title Banner */}
-                <div className="text-center py-2 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-300 dark:border-slate-700 relative w-full">
-                  <h1 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 font-heading">
-                    PANGANGALAGA SA BATANG MAY SAKIT EDAD 2 BUWAN HANGGANG 5 TAON
-                  </h1>
-                  <div className="absolute right-3 top-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    FN: <Input type="text" value={sickForm.fn_number} onChange={e => setSickForm(p => ({ ...p, fn_number: e.target.value }))} placeholder="FN 242" className="inline-block w-20 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center" />
-                  </div>
-                </div>
-
-                {/* Select Resident Header Dropdown */}
-                <div className="flex items-center justify-between no-print bg-muted/40 p-2.5 rounded-md border w-full">
-                  <span className="text-xs font-semibold text-primary flex items-center gap-1.5">
-                    <UserCheck className="h-4 w-4" /> Select Registered Resident Child:
-                  </span>
-                  <Select value={selectedResidentId} onValueChange={handleSelectResidentForSick}>
-                    <SelectTrigger className="h-8 text-xs bg-background w-72">
-                      <SelectValue placeholder="Pumili ng residente..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {residents.map(r => (
-                        <SelectItem key={r.id} value={r.id} className="text-xs">
-                          {r.full_name} {r.sitio ? `(${r.sitio})` : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {/* Action Bar & Barangay note */}
+              <div className="flex items-center justify-between gap-2 pb-1 border-b border-border/30">
+                <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                  <span className="inline-block w-2 h-2 rounded-full bg-sky-500"></span>
+                  BRGY: <strong className="text-foreground">SUBUKIN</strong>
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
+                    <Printer className="h-3.5 w-3.5" /> Print Form
+                  </Button>
                 </div>
               </div>
 
-              {/* Form Body Container (Scrolls vertically independently without moving header) */}
-              <form onSubmit={handleSaveSickChild} className="space-y-6 text-xs overflow-y-auto max-h-[calc(100vh-270px)] min-h-[500px] pr-2.5 print:max-h-none print:overflow-visible print:pr-0">
+              {/* Navigation Tabs */}
+              <TabsList className="grid grid-cols-1 md:grid-cols-3 h-auto p-1 bg-muted/60 rounded-lg">
+                <TabsTrigger value="sick-children" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+                  <Stethoscope className="h-3.5 w-3.5 text-sky-600" />
+                  <span>Care for Sick Children (2m - 5y)</span>
+                  <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4 bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-semibold border-sky-200">
+                    {sickRecordsCount}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="vitamin-a" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+                  <Pill className="h-3.5 w-3.5 text-amber-600" />
+                  <span>Vitamin A & RHU2 Master List</span>
+                  <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-semibold border-amber-200">
+                    {vitARecordsCount}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="sia-masterlist" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
+                  <Syringe className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>SIA Master List (6–59 Months)</span>
+                  <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold border-emerald-200">
+                    {siaRecordsCount}
+                  </Badge>
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Form Title Banner & Resident Selector for Care for Sick Children */}
+              {activeTab === "sick-children" && (
+                <div className="space-y-3">
+                  <div className="text-center py-2 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-300 dark:border-slate-700 relative w-full">
+                    <h1 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 font-heading">
+                      PANGANGALAGA SA BATANG MAY SAKIT EDAD 2 BUWAN HANGGANG 5 TAON
+                    </h1>
+                    <div className="absolute right-3 top-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                      FN: <Input type="text" value={sickForm.fn_number} onChange={e => setSickForm(p => ({ ...p, fn_number: e.target.value }))} placeholder="FN 242" className="inline-block w-20 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center" />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-muted/40 p-2.5 rounded-md border w-full">
+                    <span className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                      <UserCheck className="h-4 w-4" /> Select Registered Resident Child:
+                    </span>
+                    <Select value={selectedResidentId} onValueChange={handleSelectResidentForSick}>
+                      <SelectTrigger className="h-8 text-xs bg-background w-72">
+                        <SelectValue placeholder="Pumili ng residente..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {residents.map(r => (
+                          <SelectItem key={r.id} value={r.id} className="text-xs">
+                            {r.full_name} {r.sitio ? `(${r.sitio})` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* TAB 1: Care for Sick Children (Aged 2 Months to 5 Years) - Official Form Replica */}
+            <TabsContent value="sick-children" className="mt-4 space-y-6 w-full max-w-full">
+              
+              {/* Form Title Banner for Printout Only */}
+              <div className="print-only text-center py-2 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-300 dark:border-slate-700 relative w-full mb-4">
+                <h1 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 font-heading">
+                  PANGANGALAGA SA BATANG MAY SAKIT EDAD 2 BUWAN HANGGANG 5 TAON
+                </h1>
+                <div className="absolute right-3 top-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                  FN: {sickForm.fn_number || "FN 242"}
+                </div>
+              </div>
+
+              {/* Form Body (Flows naturally with main background page scroll) */}
+              <form onSubmit={handleSaveSickChild} className="space-y-6 text-xs">
 
                 {/* Patient Information Box */}
                 <div className="border border-slate-300 dark:border-slate-700 rounded-md p-3 space-y-3 bg-card">
