@@ -669,6 +669,9 @@ const ChildHealthForm = () => {
 
   const handlePrint = () => window.print();
 
+  const lineInputClass = "w-full text-xs border-0 border-b border-slate-400 dark:border-slate-500 bg-transparent rounded-none shadow-none focus-visible:ring-0 focus:outline-none px-1 h-6";
+  const lineInputInlineClass = "inline-block text-xs border-0 border-b border-slate-400 dark:border-slate-500 bg-transparent rounded-none shadow-none focus-visible:ring-0 focus:outline-none px-1 h-5 text-center";
+
   return (
     <div className="w-full space-y-6">
       <style>{`
@@ -999,10 +1002,10 @@ const ChildHealthForm = () => {
                         <div className="space-y-1.5 pl-1 text-xs">
                           <div className="flex items-center justify-between">
                             <span>Ilang araw nang inuubo o nahihirapang huminga?</span>
-                            <Input type="text" value={sickForm.cough_days} onChange={e => setSickForm(p => ({ ...p, cough_days: e.target.value }))} placeholder="___ araw" className="w-20 h-6 text-xs text-center border-b rounded-none" />
+                            <Input type="text" value={sickForm.cough_days} onChange={e => setSickForm(p => ({ ...p, cough_days: e.target.value }))} placeholder="___ araw" className={`w-20 ${lineInputInlineClass}`} />
                           </div>
                           <div className="flex items-center justify-between">
-                            <span>Tingnan sa talaan ang respiratory rate: <Input type="text" value={sickForm.respiratory_rate_val} onChange={e => setSickForm(p => ({ ...p, respiratory_rate_val: e.target.value }))} placeholder="/min" className="w-16 h-5 inline-block text-xs border-b rounded-none text-center" /> Mabilis ba ito para sa edad?</span>
+                            <span>Tingnan sa talaan ang respiratory rate: <Input type="text" value={sickForm.respiratory_rate_val} onChange={e => setSickForm(p => ({ ...p, respiratory_rate_val: e.target.value }))} placeholder="/min" className={`w-16 ${lineInputInlineClass}`} /> Mabilis ba ito para sa edad?</span>
                             <div className="flex gap-3 text-xs">
                               <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="fast_breathing" checked={sickForm.fast_breathing === true} onChange={() => setSickForm(p => ({ ...p, fast_breathing: true }))} /> Oo</label>
                               <label className="flex items-center gap-1 cursor-pointer"><input type="radio" name="fast_breathing" checked={sickForm.fast_breathing === false} onChange={() => setSickForm(p => ({ ...p, fast_breathing: false }))} /> Hindi</label>
@@ -1056,7 +1059,7 @@ const ChildHealthForm = () => {
                         <div className="space-y-1.5 pl-1 text-xs">
                           <div className="flex items-center justify-between">
                             <span>Ilang araw nang nagtatae?</span>
-                            <Input type="text" value={sickForm.diarrhea_days} onChange={e => setSickForm(p => ({ ...p, diarrhea_days: e.target.value }))} placeholder="___ araw" className="w-20 h-6 text-xs text-center border-b rounded-none" />
+                            <Input type="text" value={sickForm.diarrhea_days} onChange={e => setSickForm(p => ({ ...p, diarrhea_days: e.target.value }))} placeholder="___ araw" className={`w-20 ${lineInputInlineClass}`} />
                           </div>
                           <div className="flex items-center justify-between">
                             <span>May dugo ba sa dumi?</span>
@@ -1598,7 +1601,7 @@ const ChildHealthForm = () => {
                         <div className="flex items-center justify-between pl-3">
                           <span>Kung oo, ilang beses sa 24 na oras?</span>
                           <div className="flex items-center gap-1">
-                            <Input type="text" value={sickForm.breastfeed_times} onChange={e => setSickForm(p => ({ ...p, breastfeed_times: e.target.value }))} className="w-20 h-5 text-xs text-center border-b rounded-none" />
+                            <Input type="text" value={sickForm.breastfeed_times} onChange={e => setSickForm(p => ({ ...p, breastfeed_times: e.target.value }))} className={`w-20 ${lineInputInlineClass}`} />
                             <span>beses</span>
                           </div>
                         </div>
@@ -1613,18 +1616,18 @@ const ChildHealthForm = () => {
                         <div className="space-y-1 pl-3">
                           <div className="flex items-center justify-between">
                             <span>Kung oo, ano ito?</span>
-                            <Input type="text" value={sickForm.other_food_details} onChange={e => setSickForm(p => ({ ...p, other_food_details: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                            <Input type="text" value={sickForm.other_food_details} onChange={e => setSickForm(p => ({ ...p, other_food_details: e.target.value }))} className={`w-72 ${lineInputInlineClass} text-left`} />
                           </div>
                           <div className="flex items-center justify-between">
                             <span>Ilang beses sa loob ng 24 na oras?</span>
                             <div className="flex items-center gap-1">
-                              <Input type="text" value={sickForm.other_food_times} onChange={e => setSickForm(p => ({ ...p, other_food_times: e.target.value }))} className="w-16 h-5 text-xs text-center border-b rounded-none" />
+                              <Input type="text" value={sickForm.other_food_times} onChange={e => setSickForm(p => ({ ...p, other_food_times: e.target.value }))} className={`w-16 ${lineInputInlineClass}`} />
                               <span>beses</span>
                             </div>
                           </div>
                           <div className="flex items-center justify-between">
                             <span>Ano'ng ginagamit sa pagpapakain sa bata?</span>
-                            <Input type="text" value={sickForm.feeding_utensils} onChange={e => setSickForm(p => ({ ...p, feeding_utensils: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                            <Input type="text" value={sickForm.feeding_utensils} onChange={e => setSickForm(p => ({ ...p, feeding_utensils: e.target.value }))} className={`w-72 ${lineInputInlineClass} text-left`} />
                           </div>
                         </div>
 
@@ -1633,7 +1636,7 @@ const ChildHealthForm = () => {
                           <div className="space-y-1 pl-3">
                             <div className="flex items-center justify-between">
                               <span>Gaano karami ang pinapakain sa bata?</span>
-                              <Input type="text" value={sickForm.food_amount} onChange={e => setSickForm(p => ({ ...p, food_amount: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                              <Input type="text" value={sickForm.food_amount} onChange={e => setSickForm(p => ({ ...p, food_amount: e.target.value }))} className={`w-72 ${lineInputInlineClass} text-left`} />
                             </div>
                             <div className="flex items-center justify-between">
                               <span>Mayroon bang sariling pinggan ang bata 'pag kumakain?</span>
@@ -1644,11 +1647,11 @@ const ChildHealthForm = () => {
                             </div>
                             <div className="flex items-center justify-between">
                               <span>Sino ang nagpapakain sa bata?</span>
-                              <Input type="text" value={sickForm.person_feeding} onChange={e => setSickForm(p => ({ ...p, person_feeding: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                              <Input type="text" value={sickForm.person_feeding} onChange={e => setSickForm(p => ({ ...p, person_feeding: e.target.value }))} className={`w-72 ${lineInputInlineClass} text-left`} />
                             </div>
                             <div className="flex items-center justify-between">
                               <span>Paano pinapakain ang bata?</span>
-                              <Input type="text" value={sickForm.how_fed} onChange={e => setSickForm(p => ({ ...p, how_fed: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                              <Input type="text" value={sickForm.how_fed} onChange={e => setSickForm(p => ({ ...p, how_fed: e.target.value }))} className={`w-72 ${lineInputInlineClass} text-left`} />
                             </div>
                           </div>
                         </div>
@@ -1662,7 +1665,7 @@ const ChildHealthForm = () => {
                         </div>
                         <div className="flex items-center justify-between pl-3">
                           <span>Kung oo, paano?</span>
-                          <Input type="text" value={sickForm.feeding_change_details} onChange={e => setSickForm(p => ({ ...p, feeding_change_details: e.target.value }))} className="w-64 h-5 text-xs border-b rounded-none" />
+                          <Input type="text" value={sickForm.feeding_change_details} onChange={e => setSickForm(p => ({ ...p, feeding_change_details: e.target.value }))} className={`w-72 ${lineInputInlineClass} text-left`} />
                         </div>
                       </div>
                     </div>
@@ -1678,11 +1681,11 @@ const ChildHealthForm = () => {
                       <div className="space-y-1.5 pl-1">
                         <div>
                           <span className="font-semibold block">Paano nakikilaro sa bata?</span>
-                          <Input type="text" value={sickForm.how_plays} onChange={e => setSickForm(p => ({ ...p, how_plays: e.target.value }))} className="w-full h-6 text-xs border-b rounded-none" />
+                          <Input type="text" value={sickForm.how_plays} onChange={e => setSickForm(p => ({ ...p, how_plays: e.target.value }))} className={lineInputClass} />
                         </div>
                         <div>
                           <span className="font-semibold block">Paano nakikipag-usap sa bata?</span>
-                          <Input type="text" value={sickForm.how_talks} onChange={e => setSickForm(p => ({ ...p, how_talks: e.target.value }))} className="w-full h-6 text-xs border-b rounded-none" />
+                          <Input type="text" value={sickForm.how_talks} onChange={e => setSickForm(p => ({ ...p, how_talks: e.target.value }))} className={lineInputClass} />
                         </div>
                       </div>
                     </div>
@@ -1694,7 +1697,7 @@ const ChildHealthForm = () => {
                       ANG BATA BA AY MAY IBA PANG PROBLEMA?
                     </div>
                     <div className="p-2.5">
-                      <Input type="text" value={sickForm.other_problems} onChange={e => setSickForm(p => ({ ...p, other_problems: e.target.value }))} className="w-full h-6 text-xs border-b rounded-none" />
+                      <Input type="text" value={sickForm.other_problems} onChange={e => setSickForm(p => ({ ...p, other_problems: e.target.value }))} className={lineInputClass} />
                     </div>
                   </div>
 
