@@ -560,118 +560,21 @@ const ResidentRecords = () => {
         }
       `}</style>
 
-      {/* Population Demographics Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 no-print">
-        <Card className="border border-sky-500/20 bg-gradient-to-br from-sky-500/10 via-sky-500/5 to-transparent shadow-xs">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase">Total Population</p>
-              <h3 className="text-2xl font-heading font-extrabold text-foreground mt-0.5">{residents.length}</h3>
-              <p className="text-[11px] text-sky-600 dark:text-sky-400 mt-1 font-medium">Registered Residents</p>
-            </div>
-            <div className="p-3 rounded-2xl bg-sky-500/15 text-sky-600 dark:text-sky-400">
-              <Users className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent shadow-xs">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase">Male Residents</p>
-              <h3 className="text-2xl font-heading font-extrabold text-foreground mt-0.5">{totalMale}</h3>
-              <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1 font-medium">
-                {residents.length > 0 ? Math.round((totalMale / residents.length) * 100) : 0}% of Total
-              </p>
-            </div>
-            <div className="p-3 rounded-2xl bg-blue-500/15 text-blue-600 dark:text-blue-400">
-              <User className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-pink-500/20 bg-gradient-to-br from-pink-500/10 via-pink-500/5 to-transparent shadow-xs">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase">Female Residents</p>
-              <h3 className="text-2xl font-heading font-extrabold text-foreground mt-0.5">{totalFemale}</h3>
-              <p className="text-[11px] text-pink-600 dark:text-pink-400 mt-1 font-medium">
-                {residents.length > 0 ? Math.round((totalFemale / residents.length) * 100) : 0}% of Total
-              </p>
-            </div>
-            <div className="p-3 rounded-2xl bg-pink-500/15 text-pink-600 dark:text-pink-400">
-              <User className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent shadow-xs">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase">Children (0–12 yrs)</p>
-              <h3 className="text-2xl font-heading font-extrabold text-foreground mt-0.5">{totalChildren}</h3>
-              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 font-medium">Pediatric Monitoring</p>
-            </div>
-            <div className="p-3 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
-              <Sparkles className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Header Actions & Search Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 no-print border-b border-border/40 pb-4">
-        
-        {/* Search & Sitio Filter */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              className="pl-9 text-xs bg-background" 
-              placeholder="Search by name, sitio, or family number..." 
-              value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
-            />
+      {/* Clean Page Title & Action Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 no-print border-b border-border/40 pb-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-heading font-extrabold text-foreground">Resident Records</h1>
+            <Badge variant="secondary" className="text-xs font-semibold bg-primary/10 text-primary border-primary/20">
+              {residents.length} Registered
+            </Badge>
           </div>
-
-          <Select value={sitioFilter} onValueChange={setSitioFilter}>
-            <SelectTrigger className="w-full sm:w-48 text-xs bg-background">
-              <SelectValue placeholder="All Sitios" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sitios ({residents.length})</SelectItem>
-              {sitios.map((s) => (
-                <SelectItem key={s} value={s}>
-                  Sitio {s} ({residents.filter(r => r.sitio === s).length})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Barangay Subukin population health registry and medical records database.
+          </p>
         </div>
 
-        {/* View Mode Toggle & Add Button */}
-        <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
-          <div className="flex items-center p-1 rounded-lg bg-muted border border-border/50">
-            <Button
-              variant={viewMode === "grid" ? "secondary" : "ghost"}
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => setViewMode("grid")}
-              title="Grid View"
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "secondary" : "ghost"}
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => setViewMode("list")}
-              title="List View"
-            >
-              <ListIcon className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-
+        <div className="flex items-center gap-2 shrink-0">
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1.5 text-xs font-bold bg-primary text-primary-foreground shadow-xs">
@@ -771,6 +674,56 @@ const ResidentRecords = () => {
         </div>
       </div>
 
+      {/* Clean Search & Sitio Filters Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 no-print">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              className="pl-9 text-xs bg-background h-9" 
+              placeholder="Search by name, sitio, or family number..." 
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)} 
+            />
+          </div>
+
+          <Select value={sitioFilter} onValueChange={setSitioFilter}>
+            <SelectTrigger className="w-full sm:w-48 text-xs bg-background h-9">
+              <SelectValue placeholder="All Sitios" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sitios ({residents.length})</SelectItem>
+              {sitios.map((s) => (
+                <SelectItem key={s} value={s}>
+                  Sitio {s} ({residents.filter(r => r.sitio === s).length})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center p-1 rounded-lg bg-muted border border-border/50 shrink-0 self-end sm:self-auto">
+          <Button
+            variant={viewMode === "grid" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setViewMode("grid")}
+            title="Grid View"
+          >
+            <LayoutGrid className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant={viewMode === "list" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setViewMode("list")}
+            title="List View"
+          >
+            <ListIcon className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+
       <div id="resident-print-area" className="space-y-4">
         
         {/* Official Printable Header Seal */}
@@ -822,7 +775,7 @@ const ResidentRecords = () => {
           <p className="print-date" style={{ fontSize: 10, color: "#6b7280" }}>{new Date().toLocaleString()}</p>
         </div>
 
-        {/* Screen View: Grid vs Compact List */}
+        {/* Screen View: Clean Grid vs Compact List */}
         <div className="no-print space-y-4">
           {loading ? (
             <div className="text-center text-muted-foreground py-12 space-y-2">
@@ -836,41 +789,39 @@ const ResidentRecords = () => {
               <p className="text-xs mt-1">Try adjusting your search terms or sitio filter.</p>
             </Card>
           ) : viewMode === "grid" ? (
-            /* GRID VIEW CARDS */
+            /* CLEAN GRID VIEW CARDS */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filtered.map((resident) => (
                 <Card 
                   key={resident.id} 
-                  className="border-border/60 shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 bg-card group relative overflow-hidden"
+                  className="border-border/50 shadow-xs hover:shadow-md hover:border-primary/40 transition-all duration-200 bg-card group relative overflow-hidden cursor-pointer"
+                  onClick={() => handleSelectResident(resident)}
                 >
                   <CardContent className="p-4 space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div 
-                        className="flex items-center gap-3 cursor-pointer flex-1 min-w-0" 
-                        onClick={() => handleSelectResident(resident)}
-                      >
-                        <div className={`h-11 w-11 rounded-2xl ${resident.gender.toLowerCase() === "female" ? "bg-pink-500/15 text-pink-600 dark:text-pink-400" : "bg-sky-500/15 text-sky-600 dark:text-sky-400"} flex items-center justify-center font-bold text-sm shrink-0 border border-border/40 shadow-2xs`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`h-10 w-10 rounded-full ${resident.gender.toLowerCase() === "female" ? "bg-pink-500/10 text-pink-600 dark:text-pink-400" : "bg-sky-500/10 text-sky-600 dark:text-sky-400"} flex items-center justify-center font-bold text-xs shrink-0`}>
                           {resident.full_name.split(" ").map((n) => n[0]).join("")}
                         </div>
 
                         <div className="min-w-0">
-                          <h4 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors flex items-center gap-1.5">
+                          <h4 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
                             {resident.full_name}
                           </h4>
                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                             {resident.family_number && (
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30 font-mono">
-                                Family #: {resident.family_number}
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/20 font-mono">
+                                Family #{resident.family_number}
                               </Badge>
                             )}
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-muted text-muted-foreground font-medium">
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                               Sitio {resident.sitio || "Subukin"}
                             </Badge>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 shrink-0">
+                      <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -892,26 +843,12 @@ const ResidentRecords = () => {
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-border/30 grid grid-cols-3 gap-1 text-[11px] text-muted-foreground">
-                      <div>
-                        <span>Gender:</span> <strong className="text-foreground block">{resident.gender}</strong>
-                      </div>
-                      <div>
-                        <span>Age:</span> <strong className="text-foreground block">{resident.age} yrs</strong>
-                      </div>
-                      <div>
-                        <span>Status:</span> <strong className="text-foreground block">{resident.status}</strong>
-                      </div>
+                    <div className="text-xs text-muted-foreground pt-1 flex items-center justify-between border-t border-border/30">
+                      <span>{resident.gender} · {resident.age} yrs · {resident.status}</span>
+                      <span className="text-[11px] text-primary font-medium opacity-80 group-hover:opacity-100 flex items-center gap-0.5">
+                        View Records <ChevronRight className="h-3 w-3" />
+                      </span>
                     </div>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full text-xs h-7 gap-1 mt-2 text-primary border-primary/20 hover:bg-primary/10 font-medium"
-                      onClick={() => handleSelectResident(resident)}
-                    >
-                      <FileText className="h-3.5 w-3.5" /> View Health Records <ChevronRight className="h-3 w-3 ml-auto" />
-                    </Button>
                   </CardContent>
                 </Card>
               ))}
