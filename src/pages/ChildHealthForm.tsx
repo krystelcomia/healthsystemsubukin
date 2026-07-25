@@ -2277,15 +2277,15 @@ const ChildHealthForm = () => {
 
             return (
               <div id="summary-print-area" className="space-y-4 text-xs py-2 max-h-[70vh] overflow-y-auto pr-1">
-                {/* Official 3-Logo Seals Header */}
-                <div className="flex items-center justify-center gap-6 border-b-[4px] border-double border-slate-900 pb-2 mb-2 text-center header-border" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
+                {/* Official 3-Logo Seals Header - Print Only */}
+                <div className="hidden print:flex items-center justify-center gap-6 border-b-[4px] border-double border-slate-900 pb-2 mb-2 text-center header-border">
                   <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
                   <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
                   <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
                 </div>
 
-                <div className="text-center pb-1">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 font-heading">
+                <div className="hidden print:block text-center pb-1">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-heading">
                     SUMMARY OF CHILD HEALTH RECORD / BUOD NG REKORD NG KALUSUGAN NG BATA
                   </h2>
                 </div>
