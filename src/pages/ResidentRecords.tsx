@@ -1,12 +1,34 @@
 import { useState, useEffect, useRef } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Users, Search, Plus, Printer, ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { 
+  Users, 
+  Search, 
+  Plus, 
+  Printer, 
+  ArrowLeft, 
+  Pencil, 
+  Trash2, 
+  User, 
+  MapPin, 
+  Calendar, 
+  Heart, 
+  Activity, 
+  LayoutGrid, 
+  List as ListIcon, 
+  FileText, 
+  UserPlus, 
+  Sparkles, 
+  Home, 
+  Filter, 
+  Clock,
+  ChevronRight
+} from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -19,11 +41,25 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 
 interface Resident {
-  id: string; full_name: string; gender: string; age: number; status: string; sitio: string; birthday: string | null; family_number?: string | null; created_at: string;
+  id: string; 
+  full_name: string; 
+  gender: string; 
+  age: number; 
+  status: string; 
+  sitio: string; 
+  birthday: string | null; 
+  family_number?: string | null; 
+  created_at: string;
 }
 
 interface HealthRecords {
-  consultations: any[]; family_data: any[]; philpen_health: any[]; dengue_prevention: any[]; maternal_care: any[]; child_health: any[]; family_planning: any[];
+  consultations: any[]; 
+  family_data: any[]; 
+  philpen_health: any[]; 
+  dengue_prevention: any[]; 
+  maternal_care: any[]; 
+  child_health: any[]; 
+  family_planning: any[];
 }
 
 const ResidentRecords = () => {
@@ -34,14 +70,14 @@ const ResidentRecords = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedResident, setSelectedResident] = useState<Resident | null>(null);
   const [healthRecords, setHealthRecords] = useState<HealthRecords | null>(null);
-  const printRef = useRef<HTMLDivElement>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editResident, setEditResident] = useState<Resident | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [sitioFilter, setSitioFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const [newResident, setNewResident] = useState({
-    full_name: "", gender: "Male", age: "", status: "Single", sitio: "", birthday: "",
+    full_name: "", gender: "Male", age: "", status: "Single", sitio: "Cama", birthday: "",
   });
 
   const fetchResidents = async () => {
@@ -63,7 +99,7 @@ const ResidentRecords = () => {
     if (error) { toast.error("Failed to add resident"); return; }
     logActivity("create_resident", { entity_type: "resident", description: `Added resident: ${newResident.full_name.trim()}` });
     toast.success("Resident added successfully!");
-    setNewResident({ full_name: "", gender: "Male", age: "", status: "Single", sitio: "", birthday: "" });
+    setNewResident({ full_name: "", gender: "Male", age: "", status: "Single", sitio: "Cama", birthday: "" });
     setDialogOpen(false);
     fetchResidents();
   };
@@ -119,15 +155,22 @@ const ResidentRecords = () => {
   const dbSitios = Array.from(new Set(residents.map((r) => r.sitio).filter((s) => Boolean(s) && s !== "Centro" && s !== "Sitio Centro"))).sort() as string[];
   const sitios = dbSitios.length > 0 ? dbSitios : SUBUKIN_SITIOS;
   const filtered = residents.filter((r) => {
-    const matchesSearch = r.full_name.toLowerCase().includes(search.toLowerCase()) || (r.sitio || "").toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = r.full_name.toLowerCase().includes(search.toLowerCase()) || 
+                          (r.sitio || "").toLowerCase().includes(search.toLowerCase()) ||
+                          (r.family_number || "").toLowerCase().includes(search.toLowerCase());
     const matchesSitio = sitioFilter === "all" || r.sitio === sitioFilter;
     return matchesSearch && matchesSitio;
   });
 
+  // Demographics stats
+  const totalMale = residents.filter(r => r.gender.toLowerCase() === "male").length;
+  const totalFemale = residents.filter(r => r.gender.toLowerCase() === "female").length;
+  const totalChildren = residents.filter(r => r.age <= 12).length;
+
   if (selectedResident && healthRecords) {
     const totalRecords = healthRecords.consultations.length + healthRecords.family_data.length + healthRecords.philpen_health.length + healthRecords.dengue_prevention.length + healthRecords.maternal_care.length + healthRecords.child_health.length + healthRecords.family_planning.length;
     return (
-      <div className="w-full space-y-6">
+      <div className="w-full space-y-6 max-w-full">
         <style>{`
           .print-only { display: none !important; }
           .print-only-table { display: none !important; }
@@ -157,12 +200,23 @@ const ResidentRecords = () => {
           }
         `}</style>
 
-        <div className="flex items-center justify-between no-print">
-          <Button variant="ghost" onClick={() => { setSelectedResident(null); setHealthRecords(null); }}><ArrowLeft className="h-4 w-4 mr-2" /> {t("residents.backToRecords")}</Button>
-          <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> {t("residents.printRecord")}</Button>
+        <div className="flex items-center justify-between no-print border-b border-border/40 pb-4">
+          <Button variant="ghost" size="sm" onClick={() => { setSelectedResident(null); setHealthRecords(null); }} className="gap-2 text-xs font-semibold">
+            <ArrowLeft className="h-4 w-4" /> {t("residents.backToRecords")}
+          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => { setEditResident(selectedResident); setEditDialogOpen(true); }} className="gap-1.5 text-xs">
+              <Pencil className="h-3.5 w-3.5" /> Edit Profile
+            </Button>
+            <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs border-primary/20 text-primary hover:bg-primary/10">
+              <Printer className="h-3.5 w-3.5" /> {t("residents.printRecord")}
+            </Button>
+          </div>
         </div>
 
-        <div id="resident-print-area">
+        <div id="resident-print-area" className="space-y-5">
+          
+          {/* Printable Official Seals */}
           <div 
             className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
             style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
@@ -172,59 +226,311 @@ const ResidentRecords = () => {
             <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
           </div>
 
-          <h2 style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>{selectedResident.full_name}</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16 }}>
-            <p style={{ fontSize: 13 }}><strong>{t("residents.gender")}:</strong> {selectedResident.gender}</p>
-            <p style={{ fontSize: 13 }}><strong>{t("residents.age")}:</strong> {selectedResident.age}</p>
-            <p style={{ fontSize: 13 }}><strong>{t("residents.birthday")}:</strong> {selectedResident.birthday || "—"}</p>
-            <p style={{ fontSize: 13 }}><strong>{t("residents.civilStatus")}:</strong> {selectedResident.status}</p>
-            <p style={{ fontSize: 13 }}><strong>{t("residents.sitio")}:</strong> {selectedResident.sitio || "—"}</p>
+          {/* Resident Header Profile Card */}
+          <Card className="border-border/60 shadow-sm bg-gradient-to-r from-sky-500/10 via-teal-500/5 to-transparent no-print">
+            <CardContent className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-2xl bg-primary/15 text-primary font-bold text-lg flex items-center justify-center shadow-xs border border-primary/20 shrink-0">
+                  {selectedResident.full_name.split(" ").map((n) => n[0]).join("")}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-xl font-heading font-extrabold text-foreground">{selectedResident.full_name}</h2>
+                    {selectedResident.family_number && (
+                      <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30 font-mono">
+                        Family #: {selectedResident.family_number}
+                      </Badge>
+                    )}
+                    <Badge variant="secondary" className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                      Sitio {selectedResident.sitio || "Subukin"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
+                    <span>Gender: <strong>{selectedResident.gender}</strong></span> · 
+                    <span>Age: <strong>{selectedResident.age} yrs</strong></span> · 
+                    <span>Civil Status: <strong>{selectedResident.status}</strong></span> · 
+                    <span>Birthday: <strong>{selectedResident.birthday || "N/A"}</strong></span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 bg-background/80 p-2.5 rounded-xl border border-border/50 text-xs shrink-0">
+                <FileText className="h-4 w-4 text-primary" />
+                <span>Total Registered Medical Records: <strong>{totalRecords}</strong></span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Screen & Print Details */}
+          <div className="print-only">
+            <h2 style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>{selectedResident.full_name}</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16 }}>
+              <p style={{ fontSize: 13 }}><strong>{t("residents.gender")}:</strong> {selectedResident.gender}</p>
+              <p style={{ fontSize: 13 }}><strong>{t("residents.age")}:</strong> {selectedResident.age}</p>
+              <p style={{ fontSize: 13 }}><strong>{t("residents.birthday")}:</strong> {selectedResident.birthday || "—"}</p>
+              <p style={{ fontSize: 13 }}><strong>{t("residents.civilStatus")}:</strong> {selectedResident.status}</p>
+              <p style={{ fontSize: 13 }}><strong>{t("residents.sitio")}:</strong> {selectedResident.sitio || "—"}</p>
+            </div>
           </div>
+
           {healthRecords.family_data.length > 0 && (
-            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 16 }}>
-              <thead>
-                <tr style={{ background: "transparent" }}>
-                  <th style={thStyle}>{t("familyData.familyNumber")}</th>
-                  <th style={thStyle}>{t("familyData.numHouseholds")}</th>
-                  <th style={thStyle}>{t("familyData.father")}</th>
-                  <th style={thStyle}>{t("familyData.mother")}</th>
-                  <th style={thStyle}>{t("familyData.males")}</th>
-                  <th style={thStyle}>{t("familyData.females")}</th>
-                  <th style={thStyle}>{t("familyData.totalMembers")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {healthRecords.family_data.map((f: any) => (
-                  <tr key={f.id}>
-                    <td style={tdStyle}>{f.family_number || "—"}</td>
-                    <td style={tdStyle}>{f.num_households}</td>
-                    <td style={tdStyle}>{f.father_name || "—"}</td>
-                    <td style={tdStyle}>{f.mother_name || "—"}</td>
-                    <td style={tdStyle}>{f.num_males}</td>
-                    <td style={tdStyle}>{f.num_females}</td>
-                    <td style={tdStyle}>{f.total_members}</td>
+            <div>
+              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <Home className="h-4 w-4 text-sky-600" /> Family Data Registry ({healthRecords.family_data.length})
+              </h3>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "transparent" }}>
+                    <th style={thStyle}>{t("familyData.familyNumber")}</th>
+                    <th style={thStyle}>{t("familyData.numHouseholds")}</th>
+                    <th style={thStyle}>{t("familyData.father")}</th>
+                    <th style={thStyle}>{t("familyData.mother")}</th>
+                    <th style={thStyle}>{t("familyData.males")}</th>
+                    <th style={thStyle}>{t("familyData.females")}</th>
+                    <th style={thStyle}>{t("familyData.totalMembers")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {healthRecords.family_data.map((f: any) => (
+                    <tr key={f.id}>
+                      <td style={tdStyle}>{f.family_number || "—"}</td>
+                      <td style={tdStyle}>{f.num_households}</td>
+                      <td style={tdStyle}>{f.father_name || "—"}</td>
+                      <td style={tdStyle}>{f.mother_name || "—"}</td>
+                      <td style={tdStyle}>{f.num_males}</td>
+                      <td style={tdStyle}>{f.num_females}</td>
+                      <td style={tdStyle}>{f.total_members}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-          {healthRecords.consultations.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#000000", marginTop: 20, borderBottom: "1px solid #000000", paddingBottom: 4 }}>{t("dashboard.consultations")} ({healthRecords.consultations.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "transparent" }}><th style={thStyle}>{t("consultation.date")}</th><th style={thStyle}>{t("consultation.temp")}</th><th style={thStyle}>PR</th><th style={thStyle}>RR</th><th style={thStyle}>{t("consultation.height")}</th><th style={thStyle}>{t("consultation.weight")}</th><th style={thStyle}>{t("consultation.cause")}</th></tr></thead><tbody>{healthRecords.consultations.map((c: any) => (<tr key={c.id}><td style={tdStyle}>{c.consultation_date}</td><td style={tdStyle}>{c.temperature || "—"}</td><td style={tdStyle}>{c.pulse_rate || "—"}</td><td style={tdStyle}>{c.respiration_rate || "—"}</td><td style={tdStyle}>{c.height || "—"}</td><td style={tdStyle}>{c.weight || "—"}</td><td style={tdStyle}>{c.consultation_cause || "—"}</td></tr>))}</tbody></table></>)}
-          {healthRecords.philpen_health.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#000000", marginTop: 20, borderBottom: "1px solid #000000", paddingBottom: 4 }}>{t("nav.philpenHealth")} ({healthRecords.philpen_health.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "transparent" }}><th style={thStyle}>{t("consultation.date")}</th><th style={thStyle}>{t("philpen.bp")}</th><th style={thStyle}>{t("consultation.height")}</th><th style={thStyle}>{t("consultation.weight")}</th><th style={thStyle}>{t("philpen.bmi")}</th><th style={thStyle}>{t("philpen.smoke")}</th><th style={thStyle}>{t("philpen.alcohol")}</th><th style={thStyle}>{t("philpen.highBP")}</th><th style={thStyle}>{t("philpen.diabetes")}</th></tr></thead><tbody>{healthRecords.philpen_health.map((p: any) => (<tr key={p.id}><td style={tdStyle}>{p.record_date}</td><td style={tdStyle}>{p.bp || "—"}</td><td style={tdStyle}>{p.height || "—"}</td><td style={tdStyle}>{p.weight || "—"}</td><td style={tdStyle}>{p.bmi || "—"}</td><td style={tdStyle}>{p.smokes ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.drinks_alcohol ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.high_blood_pressure ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{p.diabetes_symptoms ? t("common.yes") : t("common.no")}</td></tr>))}</tbody></table></>)}
-          {healthRecords.dengue_prevention.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#000000", marginTop: 20, borderBottom: "1px solid #000000", paddingBottom: 4 }}>{t("nav.denguePrevention")} ({healthRecords.dengue_prevention.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "transparent" }}><th style={thStyle}>{t("dengue.householdName")}</th><th style={thStyle}>{t("dengue.containerType")}</th><th style={thStyle}>{t("dengue.hasLarvae")}</th><th style={thStyle}>{t("dengue.actionPlan")}</th><th style={thStyle}>{t("dengue.signature")}</th></tr></thead><tbody>{healthRecords.dengue_prevention.map((d: any) => (<tr key={d.id}><td style={tdStyle}>{d.household_name || "—"}</td><td style={tdStyle}>{d.container_type || "—"}</td><td style={tdStyle}>{d.has_larvae ? t("common.yes") : t("common.no")}</td><td style={tdStyle}>{d.action_plan || "—"}</td><td style={tdStyle}>{d.signature || "—"}</td></tr>))}</tbody></table></>)}
-          {healthRecords.maternal_care.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#000000", marginTop: 20, borderBottom: "1px solid #000000", paddingBottom: 4 }}>{t("nav.maternalCare")} ({healthRecords.maternal_care.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "transparent" }}><th style={thStyle}>Checkup Date</th><th style={thStyle}>Remarks</th></tr></thead><tbody>{healthRecords.maternal_care.map((m: any) => (<tr key={m.id}><td style={tdStyle}>{m.checkup_date}</td><td style={tdStyle}>{m.remarks || "—"}</td></tr>))}</tbody></table></>)}
-          {healthRecords.child_health.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#000000", marginTop: 20, borderBottom: "1px solid #000000", paddingBottom: 4 }}>{t("nav.childHealth")} ({healthRecords.child_health.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "transparent" }}><th style={thStyle}>Checkup Date</th><th style={thStyle}>Remarks</th></tr></thead><tbody>{healthRecords.child_health.map((ch: any) => (<tr key={ch.id}><td style={tdStyle}>{ch.checkup_date}</td><td style={tdStyle}>{ch.remarks || "—"}</td></tr>))}</tbody></table></>)}
-          {healthRecords.family_planning.length > 0 && (<><h2 style={{ fontSize: 15, fontWeight: "bold", color: "#000000", marginTop: 20, borderBottom: "1px solid #000000", paddingBottom: 4 }}>{t("nav.familyPlanning")} ({healthRecords.family_planning.length})</h2><table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}><thead><tr style={{ background: "transparent" }}><th style={thStyle}>{t("fp.method")}</th><th style={thStyle}>{t("fp.startDate")}</th><th style={thStyle}>{t("fp.remarks")}</th></tr></thead><tbody>{healthRecords.family_planning.map((fp: any) => (<tr key={fp.id}><td style={tdStyle}>{fp.method}</td><td style={tdStyle}>{fp.start_date || "—"}</td><td style={tdStyle}>{fp.remarks || "—"}</td></tr>))}</tbody></table></>)}
-          {totalRecords === 0 && <p style={{ color: "#888", marginTop: 16, fontStyle: "italic" }}>{t("residents.noHealthRecords")}</p>}
+
+          {healthRecords.consultations.length > 0 && (
+            <div>
+              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <Activity className="h-4 w-4 text-emerald-600" /> {t("dashboard.consultations")} ({healthRecords.consultations.length})
+              </h3>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "transparent" }}>
+                    <th style={thStyle}>{t("consultation.date")}</th>
+                    <th style={thStyle}>{t("consultation.temp")}</th>
+                    <th style={thStyle}>PR</th>
+                    <th style={thStyle}>RR</th>
+                    <th style={thStyle}>{t("consultation.height")}</th>
+                    <th style={thStyle}>{t("consultation.weight")}</th>
+                    <th style={thStyle}>{t("consultation.cause")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {healthRecords.consultations.map((c: any) => (
+                    <tr key={c.id}>
+                      <td style={tdStyle}>{c.consultation_date}</td>
+                      <td style={tdStyle}>{c.temperature || "—"}</td>
+                      <td style={tdStyle}>{c.pulse_rate || "—"}</td>
+                      <td style={tdStyle}>{c.respiration_rate || "—"}</td>
+                      <td style={tdStyle}>{c.height || "—"}</td>
+                      <td style={tdStyle}>{c.weight || "—"}</td>
+                      <td style={tdStyle}>{c.consultation_cause || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {healthRecords.philpen_health.length > 0 && (
+            <div>
+              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <Heart className="h-4 w-4 text-rose-600" /> {t("nav.philpenHealth")} ({healthRecords.philpen_health.length})
+              </h3>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "transparent" }}>
+                    <th style={thStyle}>{t("consultation.date")}</th>
+                    <th style={thStyle}>{t("philpen.bp")}</th>
+                    <th style={thStyle}>{t("consultation.height")}</th>
+                    <th style={thStyle}>{t("consultation.weight")}</th>
+                    <th style={thStyle}>{t("philpen.bmi")}</th>
+                    <th style={thStyle}>{t("philpen.smoke")}</th>
+                    <th style={thStyle}>{t("philpen.alcohol")}</th>
+                    <th style={thStyle}>{t("philpen.highBP")}</th>
+                    <th style={thStyle}>{t("philpen.diabetes")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {healthRecords.philpen_health.map((p: any) => (
+                    <tr key={p.id}>
+                      <td style={tdStyle}>{p.record_date}</td>
+                      <td style={tdStyle}>{p.bp || "—"}</td>
+                      <td style={tdStyle}>{p.height || "—"}</td>
+                      <td style={tdStyle}>{p.weight || "—"}</td>
+                      <td style={tdStyle}>{p.bmi || "—"}</td>
+                      <td style={tdStyle}>{p.smokes ? t("common.yes") : t("common.no")}</td>
+                      <td style={tdStyle}>{p.drinks_alcohol ? t("common.yes") : t("common.no")}</td>
+                      <td style={tdStyle}>{p.high_blood_pressure ? t("common.yes") : t("common.no")}</td>
+                      <td style={tdStyle}>{p.diabetes_symptoms ? t("common.yes") : t("common.no")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {healthRecords.dengue_prevention.length > 0 && (
+            <div>
+              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <Activity className="h-4 w-4 text-teal-600" /> {t("nav.denguePrevention")} ({healthRecords.dengue_prevention.length})
+              </h3>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "transparent" }}>
+                    <th style={thStyle}>{t("dengue.householdName")}</th>
+                    <th style={thStyle}>{t("dengue.containerType")}</th>
+                    <th style={thStyle}>{t("dengue.hasLarvae")}</th>
+                    <th style={thStyle}>{t("dengue.actionPlan")}</th>
+                    <th style={thStyle}>{t("dengue.signature")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {healthRecords.dengue_prevention.map((d: any) => (
+                    <tr key={d.id}>
+                      <td style={tdStyle}>{d.household_name || "—"}</td>
+                      <td style={tdStyle}>{d.container_type || "—"}</td>
+                      <td style={tdStyle}>{d.has_larvae ? t("common.yes") : t("common.no")}</td>
+                      <td style={tdStyle}>{d.action_plan || "—"}</td>
+                      <td style={tdStyle}>{d.signature || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {healthRecords.maternal_care.length > 0 && (
+            <div>
+              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <Heart className="h-4 w-4 text-pink-600" /> {t("nav.maternalCare")} ({healthRecords.maternal_care.length})
+              </h3>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "transparent" }}>
+                    <th style={thStyle}>Checkup Date</th>
+                    <th style={thStyle}>Remarks</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {healthRecords.maternal_care.map((m: any) => (
+                    <tr key={m.id}>
+                      <td style={tdStyle}>{m.checkup_date}</td>
+                      <td style={tdStyle}>{m.remarks || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {healthRecords.child_health.length > 0 && (
+            <div>
+              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <Activity className="h-4 w-4 text-amber-600" /> {t("nav.childHealth")} ({healthRecords.child_health.length})
+              </h3>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "transparent" }}>
+                    <th style={thStyle}>Checkup Date</th>
+                    <th style={thStyle}>Remarks</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {healthRecords.child_health.map((ch: any) => (
+                    <tr key={ch.id}>
+                      <td style={tdStyle}>{ch.checkup_date}</td>
+                      <td style={tdStyle}>{ch.remarks || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {healthRecords.family_planning.length > 0 && (
+            <div>
+              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <Activity className="h-4 w-4 text-indigo-600" /> {t("nav.familyPlanning")} ({healthRecords.family_planning.length})
+              </h3>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "transparent" }}>
+                    <th style={thStyle}>{t("fp.method")}</th>
+                    <th style={thStyle}>{t("fp.startDate")}</th>
+                    <th style={thStyle}>{t("fp.remarks")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {healthRecords.family_planning.map((fp: any) => (
+                    <tr key={fp.id}>
+                      <td style={tdStyle}>{fp.method}</td>
+                      <td style={tdStyle}>{fp.start_date || "—"}</td>
+                      <td style={tdStyle}>{fp.remarks || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {totalRecords === 0 && (
+            <p className="text-xs text-muted-foreground italic py-4 text-center">
+              {t("residents.noHealthRecords")}
+            </p>
+          )}
+
           <div className="print-only flex justify-between items-center mt-6">
             <p className="print-date" style={{ fontSize: 10, color: "#6b7280" }}>{new Date().toLocaleString()}</p>
           </div>
         </div>
+
+        {/* Edit Dialog inside detail view */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader><DialogTitle>{t("residents.editResident")}</DialogTitle><DialogDescription>{t("residents.editResidentDesc")}</DialogDescription></DialogHeader>
+            {editResident && (
+              <div className="space-y-3">
+                <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={editResident.full_name} onChange={(e) => setEditResident({ ...editResident, full_name: e.target.value })} /></div>
+                <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={editResident.birthday || ""} onChange={(e) => {
+                  const bday = e.target.value;
+                  const computed = calculateAge(bday);
+                  setEditResident({ ...editResident, birthday: bday, age: computed > 0 ? computed : editResident.age });
+                }} /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={editResident.gender} onValueChange={(v) => setEditResident({ ...editResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
+                  <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={editResident.age} onChange={(e) => setEditResident({ ...editResident, age: Number(e.target.value) })} /></div>
+                </div>
+                <div className="space-y-1"><Label>{t("residents.civilStatus")}</Label><Select value={editResident.status} onValueChange={(v) => setEditResident({ ...editResident, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">{t("residents.single")}</SelectItem><SelectItem value="Married">{t("residents.married")}</SelectItem><SelectItem value="Widowed">{t("residents.widowed")}</SelectItem><SelectItem value="Separated">{t("residents.separated")}</SelectItem></SelectContent></Select></div>
+                <div className="space-y-1">
+                  <Label>{t("residents.sitio")}</Label>
+                  <Select value={editResident.sitio || ""} onValueChange={(v) => setEditResident({ ...editResident, sitio: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select Sitio" /></SelectTrigger>
+                    <SelectContent>
+                      {SUBUKIN_SITIOS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+            <DialogFooter><Button variant="outline" onClick={() => setEditDialogOpen(false)}>{t("common.cancel")}</Button><Button onClick={handleEditResident}>{t("common.saveChanges")}</Button></DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 max-w-full">
       <style>{`
         .print-only { display: none !important; }
         .print-only-table { display: none !important; }
@@ -254,22 +560,219 @@ const ResidentRecords = () => {
         }
       `}</style>
 
-      <div className="flex items-center justify-end no-print">
-        <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> {t("residents.printList")}</Button>
+      {/* Population Demographics Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 no-print">
+        <Card className="border border-sky-500/20 bg-gradient-to-br from-sky-500/10 via-sky-500/5 to-transparent shadow-xs">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase">Total Population</p>
+              <h3 className="text-2xl font-heading font-extrabold text-foreground mt-0.5">{residents.length}</h3>
+              <p className="text-[11px] text-sky-600 dark:text-sky-400 mt-1 font-medium">Registered Residents</p>
+            </div>
+            <div className="p-3 rounded-2xl bg-sky-500/15 text-sky-600 dark:text-sky-400">
+              <Users className="h-5 w-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent shadow-xs">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase">Male Residents</p>
+              <h3 className="text-2xl font-heading font-extrabold text-foreground mt-0.5">{totalMale}</h3>
+              <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                {residents.length > 0 ? Math.round((totalMale / residents.length) * 100) : 0}% of Total
+              </p>
+            </div>
+            <div className="p-3 rounded-2xl bg-blue-500/15 text-blue-600 dark:text-blue-400">
+              <User className="h-5 w-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-pink-500/20 bg-gradient-to-br from-pink-500/10 via-pink-500/5 to-transparent shadow-xs">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase">Female Residents</p>
+              <h3 className="text-2xl font-heading font-extrabold text-foreground mt-0.5">{totalFemale}</h3>
+              <p className="text-[11px] text-pink-600 dark:text-pink-400 mt-1 font-medium">
+                {residents.length > 0 ? Math.round((totalFemale / residents.length) * 100) : 0}% of Total
+              </p>
+            </div>
+            <div className="p-3 rounded-2xl bg-pink-500/15 text-pink-600 dark:text-pink-400">
+              <User className="h-5 w-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent shadow-xs">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase">Children (0–12 yrs)</p>
+              <h3 className="text-2xl font-heading font-extrabold text-foreground mt-0.5">{totalChildren}</h3>
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 font-medium">Pediatric Monitoring</p>
+            </div>
+            <div className="p-3 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+              <Sparkles className="h-5 w-5" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 no-print">
-        <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input className="pl-10" placeholder={t("residents.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} /></div>
-        <Select value={sitioFilter} onValueChange={setSitioFilter}>
-          <SelectTrigger className="w-full sm:w-56"><SelectValue placeholder={t("residents.sitio")} /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Sitios</SelectItem>
-            {sitios.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-          </SelectContent>
-        </Select>
+      {/* Header Actions & Search Bar */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 no-print border-b border-border/40 pb-4">
+        
+        {/* Search & Sitio Filter */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              className="pl-9 text-xs bg-background" 
+              placeholder="Search by name, sitio, or family number..." 
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)} 
+            />
+          </div>
+
+          <Select value={sitioFilter} onValueChange={setSitioFilter}>
+            <SelectTrigger className="w-full sm:w-48 text-xs bg-background">
+              <SelectValue placeholder="All Sitios" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sitios ({residents.length})</SelectItem>
+              {sitios.map((s) => (
+                <SelectItem key={s} value={s}>
+                  Sitio {s} ({residents.filter(r => r.sitio === s).length})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* View Mode Toggle & Add Button */}
+        <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
+          <div className="flex items-center p-1 rounded-lg bg-muted border border-border/50">
+            <Button
+              variant={viewMode === "grid" ? "secondary" : "ghost"}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setViewMode("grid")}
+              title="Grid View"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setViewMode("list")}
+              title="List View"
+            >
+              <ListIcon className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1.5 text-xs font-bold bg-primary text-primary-foreground shadow-xs">
+                <UserPlus className="h-3.5 w-3.5" />
+                Add Resident
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="font-heading font-bold flex items-center gap-2">
+                  <UserPlus className="h-5 w-5 text-primary" />
+                  Add New Resident
+                </DialogTitle>
+                <DialogDescription>
+                  Register a new resident in Barangay Subukin database.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 pt-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">{t("residents.fullName")} *</Label>
+                  <Input 
+                    placeholder="e.g. Juan Dela Cruz" 
+                    value={newResident.full_name} 
+                    onChange={(e) => setNewResident({ ...newResident, full_name: e.target.value })} 
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs">{t("residents.birthday")}</Label>
+                  <Input 
+                    type="date" 
+                    value={newResident.birthday} 
+                    onChange={(e) => {
+                      const bday = e.target.value;
+                      const computed = calculateAge(bday);
+                      setNewResident({ ...newResident, birthday: bday, age: computed > 0 ? String(computed) : newResident.age });
+                    }} 
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t("residents.gender")}</Label>
+                    <Select value={newResident.gender} onValueChange={(v) => setNewResident({ ...newResident, gender: v })}>
+                      <SelectTrigger className="text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Male">{t("residents.male")}</SelectItem>
+                        <SelectItem value="Female">{t("residents.female")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t("residents.age")}</Label>
+                    <Input 
+                      type="number" 
+                      placeholder="Age" 
+                      value={newResident.age} 
+                      onChange={(e) => setNewResident({ ...newResident, age: e.target.value })} 
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs">{t("residents.civilStatus")}</Label>
+                  <Select value={newResident.status} onValueChange={(v) => setNewResident({ ...newResident, status: v })}>
+                    <SelectTrigger className="text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Single">{t("residents.single")}</SelectItem>
+                      <SelectItem value="Married">{t("residents.married")}</SelectItem>
+                      <SelectItem value="Widowed">{t("residents.widowed")}</SelectItem>
+                      <SelectItem value="Separated">{t("residents.separated")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs">{t("residents.sitio")}</Label>
+                  <Select value={newResident.sitio} onValueChange={(v) => setNewResident({ ...newResident, sitio: v })}>
+                    <SelectTrigger className="text-xs"><SelectValue placeholder="Select Sitio" /></SelectTrigger>
+                    <SelectContent>
+                      {SUBUKIN_SITIOS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter className="pt-4">
+                <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>{t("common.cancel")}</Button>
+                <Button size="sm" onClick={handleAddResident}>{t("common.save")}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs">
+            <Printer className="h-3.5 w-3.5" />
+            Print List
+          </Button>
+        </div>
       </div>
 
-      <div id="resident-print-area" className="space-y-3">
+      <div id="resident-print-area" className="space-y-4">
+        
         {/* Official Printable Header Seal */}
         <div 
           className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
@@ -282,7 +785,7 @@ const ResidentRecords = () => {
 
         <div className="print-only flex justify-between items-center mb-4">
           <h2 style={{ fontSize: 16, fontWeight: "bold" }}>
-            {t("residents.title")}{sitioFilter !== "all" ? ` — ${sitioFilter}` : ""}
+            {t("residents.title")}{sitioFilter !== "all" ? ` — Sitio ${sitioFilter}` : ""}
           </h2>
         </div>
 
@@ -319,39 +822,159 @@ const ResidentRecords = () => {
           <p className="print-date" style={{ fontSize: 10, color: "#6b7280" }}>{new Date().toLocaleString()}</p>
         </div>
 
-        <div className="no-print space-y-3">
-          {loading ? (<p className="text-center text-muted-foreground py-8">{t("residents.loadingResidents")}</p>) : filtered.length === 0 ? (<p className="text-center text-muted-foreground py-8">{t("residents.noResidents")}</p>) : (
-            filtered.map((resident) => (
-              <Card key={resident.id} className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="flex items-center justify-between py-4">
-                  <div className="flex items-center gap-4 cursor-pointer flex-1" onClick={() => handleSelectResident(resident)}>
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center"><span className="text-sm font-semibold text-primary">{resident.full_name.split(" ").map((n) => n[0]).join("")}</span></div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-foreground">{resident.full_name}</p>
-                        {resident.family_number && (
-                          <Badge variant="outline" className="text-[11px] bg-primary/10 text-primary border-primary/30 font-mono">
-                            Family #: {resident.family_number}
-                          </Badge>
-                        )}
+        {/* Screen View: Grid vs Compact List */}
+        <div className="no-print space-y-4">
+          {loading ? (
+            <div className="text-center text-muted-foreground py-12 space-y-2">
+              <div className="h-6 bg-muted animate-pulse rounded w-48 mx-auto" />
+              <p className="text-xs">{t("residents.loadingResidents")}</p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <Card className="border border-dashed p-8 text-center text-muted-foreground">
+              <Users className="h-10 w-10 mx-auto opacity-30 text-primary mb-2" />
+              <p className="text-sm font-semibold">{t("residents.noResidents")}</p>
+              <p className="text-xs mt-1">Try adjusting your search terms or sitio filter.</p>
+            </Card>
+          ) : viewMode === "grid" ? (
+            /* GRID VIEW CARDS */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filtered.map((resident) => (
+                <Card 
+                  key={resident.id} 
+                  className="border-border/60 shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 bg-card group relative overflow-hidden"
+                >
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div 
+                        className="flex items-center gap-3 cursor-pointer flex-1 min-w-0" 
+                        onClick={() => handleSelectResident(resident)}
+                      >
+                        <div className={`h-11 w-11 rounded-2xl ${resident.gender.toLowerCase() === "female" ? "bg-pink-500/15 text-pink-600 dark:text-pink-400" : "bg-sky-500/15 text-sky-600 dark:text-sky-400"} flex items-center justify-center font-bold text-sm shrink-0 border border-border/40 shadow-2xs`}>
+                          {resident.full_name.split(" ").map((n) => n[0]).join("")}
+                        </div>
+
+                        <div className="min-w-0">
+                          <h4 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors flex items-center gap-1.5">
+                            {resident.full_name}
+                          </h4>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            {resident.family_number && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30 font-mono">
+                                Family #: {resident.family_number}
+                              </Badge>
+                            )}
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-muted text-muted-foreground font-medium">
+                              Sitio {resident.sitio || "Subukin"}
+                            </Badge>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">{resident.sitio ? `${resident.sitio} · ` : ""}{resident.gender} · {t("residents.age")} {resident.age} · {resident.status}{resident.birthday ? ` · ${t("residents.birthday")} ${resident.birthday}` : ""}</p>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                          onClick={() => { setEditResident(resident); setEditDialogOpen(true); }}
+                          title="Edit Resident"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => setDeleteConfirmId(resident.id)}
+                          title="Delete Resident"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    {resident.family_number && (
-                      <Badge variant="secondary" className="text-xs font-mono">
-                        {resident.family_number}
-                      </Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+
+                    <div className="pt-2 border-t border-border/30 grid grid-cols-3 gap-1 text-[11px] text-muted-foreground">
+                      <div>
+                        <span>Gender:</span> <strong className="text-foreground block">{resident.gender}</strong>
+                      </div>
+                      <div>
+                        <span>Age:</span> <strong className="text-foreground block">{resident.age} yrs</strong>
+                      </div>
+                      <div>
+                        <span>Status:</span> <strong className="text-foreground block">{resident.status}</strong>
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs h-7 gap-1 mt-2 text-primary border-primary/20 hover:bg-primary/10 font-medium"
+                      onClick={() => handleSelectResident(resident)}
+                    >
+                      <FileText className="h-3.5 w-3.5" /> View Health Records <ChevronRight className="h-3 w-3 ml-auto" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            /* COMPACT LIST VIEW TABLE */
+            <Card className="border-border/60 shadow-xs bg-card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-muted/50 border-b border-border/50 text-muted-foreground font-semibold">
+                    <tr>
+                      <th className="p-3">Resident Name</th>
+                      <th className="p-3">Family #</th>
+                      <th className="p-3">Sitio</th>
+                      <th className="p-3">Gender</th>
+                      <th className="p-3">Age</th>
+                      <th className="p-3">Birthday</th>
+                      <th className="p-3">Civil Status</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {filtered.map((r) => (
+                      <tr key={r.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="p-3 font-semibold text-foreground cursor-pointer hover:text-primary" onClick={() => handleSelectResident(r)}>
+                          {r.full_name}
+                        </td>
+                        <td className="p-3 font-mono text-primary font-bold">
+                          {r.family_number || "—"}
+                        </td>
+                        <td className="p-3">
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            {r.sitio || "Subukin"}
+                          </Badge>
+                        </td>
+                        <td className="p-3">{r.gender}</td>
+                        <td className="p-3 font-medium">{r.age} yrs</td>
+                        <td className="p-3 text-muted-foreground">{r.birthday || "—"}</td>
+                        <td className="p-3">{r.status}</td>
+                        <td className="p-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary" onClick={() => handleSelectResident(r)}>
+                              <FileText className="h-3.5 w-3.5" /> Records
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => { setEditResident(r); setEditDialogOpen(true); }}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setDeleteConfirmId(r.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
           )}
         </div>
       </div>
 
+      {/* Edit Resident Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>{t("residents.editResident")}</DialogTitle><DialogDescription>{t("residents.editResidentDesc")}</DialogDescription></DialogHeader>
@@ -383,6 +1006,7 @@ const ResidentRecords = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Alert */}
       <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>{t("residents.deleteResident")}</AlertDialogTitle><AlertDialogDescription>{t("residents.deleteResidentDesc")}</AlertDialogDescription></AlertDialogHeader>
