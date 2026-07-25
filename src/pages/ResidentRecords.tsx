@@ -194,6 +194,7 @@ const ResidentRecords = () => {
             }
             .no-print { display: none !important; }
             .print-only { display: flex !important; }
+            .print-resident-header { display: block !important; width: 100% !important; }
             .print-only-table { display: table !important; }
             .header-seal img { mix-blend-mode: multiply !important; }
             @page { size: A4 landscape; margin: 10mm; }
@@ -258,11 +259,11 @@ const ResidentRecords = () => {
           </Card>
 
           {/* Printable Resident Header Info */}
-          <div className="print-only" style={{ display: "none", width: "100%", borderBottom: "2px solid #000", paddingBottom: "12px", marginBottom: "16px" }}>
-            <h1 style={{ fontSize: "22px", fontWeight: "800", color: "#000", marginBottom: "6px", display: "block", clear: "both", lineHeight: "1.3" }}>
+          <div className="print-only print-resident-header" style={{ display: "none", width: "100%", borderBottom: "2px solid #000", paddingBottom: "10px", marginBottom: "16px", textAlign: "left" }}>
+            <div style={{ fontSize: "20px", fontWeight: "800", color: "#000", marginBottom: "6px", display: "block", width: "100%", clear: "both" }}>
               {selectedResident.full_name}
-            </h1>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "10px 20px", fontSize: "12px", color: "#000", lineHeight: "1.4", marginTop: "4px" }}>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 20px", fontSize: "12px", color: "#000", lineHeight: "1.4", width: "100%" }}>
               <span><strong>{t("residents.gender")}:</strong> {selectedResident.gender}</span>
               <span><strong>{t("residents.age")}:</strong> {selectedResident.age} yrs</span>
               <span><strong>{t("residents.birthday")}:</strong> {selectedResident.birthday || "—"}</span>
