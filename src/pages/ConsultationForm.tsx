@@ -6,16 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Stethoscope, Printer, RefreshCw } from "lucide-react";
+import { Stethoscope, Printer, RefreshCw, UserCheck, Activity, FileText, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
-import { ensureResidentExists } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import { calculateAge } from "@/lib/residentLinker";
 
-const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-9";
-const lineSelectClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus:ring-0 focus:border-slate-800 dark:focus:border-slate-200 shadow-none h-9";
-const lineTextareaClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none resize-y min-h-[60px]";
+const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary dark:focus-visible:border-primary shadow-none h-9 transition-colors placeholder:text-muted-foreground/50";
+const lineSelectClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus:ring-0 focus:border-primary dark:focus:border-primary shadow-none h-9 transition-colors";
+const lineTextareaClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary dark:focus-visible:border-primary shadow-none resize-y min-h-[70px] transition-colors placeholder:text-muted-foreground/50";
 
 const ConsultationForm = () => {
   const { t } = useSettings();
@@ -165,63 +164,170 @@ const ConsultationForm = () => {
         }
       `}</style>
 
-      <Card id="consultation-print-area" className="border-border/50 shadow-sm">
-        <CardContent className="pt-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t("consultation.resident")} *</Label>
-                <div className="no-print">
-                  <Select value={form.resident_id} onValueChange={handleSelectResident}>
-                    <SelectTrigger className={lineSelectClass}><SelectValue placeholder={t("consultation.selectResident")} /></SelectTrigger>
-                    <SelectContent>
-                      {residents.map((r) => <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+      {/* Dynamic Theme Banner */}
+      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+            <Stethoscope className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
+              {t("consultation.title") || "Consultation Record Form"}
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Record patient vitals, physical measurements, and clinical notes for Barangay Subukin health registry.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Consultation Form Card */}
+      <Card id="consultation-print-area" className="border-border/60 shadow-md bg-card rounded-2xl overflow-hidden">
+        <CardContent className="p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            
+            {/* Section 1: Patient Identification */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-1 border-b border-border/40">
+                <UserCheck className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Patient Identification & Schedule
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">{t("consultation.resident")} *</Label>
+                  <div className="no-print">
+                    <Select value={form.resident_id} onValueChange={handleSelectResident}>
+                      <SelectTrigger className={lineSelectClass}>
+                        <SelectValue placeholder={t("consultation.selectResident")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {residents.map((r) => <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <span className="hidden print:block border-b-2 border-slate-300 w-full min-h-[1.5rem] px-1 font-medium">
+                    {residents.find(r => r.id === form.resident_id)?.full_name || ""}
+                  </span>
                 </div>
-                <span className="hidden print:block border-b-2 border-slate-300 w-full min-h-[1.5rem] px-1 font-medium">
-                  {residents.find(r => r.id === form.resident_id)?.full_name || ""}
-                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">{t("consultation.sitio")}</Label>
+                  <Input className={lineInputClass} value={form.sitio} onChange={(e) => handleChange("sitio", e.target.value)} placeholder="Sitio / Area" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">{t("consultation.date")}</Label>
+                  <div className="no-print">
+                    <Input className={lineInputClass} type="date" value={form.date} onChange={(e) => handleChange("date", e.target.value)} />
+                  </div>
+                  <span className="hidden print:block border-b-2 border-slate-300 w-full min-h-[1.5rem] px-1 font-medium">
+                    {form.date || ""}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">{t("consultation.birthdate")}</Label>
+                  <Input className={lineInputClass} type="text" value={form.birthdate} onChange={(e) => {
+                    const bday = e.target.value;
+                    const computed = calculateAge(bday);
+                    setForm(prev => ({ ...prev, birthdate: bday, age: computed > 0 ? String(computed) : prev.age }));
+                  }} placeholder="YYYY-MM-DD" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">{t("consultation.age")}</Label>
+                  <Input className={lineInputClass} type="number" value={form.age} onChange={(e) => handleChange("age", e.target.value)} placeholder="Age" />
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{t("consultation.sitio")}</Label><Input className={lineInputClass} value={form.sitio} onChange={(e) => handleChange("sitio", e.target.value)} placeholder="Sitio / Area" /></div>
-              <div className="space-y-2">
-                <Label>{t("consultation.date")}</Label>
-                <div className="no-print">
-                  <Input className={lineInputClass} type="date" value={form.date} onChange={(e) => handleChange("date", e.target.value)} />
+
+            {/* Section 2: Vitals & Physical Measurements */}
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-2 pb-1 border-b border-border/40">
+                <Activity className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Vital Signs & Physical Measurements
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">{t("consultation.temp")}</Label>
+                  <Input className={lineInputClass} value={form.temperature} onChange={(e) => handleChange("temperature", e.target.value)} placeholder="36.5 °C" />
                 </div>
-                <span className="hidden print:block border-b-2 border-slate-300 w-full min-h-[1.5rem] px-1 font-medium">
-                  {form.date || ""}
-                </span>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">{t("consultation.pulseRate")}</Label>
+                  <Input className={lineInputClass} value={form.pulseRate} onChange={(e) => handleChange("pulseRate", e.target.value)} placeholder="bpm" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">{t("consultation.respRate")}</Label>
+                  <Input className={lineInputClass} value={form.respirationRate} onChange={(e) => handleChange("respirationRate", e.target.value)} placeholder="bpm" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">{t("consultation.height")}</Label>
+                  <Input className={lineInputClass} value={form.height} onChange={(e) => handleChange("height", e.target.value)} placeholder="cm" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">{t("consultation.weight")}</Label>
+                  <Input className={lineInputClass} value={form.weight} onChange={(e) => handleChange("weight", e.target.value)} placeholder="kg" />
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2"><Label>{t("consultation.birthdate")}</Label><Input className={lineInputClass} type="text" value={form.birthdate} onChange={(e) => {
-                const bday = e.target.value;
-                const computed = calculateAge(bday);
-                setForm(prev => ({ ...prev, birthdate: bday, age: computed > 0 ? String(computed) : prev.age }));
-              }} placeholder="" /></div>
-              <div className="space-y-2"><Label>{t("consultation.age")}</Label><Input className={lineInputClass} type="number" value={form.age} onChange={(e) => handleChange("age", e.target.value)} placeholder="Age" /></div>
+
+            {/* Section 3: Clinical Notes */}
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-2 pb-1 border-b border-border/40">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Clinical Diagnosis & Complaint
+                </h3>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">{t("consultation.cause")}</Label>
+                <Textarea 
+                  className={lineTextareaClass} 
+                  value={form.consultationCause} 
+                  onChange={(e) => handleChange("consultationCause", e.target.value)} 
+                  placeholder="Describe reason for consultation..." 
+                  rows={3} 
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="space-y-2"><Label>{t("consultation.temp")}</Label><Input className={lineInputClass} value={form.temperature} onChange={(e) => handleChange("temperature", e.target.value)} placeholder="36.5" /></div>
-              <div className="space-y-2"><Label>{t("consultation.pulseRate")}</Label><Input className={lineInputClass} value={form.pulseRate} onChange={(e) => handleChange("pulseRate", e.target.value)} placeholder="bpm" /></div>
-              <div className="space-y-2"><Label>{t("consultation.respRate")}</Label><Input className={lineInputClass} value={form.respirationRate} onChange={(e) => handleChange("respirationRate", e.target.value)} placeholder="bpm" /></div>
-              <div className="space-y-2"><Label>{t("consultation.height")}</Label><Input className={lineInputClass} value={form.height} onChange={(e) => handleChange("height", e.target.value)} placeholder="cm" /></div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="space-y-2"><Label>{t("consultation.weight")}</Label><Input className={lineInputClass} value={form.weight} onChange={(e) => handleChange("weight", e.target.value)} placeholder="kg" /></div></div>
-            <div className="space-y-2"><Label>{t("consultation.cause")}</Label><Textarea className={lineTextareaClass} value={form.consultationCause} onChange={(e) => handleChange("consultationCause", e.target.value)} placeholder="Describe reason for consultation..." rows={3} /></div>
-            <div className="pt-4 flex gap-3 no-print">
-              <Button type="submit">{t("consultation.saveConsultation")}</Button>
-              <Button type="button" variant="outline" onClick={handlePrint}>
-                <Printer className="h-4 w-4 mr-2" /> Print Form
+
+            {/* Form Actions */}
+            <div className="pt-6 border-t border-border/40 flex flex-wrap items-center gap-3 no-print">
+              <Button 
+                type="submit" 
+                className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all duration-200 gap-2 px-6"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                {t("consultation.saveConsultation")}
               </Button>
+              
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handlePrint}
+                className="border-primary/30 text-primary hover:bg-primary/10 font-semibold gap-2 px-5"
+              >
+                <Printer className="h-4 w-4" /> 
+                Print Form
+              </Button>
+
               <Button 
                 type="button" 
                 onClick={handleReset}
-                className="gap-1.5 text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium shadow-sm"
                 variant="outline"
+                className="border-destructive/30 text-destructive hover:bg-destructive/10 font-medium gap-2 px-4 ml-auto"
               >
                 <RefreshCw className="h-4 w-4" />
                 Reset
