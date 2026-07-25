@@ -1025,13 +1025,12 @@ const ChildHealthForm = () => {
             color: transparent !important;
             -webkit-text-fill-color: transparent !important;
           }
-          input:placeholder-shown {
-            color: transparent !important;
-            -webkit-text-fill-color: transparent !important;
+          .overflow-x-auto {
+            overflow: visible !important;
           }
           @page {
-            size: A4 portrait;
-            margin: 8mm;
+            size: A4 landscape;
+            margin: 6mm;
           }
         }
       `}</style>

@@ -583,8 +583,8 @@ const FamilyDataForm = () => {
             display: flex !important;
           }
           @page {
-            size: A4 portrait;
-            margin: 10mm;
+            size: A4 landscape;
+            margin: 6mm;
           }
         }
       `}</style>
