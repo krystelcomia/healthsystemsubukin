@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { 
   Baby, 
@@ -422,6 +423,254 @@ const ChildHealthForm = () => {
     getDatabaseSitios().then(sits => setSitioOptions(sits));
   }, []);
 
+  const getRecordFormType = (rec: any): "sick-children" | "vitamin-a" | "sia-masterlist" => {
+    if (rec.details) {
+      try {
+        const d = typeof rec.details === "string" ? JSON.parse(rec.details) : rec.details;
+        if (d.form_type === "care_for_sick_children_2m_5y") return "sick-children";
+        if (d.form_type === "vitamin_a_rhu2_masterlist") return "vitamin-a";
+        if (d.form_type === "sia_masterlist_6_59m") return "sia-masterlist";
+      } catch {}
+    }
+    const remarks = (rec.remarks || "").toLowerCase();
+    if (remarks.includes("[vitamin a") || remarks.includes("vitamin a & deworming")) {
+      return "vitamin-a";
+    }
+    if (remarks.includes("[sia masterlist") || remarks.includes("sia master list") || remarks.includes("sia masterlist")) {
+      return "sia-masterlist";
+    }
+    return "sick-children";
+  };
+
+  const getRecordChildName = (rec: any) => {
+    if (rec.residents?.full_name) return rec.residents.full_name;
+    if (rec.details) {
+      try {
+        const d = typeof rec.details === "string" ? JSON.parse(rec.details) : rec.details;
+        if (d.first_name || d.surname) {
+          const name = `${d.first_name || ""} ${d.middle_name || ""} ${d.surname || ""}`.trim();
+          if (name) return name;
+        }
+        if (d.row_data?.child_name) return d.row_data.child_name;
+        if (d.row_data?.child_family_name || d.row_data?.child_given_name) {
+          const name = `${d.row_data?.child_given_name || ""} ${d.row_data?.child_middle_name || ""} ${d.row_data?.child_family_name || ""}`.trim();
+          if (name) return name;
+        }
+      } catch {}
+    }
+    if (rec.remarks) {
+      if (rec.remarks.includes("Child:")) {
+        const match = rec.remarks.match(/Child:\s*([^,]+)/);
+        if (match && match[1]) return match[1].trim();
+      }
+      const bracketMatch = rec.remarks.match(/\]\s*([^(]+)/);
+      if (bracketMatch && bracketMatch[1]) return bracketMatch[1].trim();
+    }
+    return "Child Patient";
+  };
+
+  const sickRecordsCount = savedHealthRecords.filter(r => getRecordFormType(r) === "sick-children").length;
+  const vitARecordsCount = savedHealthRecords.filter(r => getRecordFormType(r) === "vitamin-a").length;
+  const siaRecordsCount = savedHealthRecords.filter(r => getRecordFormType(r) === "sia-masterlist").length;
+
+  const renderHistoryCard = (formType: "sick-children" | "vitamin-a" | "sia-masterlist") => {
+    const formRecords = savedHealthRecords.filter(r => getRecordFormType(r) === formType);
+    const term = historySearch.toLowerCase().trim();
+
+    const displayedRecords = formRecords.filter(r => {
+      if (!term) return true;
+      const childName = getRecordChildName(r).toLowerCase();
+      const remarks = (r.remarks || "").toLowerCase();
+      return childName.includes(term) || remarks.includes(term);
+    });
+
+    const configs = {
+      "sick-children": {
+        title: "Saved Care for Sick Children Records History",
+        subtitle: "Barangay Subukin – Care for Sick Children (2m - 5y) Clinical Database",
+        icon: <Stethoscope className="h-5 w-5 text-sky-600" />,
+        badgeColor: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border-sky-200",
+        emptyMsg: "No saved Care for Sick Children records found.",
+      },
+      "vitamin-a": {
+        title: "Saved Vitamin A & Deworming Master List History",
+        subtitle: "Barangay Subukin – Vitamin A & Deworming Master List RHU2 Database",
+        icon: <Pill className="h-5 w-5 text-amber-600" />,
+        badgeColor: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-200",
+        emptyMsg: "No saved Vitamin A & Deworming master list records found.",
+      },
+      "sia-masterlist": {
+        title: "Saved SIA Master List History",
+        subtitle: "Barangay Subukin – Supplemental Immunization Activity (6–59 Months) Database",
+        icon: <Syringe className="h-5 w-5 text-emerald-600" />,
+        badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200",
+        emptyMsg: "No saved SIA master list records found.",
+      },
+    };
+
+    const config = configs[formType];
+
+    return (
+      <Card className="border border-border/50 shadow-md bg-card text-card-foreground no-print mt-6">
+        <CardHeader className="pb-3 border-b">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              {config.icon}
+              <div>
+                <CardTitle className="text-base font-bold flex items-center gap-2 font-heading">
+                  {config.title}
+                  <Badge variant="outline" className={`text-[10px] px-2 py-0.5 font-semibold ${config.badgeColor}`}>
+                    {formRecords.length} {formRecords.length === 1 ? "record" : "records"}
+                  </Badge>
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {config.subtitle}
+                </p>
+              </div>
+            </div>
+
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <Input 
+                type="text" 
+                placeholder="Search child name..." 
+                value={historySearch} 
+                onChange={e => setHistorySearch(e.target.value)} 
+                className="pl-8 h-8 text-xs"
+              />
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-0 overflow-x-auto">
+          {loading ? (
+            <div className="text-center py-8 text-xs text-muted-foreground">Loading records...</div>
+          ) : displayedRecords.length === 0 ? (
+            <div className="text-center py-8 text-xs text-muted-foreground italic">{config.emptyMsg}</div>
+          ) : (
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-muted/40 border-b text-muted-foreground font-semibold">
+                  {formType === "sick-children" && (
+                    <>
+                      <th className="p-3">Checkup Date</th>
+                      <th className="p-3">Child's Name</th>
+                      <th className="p-3">Age & Sex</th>
+                      <th className="p-3">Chief Complaint / Summary</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </>
+                  )}
+                  {formType === "vitamin-a" && (
+                    <>
+                      <th className="p-3">Date Saved</th>
+                      <th className="p-3">Child's Name</th>
+                      <th className="p-3">Date of Birth</th>
+                      <th className="p-3">Sitio</th>
+                      <th className="p-3">Dose Records / Remarks</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </>
+                  )}
+                  {formType === "sia-masterlist" && (
+                    <>
+                      <th className="p-3">Vaccination Date</th>
+                      <th className="p-3">Child's Name</th>
+                      <th className="p-3">Age & Gender</th>
+                      <th className="p-3">Vaccine Given</th>
+                      <th className="p-3">Sitio / Address</th>
+                      <th className="p-3">Vaccinator</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {displayedRecords.map(rec => {
+                  let detailsObj: any = null;
+                  try {
+                    if (rec.details) {
+                      detailsObj = typeof rec.details === "string" ? JSON.parse(rec.details) : rec.details;
+                    }
+                  } catch {}
+
+                  const childName = getRecordChildName(rec);
+
+                  return (
+                    <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
+                      {formType === "sick-children" && (
+                        <>
+                          <td className="p-3 font-medium text-foreground">{rec.checkup_date || "—"}</td>
+                          <td className="p-3 font-bold text-foreground">{childName}</td>
+                          <td className="p-3 text-muted-foreground">
+                            {detailsObj?.age_months ? `${detailsObj.age_months} mos (${detailsObj.sex || "—"})` : "—"}
+                          </td>
+                          <td className="p-3 max-w-md truncate text-muted-foreground">
+                            {detailsObj?.chief_complaint ? `Complaint: ${detailsObj.chief_complaint}` : rec.remarks || "—"}
+                          </td>
+                        </>
+                      )}
+                      {formType === "vitamin-a" && (
+                        <>
+                          <td className="p-3 font-medium text-foreground">{rec.checkup_date || "—"}</td>
+                          <td className="p-3 font-bold text-foreground">{childName}</td>
+                          <td className="p-3 text-muted-foreground">{detailsObj?.row_data?.dob || "—"}</td>
+                          <td className="p-3 text-muted-foreground">{detailsObj?.header?.sitio || "Subukin"}</td>
+                          <td className="p-3 max-w-md truncate text-muted-foreground">{rec.remarks || "—"}</td>
+                        </>
+                      )}
+                      {formType === "sia-masterlist" && (
+                        <>
+                          <td className="p-3 font-medium text-foreground">
+                            {detailsObj?.row_data?.vaccination_date || rec.checkup_date || "—"}
+                          </td>
+                          <td className="p-3 font-bold text-foreground">{childName}</td>
+                          <td className="p-3 text-muted-foreground">
+                            {detailsObj?.row_data?.age_months ? `${detailsObj.row_data.age_months} mos (${detailsObj.row_data.gender === "M" ? "Male" : detailsObj.row_data.gender === "F" ? "Female" : detailsObj.row_data.gender || "—"})` : "—"}
+                          </td>
+                          <td className="p-3 font-medium text-sky-700 dark:text-sky-300">
+                            {detailsObj?.row_data?.vaccine_given || "—"}
+                          </td>
+                          <td className="p-3 text-muted-foreground">
+                            {detailsObj?.row_data?.purok_sitio_street || detailsObj?.row_data?.barangay || "Subukin"}
+                          </td>
+                          <td className="p-3 text-muted-foreground">
+                            {`${detailsObj?.row_data?.vaccinator_given_name || ''} ${detailsObj?.row_data?.vaccinator_family_name || ''}`.trim() || "—"}
+                          </td>
+                        </>
+                      )}
+                      <td className="p-3 text-right space-x-1 whitespace-nowrap">
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          onClick={() => {
+                            setSelectedRecordForView(rec);
+                            setViewRecordModalOpen(true);
+                          }} 
+                          className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                          title="View record details"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          onClick={() => setDeleteConfirmId(rec.id)} 
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          title="Delete record"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
   const handleSelectResidentForSick = (resId: string) => {
     setSelectedResidentId(resId);
     const res = residents.find(r => r.id === resId);
@@ -816,15 +1065,24 @@ const ChildHealthForm = () => {
             <TabsList className="grid grid-cols-1 md:grid-cols-3 h-auto p-1 bg-muted/60 rounded-lg no-print">
               <TabsTrigger value="sick-children" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
                 <Stethoscope className="h-3.5 w-3.5 text-sky-600" />
-                Care for Sick Children (2m - 5y)
+                <span>Care for Sick Children (2m - 5y)</span>
+                <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4 bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-semibold border-sky-200">
+                  {sickRecordsCount}
+                </Badge>
               </TabsTrigger>
               <TabsTrigger value="vitamin-a" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
                 <Pill className="h-3.5 w-3.5 text-amber-600" />
-                Vitamin A & RHU2 Master List
+                <span>Vitamin A & RHU2 Master List</span>
+                <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-semibold border-amber-200">
+                  {vitARecordsCount}
+                </Badge>
               </TabsTrigger>
               <TabsTrigger value="sia-masterlist" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
                 <Syringe className="h-3.5 w-3.5 text-emerald-600" />
-                SIA Master List (6–59 Months)
+                <span>SIA Master List (6–59 Months)</span>
+                <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold border-emerald-200">
+                  {siaRecordsCount}
+                </Badge>
               </TabsTrigger>
             </TabsList>
 
@@ -1829,6 +2087,7 @@ const ChildHealthForm = () => {
                   </Button>
                 </div>
 
+                {renderHistoryCard("sick-children")}
               </form>
 
             </TabsContent>
@@ -2016,6 +2275,8 @@ const ChildHealthForm = () => {
                   <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Vitamin A Master List"}
                 </Button>
               </div>
+
+              {renderHistoryCard("vitamin-a")}
             </TabsContent>
 
             {/* TAB 3: Supplemental Immunization Activity (SIA) Master List (Official Paper Form Replica) */}
@@ -2161,152 +2422,50 @@ const ChildHealthForm = () => {
                   <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save SIA Master List"}
                 </Button>
               </div>
+
+              {renderHistoryCard("sia-masterlist")}
             </TabsContent>
           </Tabs>
 
         </CardContent>
       </Card>
 
-      {/* SAVED CHILD HEALTH RECORDS HISTORY TABLE */}
-      <Card className="border border-border/50 shadow-md bg-card text-card-foreground no-print">
-        <CardHeader className="pb-3 border-b">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <CardTitle className="text-base font-bold flex items-center gap-2 font-heading">
-                <Baby className="h-5 w-5 text-sky-600" /> Saved Child Health Records History
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Barangay Subukin – Comprehensive Child Health & Masterlist Database
-              </p>
-            </div>
-
-            <div className="relative w-full md:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <Input 
-                type="text" 
-                placeholder="Search child name..." 
-                value={historySearch} 
-                onChange={e => setHistorySearch(e.target.value)} 
-                className="pl-8 h-8 text-xs"
-              />
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-0 overflow-x-auto">
-          {loading ? (
-            <div className="text-center py-8 text-xs text-muted-foreground">Loading records...</div>
-          ) : savedHealthRecords.length === 0 ? (
-            <div className="text-center py-8 text-xs text-muted-foreground italic">No child health records found.</div>
-          ) : (() => {
-            const getRecordChildName = (rec: any) => {
-              if (rec.residents?.full_name) return rec.residents.full_name;
-              if (rec.details) {
-                try {
-                  const d = JSON.parse(rec.details);
-                  if (d.first_name || d.surname) {
-                    const name = `${d.first_name || ""} ${d.middle_name || ""} ${d.surname || ""}`.trim();
-                    if (name) return name;
-                  }
-                  if (d.row_data?.child_name) return d.row_data.child_name;
-                  if (d.row_data?.child_family_name || d.row_data?.child_given_name) {
-                    const name = `${d.row_data?.child_given_name || ""} ${d.row_data?.child_middle_name || ""} ${d.row_data?.child_family_name || ""}`.trim();
-                    if (name) return name;
-                  }
-                } catch {}
-              }
-              if (rec.remarks) {
-                if (rec.remarks.includes("Child:")) {
-                  const match = rec.remarks.match(/Child:\s*([^,]+)/);
-                  if (match && match[1]) return match[1].trim();
-                }
-                const bracketMatch = rec.remarks.match(/\]\s*([^(]+)/);
-                if (bracketMatch && bracketMatch[1]) return bracketMatch[1].trim();
-              }
-              return "Child Patient";
-            };
-
-            return (
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-muted/40 border-b text-muted-foreground font-semibold">
-                    <th className="p-3">Checkup Date</th>
-                    <th className="p-3">Child's Name</th>
-                    <th className="p-3">Remarks / Summary</th>
-                    <th className="p-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {savedHealthRecords
-                    .filter(r => {
-                      if (!historySearch.trim()) return true;
-                      const term = historySearch.toLowerCase();
-                      const childName = getRecordChildName(r).toLowerCase();
-                      const remarks = (r.remarks || "").toLowerCase();
-                      return childName.includes(term) || remarks.includes(term);
-                    })
-                    .map(rec => (
-                      <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
-                        <td className="p-3 font-medium text-foreground">{rec.checkup_date || "—"}</td>
-                        <td className="p-3 font-bold text-foreground">
-                          {getRecordChildName(rec)}
-                        </td>
-                      <td className="p-3 max-w-md truncate text-muted-foreground">{rec.remarks || "—"}</td>
-                      <td className="p-3 text-right space-x-1">
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          onClick={() => {
-                            setSelectedRecordForView(rec);
-                            setViewRecordModalOpen(true);
-                          }} 
-                          className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          onClick={() => setDeleteConfirmId(rec.id)} 
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-            );
-          })()}
-        </CardContent>
-      </Card>
-
       {/* VIEW RECORD DETAIL DIALOG */}
       <Dialog open={viewRecordModalOpen} onOpenChange={setViewRecordModalOpen}>
         <DialogContent className="max-w-3xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 p-6 shadow-xl">
-          <DialogHeader className="border-b pb-3 no-print">
-            <DialogTitle className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
-              <Baby className="h-5 w-5 text-sky-600" /> Child Health Record Summary
-            </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500">
-              Barangay Subukin Health Center – Official Patient Clinical Summary
-            </DialogDescription>
-          </DialogHeader>
+          {(() => {
+            const viewFormType = selectedRecordForView ? getRecordFormType(selectedRecordForView) : "sick-children";
+            return (
+              <DialogHeader className="border-b pb-3 no-print">
+                <DialogTitle className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
+                  {viewFormType === "sick-children" && <Stethoscope className="h-5 w-5 text-sky-600" />}
+                  {viewFormType === "vitamin-a" && <Pill className="h-5 w-5 text-amber-600" />}
+                  {viewFormType === "sia-masterlist" && <Syringe className="h-5 w-5 text-emerald-600" />}
+                  {viewFormType === "sick-children" && "Care for Sick Child Record Summary"}
+                  {viewFormType === "vitamin-a" && "Vitamin A & Deworming Master List Summary"}
+                  {viewFormType === "sia-masterlist" && "SIA Master List Record Summary"}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-slate-500">
+                  Barangay Subukin Health Center – Official Patient Record
+                </DialogDescription>
+              </DialogHeader>
+            );
+          })()}
 
           {selectedRecordForView && (() => {
             let detailsObj: any = null;
             try {
               if (selectedRecordForView.details) {
-                detailsObj = JSON.parse(selectedRecordForView.details);
+                detailsObj = typeof selectedRecordForView.details === "string" 
+                  ? JSON.parse(selectedRecordForView.details) 
+                  : selectedRecordForView.details;
               }
             } catch (e) {
               detailsObj = null;
             }
 
-            const fullName = detailsObj 
-              ? `${detailsObj.first_name || ""} ${detailsObj.middle_name || ""} ${detailsObj.surname || ""}`.trim()
-              : selectedRecordForView.residents?.full_name || "Child Patient";
+            const viewFormType = getRecordFormType(selectedRecordForView);
+            const fullName = getRecordChildName(selectedRecordForView);
 
             return (
               <div id="summary-print-area" className="space-y-4 text-xs py-2 max-h-[70vh] overflow-y-auto pr-1">
@@ -2319,192 +2478,343 @@ const ChildHealthForm = () => {
 
                 <div className="hidden print:block text-center pb-1">
                   <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-heading">
-                    SUMMARY OF CHILD HEALTH RECORD / BUOD NG REKORD NG KALUSUGAN NG BATA
+                    {viewFormType === "sick-children" && "SUMMARY OF CHILD HEALTH RECORD / BUOD NG REKORD NG KALUSUGAN NG BATA"}
+                    {viewFormType === "vitamin-a" && "VITAMIN A AND DEWORMING MASTER LIST - RHU2 SUMMARY"}
+                    {viewFormType === "sia-masterlist" && "SUPPLEMENTAL IMMUNIZATION ACTIVITY (SIA) MASTERLIST SUMMARY"}
                   </h2>
                 </div>
 
-                {/* 1. Patient Demographics & Exam Details */}
-                <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2">
-                  <div className="flex items-center justify-between border-b pb-1">
-                    <span className="font-bold text-sky-700 dark:text-sky-400 uppercase text-[11px] flex items-center gap-1">
-                      <UserCheck className="h-3.5 w-3.5" /> Patient Demographics & Examination Details
-                    </span>
-                    <span className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
-                      Checkup Date: <strong>{selectedRecordForView.checkup_date}</strong>
-                    </span>
+                {/* FORM 1: SICK CHILDREN VIEW */}
+                {viewFormType === "sick-children" && (
+                  <>
+                    {/* 1. Patient Demographics & Exam Details */}
+                    <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between border-b pb-1">
+                        <span className="font-bold text-sky-700 dark:text-sky-400 uppercase text-[11px] flex items-center gap-1">
+                          <UserCheck className="h-3.5 w-3.5" /> Patient Demographics & Examination Details
+                        </span>
+                        <span className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
+                          Checkup Date: <strong>{selectedRecordForView.checkup_date}</strong>
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-1">
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Patient Name:</span>
+                          <strong className="text-slate-900 dark:text-slate-100 text-xs">{fullName || "N/A"}</strong>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Age & Sex:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {detailsObj?.age_months ? `${detailsObj.age_months} months` : "N/A"} | {detailsObj?.sex || "N/A"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Date of Birth:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.dob || "N/A"}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Sitio / Address:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.address || "Subukin"}</span>
+                        </div>
+
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Mother's Name:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.mother_name || "N/A"}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Father's Name:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.father_name || "N/A"}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Examiner / BHW:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.examiner_name || "Cristeta R. Lanuza"}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Consultation Type:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.consultation_type || "Unang konsulta"}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. Clinical Vitals Grid */}
+                    {detailsObj && (
+                      <div className="grid grid-cols-5 gap-2 text-center bg-slate-100 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="border-r pr-1">
+                          <span className="text-[10px] text-slate-500 block">Timbang (Weight)</span>
+                          <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.weight_kg ? `${detailsObj.weight_kg} kg` : "—"}</strong>
+                        </div>
+                        <div className="border-r pr-1">
+                          <span className="text-[10px] text-slate-500 block">Taas (Height)</span>
+                          <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.height_cm ? `${detailsObj.height_cm} cm` : "—"}</strong>
+                        </div>
+                        <div className="border-r pr-1">
+                          <span className="text-[10px] text-slate-500 block">Temp (°C)</span>
+                          <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.temp_c ? `${detailsObj.temp_c} °C` : "—"}</strong>
+                        </div>
+                        <div className="border-r pr-1">
+                          <span className="text-[10px] text-slate-500 block">Pulse Rate</span>
+                          <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.pulse_rate ? `${detailsObj.pulse_rate} /min` : "—"}</strong>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-500 block">Respiratory Rate</span>
+                          <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.respiratory_rate ? `${detailsObj.respiratory_rate} /min` : "—"}</strong>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Chief Complaint */}
+                    {detailsObj?.chief_complaint && (
+                      <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-md">
+                        <strong className="text-amber-900 dark:text-amber-300 block text-[11px]">Chief Complaint / Problema ng Bata:</strong>
+                        <p className="text-amber-800 dark:text-amber-200 text-xs mt-0.5">{detailsObj.chief_complaint}</p>
+                      </div>
+                    )}
+
+                    {/* 3. Classifications Summary Table */}
+                    {detailsObj && (
+                      <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden space-y-0">
+                        <div className="bg-slate-800 text-white font-bold text-[11px] px-3 py-1.5 uppercase flex items-center justify-between">
+                          <span>Clinical Assessment Classifications (Klasipikasyon)</span>
+                          <span className="text-[10px] font-normal text-slate-300">Doctor's Review Table</span>
+                        </div>
+                        <table className="w-full text-xs text-left border-collapse">
+                          <thead>
+                            <tr className="bg-slate-100 dark:bg-slate-800 border-b text-slate-700 dark:text-slate-300 font-semibold text-[10px] uppercase">
+                              <th className="p-2 border-r w-1/2">Health Condition / Assessment Area</th>
+                              <th className="p-2 w-1/2">Assigned Classification</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                            <tr>
+                              <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">General Danger Signs</td>
+                              <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_danger || "Walang Danger Signs"}</td>
+                            </tr>
+                            <tr className="bg-slate-50/50 dark:bg-slate-900/40">
+                              <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Ubo / Nahihirapang Huminga (Cough/Breathing)</td>
+                              <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_cough || "Walang Ubo o Sipon"}</td>
+                            </tr>
+                            <tr>
+                              <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Pagtatae (Diarrhea / Dehydration)</td>
+                              <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_diarrhea || "Walang Pagtatae"}</td>
+                            </tr>
+                            <tr className="bg-slate-50/50 dark:bg-slate-900/40">
+                              <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Nilalagnat (Fever Assessment)</td>
+                              <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_fever || "Walang lagnat"}</td>
+                            </tr>
+                            <tr>
+                              <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Tigdas (Measles Signs)</td>
+                              <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_measles || "Walang Tigdas"}</td>
+                            </tr>
+                            <tr className="bg-slate-50/50 dark:bg-slate-900/40">
+                              <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Dengue Risk Assessment</td>
+                              <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_dengue || "Walang Dengue"}</td>
+                            </tr>
+                            <tr>
+                              <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Problema sa Tenga (Ear Problem)</td>
+                              <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_ear || "Walang Impeksyon sa Tenga"}</td>
+                            </tr>
+                            <tr className="bg-slate-50/50 dark:bg-slate-900/40">
+                              <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Malnutrisyon at Anemia</td>
+                              <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">
+                                {detailsObj.classification_malnutrition || "Walang Malnutrisyon"} / {detailsObj.classification_anemia || "Walang Anemia"}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* 4. Treatment & Doctor Instructions */}
+                    {detailsObj && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg space-y-1.5">
+                          <strong className="text-slate-900 dark:text-slate-100 font-bold uppercase text-[11px] block border-b pb-1">
+                            Paggamot & Pagpapayo (Treatment & Advice)
+                          </strong>
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">Paggamot (Treatment):</span>
+                            <p className="text-slate-800 dark:text-slate-200 text-xs font-medium">{detailsObj.treatment_notes || "—"}</p>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">Pagpapayo (Advice):</span>
+                            <p className="text-slate-800 dark:text-slate-200 text-xs font-medium">{detailsObj.advice_notes || "—"}</p>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">Payo sa Pagpapakain:</span>
+                            <p className="text-slate-800 dark:text-slate-200 text-xs font-medium">{detailsObj.feeding_advice || "—"}</p>
+                          </div>
+                        </div>
+
+                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg space-y-1.5">
+                          <strong className="text-slate-900 dark:text-slate-100 font-bold uppercase text-[11px] block border-b pb-1">
+                            Doctor Referral & Return Schedule
+                          </strong>
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">Doctor Evaluation Status:</span>
+                            <strong className="text-xs text-sky-700 dark:text-sky-400">
+                              {detailsObj.doctor_see === true ? "( ✓ ) Titingnan ng Doktor" : "(   ) Hindi titingnan ng Doktor"}
+                            </strong>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">Kailan Dapat Bumalik Kaagad:</span>
+                            <p className="text-slate-800 dark:text-slate-200 text-xs font-medium">{detailsObj.urgent_return_advice || "—"}</p>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">Petsa ng Pagbalik sa Health Center:</span>
+                            <strong className="text-xs text-emerald-700 dark:text-emerald-400">{detailsObj.return_health_center_date || "—"}</strong>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* FORM 2: VITAMIN A VIEW */}
+                {viewFormType === "vitamin-a" && (
+                  <div className="space-y-4">
+                    <div className="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-lg border border-amber-200 dark:border-amber-800 space-y-2">
+                      <div className="flex items-center justify-between border-b border-amber-200 dark:border-amber-800 pb-1">
+                        <span className="font-bold text-amber-800 dark:text-amber-300 uppercase text-[11px] flex items-center gap-1">
+                          <Pill className="h-3.5 w-3.5" /> Vitamin A & Deworming Master List Summary (RHU2)
+                        </span>
+                        <span className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
+                          Date Saved: <strong>{selectedRecordForView.checkup_date}</strong>
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-1 text-xs">
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Child's Name:</span>
+                          <strong className="text-slate-900 dark:text-slate-100">{fullName}</strong>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Date of Birth:</span>
+                          <span className="font-semibold">{detailsObj?.row_data?.dob || "N/A"}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Sitio:</span>
+                          <span className="font-semibold">{detailsObj?.header?.sitio || "Subukin"}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Target Year:</span>
+                          <span className="font-semibold">{detailsObj?.header?.year || new Date().getFullYear()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {detailsObj?.row_data && (
+                      <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden text-xs">
+                        <div className="bg-amber-800 text-white font-bold text-[11px] px-3 py-1.5 uppercase">
+                          Recorded Supplementation & Deworming Doses
+                        </div>
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="bg-slate-100 dark:bg-slate-800 border-b text-[10px] uppercase text-slate-700 dark:text-slate-300 font-semibold">
+                              <th className="p-2 border-r">Age Bracket</th>
+                              <th className="p-2 border-r">Vitamin A (1st Dose)</th>
+                              <th className="p-2 border-r">Vitamin A (2nd Dose)</th>
+                              <th className="p-2 border-r">Deworming (1st Dose)</th>
+                              <th className="p-2">Deworming (2nd Dose)</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                            <tr>
+                              <td className="p-2 border-r font-medium">6 Months</td>
+                              <td className="p-2 border-r font-bold text-amber-700 dark:text-amber-400">{detailsObj.row_data.v6m_1st || "—"}</td>
+                              <td className="p-2 border-r text-slate-400">N/A</td>
+                              <td className="p-2 border-r text-slate-400">N/A</td>
+                              <td className="p-2 text-slate-400">N/A</td>
+                            </tr>
+                            <tr className="bg-slate-50/50 dark:bg-slate-900/40">
+                              <td className="p-2 border-r font-medium">12-23 Months</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v12_23_v1 || "—"}</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v12_23_v2 || "—"}</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v12_23_d1 || "—"}</td>
+                              <td className="p-2">{detailsObj.row_data.v12_23_d2 || "—"}</td>
+                            </tr>
+                            <tr>
+                              <td className="p-2 border-r font-medium">24-35 Months</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v24_35_v1 || "—"}</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v24_35_v2 || "—"}</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v24_35_d1 || "—"}</td>
+                              <td className="p-2">{detailsObj.row_data.v24_35_d2 || "—"}</td>
+                            </tr>
+                            <tr className="bg-slate-50/50 dark:bg-slate-900/40">
+                              <td className="p-2 border-r font-medium">36-47 Months</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v36_47_v1 || "—"}</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v36_47_v2 || "—"}</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v36_47_d1 || "—"}</td>
+                              <td className="p-2">{detailsObj.row_data.v36_47_d2 || "—"}</td>
+                            </tr>
+                            <tr>
+                              <td className="p-2 border-r font-medium">48-59 Months</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v48_59_v1 || "—"}</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v48_59_v2 || "—"}</td>
+                              <td className="p-2 border-r">{detailsObj.row_data.v48_59_d1 || "—"}</td>
+                              <td className="p-2">{detailsObj.row_data.v48_59_d2 || "—"}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
+                )}
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-1">
-                    <div>
-                      <span className="text-slate-500 text-[10px] block">Patient Name:</span>
-                      <strong className="text-slate-900 dark:text-slate-100 text-xs">{fullName || "N/A"}</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 text-[10px] block">Age & Sex:</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">
-                        {detailsObj?.age_months ? `${detailsObj.age_months} months` : "N/A"} | {detailsObj?.sex || "N/A"}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 text-[10px] block">Date of Birth:</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.dob || "N/A"}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 text-[10px] block">Sitio / Address:</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.address || "Subukin"}</span>
-                    </div>
-
-                    <div>
-                      <span className="text-slate-500 text-[10px] block">Mother's Name:</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.mother_name || "N/A"}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 text-[10px] block">Father's Name:</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.father_name || "N/A"}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 text-[10px] block">Examiner / BHW:</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.examiner_name || "Cristeta R. Lanuza"}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 text-[10px] block">Consultation Type:</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.consultation_type || "Unang konsulta"}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. Clinical Vitals Grid */}
-                {detailsObj && (
-                  <div className="grid grid-cols-5 gap-2 text-center bg-slate-100 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <div className="border-r pr-1">
-                      <span className="text-[10px] text-slate-500 block">Timbang (Weight)</span>
-                      <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.weight_kg ? `${detailsObj.weight_kg} kg` : "—"}</strong>
-                    </div>
-                    <div className="border-r pr-1">
-                      <span className="text-[10px] text-slate-500 block">Taas (Height)</span>
-                      <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.height_cm ? `${detailsObj.height_cm} cm` : "—"}</strong>
-                    </div>
-                    <div className="border-r pr-1">
-                      <span className="text-[10px] text-slate-500 block">Temp (°C)</span>
-                      <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.temp_c ? `${detailsObj.temp_c} °C` : "—"}</strong>
-                    </div>
-                    <div className="border-r pr-1">
-                      <span className="text-[10px] text-slate-500 block">Pulse Rate</span>
-                      <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.pulse_rate ? `${detailsObj.pulse_rate} /min` : "—"}</strong>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500 block">Respiratory Rate</span>
-                      <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.respiratory_rate ? `${detailsObj.respiratory_rate} /min` : "—"}</strong>
+                {/* FORM 3: SIA MASTERLIST VIEW */}
+                {viewFormType === "sia-masterlist" && (
+                  <div className="space-y-4">
+                    <div className="bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-lg border border-emerald-200 dark:border-emerald-800 space-y-2">
+                      <div className="flex items-center justify-between border-b border-emerald-200 dark:border-emerald-800 pb-1">
+                        <span className="font-bold text-emerald-800 dark:text-emerald-300 uppercase text-[11px] flex items-center gap-1">
+                          <Syringe className="h-3.5 w-3.5" /> Supplemental Immunization Activity (SIA) Master List Summary
+                        </span>
+                        <span className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
+                          Vaccination Date: <strong>{detailsObj?.row_data?.vaccination_date || selectedRecordForView.checkup_date}</strong>
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-1 text-xs">
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Child's Full Name:</span>
+                          <strong className="text-slate-900 dark:text-slate-100">{fullName}</strong>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Date of Birth & Age:</span>
+                          <span className="font-semibold">{detailsObj?.row_data?.dob || "N/A"} ({detailsObj?.row_data?.age_months || "—"} mos)</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Gender:</span>
+                          <span className="font-semibold">{detailsObj?.row_data?.gender === "M" ? "Male" : detailsObj?.row_data?.gender === "F" ? "Female" : "N/A"}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Purok / Sitio / Address:</span>
+                          <span className="font-semibold">{detailsObj?.row_data?.purok_sitio_street || detailsObj?.row_data?.barangay || "Subukin"}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Mother's Full Name:</span>
+                          <span className="font-semibold">
+                            {`${detailsObj?.row_data?.mother_given_name || ''} ${detailsObj?.row_data?.mother_middle_name || ''} ${detailsObj?.row_data?.mother_family_name || ''}`.trim() || "N/A"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Vaccine Given:</span>
+                          <strong className="text-emerald-700 dark:text-emerald-300">{detailsObj?.row_data?.vaccine_given || "N/A"}</strong>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Vaccinator Name:</span>
+                          <span className="font-semibold">
+                            {`${detailsObj?.row_data?.vaccinator_given_name || ''} ${detailsObj?.row_data?.vaccinator_middle_name || ''} ${detailsObj?.row_data?.vaccinator_family_name || ''}`.trim() || "N/A"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Barangay & Municipality:</span>
+                          <span className="font-semibold">{detailsObj?.row_data?.barangay || "Subukin"}, {detailsObj?.campaign_info?.municipality || "San Juan"}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {/* Chief Complaint */}
-                {detailsObj?.chief_complaint && (
-                  <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-md">
-                    <strong className="text-amber-900 dark:text-amber-300 block text-[11px]">Chief Complaint / Problema ng Bata:</strong>
-                    <p className="text-amber-800 dark:text-amber-200 text-xs mt-0.5">{detailsObj.chief_complaint}</p>
-                  </div>
-                )}
-
-                {/* 3. Classifications Summary Table */}
-                {detailsObj && (
-                  <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden space-y-0">
-                    <div className="bg-slate-800 text-white font-bold text-[11px] px-3 py-1.5 uppercase flex items-center justify-between">
-                      <span>Clinical Assessment Classifications (Klasipikasyon)</span>
-                      <span className="text-[10px] font-normal text-slate-300">Doctor's Review Table</span>
-                    </div>
-                    <table className="w-full text-xs text-left border-collapse">
-                      <thead>
-                        <tr className="bg-slate-100 dark:bg-slate-800 border-b text-slate-700 dark:text-slate-300 font-semibold text-[10px] uppercase">
-                          <th className="p-2 border-r w-1/2">Health Condition / Assessment Area</th>
-                          <th className="p-2 w-1/2">Assigned Classification</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                        <tr>
-                          <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">General Danger Signs</td>
-                          <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_danger || "Walang Danger Signs"}</td>
-                        </tr>
-                        <tr className="bg-slate-50/50 dark:bg-slate-900/40">
-                          <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Ubo / Nahihirapang Huminga (Cough/Breathing)</td>
-                          <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_cough || "Walang Ubo o Sipon"}</td>
-                        </tr>
-                        <tr>
-                          <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Pagtatae (Diarrhea / Dehydration)</td>
-                          <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_diarrhea || "Walang Pagtatae"}</td>
-                        </tr>
-                        <tr className="bg-slate-50/50 dark:bg-slate-900/40">
-                          <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Nilalagnat (Fever Assessment)</td>
-                          <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_fever || "Walang lagnat"}</td>
-                        </tr>
-                        <tr>
-                          <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Tigdas (Measles Signs)</td>
-                          <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_measles || "Walang Tigdas"}</td>
-                        </tr>
-                        <tr className="bg-slate-50/50 dark:bg-slate-900/40">
-                          <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Dengue Risk Assessment</td>
-                          <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_dengue || "Walang Dengue"}</td>
-                        </tr>
-                        <tr>
-                          <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Problema sa Tenga (Ear Problem)</td>
-                          <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">{detailsObj.classification_ear || "Walang Impeksyon sa Tenga"}</td>
-                        </tr>
-                        <tr className="bg-slate-50/50 dark:bg-slate-900/40">
-                          <td className="p-2 border-r font-medium text-slate-700 dark:text-slate-300">Malnutrisyon at Anemia</td>
-                          <td className="p-2 font-semibold text-slate-900 dark:text-slate-100">
-                            {detailsObj.classification_malnutrition || "Walang Malnutrisyon"} / {detailsObj.classification_anemia || "Walang Anemia"}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* 4. Treatment & Doctor Instructions */}
-                {detailsObj && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                    <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg space-y-1.5">
-                      <strong className="text-slate-900 dark:text-slate-100 font-bold uppercase text-[11px] block border-b pb-1">
-                        Paggamot & Pagpapayo (Treatment & Advice)
-                      </strong>
-                      <div>
-                        <span className="text-[10px] text-slate-500 block">Paggamot (Treatment):</span>
-                        <p className="text-slate-800 dark:text-slate-200 text-xs font-medium">{detailsObj.treatment_notes || "—"}</p>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-slate-500 block">Pagpapayo (Advice):</span>
-                        <p className="text-slate-800 dark:text-slate-200 text-xs font-medium">{detailsObj.advice_notes || "—"}</p>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-slate-500 block">Payo sa Pagpapakain:</span>
-                        <p className="text-slate-800 dark:text-slate-200 text-xs font-medium">{detailsObj.feeding_advice || "—"}</p>
-                      </div>
-                    </div>
-
-                    <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg space-y-1.5">
-                      <strong className="text-slate-900 dark:text-slate-100 font-bold uppercase text-[11px] block border-b pb-1">
-                        Doctor Referral & Return Schedule
-                      </strong>
-                      <div>
-                        <span className="text-[10px] text-slate-500 block">Doctor Evaluation Status:</span>
-                        <strong className="text-xs text-sky-700 dark:text-sky-400">
-                          {detailsObj.doctor_see === true ? "( ✓ ) Titingnan ng Doktor" : "(   ) Hindi titingnan ng Doktor"}
-                        </strong>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-slate-500 block">Kailan Dapat Bumalik Kaagad:</span>
-                        <p className="text-slate-800 dark:text-slate-200 text-xs font-medium">{detailsObj.urgent_return_advice || "—"}</p>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-slate-500 block">Petsa ng Pagbalik sa Health Center:</span>
-                        <strong className="text-xs text-emerald-700 dark:text-emerald-400">{detailsObj.return_health_center_date || "—"}</strong>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Fallback for raw remarks string */}
+                {/* Fallback for raw remarks string if no detailsObj */}
                 {!detailsObj && (
                   <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg space-y-2">
                     <strong className="text-slate-900 dark:text-slate-100 font-bold uppercase text-[11px] block border-b pb-1">
