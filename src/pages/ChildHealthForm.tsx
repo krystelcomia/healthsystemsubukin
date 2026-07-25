@@ -1025,8 +1025,26 @@ const ChildHealthForm = () => {
             color: transparent !important;
             -webkit-text-fill-color: transparent !important;
           }
-          .overflow-x-auto {
+          ::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+          }
+          .overflow-x-auto, .overflow-y-auto, .overflow-auto {
             overflow: visible !important;
+            overflow-x: visible !important;
+            overflow-y: visible !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+          table {
+            min-width: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: auto !important;
+          }
+          th, td {
+            min-width: 0 !important;
           }
           @page {
             size: A4 landscape;
@@ -2128,9 +2146,9 @@ const ChildHealthForm = () => {
                 </div>
               </div>
 
-              {/* Masterlist 20-Column Table (Scrolls horizontally independently without moving header) */}
-              <div className="overflow-x-auto w-full max-w-full border border-slate-300 dark:border-slate-700 rounded-md shadow-xs">
-                <table className="min-w-[1350px] w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
+              {/* Masterlist 20-Column Table (Scrolls horizontally on screen, fits cleanly on paper during print without slide function) */}
+              <div className="overflow-x-auto print:overflow-visible print:border-0 w-full max-w-full rounded-md border border-slate-300 dark:border-slate-700 shadow-xs">
+                <table className="min-w-[1350px] print:min-w-0 print:w-full w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
                   <thead>
                     <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
                       <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-8">NO.</th>
@@ -2321,9 +2339,9 @@ const ChildHealthForm = () => {
                 </div>
               </div>
 
-              {/* SIA Masterlist Table (Scrolls horizontally independently without moving header) */}
-              <div className="overflow-x-auto w-full max-w-full border border-slate-300 dark:border-slate-700 rounded-md shadow-xs">
-                <table className="min-w-[1350px] w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
+              {/* SIA Masterlist Table (Scrolls horizontally on screen, fits cleanly on paper during print without slide function) */}
+              <div className="overflow-x-auto print:overflow-visible print:border-0 w-full max-w-full rounded-md border border-slate-300 dark:border-slate-700 shadow-xs">
+                <table className="min-w-[1350px] print:min-w-0 print:w-full w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
                   <thead>
                     <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-6">#</th>
