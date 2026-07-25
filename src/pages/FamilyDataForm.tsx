@@ -691,16 +691,16 @@ const FamilyDataForm = () => {
                   <div
                     key={rec.id}
                     onClick={() => handleOpenFile(rec)}
-                    className="group relative cursor-pointer rounded-xl border border-amber-900/10 dark:border-amber-500/20 bg-gradient-to-b from-amber-500/5 via-amber-500/[0.02] to-card p-4 transition-all duration-200 hover:shadow-md hover:border-amber-500/40 hover:-translate-y-0.5 flex flex-col justify-between space-y-3"
+                    className="group relative cursor-pointer rounded-xl border border-primary/20 dark:border-primary/30 bg-gradient-to-b from-primary/10 via-primary/[0.02] to-card p-4 transition-all duration-200 hover:shadow-md hover:border-primary/50 hover:-translate-y-0.5 flex flex-col justify-between space-y-3"
                   >
                     {/* Folder Tab Header */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <div className="h-10 w-10 rounded-lg bg-primary/15 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                           <Folder className="h-5.5 w-5.5" />
                         </div>
                         <div>
-                          <Badge variant="outline" className="text-[10px] font-mono border-amber-500/30 text-amber-700 dark:text-amber-300 bg-amber-500/10">
+                          <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary bg-primary/10">
                             {famNum}
                           </Badge>
                           <h3 className="font-heading font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1 mt-0.5">
@@ -891,14 +891,14 @@ const FamilyDataForm = () => {
               </div>
 
               {/* Opened File Folder Banner */}
-              <div className="bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
+                  <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
                     <FolderOpen className="h-6 w-6" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-amber-600 text-white font-mono text-xs">
+                      <Badge className="bg-primary text-primary-foreground font-mono text-xs">
                         {editFamNum || "FN"}
                       </Badge>
                       <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
