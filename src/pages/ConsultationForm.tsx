@@ -304,13 +304,23 @@ const ConsultationForm = () => {
             </div>
 
             {/* Form Actions */}
-            <div className="pt-6 border-t border-border/40 flex flex-wrap items-center gap-3 no-print">
+            <div className="pt-6 border-t border-border/40 flex flex-wrap items-center justify-end gap-3 no-print">
               <Button 
                 type="submit" 
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all duration-200 gap-2 px-6"
               >
                 <CheckCircle2 className="h-4 w-4" />
                 {t("consultation.saveConsultation")}
+              </Button>
+
+              <Button 
+                type="button" 
+                onClick={handleReset}
+                variant="outline"
+                className="border-destructive/30 text-destructive hover:bg-destructive/10 font-medium gap-2 px-4"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Reset
               </Button>
               
               <Button 
@@ -321,16 +331,6 @@ const ConsultationForm = () => {
               >
                 <Printer className="h-4 w-4" /> 
                 Print Form
-              </Button>
-
-              <Button 
-                type="button" 
-                onClick={handleReset}
-                variant="outline"
-                className="border-destructive/30 text-destructive hover:bg-destructive/10 font-medium gap-2 px-4 ml-auto"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Reset
               </Button>
             </div>
           </form>
