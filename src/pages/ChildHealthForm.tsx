@@ -1047,8 +1047,8 @@ const ChildHealthForm = () => {
             min-width: 0 !important;
           }
           @page {
-            size: A4 landscape;
-            margin: 6mm;
+            size: ${activeTab === "sick-children" ? "A4 portrait" : "A4 landscape"};
+            margin: ${activeTab === "sick-children" ? "8mm" : "6mm"};
           }
         }
       `}</style>
