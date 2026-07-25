@@ -205,9 +205,6 @@ const ResidentRecords = () => {
             <ArrowLeft className="h-4 w-4" /> {t("residents.backToRecords")}
           </Button>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => { setEditResident(selectedResident); setEditDialogOpen(true); }} className="gap-1.5 text-xs">
-              <Pencil className="h-3.5 w-3.5" /> Edit Profile
-            </Button>
             <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs border-primary/20 text-primary hover:bg-primary/10">
               <Printer className="h-3.5 w-3.5" /> {t("residents.printRecord")}
             </Button>
@@ -262,16 +259,16 @@ const ResidentRecords = () => {
 
           {/* Printable Resident Header Info */}
           <div className="print-only" style={{ display: "none", width: "100%", borderBottom: "2px solid #000", paddingBottom: "12px", marginBottom: "16px" }}>
-            <h1 style={{ fontSize: "20px", fontWeight: "800", color: "#000", marginBottom: "8px", display: "block", clear: "both", lineHeight: "1.3" }}>
+            <h1 style={{ fontSize: "22px", fontWeight: "800", color: "#000", marginBottom: "6px", display: "block", clear: "both", lineHeight: "1.3" }}>
               {selectedResident.full_name}
             </h1>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px 16px", fontSize: "12px", color: "#000", lineHeight: "1.4" }}>
-              <div><strong>{t("residents.gender")}:</strong> {selectedResident.gender}</div>
-              <div><strong>{t("residents.age")}:</strong> {selectedResident.age} yrs</div>
-              <div><strong>{t("residents.birthday")}:</strong> {selectedResident.birthday || "—"}</div>
-              <div><strong>{t("residents.sitio")}:</strong> Sitio {selectedResident.sitio || "Subukin"}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "10px 20px", fontSize: "12px", color: "#000", lineHeight: "1.4", marginTop: "4px" }}>
+              <span><strong>{t("residents.gender")}:</strong> {selectedResident.gender}</span>
+              <span><strong>{t("residents.age")}:</strong> {selectedResident.age} yrs</span>
+              <span><strong>{t("residents.birthday")}:</strong> {selectedResident.birthday || "—"}</span>
+              <span><strong>{t("residents.sitio")}:</strong> Sitio {selectedResident.sitio || "Subukin"}</span>
               {selectedResident.family_number && (
-                <div><strong>Family #:</strong> {selectedResident.family_number}</div>
+                <span><strong>Family #:</strong> {selectedResident.family_number}</span>
               )}
             </div>
           </div>

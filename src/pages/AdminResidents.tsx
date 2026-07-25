@@ -222,11 +222,10 @@ const AdminResidents = () => {
 
           {selectedResident && healthRecords && (
             <div className="space-y-6 pt-2">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-muted/20 border border-border/30 rounded-lg text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 bg-muted/20 border border-border/30 rounded-lg text-xs">
                 <div><strong>Gender:</strong> {selectedResident.gender}</div>
                 <div><strong>Age:</strong> {selectedResident.age}</div>
                 <div><strong>Sitio:</strong> {selectedResident.sitio || "—"}</div>
-                <div><strong>Civil Status:</strong> {selectedResident.status}</div>
               </div>
 
               {healthRecords.consultations.length > 0 && (
