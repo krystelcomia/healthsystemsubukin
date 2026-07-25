@@ -1,10 +1,29 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Shield, Stethoscope, ClipboardList, Activity, Bug, UserCheck, UserX, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { 
+  Users, 
+  Shield, 
+  Stethoscope, 
+  ClipboardList, 
+  Activity, 
+  Bug, 
+  UserCheck, 
+  UserX, 
+  TrendingUp,
+  Sparkles,
+  Clock,
+  ChevronRight,
+  User,
+  Heart,
+  Syringe,
+  FileText
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 interface BHWWorker {
   id: string;
@@ -23,6 +42,12 @@ const AdminDashboard = () => {
   const [recentActivity, setRecentActivity] = useState<{ name: string; action: string; time: string }[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -72,7 +97,7 @@ const AdminDashboard = () => {
 
       if (recentConsultations) {
         setRecentActivity(recentConsultations.map((c: any) => ({
-          name: c.residents?.full_name || "Unknown",
+          name: c.residents?.full_name || "Resident",
           action: c.consultation_cause || t("dashboard.consultations"),
           time: formatTimeAgo(new Date(c.created_at)),
         })));
@@ -120,76 +145,142 @@ const AdminDashboard = () => {
   };
 
   const CHART_COLORS = [
-    "hsl(var(--primary))",
-    "hsl(220, 70%, 55%)",
-    "hsl(150, 60%, 45%)",
-    "hsl(35, 90%, 55%)",
-    "hsl(340, 70%, 55%)",
-    "hsl(270, 60%, 55%)",
-    "hsl(180, 50%, 45%)",
+    "#0284c7", // Sky blue
+    "#059669", // Emerald green
+    "#7c3aed", // Purple
+    "#d97706", // Amber
+    "#e11d48", // Rose
+    "#2563eb", // Royal blue
+    "#db2777", // Pink
   ];
 
   const statCards = [
-    { label: t("dashboard.totalResidents"), value: stats.totalResidents, icon: Users, desc: t("dashboard.registeredResidents") },
-    { label: t("admin.dashboard.bhwWorkers"), value: `${stats.onlineWorkers} / ${stats.totalWorkers}`, icon: Shield, desc: t("admin.dashboard.onlineTotal") },
-    { label: t("dashboard.consultations"), value: stats.consultations, icon: Stethoscope, desc: t("dashboard.totalConsultations") },
-    { label: t("dashboard.familyRecords"), value: stats.familyRecords, icon: ClipboardList, desc: t("dashboard.familiesRegistered") },
-    { label: t("nav.philpenHealth"), value: stats.philpenRecords, icon: Activity, desc: t("admin.dashboard.healthScreenings") },
-    { label: t("nav.denguePrevention"), value: stats.dengueRecords, icon: Bug, desc: t("admin.dashboard.dengueRecords") },
+    { label: t("dashboard.totalResidents"), value: stats.totalResidents, icon: Users, desc: t("dashboard.registeredResidents"), color: "from-sky-500/10 via-sky-500/5 to-transparent text-sky-600 dark:text-sky-400 border-sky-500/30", badgeColor: "bg-sky-500/10 text-sky-600" },
+    { label: t("admin.dashboard.bhwWorkers"), value: `${stats.onlineWorkers} / ${stats.totalWorkers}`, icon: Shield, desc: t("admin.dashboard.onlineTotal"), color: "from-indigo-500/10 via-indigo-500/5 to-transparent text-indigo-600 dark:text-indigo-400 border-indigo-500/30", badgeColor: "bg-indigo-500/10 text-indigo-600" },
+    { label: t("dashboard.consultations"), value: stats.consultations, icon: Stethoscope, desc: t("dashboard.totalConsultations"), color: "from-emerald-500/10 via-emerald-500/5 to-transparent text-emerald-600 dark:text-emerald-400 border-emerald-500/30", badgeColor: "bg-emerald-500/10 text-emerald-600" },
+    { label: t("dashboard.familyRecords"), value: stats.familyRecords, icon: ClipboardList, desc: t("dashboard.familiesRegistered"), color: "from-purple-500/10 via-purple-500/5 to-transparent text-purple-600 dark:text-purple-400 border-purple-500/30", badgeColor: "bg-purple-500/10 text-purple-600" },
+    { label: t("nav.philpenHealth"), value: stats.philpenRecords, icon: Activity, desc: t("admin.dashboard.healthScreenings"), color: "from-rose-500/10 via-rose-500/5 to-transparent text-rose-600 dark:text-rose-400 border-rose-500/30", badgeColor: "bg-rose-500/10 text-rose-600" },
+    { label: t("nav.denguePrevention"), value: stats.dengueRecords, icon: Bug, desc: t("admin.dashboard.dengueRecords"), color: "from-teal-500/10 via-teal-500/5 to-transparent text-teal-600 dark:text-teal-400 border-teal-500/30", badgeColor: "bg-teal-500/10 text-teal-600" },
   ];
 
   return (
-    <div className="space-y-6 w-full">
-      <div>
-        <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
-          <Shield className="h-6 w-6 text-primary" />
-          {t("admin.dashboard.title")}
-        </h1>
-        <p className="text-muted-foreground mt-1">{t("admin.dashboard.desc")}</p>
+    <div className="space-y-6 w-full max-w-full">
+      
+      {/* Creative Hero Banner Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-sky-950 p-6 md:p-8 text-white shadow-xl border border-indigo-800/40">
+        <div className="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 bottom-0 h-48 w-48 rounded-full bg-sky-400/10 blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold border border-indigo-400/30 backdrop-blur-md">
+              <Shield className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
+              Midwife Admin Supervisory Portal
+            </div>
+            <h1 className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-white flex items-center gap-2">
+              {t("admin.dashboard.title")}
+            </h1>
+            <p className="text-sm text-indigo-100/80 leading-relaxed">
+              {t("admin.dashboard.desc")} Comprehensive health system overview, active staff shift monitoring, and health forms analytics.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
+            <div className="px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-center text-xs space-y-0.5">
+              <div className="text-indigo-300 font-semibold flex items-center justify-center gap-1.5">
+                <Clock className="h-3.5 w-3.5" />
+                {currentTime.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+              </div>
+              <div className="font-mono text-xs font-bold text-white tracking-widest">
+                {currentTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+              </div>
+            </div>
+
+            <Button asChild size="sm" className="bg-indigo-500 hover:bg-indigo-400 text-white font-bold shadow-lg gap-2 text-xs">
+              <Link to="/admin/workers">
+                <Users className="h-3.5 w-3.5" />
+                Manage Staff
+              </Link>
+            </Button>
+          </div>
+        </div>
       </div>
 
+      {/* Vibrant Stat Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map((stat) => (
-          <Card key={stat.label} className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+          <Card 
+            key={stat.label} 
+            className={`relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br ${stat.color}`}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-              <stat.icon className="h-4 w-4 text-primary" />
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {stat.label}
+              </CardTitle>
+              <div className={`p-2 rounded-xl ${stat.badgeColor} shadow-xs`}>
+                <stat.icon className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-heading font-bold text-foreground">{loading ? "..." : stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">{stat.desc}</p>
+              <div className="text-2xl md:text-3xl font-heading font-extrabold text-foreground tracking-tight">
+                {loading ? "..." : stat.value}
+              </div>
+              <div className="mt-2 flex items-center justify-between text-xs">
+                <span className="text-muted-foreground font-medium flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3 text-indigo-500" />
+                  {stat.desc}
+                </span>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-border/60">
+                  Verified
+                </Badge>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
+      {/* BHW Workers Status + Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-border/50 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg font-heading flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              {t("admin.dashboard.workersStatus")}
-            </CardTitle>
+        
+        {/* Active BHW Workers Shift Status */}
+        <Card className="border-border/60 shadow-sm bg-card flex flex-col">
+          <CardHeader className="pb-3 border-b border-border/40 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
+                <Shield className="h-5 w-5 text-indigo-600" />
+                {t("admin.dashboard.workersStatus")}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">Live duty status of health center staff</p>
+            </div>
+            <Button asChild variant="outline" size="sm" className="text-xs h-7 gap-1">
+              <Link to="/admin/workers">
+                View All <ChevronRight className="h-3 w-3" />
+              </Link>
+            </Button>
           </CardHeader>
-          <CardContent>
+
+          <CardContent className="p-4 flex-1">
             <div className="space-y-3">
               {loading ? (
-                <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+                <div className="space-y-2 py-4 text-center">
+                  <div className="h-4 bg-muted animate-pulse rounded w-3/4 mx-auto" />
+                  <div className="h-4 bg-muted animate-pulse rounded w-1/2 mx-auto" />
+                </div>
               ) : workers.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("admin.dashboard.noWorkers")}</p>
+                <p className="text-xs text-muted-foreground text-center py-6">{t("admin.dashboard.noWorkers")}</p>
               ) : workers.map((w) => (
-                <div key={w.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                <div key={w.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center relative">
-                      <span className="text-xs font-semibold text-primary">{w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
-                      <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card ${w.is_online ? "bg-green-500" : "bg-muted-foreground/40"}`} />
+                    <div className="h-9 w-9 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center relative font-bold text-xs">
+                      {w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                      <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card ${w.is_online ? "bg-green-500 animate-pulse" : "bg-muted-foreground/40"}`} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">{w.name}</p>
-                      <p className="text-xs text-muted-foreground">{w.gmail}</p>
+                      <p className="text-xs font-bold text-foreground">{w.name}</p>
+                      <p className="text-[11px] text-muted-foreground">{w.gmail}</p>
                     </div>
                   </div>
-                  <Badge variant={w.is_online ? "default" : "secondary"} className="text-xs">
+                  <Badge variant={w.is_online ? "default" : "secondary"} className={`text-[10px] px-2 py-0.5 font-semibold ${w.is_online ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}`}>
                     {w.is_online ? <><UserCheck className="h-3 w-3 mr-1" />{t("admin.dashboard.online")}</> : <><UserX className="h-3 w-3 mr-1" />{t("admin.dashboard.offline")}</>}
                   </Badge>
                 </div>
@@ -198,26 +289,36 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg font-heading flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
+        {/* Recent System Activity Reports */}
+        <Card className="border-border/60 shadow-sm bg-card flex flex-col">
+          <CardHeader className="pb-3 border-b border-border/40">
+            <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
+              <Activity className="h-5 w-5 text-sky-600" />
               {t("admin.dashboard.recentReports")}
             </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">Recent clinical consultations across Barangay Subukin</p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 flex-1">
             <div className="space-y-3">
               {loading ? (
-                <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+                <div className="space-y-2 py-4 text-center">
+                  <div className="h-4 bg-muted animate-pulse rounded w-3/4 mx-auto" />
+                  <div className="h-4 bg-muted animate-pulse rounded w-1/2 mx-auto" />
+                </div>
               ) : recentActivity.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("dashboard.noActivity")}</p>
+                <p className="text-xs text-muted-foreground text-center py-6">{t("dashboard.noActivity")}</p>
               ) : recentActivity.map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.action}</p>
+                <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors">
+                  <div className="h-8 w-8 rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                    {item.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                   </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">{item.time}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1">
+                      <p className="text-xs font-bold text-foreground truncate">{item.name}</p>
+                      <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">{item.time}</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground truncate mt-0.5">{item.action}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -225,33 +326,67 @@ const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* Line Chart */}
-      <Card className="border-border/50 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg font-heading flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            {t("dashboard.formsOverview")}
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">{t("dashboard.formsOverviewDesc")}</p>
+      {/* Analytics Chart */}
+      <Card className="border-border/60 shadow-sm bg-card">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border/40 pb-4">
+          <div>
+            <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
+              <TrendingUp className="h-5 w-5 text-indigo-600" />
+              {t("dashboard.formsOverview")}
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.formsOverviewDesc")}</p>
+          </div>
+          <Badge variant="outline" className="text-xs gap-1 font-semibold text-indigo-600 border-indigo-500/30 bg-indigo-500/5">
+            <Sparkles className="h-3 w-3" /> System Analytics Trends
+          </Badge>
         </CardHeader>
-        <CardContent>
+
+        <CardContent className="pt-6">
           {loading ? (
-            <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+            <div className="h-72 flex items-center justify-center text-xs text-muted-foreground">
+              Loading analytics chart...
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  {CHART_COLORS.map((color, idx) => (
+                    <linearGradient key={idx} id={`admin-gradient-${idx}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={color} stopOpacity={0.4} />
+                      <stop offset="95%" stopColor={color} stopOpacity={0.0} />
+                    </linearGradient>
+                  ))}
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.6} />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: "hsl(var(--card))", 
+                    borderColor: "hsl(var(--border))", 
+                    borderRadius: 12, 
+                    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+                    fontSize: 12,
+                    color: "hsl(var(--foreground))"
+                  }} 
+                />
+                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
                 {chartData.length > 0 &&
                   Object.keys(chartData[0])
                     .filter((k) => k !== "month")
                     .map((key, i) => (
-                      <Line key={key} type="monotone" dataKey={key} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+                      <Area
+                        key={key}
+                        type="monotone"
+                        dataKey={key}
+                        stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                        fillOpacity={1}
+                        fill={`url(#admin-gradient-${i % CHART_COLORS.length})`}
+                        strokeWidth={2.5}
+                        dot={{ r: 3 }}
+                      />
                     ))}
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           )}
         </CardContent>

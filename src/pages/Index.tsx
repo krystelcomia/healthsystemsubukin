@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Users,
   ClipboardList,
@@ -7,10 +10,21 @@ import {
   Activity,
   TrendingUp,
   Baby,
+  Heart,
+  Syringe,
+  Bug,
+  Sparkles,
+  ArrowUpRight,
+  Clock,
+  CheckCircle2,
+  Calendar,
+  Search,
+  FileText,
+  UserCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const Index = () => {
   const { t } = useSettings();
@@ -19,20 +33,30 @@ const Index = () => {
     consultations: 0,
     familyRecords: 0,
     childVaccinations: 0,
+    dengueAudits: 0,
+    philpenScreenings: 0,
   });
   const [recentActivity, setRecentActivity] = useState<
-    { name: string; action: string; time: string }[]
+    { name: string; action: string; time: string; type: string }[]
   >([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [residents, consultations, families, children] = await Promise.all([
+      const [residents, consultations, families, children, dengue, philpen] = await Promise.all([
         supabase.from("residents").select("id", { count: "exact", head: true }),
         supabase.from("consultations").select("id", { count: "exact", head: true }),
         supabase.from("family_data").select("id", { count: "exact", head: true }),
         supabase.from("residents").select("id", { count: "exact", head: true }).lte("age", 12),
+        supabase.from("dengue_prevention").select("id", { count: "exact", head: true }),
+        supabase.from("philpen_health").select("id", { count: "exact", head: true }),
       ]);
 
       setStats({
@@ -40,6 +64,8 @@ const Index = () => {
         consultations: consultations.count || 0,
         familyRecords: families.count || 0,
         childVaccinations: children.count || 0,
+        dengueAudits: dengue.count || 0,
+        philpenScreenings: philpen.count || 0,
       });
 
       // Fetch all form data for chart
@@ -73,9 +99,10 @@ const Index = () => {
 
       if (recentConsultations) {
         const activities = recentConsultations.map((c: any) => ({
-          name: c.residents?.full_name || "Unknown",
+          name: c.residents?.full_name || "Resident",
           action: c.consultation_cause || "Consultation recorded",
           time: formatTimeAgo(new Date(c.created_at)),
+          type: "Consultation",
         }));
         setRecentActivity(activities);
       }
@@ -119,141 +146,276 @@ const Index = () => {
     const diffMs = now.getTime() - date.getTime();
     const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
     if (diffHrs < 1) return "Just now";
-    if (diffHrs < 24) return `${diffHrs} hour${diffHrs > 1 ? "s" : ""} ago`;
+    if (diffHrs < 24) return `${diffHrs}h ago`;
     const diffDays = Math.floor(diffHrs / 24);
     if (diffDays === 1) return "Yesterday";
     return `${diffDays} days ago`;
   };
 
   const CHART_COLORS = [
-    "hsl(var(--primary))",
-    "hsl(220, 70%, 55%)",
-    "hsl(150, 60%, 45%)",
-    "hsl(35, 90%, 55%)",
-    "hsl(340, 70%, 55%)",
-    "hsl(270, 60%, 55%)",
-    "hsl(180, 50%, 45%)",
+    "#0284c7", // Sky blue
+    "#059669", // Emerald green
+    "#7c3aed", // Purple
+    "#d97706", // Amber
+    "#e11d48", // Rose
+    "#2563eb", // Royal blue
+    "#db2777", // Pink
+  ];
+
+  const quickForms = [
+    { title: t("nav.consultation"), href: "/forms/consultation", icon: Stethoscope, color: "from-emerald-500/20 to-emerald-600/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:border-emerald-500/50", desc: "Log illness, vitals & diagnosis" },
+    { title: t("nav.familyData"), href: "/forms/family-data", icon: ClipboardList, color: "from-sky-500/20 to-sky-600/10 text-sky-600 dark:text-sky-400 border-sky-500/20 hover:border-sky-500/50", desc: "Household profiles & members" },
+    { title: t("nav.philpenHealth"), href: "/forms/philpen-health", icon: Activity, color: "from-rose-500/20 to-rose-600/10 text-rose-600 dark:text-rose-400 border-rose-500/20 hover:border-rose-500/50", desc: "NCD risk screening & BP" },
+    { title: t("nav.childHealth"), href: "/forms/child-health", icon: Baby, color: "from-amber-500/20 to-amber-600/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:border-amber-500/50", desc: "Sick child, Vit A & SIA list" },
+    { title: t("nav.maternalCare"), href: "/forms/maternal-care", icon: Heart, color: "from-pink-500/20 to-pink-600/10 text-pink-600 dark:text-pink-400 border-pink-500/20 hover:border-pink-500/50", desc: "Prenatal & pregnant records" },
+    { title: t("nav.denguePrevention"), href: "/forms/dengue-prevention", icon: Bug, color: "from-teal-500/20 to-teal-600/10 text-teal-600 dark:text-teal-400 border-teal-500/20 hover:border-teal-500/50", desc: "Household larvae inspection" },
+    { title: t("nav.familyPlanning"), href: "/forms/family-planning", icon: Syringe, color: "from-indigo-500/20 to-indigo-600/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 hover:border-indigo-500/50", desc: "Contraceptive method tracking" },
+    { title: t("nav.residents"), href: "/residents", icon: Users, color: "from-purple-500/20 to-purple-600/10 text-purple-600 dark:text-purple-400 border-purple-500/20 hover:border-purple-500/50", desc: "Browse resident database" },
   ];
 
   const statCards = [
-    { label: t("dashboard.totalResidents"), value: stats.totalResidents.toLocaleString(), icon: Users, change: t("dashboard.registeredResidents") },
-    { label: t("dashboard.consultations"), value: stats.consultations.toLocaleString(), icon: Stethoscope, change: t("dashboard.totalConsultations") },
-    { label: t("dashboard.familyRecords"), value: stats.familyRecords.toLocaleString(), icon: ClipboardList, change: t("dashboard.familiesRegistered") },
-    { label: t("dashboard.children"), value: stats.childVaccinations.toLocaleString(), icon: Baby, change: t("dashboard.registeredChildren") },
+    { label: t("dashboard.totalResidents"), value: stats.totalResidents, icon: Users, desc: t("dashboard.registeredResidents"), color: "from-sky-500/10 via-sky-500/5 to-transparent text-sky-600 dark:text-sky-400 border-sky-500/30", badgeColor: "bg-sky-500/10 text-sky-600" },
+    { label: t("dashboard.consultations"), value: stats.consultations, icon: Stethoscope, desc: t("dashboard.totalConsultations"), color: "from-emerald-500/10 via-emerald-500/5 to-transparent text-emerald-600 dark:text-emerald-400 border-emerald-500/30", badgeColor: "bg-emerald-500/10 text-emerald-600" },
+    { label: t("dashboard.familyRecords"), value: stats.familyRecords, icon: ClipboardList, desc: t("dashboard.familiesRegistered"), color: "from-purple-500/10 via-purple-500/5 to-transparent text-purple-600 dark:text-purple-400 border-purple-500/30", badgeColor: "bg-purple-500/10 text-purple-600" },
+    { label: t("dashboard.children"), value: stats.childVaccinations, icon: Baby, desc: t("dashboard.registeredChildren"), color: "from-amber-500/10 via-amber-500/5 to-transparent text-amber-600 dark:text-amber-400 border-amber-500/30", badgeColor: "bg-amber-500/10 text-amber-600" },
   ];
 
   return (
-    <div className="space-y-6 w-full">
-      <div>
-        <h1 className="text-2xl font-heading font-bold text-foreground">{t("dashboard.title")}</h1>
-        <p className="text-muted-foreground mt-1">{t("dashboard.welcome")}</p>
+    <div className="space-y-6 w-full max-w-full">
+      
+      {/* Creative Hero Banner Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 p-6 md:p-8 text-white shadow-xl border border-emerald-700/40">
+        <div className="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 bottom-0 h-48 w-48 rounded-full bg-teal-400/10 blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-400/30 backdrop-blur-md">
+              <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
+              Barangay Subukin Health Center Hub
+            </div>
+            <h1 className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-white">
+              {t("dashboard.title")}
+            </h1>
+            <p className="text-sm text-emerald-100/80 leading-relaxed">
+              {t("dashboard.welcome")} Complete health care monitoring, resident registry, and form services.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
+            <div className="px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-center text-xs space-y-0.5">
+              <div className="text-emerald-300 font-semibold flex items-center justify-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5" />
+                {currentTime.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+              </div>
+              <div className="font-mono text-xs font-bold text-white tracking-widest">
+                {currentTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+              </div>
+            </div>
+
+            <Button asChild size="sm" className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-lg gap-2 text-xs">
+              <Link to="/residents">
+                <Search className="h-3.5 w-3.5" />
+                Search Resident
+              </Link>
+            </Button>
+          </div>
+        </div>
       </div>
 
+      {/* Vibrant Intuitive Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => (
-          <Card key={stat.label} className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+          <Card 
+            key={stat.label} 
+            className={`relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br ${stat.color}`}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-              <stat.icon className="h-4 w-4 text-primary" />
+              <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {stat.label}
+              </CardTitle>
+              <div className={`p-2 rounded-xl ${stat.badgeColor} shadow-xs`}>
+                <stat.icon className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-heading font-bold text-foreground">
-                {loading ? "..." : stat.value}
+              <div className="text-2xl md:text-3xl font-heading font-extrabold text-foreground tracking-tight">
+                {loading ? "..." : stat.value.toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3 text-primary" />
-                {stat.change}
-              </p>
+              <div className="mt-2 flex items-center justify-between text-xs">
+                <span className="text-muted-foreground font-medium flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3 text-emerald-500" />
+                  {stat.desc}
+                </span>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-border/60">
+                  Active
+                </Badge>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-border/50 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg font-heading flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
+      {/* Main Grid Section: Health Form Launchpad + Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Quick Health Form Launchpad (2 Columns wide) */}
+        <Card className="lg:col-span-2 border-border/60 shadow-sm bg-card">
+          <CardHeader className="pb-3 border-b border-border/40 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
+                <FileText className="h-5 w-5 text-primary" />
+                Health Form Services Launchpad
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Quick access to complete barangay health records & forms
+              </p>
+            </div>
+            <Badge variant="secondary" className="text-xs gap-1 font-semibold bg-primary/10 text-primary border-primary/20">
+              <CheckCircle2 className="h-3 w-3" /> 8 Services
+            </Badge>
+          </CardHeader>
+
+          <CardContent className="p-4 md:p-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {quickForms.map((item) => (
+                <Link
+                  key={item.title}
+                  to={item.href}
+                  className={`group relative p-3.5 rounded-xl border bg-gradient-to-r ${item.color} transition-all duration-200 hover:shadow-md flex items-start gap-3`}
+                >
+                  <div className="p-2.5 rounded-lg bg-background/80 dark:bg-slate-900/80 shadow-xs group-hover:scale-110 transition-transform shrink-0 mt-0.5">
+                    <item.icon className="h-5 w-5" />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1">
+                      <h4 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                        {item.title}
+                      </h4>
+                      <ArrowUpRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-primary shrink-0" />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5 font-normal">
+                      {item.desc}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity Feed */}
+        <Card className="border-border/60 shadow-sm bg-card flex flex-col">
+          <CardHeader className="pb-3 border-b border-border/40">
+            <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
+              <Clock className="h-5 w-5 text-sky-600" />
               {t("dashboard.recentActivity")}
             </CardTitle>
+            <p className="text-xs text-muted-foreground">Latest recorded consultation events</p>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="p-4 flex-1">
+            <div className="space-y-3">
               {loading ? (
-                <p className="text-sm text-muted-foreground">{t("dashboard.loading")}</p>
+                <div className="space-y-2 py-4 text-center">
+                  <div className="h-4 bg-muted animate-pulse rounded w-3/4 mx-auto" />
+                  <div className="h-4 bg-muted animate-pulse rounded w-1/2 mx-auto" />
+                </div>
               ) : recentActivity.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("dashboard.noActivity")}</p>
+                <div className="text-center py-8 text-muted-foreground space-y-2">
+                  <UserCheck className="h-8 w-8 mx-auto opacity-30 text-primary" />
+                  <p className="text-xs">{t("dashboard.noActivity")}</p>
+                </div>
               ) : (
                 recentActivity.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">{item.action}</p>
+                  <div 
+                    key={i} 
+                    className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="h-8 w-8 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                      {item.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                     </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">{item.time}</span>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <p className="text-xs font-bold text-foreground truncate">{item.name}</p>
+                        <span className="text-[10px] text-muted-foreground whitespace-nowrap font-medium">
+                          {item.time}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                        {item.action}
+                      </p>
+                    </div>
                   </div>
                 ))
               )}
             </div>
           </CardContent>
         </Card>
-
-        <Card className="border-border/50 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg font-heading flex items-center gap-2">
-              <ClipboardList className="h-5 w-5 text-primary" />
-              {t("dashboard.quickActions")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: t("dashboard.newConsultation"), href: "/forms/consultation", icon: Stethoscope },
-                { label: t("nav.familyData"), href: "/forms/family-data", icon: ClipboardList },
-                { label: t("dashboard.healthScreening"), href: "/forms/philpen-health", icon: Activity },
-                { label: t("dashboard.viewResidents"), href: "/residents", icon: Users },
-              ].map((action) => (
-                <a
-                  key={action.label}
-                  href={action.href}
-                  className="flex flex-col items-center gap-2 p-4 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-center group"
-                >
-                  <action.icon className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
-                  <span className="text-sm font-medium text-secondary-foreground">{action.label}</span>
-                </a>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Line Chart */}
-      <Card className="border-border/50 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg font-heading flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            {t("dashboard.formsOverview")}
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">{t("dashboard.formsOverviewDesc")}</p>
+      {/* Interactive Forms Overview Analytics Chart */}
+      <Card className="border-border/60 shadow-sm bg-card">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border/40 pb-4">
+          <div>
+            <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
+              <TrendingUp className="h-5 w-5 text-emerald-600" />
+              {t("dashboard.formsOverview")}
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.formsOverviewDesc")}</p>
+          </div>
+          <Badge variant="outline" className="text-xs gap-1 font-semibold text-emerald-600 border-emerald-500/30 bg-emerald-500/5">
+            <Sparkles className="h-3 w-3" /> Monthly Activity Trends
+          </Badge>
         </CardHeader>
-        <CardContent>
+
+        <CardContent className="pt-6">
           {loading ? (
-            <p className="text-sm text-muted-foreground">{t("dashboard.loading")}</p>
+            <div className="h-72 flex items-center justify-center text-xs text-muted-foreground">
+              Loading analytics chart...
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  {CHART_COLORS.map((color, idx) => (
+                    <linearGradient key={idx} id={`gradient-${idx}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={color} stopOpacity={0.4} />
+                      <stop offset="95%" stopColor={color} stopOpacity={0.0} />
+                    </linearGradient>
+                  ))}
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.6} />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: "hsl(var(--card))", 
+                    borderColor: "hsl(var(--border))", 
+                    borderRadius: 12, 
+                    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+                    fontSize: 12,
+                    color: "hsl(var(--foreground))"
+                  }} 
+                />
+                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
                 {chartData.length > 0 &&
                   Object.keys(chartData[0])
                     .filter((k) => k !== "month")
                     .map((key, i) => (
-                      <Line key={key} type="monotone" dataKey={key} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+                      <Area
+                        key={key}
+                        type="monotone"
+                        dataKey={key}
+                        stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                        fillOpacity={1}
+                        fill={`url(#gradient-${i % CHART_COLORS.length})`}
+                        strokeWidth={2.5}
+                        dot={{ r: 3 }}
+                      />
                     ))}
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           )}
         </CardContent>
