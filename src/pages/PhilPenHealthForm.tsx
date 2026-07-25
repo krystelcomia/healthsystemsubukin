@@ -332,8 +332,8 @@ const PhilPenHealthForm = () => {
             print-color-adjust: exact !important;
           }
           @page {
-            size: A4 landscape;
-            margin: 6mm;
+            size: A4 portrait;
+            margin: 8mm;
           }
         }
       `}</style>
