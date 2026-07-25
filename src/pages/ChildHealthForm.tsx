@@ -2253,14 +2253,9 @@ const ChildHealthForm = () => {
       <Dialog open={viewRecordModalOpen} onOpenChange={setViewRecordModalOpen}>
         <DialogContent className="max-w-3xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 p-6 shadow-xl">
           <DialogHeader className="border-b pb-3 no-print">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
-                <Baby className="h-5 w-5 text-sky-600" /> Child Health Record Summary
-              </DialogTitle>
-              <Button type="button" variant="outline" size="sm" onClick={handlePrintSummary} className="gap-1.5 text-xs">
-                <Printer className="h-3.5 w-3.5" /> Print Summary
-              </Button>
-            </div>
+            <DialogTitle className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
+              <Baby className="h-5 w-5 text-sky-600" /> Child Health Record Summary
+            </DialogTitle>
             <DialogDescription className="text-xs text-slate-500">
               Barangay Subukin Health Center – Official Patient Clinical Summary
             </DialogDescription>
