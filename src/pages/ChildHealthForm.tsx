@@ -1054,8 +1054,8 @@ const ChildHealthForm = () => {
       `}</style>
 
       {/* Main Container Card */}
-      <Card id="child-print-area" className="border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden">
-        <CardContent className="p-4 md:p-6 space-y-5">
+      <Card id="child-print-area" className="border border-border/50 shadow-md bg-card text-card-foreground overflow-visible">
+        <CardContent className="p-4 md:p-6 space-y-5 overflow-visible">
           
           {/* Official Seals Header - Printing Only */}
           <div className="print-only flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-3 header-border" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "32px" }}>
@@ -1066,8 +1066,8 @@ const ChildHealthForm = () => {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             
-            {/* Sticky Header Section (Stays fixed & stationary at top of screen when scrolling page) */}
-            <div className="sticky top-[58px] z-20 bg-card/95 backdrop-blur-xs pt-1 pb-3 space-y-3 border-b border-border/40 shadow-xs no-print">
+            {/* Sticky Header Section (Stays 100% fixed & stationary at top of screen when scrolling page) */}
+            <div className="sticky top-[58px] z-20 bg-card/95 backdrop-blur-md pt-3 pb-3 space-y-3 border-b border-border/40 shadow-xs -mx-4 px-4 md:-mx-6 md:px-6 -mt-4 md:-mt-6 no-print">
               
               {/* Action Bar & Barangay note */}
               <div className="flex items-center justify-between gap-2 pb-1 border-b border-border/30">
