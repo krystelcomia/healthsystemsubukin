@@ -690,6 +690,23 @@ const ChildHealthForm = () => {
           body * {
             visibility: hidden !important;
           }
+
+          /* Reset Radix Dialog overlay positioning during summary print to remove blank top margin */
+          body.printing-summary [role="dialog"],
+          body.printing-summary [data-radix-portal],
+          body.printing-summary div[data-state="open"] {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            transform: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: white !important;
+          }
           
           /* If printing summary modal, hide child-print-area completely */
           body.printing-summary #child-print-area,
@@ -726,7 +743,7 @@ const ChildHealthForm = () => {
             width: 100% !important;
             background: white !important;
             color: black !important;
-            padding: 15px !important;
+            padding: 10px !important;
             margin: 0 !important;
             max-height: none !important;
             overflow: visible !important;
@@ -2265,11 +2282,17 @@ const ChildHealthForm = () => {
 
             return (
               <div id="summary-print-area" className="space-y-4 text-xs py-2 max-h-[70vh] overflow-y-auto pr-1">
-                {/* Printable Header Seal */}
-                <div className="hidden print:block border-b pb-3 mb-3 text-center">
-                  <h2 className="font-bold text-sm uppercase">REPUBLIKA NG PILIPINAS — BARANGAY SUBUKIN</h2>
-                  <p className="text-[10px] text-slate-600 uppercase font-semibold">SAN JUAN, BATANGAS — BARANGAY HEALTH CENTER</p>
-                  <p className="text-xs font-bold text-sky-800 uppercase mt-1">CLINICAL EXAMINATION & CHILD HEALTH RECORD SUMMARY</p>
+                {/* Official 3-Logo Seals Header */}
+                <div className="flex items-center justify-center gap-6 border-b-[4px] border-double border-slate-900 pb-2 mb-2 text-center header-border" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
+                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                </div>
+
+                <div className="text-center pb-1">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 font-heading">
+                    SUMMARY OF CHILD HEALTH RECORD / BUOD NG REKORD NG KALUSUGAN NG BATA
+                  </h2>
                 </div>
 
                 {/* 1. Patient Demographics & Exam Details */}
