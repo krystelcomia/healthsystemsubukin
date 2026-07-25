@@ -2198,27 +2198,59 @@ const ChildHealthForm = () => {
             <div className="text-center py-8 text-xs text-muted-foreground">Loading records...</div>
           ) : savedHealthRecords.length === 0 ? (
             <div className="text-center py-8 text-xs text-muted-foreground italic">No child health records found.</div>
-          ) : (
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-muted/40 border-b text-muted-foreground font-semibold">
-                  <th className="p-3">Checkup Date</th>
-                  <th className="p-3">Category / Form</th>
-                  <th className="p-3">Remarks / Summary</th>
-                  <th className="p-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {savedHealthRecords
-                  .filter(r => !historySearch.trim() || (r.remarks || "").toLowerCase().includes(historySearch.toLowerCase()))
-                  .map(rec => (
-                    <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="p-3 font-medium text-foreground">{rec.checkup_date || "—"}</td>
-                      <td className="p-3 font-semibold text-primary">
-                        {rec.remarks?.includes("Sick Child") ? "Care for Sick Children" :
-                         rec.remarks?.includes("Vitamin A") ? "Vitamin A & RHU2" :
-                         rec.remarks?.includes("SIA") ? "SIA Masterlist (6-59m)" : "Child Health"}
-                      </td>
+          ) : (() => {
+            const getRecordChildName = (rec: any) => {
+              if (rec.residents?.full_name) return rec.residents.full_name;
+              if (rec.details) {
+                try {
+                  const d = JSON.parse(rec.details);
+                  if (d.first_name || d.surname) {
+                    const name = `${d.first_name || ""} ${d.middle_name || ""} ${d.surname || ""}`.trim();
+                    if (name) return name;
+                  }
+                  if (d.row_data?.child_name) return d.row_data.child_name;
+                  if (d.row_data?.child_family_name || d.row_data?.child_given_name) {
+                    const name = `${d.row_data?.child_given_name || ""} ${d.row_data?.child_middle_name || ""} ${d.row_data?.child_family_name || ""}`.trim();
+                    if (name) return name;
+                  }
+                } catch {}
+              }
+              if (rec.remarks) {
+                if (rec.remarks.includes("Child:")) {
+                  const match = rec.remarks.match(/Child:\s*([^,]+)/);
+                  if (match && match[1]) return match[1].trim();
+                }
+                const bracketMatch = rec.remarks.match(/\]\s*([^(]+)/);
+                if (bracketMatch && bracketMatch[1]) return bracketMatch[1].trim();
+              }
+              return "Child Patient";
+            };
+
+            return (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-muted/40 border-b text-muted-foreground font-semibold">
+                    <th className="p-3">Checkup Date</th>
+                    <th className="p-3">Child's Name</th>
+                    <th className="p-3">Remarks / Summary</th>
+                    <th className="p-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {savedHealthRecords
+                    .filter(r => {
+                      if (!historySearch.trim()) return true;
+                      const term = historySearch.toLowerCase();
+                      const childName = getRecordChildName(r).toLowerCase();
+                      const remarks = (r.remarks || "").toLowerCase();
+                      return childName.includes(term) || remarks.includes(term);
+                    })
+                    .map(rec => (
+                      <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="p-3 font-medium text-foreground">{rec.checkup_date || "—"}</td>
+                        <td className="p-3 font-bold text-foreground">
+                          {getRecordChildName(rec)}
+                        </td>
                       <td className="p-3 max-w-md truncate text-muted-foreground">{rec.remarks || "—"}</td>
                       <td className="p-3 text-right space-x-1">
                         <Button 
@@ -2245,7 +2277,8 @@ const ChildHealthForm = () => {
                   ))}
               </tbody>
             </table>
-          )}
+            );
+          })()}
         </CardContent>
       </Card>
 
