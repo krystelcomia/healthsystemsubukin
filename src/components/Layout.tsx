@@ -310,7 +310,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <main className="flex-1 flex flex-col min-h-screen">
+        <main className="flex-1 flex flex-col min-h-screen min-w-0 overflow-x-hidden">
           <header 
             className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 shrink-0"
             style={sidebarHeaderHeight ? { height: `${sidebarHeaderHeight}px` } : { height: "58px" }}
@@ -457,7 +457,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </header>
 
-          <div className="flex-1 p-6 animate-fade-in space-y-6">
+          <div className="flex-1 p-6 animate-fade-in space-y-6 min-w-0 max-w-full overflow-x-hidden">
             {!activeBhw && user && userRole !== "supervisor" && (
               <div className="p-4 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-amber-500/5 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-bounce-subtle">
                 <div className="flex items-start gap-3">

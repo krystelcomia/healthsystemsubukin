@@ -2092,42 +2092,45 @@ const ChildHealthForm = () => {
             </TabsContent>
 
             {/* TAB 2: Children's Master List for Vitamin A and RHU2 (Official Paper Form Replica) */}
-            <TabsContent value="vitamin-a" className="mt-4 space-y-4">
+            <TabsContent value="vitamin-a" className="mt-4 space-y-4 w-full max-w-full">
               
-              {/* Form Title Banner */}
-              <div className="text-center py-2 bg-amber-50 dark:bg-amber-950/40 rounded-md border border-amber-300 dark:border-amber-700/60 relative">
-                <h1 className="text-sm font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200 font-heading">
-                  VITAMIN A AND DEWORMING MASTER LIST - RHU2
-                </h1>
-                <div className="absolute left-3 top-2 text-xs font-semibold text-amber-800 dark:text-amber-300">
-                  BARANGAY: <strong>SUBUKIN</strong>
+              {/* Header Container (Stationary) */}
+              <div className="w-full max-w-full space-y-4 shrink-0 no-print">
+                {/* Form Title Banner */}
+                <div className="text-center py-2 bg-amber-50 dark:bg-amber-950/40 rounded-md border border-amber-300 dark:border-amber-700/60 relative w-full">
+                  <h1 className="text-sm font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200 font-heading">
+                    VITAMIN A AND DEWORMING MASTER LIST - RHU2
+                  </h1>
+                  <div className="absolute left-3 top-2 text-xs font-semibold text-amber-800 dark:text-amber-300">
+                    BARANGAY: <strong>SUBUKIN</strong>
+                  </div>
+                </div>
+
+                {/* Toolbar Controls */}
+                <div className="flex items-center justify-between no-print bg-muted/40 p-2.5 rounded-md border w-full">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-primary">Sitio:</span>
+                    <Select value={vitAInfo.sitio} onValueChange={v => setVitAInfo(p => ({ ...p, sitio: v }))}>
+                      <SelectTrigger className="h-8 text-xs bg-background w-36">
+                        <SelectValue placeholder="Sitio" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sitioOptions.map(s => (
+                          <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button type="button" variant="outline" size="sm" onClick={handleAddVitARow} className="gap-1 text-xs">
+                    <Plus className="h-3.5 w-3.5" /> Add Child Row
+                  </Button>
                 </div>
               </div>
 
-              {/* Toolbar Controls */}
-              <div className="flex items-center justify-between no-print bg-muted/40 p-2.5 rounded-md border">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-semibold text-primary">Sitio:</span>
-                  <Select value={vitAInfo.sitio} onValueChange={v => setVitAInfo(p => ({ ...p, sitio: v }))}>
-                    <SelectTrigger className="h-8 text-xs bg-background w-36">
-                      <SelectValue placeholder="Sitio" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sitioOptions.map(s => (
-                        <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button type="button" variant="outline" size="sm" onClick={handleAddVitARow} className="gap-1 text-xs">
-                  <Plus className="h-3.5 w-3.5" /> Add Child Row
-                </Button>
-              </div>
-
-              {/* Masterlist 20-Column Table */}
-              <div className="overflow-x-auto border border-slate-300 dark:border-slate-700 rounded-md">
-                <table className="w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
+              {/* Masterlist 20-Column Table (Scrolls horizontally independently without moving header) */}
+              <div className="overflow-x-auto w-full max-w-full border border-slate-300 dark:border-slate-700 rounded-md shadow-xs">
+                <table className="min-w-[1350px] w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
                   <thead>
                     <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
                       <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-8">NO.</th>
@@ -2279,45 +2282,48 @@ const ChildHealthForm = () => {
             </TabsContent>
 
             {/* TAB 3: Supplemental Immunization Activity (SIA) Master List (Official Paper Form Replica) */}
-            <TabsContent value="sia-masterlist" className="mt-4 space-y-4">
+            <TabsContent value="sia-masterlist" className="mt-4 space-y-4 w-full max-w-full">
               
-              {/* Title Banner */}
-              <div className="text-center py-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-md border border-emerald-300 dark:border-emerald-700/60 relative">
-                <h1 className="text-sm font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-200 font-heading">
-                  Supplemental Immunization Activity (SIA)
-                </h1>
-                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                  Masterlist of Children 6-59 months old
-                </p>
-                <div className="absolute right-3 top-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
-                  Date: <Input type="text" value={siaInfo.activity_date} onChange={e => setSiaInfo(p => ({ ...p, activity_date: e.target.value }))} placeholder="SEPT 2021 - FEB 2024" className="inline-block w-36 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center" />
+              {/* Header Container (Stationary) */}
+              <div className="w-full max-w-full space-y-4 shrink-0 no-print">
+                {/* Title Banner */}
+                <div className="text-center py-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-md border border-emerald-300 dark:border-emerald-700/60 relative w-full">
+                  <h1 className="text-sm font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-200 font-heading">
+                    Supplemental Immunization Activity (SIA)
+                  </h1>
+                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                    Masterlist of Children 6-59 months old
+                  </p>
+                  <div className="absolute right-3 top-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                    Date: <Input type="text" value={siaInfo.activity_date} onChange={e => setSiaInfo(p => ({ ...p, activity_date: e.target.value }))} placeholder="SEPT 2021 - FEB 2024" className="inline-block w-36 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center" />
+                  </div>
+                </div>
+
+                {/* Meta Location Fields Bar */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-muted/40 p-2.5 rounded-md border text-xs w-full">
+                  <div>
+                    <Label className="text-[10px] text-slate-500 font-medium">Region:</Label>
+                    <Input type="text" value={siaInfo.region} onChange={e => setSiaInfo(p => ({ ...p, region: e.target.value }))} className={lineInputClass} />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] text-slate-500 font-medium">Province/City:</Label>
+                    <Input type="text" value={siaInfo.province} onChange={e => setSiaInfo(p => ({ ...p, province: e.target.value }))} className={lineInputClass} />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] text-slate-500 font-medium">Municipality:</Label>
+                    <Input type="text" value={siaInfo.municipality} onChange={e => setSiaInfo(p => ({ ...p, municipality: e.target.value }))} className={lineInputClass} />
+                  </div>
+                  <div className="flex items-end justify-end no-print">
+                    <Button type="button" variant="outline" size="sm" onClick={handleAddSIARow} className="gap-1 text-xs">
+                      <Plus className="h-3.5 w-3.5" /> Add Child Row
+                    </Button>
+                  </div>
                 </div>
               </div>
 
-              {/* Meta Location Fields Bar */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-muted/40 p-2.5 rounded-md border text-xs">
-                <div>
-                  <Label className="text-[10px] text-slate-500 font-medium">Region:</Label>
-                  <Input type="text" value={siaInfo.region} onChange={e => setSiaInfo(p => ({ ...p, region: e.target.value }))} className={lineInputClass} />
-                </div>
-                <div>
-                  <Label className="text-[10px] text-slate-500 font-medium">Province/City:</Label>
-                  <Input type="text" value={siaInfo.province} onChange={e => setSiaInfo(p => ({ ...p, province: e.target.value }))} className={lineInputClass} />
-                </div>
-                <div>
-                  <Label className="text-[10px] text-slate-500 font-medium">Municipality:</Label>
-                  <Input type="text" value={siaInfo.municipality} onChange={e => setSiaInfo(p => ({ ...p, municipality: e.target.value }))} className={lineInputClass} />
-                </div>
-                <div className="flex items-end justify-end no-print">
-                  <Button type="button" variant="outline" size="sm" onClick={handleAddSIARow} className="gap-1 text-xs">
-                    <Plus className="h-3.5 w-3.5" /> Add Child Row
-                  </Button>
-                </div>
-              </div>
-
-              {/* SIA Masterlist Table matching exact photo */}
-              <div className="overflow-x-auto border border-slate-300 dark:border-slate-700 rounded-md">
-                <table className="w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
+              {/* SIA Masterlist Table (Scrolls horizontally independently without moving header) */}
+              <div className="overflow-x-auto w-full max-w-full border border-slate-300 dark:border-slate-700 rounded-md shadow-xs">
+                <table className="min-w-[1350px] w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
                   <thead>
                     <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-6">#</th>
