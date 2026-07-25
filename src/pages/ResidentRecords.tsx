@@ -260,14 +260,19 @@ const ResidentRecords = () => {
             </CardContent>
           </Card>
 
-          {/* Screen & Print Details */}
-          <div className="print-only">
-            <h2 style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>{selectedResident.full_name}</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16 }}>
-              <p style={{ fontSize: 13 }}><strong>{t("residents.gender")}:</strong> {selectedResident.gender}</p>
-              <p style={{ fontSize: 13 }}><strong>{t("residents.age")}:</strong> {selectedResident.age}</p>
-              <p style={{ fontSize: 13 }}><strong>{t("residents.birthday")}:</strong> {selectedResident.birthday || "—"}</p>
-              <p style={{ fontSize: 13 }}><strong>{t("residents.sitio")}:</strong> {selectedResident.sitio || "—"}</p>
+          {/* Printable Resident Header Info */}
+          <div className="print-only" style={{ display: "none", width: "100%", borderBottom: "2px solid #000", paddingBottom: "12px", marginBottom: "16px" }}>
+            <h1 style={{ fontSize: "20px", fontWeight: "800", color: "#000", marginBottom: "8px", display: "block", clear: "both", lineHeight: "1.3" }}>
+              {selectedResident.full_name}
+            </h1>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px 16px", fontSize: "12px", color: "#000", lineHeight: "1.4" }}>
+              <div><strong>{t("residents.gender")}:</strong> {selectedResident.gender}</div>
+              <div><strong>{t("residents.age")}:</strong> {selectedResident.age} yrs</div>
+              <div><strong>{t("residents.birthday")}:</strong> {selectedResident.birthday || "—"}</div>
+              <div><strong>{t("residents.sitio")}:</strong> Sitio {selectedResident.sitio || "Subukin"}</div>
+              {selectedResident.family_number && (
+                <div><strong>Family #:</strong> {selectedResident.family_number}</div>
+              )}
             </div>
           </div>
 
@@ -855,7 +860,7 @@ const ResidentRecords = () => {
   );
 };
 
-const thStyle: React.CSSProperties = { border: "1px solid #d1d5db", padding: "7px 10px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "#000000", background: "transparent" };
-const tdStyle: React.CSSProperties = { border: "1px solid #d1d5db", padding: "7px 10px", textAlign: "left", fontSize: 12, color: "#000000" };
+const thStyle: React.CSSProperties = { border: "1px solid #333333", padding: "6px 8px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#000000", background: "#f3f4f6", lineHeight: "1.3" };
+const tdStyle: React.CSSProperties = { border: "1px solid #333333", padding: "6px 8px", textAlign: "left", fontSize: 11, color: "#000000", lineHeight: "1.3" };
 
 export default ResidentRecords;
