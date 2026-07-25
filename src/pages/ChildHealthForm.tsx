@@ -752,9 +752,6 @@ const ChildHealthForm = () => {
               BRGY: <strong className="text-foreground">SUBUKIN</strong>
             </span>
             <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={handleResetSickForm} className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium shadow-xs">
-                <RefreshCw className="h-3.5 w-3.5" /> Reset Form
-              </Button>
               <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
                 <Printer className="h-3.5 w-3.5" /> Print Form
               </Button>
