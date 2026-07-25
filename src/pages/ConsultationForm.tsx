@@ -182,7 +182,7 @@ const ConsultationForm = () => {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          @page { size: A4 landscape; margin: 6mm; }
+          @page { size: A4 portrait; margin: 8mm; }
         }
       `}</style>
 
