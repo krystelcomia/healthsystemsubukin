@@ -1104,22 +1104,22 @@ const ChildHealthForm = () => {
             </TabsList>
 
             {/* TAB 1: Care for Sick Children (Aged 2 Months to 5 Years) - Official Form Replica */}
-            <TabsContent value="sick-children" className="mt-4 space-y-6">
+            <TabsContent value="sick-children" className="mt-4 space-y-4 w-full max-w-full">
               
-              {/* Form Title Banner */}
-              <div className="text-center py-2 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-300 dark:border-slate-700 relative">
-                <h1 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 font-heading">
-                  PANGANGALAGA SA BATANG MAY SAKIT EDAD 2 BUWAN HANGGANG 5 TAON
-                </h1>
-                <div className="absolute right-3 top-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                  FN: <Input type="text" value={sickForm.fn_number} onChange={e => setSickForm(p => ({ ...p, fn_number: e.target.value }))} placeholder="FN 242" className="inline-block w-20 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center" />
+              {/* Stationary Header Container (Stays fixed when scrolling form up/down) */}
+              <div className="w-full max-w-full space-y-3 shrink-0 no-print">
+                {/* Form Title Banner */}
+                <div className="text-center py-2 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-300 dark:border-slate-700 relative w-full">
+                  <h1 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 font-heading">
+                    PANGANGALAGA SA BATANG MAY SAKIT EDAD 2 BUWAN HANGGANG 5 TAON
+                  </h1>
+                  <div className="absolute right-3 top-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                    FN: <Input type="text" value={sickForm.fn_number} onChange={e => setSickForm(p => ({ ...p, fn_number: e.target.value }))} placeholder="FN 242" className="inline-block w-20 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center" />
+                  </div>
                 </div>
-              </div>
 
-              <form onSubmit={handleSaveSickChild} className="space-y-6 text-xs">
-                
                 {/* Select Resident Header Dropdown */}
-                <div className="flex items-center justify-between no-print bg-muted/40 p-2.5 rounded-md border">
+                <div className="flex items-center justify-between no-print bg-muted/40 p-2.5 rounded-md border w-full">
                   <span className="text-xs font-semibold text-primary flex items-center gap-1.5">
                     <UserCheck className="h-4 w-4" /> Select Registered Resident Child:
                   </span>
@@ -1136,6 +1136,10 @@ const ChildHealthForm = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* Form Body Container (Scrolls vertically independently without moving header) */}
+              <form onSubmit={handleSaveSickChild} className="space-y-6 text-xs overflow-y-auto max-h-[calc(100vh-270px)] min-h-[500px] pr-2.5 print:max-h-none print:overflow-visible print:pr-0">
 
                 {/* Patient Information Box */}
                 <div className="border border-slate-300 dark:border-slate-700 rounded-md p-3 space-y-3 bg-card">
