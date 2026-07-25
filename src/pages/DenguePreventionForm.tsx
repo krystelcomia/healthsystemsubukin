@@ -643,6 +643,23 @@ const DenguePreventionForm = () => {
         }
       `}</style>
 
+      {/* Dynamic Theme Banner */}
+      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+            <Bug className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
+              Dengue Prevention — Search & Destroy 2025
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Household larvae monitoring, breeding container inspection, and action plan tracking for Barangay Subukin.
+            </p>
+          </div>
+        </div>
+      </div>
+
 
 
       <Card 
@@ -674,31 +691,31 @@ const DenguePreventionForm = () => {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse border border-border text-left text-xs md:text-sm">
               <thead>
-                <tr>
-                  <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[28%]" rowSpan={2}>
+                <tr className="bg-primary/10 text-primary font-heading">
+                  <th className="border border-border p-2 font-bold text-center w-[28%]" rowSpan={2}>
                     PANGALAN NG MAYBAHAY
                   </th>
-                  <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[28%]" rowSpan={2}>
+                  <th className="border border-border p-2 font-bold text-center w-[28%]" rowSpan={2}>
                     URI NG LALAGYAN O TIRAHAN NG LAMOK
                   </th>
-                  <th className="border border-border bg-muted/40 p-1.5 font-bold text-center text-muted-foreground w-[14%]" colSpan={2}>
+                  <th className="border border-border p-1.5 font-bold text-center w-[14%]" colSpan={2}>
                     KITI-KITI
                   </th>
-                  <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[20%]" rowSpan={2}>
+                  <th className="border border-border p-2 font-bold text-center w-[20%]" rowSpan={2}>
                     ACTION PLAN/DAPAT NA GAWIN
                   </th>
-                  <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[10%]" rowSpan={2}>
+                  <th className="border border-border p-2 font-bold text-center w-[10%]" rowSpan={2}>
                     LAGDA
                   </th>
-                  <th className="border border-border bg-muted/40 p-2 font-bold text-center text-muted-foreground w-[5%] no-print" rowSpan={2}>
+                  <th className="border border-border p-2 font-bold text-center w-[5%] no-print" rowSpan={2}>
                     
                   </th>
                 </tr>
-                <tr>
-                  <th className="border border-border bg-muted/40 p-1 text-[10px] font-bold text-center text-muted-foreground">
+                <tr className="bg-primary/10 text-primary font-heading">
+                  <th className="border border-border p-1 text-[10px] font-bold text-center">
                     MERON
                   </th>
-                  <th className="border border-border bg-muted/40 p-1 text-[10px] font-bold text-center text-muted-foreground">
+                  <th className="border border-border p-1 text-[10px] font-bold text-center">
                     WALA
                   </th>
                 </tr>
