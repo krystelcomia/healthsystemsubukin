@@ -357,9 +357,9 @@ export const translations: Record<Language, Record<string, string>> = {
     // Dengue Prevention Notice & Form
     "dengue.limitTitle": "Limit Reached (20 Rows)",
     "dengue.limitDesc1": "You have reached the 20-row limit for Dengue Prevention records.",
-    "dengue.limitDesc2": "Please print the page to keep a physical copy, then clear previous records to start a new list.",
-    "dengue.printAndDelete": "Print and Delete",
-    "dengue.printAndDeleteSuccess": "Printed and previous records cleared successfully.",
+    "dengue.limitDesc2": "Click 'Print and Save' to save all filled out form records to the system database, print a physical copy, and view it.",
+    "dengue.printAndSave": "Print and Save",
+    "dengue.printAndSaveSuccess": "Form saved successfully and sent to print!",
     "dengue.noRecordsToSave": "No records to save. Please enter or add a record first.",
     "dengue.saveSuccess": "Records saved successfully."
   },
@@ -719,9 +719,9 @@ export const translations: Record<Language, Record<string, string>> = {
     // Dengue Prevention Notice & Form
     "dengue.limitTitle": "Naka-abot na sa Limitasyon (20 Rows)",
     "dengue.limitDesc1": "Naka-abot na sa limitasyon na 20 rows ang pormularyo ng Dengue Prevention.",
-    "dengue.limitDesc2": "Mangyaring i-print ang pahina upang mai-save ang kopya, at pagkatapos ay i-clear ang mga lumang rekor upang magsimula ng bagong listahan.",
-    "dengue.printAndDelete": "I-print at Burahin",
-    "dengue.printAndDeleteSuccess": "Na-print at matagumpay na na-clear ang mga lumang rekor.",
+    "dengue.limitDesc2": "I-click ang 'Print at I-save' upang i-save ang lahat ng na-fill out na record sa database, mag-print ng kopya, at tingnan ito.",
+    "dengue.printAndSave": "Print at I-save",
+    "dengue.printAndSaveSuccess": "Matagumpay na nai-save ang form at naipadala sa print!",
     "dengue.noRecordsToSave": "Walang i-sa-save na rekor. Maglagay o magdagdag muna ng datos.",
     "dengue.saveSuccess": "Matagumpay na na-save ang mga rekor."
   },

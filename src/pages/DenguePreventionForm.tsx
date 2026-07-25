@@ -466,38 +466,14 @@ const DenguePreventionForm = () => {
     }
   };
 
-  const handlePrintAndDelete = async () => {
+  const handlePrintAndSave = async () => {
     setLimitModalOpen(false);
 
-    // 1. Trigger print window
+    // 1. Save all filled form records
+    await handleSaveAll();
+
+    // 2. Open print window so user can print and view document
     window.print();
-
-    // 2. Clear records from database
-    try {
-      const dbRecordIds = records.filter(r => !r.id.startsWith("temp-")).map(r => r.id);
-      if (dbRecordIds.length > 0) {
-        await supabase
-          .from("dengue_prevention")
-          .delete()
-          .in("id", dbRecordIds);
-      } else {
-        await supabase
-          .from("dengue_prevention")
-          .delete()
-          .neq("id", "");
-      }
-
-      logActivity("delete_dengue", {
-        entity_type: "dengue_prevention",
-        description: "Printed and cleared Dengue prevention records (20-row limit reset)"
-      });
-
-      toast.success(t("dengue.printAndDeleteSuccess"));
-      await fetchRecords();
-    } catch (err) {
-      console.error("Failed to clear records:", err);
-      toast.error("Failed to clear records after print.");
-    }
   };
 
   const handleAddRow = () => {
@@ -885,23 +861,24 @@ const DenguePreventionForm = () => {
         <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200">
           <DialogHeader>
             <DialogTitle className="text-lg font-heading font-bold text-foreground">
-              {t("dengue.limitTitle")}
+              {t("dengue.limitTitle") || "Limit Reached (20 Rows)"}
             </DialogTitle>
           </DialogHeader>
           <div className="py-2 text-sm text-slate-600 space-y-2">
             <p>
-              {t("dengue.limitDesc1")}
+              {t("dengue.limitDesc1") || "You have reached the 20-row limit for Dengue Prevention records."}
             </p>
             <p>
-              {t("dengue.limitDesc2")}
+              {t("dengue.limitDesc2") || "Click 'Print and Save' to save all filled out form records to the system database, print a physical copy, and view it."}
             </p>
           </div>
           <DialogFooter className="gap-2 mt-4">
             <Button type="button" variant="outline" onClick={() => setLimitModalOpen(false)}>
-              {t("common.cancel")}
+              {t("common.cancel") || "Cancel"}
             </Button>
-            <Button type="button" onClick={handlePrintAndDelete} className="bg-destructive text-white hover:bg-destructive/90 font-medium">
-              {t("dengue.printAndDelete")}
+            <Button type="button" onClick={handlePrintAndSave} className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md">
+              <Printer className="h-4 w-4 mr-1.5" />
+              {t("dengue.printAndSave") || "Print and Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
