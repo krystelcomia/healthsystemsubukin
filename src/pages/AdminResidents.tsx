@@ -158,14 +158,13 @@ const AdminResidents = () => {
                   <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.gender")}</th>
                   <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.age")}</th>
                   <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.birthday")}</th>
-                  <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.civilStatus")}</th>
                   <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.sitio")}</th>
                   <th className="p-3 text-center font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {loading ? (<tr><td colSpan={9} className="p-6 text-center text-muted-foreground">{t("common.loading")}</td></tr>
-                ) : filtered.length === 0 ? (<tr><td colSpan={9} className="p-6 text-center text-muted-foreground">{t("residents.noResidents")}</td></tr>
+                {loading ? (<tr><td colSpan={8} className="p-6 text-center text-muted-foreground">{t("common.loading")}</td></tr>
+                ) : filtered.length === 0 ? (<tr><td colSpan={8} className="p-6 text-center text-muted-foreground">{t("residents.noResidents")}</td></tr>
                 ) : filtered.map((r, i) => (
                   <tr key={r.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                     <td className="p-3 text-muted-foreground">{i + 1}</td>
@@ -182,7 +181,6 @@ const AdminResidents = () => {
                     <td className="p-3 text-foreground">{r.gender}</td>
                     <td className="p-3 text-foreground">{r.age}</td>
                     <td className="p-3 text-foreground">{r.birthday || "—"}</td>
-                    <td className="p-3"><Badge variant="secondary" className="text-xs">{r.status}</Badge></td>
                     <td className="p-3 text-foreground">{r.sitio || "—"}</td>
                     <td className="p-3 text-center">
                       <Button

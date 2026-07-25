@@ -248,7 +248,6 @@ const ResidentRecords = () => {
                   <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
                     <span>Gender: <strong>{selectedResident.gender}</strong></span> · 
                     <span>Age: <strong>{selectedResident.age} yrs</strong></span> · 
-                    <span>Civil Status: <strong>{selectedResident.status}</strong></span> · 
                     <span>Birthday: <strong>{selectedResident.birthday || "N/A"}</strong></span>
                   </p>
                 </div>
@@ -268,7 +267,6 @@ const ResidentRecords = () => {
               <p style={{ fontSize: 13 }}><strong>{t("residents.gender")}:</strong> {selectedResident.gender}</p>
               <p style={{ fontSize: 13 }}><strong>{t("residents.age")}:</strong> {selectedResident.age}</p>
               <p style={{ fontSize: 13 }}><strong>{t("residents.birthday")}:</strong> {selectedResident.birthday || "—"}</p>
-              <p style={{ fontSize: 13 }}><strong>{t("residents.civilStatus")}:</strong> {selectedResident.status}</p>
               <p style={{ fontSize: 13 }}><strong>{t("residents.sitio")}:</strong> {selectedResident.sitio || "—"}</p>
             </div>
           </div>
@@ -659,7 +657,6 @@ const ResidentRecords = () => {
               <th style={thStyle}>{t("residents.gender")}</th>
               <th style={thStyle}>{t("residents.age")}</th>
               <th style={thStyle}>{t("residents.birthday")}</th>
-              <th style={thStyle}>{t("residents.civilStatus")}</th>
               <th style={thStyle}>{t("residents.sitio")}</th>
             </tr>
           </thead>
@@ -671,7 +668,6 @@ const ResidentRecords = () => {
                 <td style={tdStyle}>{r.gender}</td>
                 <td style={tdStyle}>{r.age}</td>
                 <td style={tdStyle}>{r.birthday || "—"}</td>
-                <td style={tdStyle}>{r.status}</td>
                 <td style={tdStyle}>{r.sitio || "—"}</td>
               </tr>
             ))}
@@ -752,7 +748,7 @@ const ResidentRecords = () => {
                     </div>
 
                     <div className="text-xs text-muted-foreground pt-1 flex items-center justify-between border-t border-border/30">
-                      <span>{resident.gender} · {resident.age} yrs · {resident.status}</span>
+                      <span>{resident.gender} · {resident.age} yrs</span>
                       <span className="text-[11px] text-primary font-medium opacity-80 group-hover:opacity-100 flex items-center gap-0.5">
                         View Records <ChevronRight className="h-3 w-3" />
                       </span>
@@ -774,7 +770,6 @@ const ResidentRecords = () => {
                       <th className="p-3">Gender</th>
                       <th className="p-3">Age</th>
                       <th className="p-3">Birthday</th>
-                      <th className="p-3">Civil Status</th>
                       <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -795,7 +790,6 @@ const ResidentRecords = () => {
                         <td className="p-3">{r.gender}</td>
                         <td className="p-3 font-medium">{r.age} yrs</td>
                         <td className="p-3 text-muted-foreground">{r.birthday || "—"}</td>
-                        <td className="p-3">{r.status}</td>
                         <td className="p-3 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary" onClick={() => handleSelectResident(r)}>
@@ -835,7 +829,6 @@ const ResidentRecords = () => {
                 <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={editResident.gender} onValueChange={(v) => setEditResident({ ...editResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
                 <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={editResident.age} onChange={(e) => setEditResident({ ...editResident, age: Number(e.target.value) })} /></div>
               </div>
-              <div className="space-y-1"><Label>{t("residents.civilStatus")}</Label><Select value={editResident.status} onValueChange={(v) => setEditResident({ ...editResident, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">{t("residents.single")}</SelectItem><SelectItem value="Married">{t("residents.married")}</SelectItem><SelectItem value="Widowed">{t("residents.widowed")}</SelectItem><SelectItem value="Separated">{t("residents.separated")}</SelectItem></SelectContent></Select></div>
               <div className="space-y-1">
                 <Label>{t("residents.sitio")}</Label>
                 <Select value={editResident.sitio || ""} onValueChange={(v) => setEditResident({ ...editResident, sitio: v })}>
