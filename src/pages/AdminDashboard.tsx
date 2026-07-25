@@ -34,7 +34,7 @@ interface BHWWorker {
 }
 
 const AdminDashboard = () => {
-  const { t } = useSettings();
+  const { t, colorTheme } = useSettings();
   const [stats, setStats] = useState({
     totalResidents: 0, totalWorkers: 0, onlineWorkers: 0, consultations: 0, familyRecords: 0, philpenRecords: 0, dengueRecords: 0,
   });
@@ -48,6 +48,66 @@ const AdminDashboard = () => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const THEME_STYLES: Record<string, {
+    heroGradient: string;
+    heroBorder: string;
+    badgeStyle: string;
+    btnStyle: string;
+    chartColors: string[];
+  }> = {
+    emerald: {
+      heroGradient: "from-emerald-950 via-teal-900 to-slate-950",
+      heroBorder: "border-emerald-700/40",
+      badgeStyle: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+      btnStyle: "bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold",
+      chartColors: ["#059669", "#0284c7", "#7c3aed", "#d97706", "#e11d48", "#2563eb", "#db2777"],
+    },
+    ocean: {
+      heroGradient: "from-blue-950 via-sky-900 to-slate-950",
+      heroBorder: "border-sky-700/40",
+      badgeStyle: "bg-sky-500/20 text-sky-300 border-sky-400/30",
+      btnStyle: "bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold",
+      chartColors: ["#0284c7", "#059669", "#7c3aed", "#d97706", "#e11d48", "#2563eb", "#db2777"],
+    },
+    purple: {
+      heroGradient: "from-purple-950 via-indigo-900 to-slate-950",
+      heroBorder: "border-purple-700/40",
+      badgeStyle: "bg-purple-500/20 text-purple-300 border-purple-400/30",
+      btnStyle: "bg-purple-500 hover:bg-purple-400 text-white font-bold",
+      chartColors: ["#7c3aed", "#0284c7", "#059669", "#d97706", "#e11d48", "#2563eb", "#db2777"],
+    },
+    rose: {
+      heroGradient: "from-rose-950 via-pink-950 to-slate-950",
+      heroBorder: "border-rose-700/40",
+      badgeStyle: "bg-rose-500/20 text-rose-300 border-rose-400/30",
+      btnStyle: "bg-rose-500 hover:bg-rose-400 text-white font-bold",
+      chartColors: ["#e11d48", "#db2777", "#7c3aed", "#0284c7", "#059669", "#d97706", "#2563eb"],
+    },
+    maroon: {
+      heroGradient: "from-rose-950 via-red-950 to-slate-950",
+      heroBorder: "border-rose-800/40",
+      badgeStyle: "bg-rose-500/20 text-rose-300 border-rose-400/30",
+      btnStyle: "bg-rose-600 hover:bg-rose-500 text-white font-bold",
+      chartColors: ["#be123c", "#e11d48", "#7c3aed", "#0284c7", "#059669", "#d97706", "#db2777"],
+    },
+    amber: {
+      heroGradient: "from-amber-950 via-orange-950 to-slate-950",
+      heroBorder: "border-amber-700/40",
+      badgeStyle: "bg-amber-500/20 text-amber-300 border-amber-400/30",
+      btnStyle: "bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold",
+      chartColors: ["#d97706", "#059669", "#0284c7", "#7c3aed", "#e11d48", "#2563eb", "#db2777"],
+    },
+    slate: {
+      heroGradient: "from-slate-900 via-zinc-900 to-stone-950",
+      heroBorder: "border-slate-700/40",
+      badgeStyle: "bg-slate-500/20 text-slate-300 border-slate-400/30",
+      btnStyle: "bg-slate-700 hover:bg-slate-600 text-white font-bold",
+      chartColors: ["#475569", "#0284c7", "#059669", "#7c3aed", "#d97706", "#e11d48", "#2563eb"],
+    },
+  };
+
+  const currentStyle = THEME_STYLES[colorTheme] || THEME_STYLES.purple;
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -144,15 +204,7 @@ const AdminDashboard = () => {
     return `${diffDays}d ago`;
   };
 
-  const CHART_COLORS = [
-    "#0284c7", // Sky blue
-    "#059669", // Emerald green
-    "#7c3aed", // Purple
-    "#d97706", // Amber
-    "#e11d48", // Rose
-    "#2563eb", // Royal blue
-    "#db2777", // Pink
-  ];
+  const CHART_COLORS = currentStyle.chartColors;
 
   const statCards = [
     { label: t("dashboard.totalResidents"), value: stats.totalResidents, icon: Users, desc: t("dashboard.registeredResidents"), color: "from-sky-500/10 via-sky-500/5 to-transparent text-sky-600 dark:text-sky-400 border-sky-500/30", badgeColor: "bg-sky-500/10 text-sky-600" },
@@ -166,28 +218,28 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6 w-full max-w-full">
       
-      {/* Creative Hero Banner Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-sky-950 p-6 md:p-8 text-white shadow-xl border border-indigo-800/40">
-        <div className="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 bottom-0 h-48 w-48 rounded-full bg-sky-400/10 blur-2xl pointer-events-none" />
+      {/* Dynamic Theme Hero Banner Header */}
+      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${currentStyle.heroGradient} p-6 md:p-8 text-white shadow-xl border ${currentStyle.heroBorder}`}>
+        <div className="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 bottom-0 h-48 w-48 rounded-full bg-white/5 blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold border border-indigo-400/30 backdrop-blur-md">
+            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md ${currentStyle.badgeStyle}`}>
               <Shield className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
               Midwife Admin Supervisory Portal
             </div>
             <h1 className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-white flex items-center gap-2">
               {t("admin.dashboard.title")}
             </h1>
-            <p className="text-sm text-indigo-100/80 leading-relaxed">
+            <p className="text-sm text-white/80 leading-relaxed">
               {t("admin.dashboard.desc")} Comprehensive health system overview, active staff shift monitoring, and health forms analytics.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
             <div className="px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-center text-xs space-y-0.5">
-              <div className="text-indigo-300 font-semibold flex items-center justify-center gap-1.5">
+              <div className="text-white/90 font-semibold flex items-center justify-center gap-1.5">
                 <Clock className="h-3.5 w-3.5" />
                 {currentTime.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
               </div>
@@ -196,7 +248,7 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            <Button asChild size="sm" className="bg-indigo-500 hover:bg-indigo-400 text-white font-bold shadow-lg gap-2 text-xs">
+            <Button asChild size="sm" className={`${currentStyle.btnStyle} shadow-lg gap-2 text-xs`}>
               <Link to="/admin/workers">
                 <Users className="h-3.5 w-3.5" />
                 Manage Staff

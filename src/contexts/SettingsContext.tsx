@@ -3,7 +3,7 @@ import { translations, Language } from "@/lib/translations";
 
 export type { Language };
 
-export type ColorTheme = "emerald" | "ocean" | "purple" | "rose" | "amber" | "slate";
+export type ColorTheme = "emerald" | "ocean" | "purple" | "rose" | "maroon" | "amber" | "slate";
 
 export const COLOR_THEMES: { id: ColorTheme; label: string; swatch: string; vars: Record<string, string> }[] = [
   {
@@ -40,6 +40,15 @@ export const COLOR_THEMES: { id: ColorTheme; label: string; swatch: string; vars
       "--secondary": "340 55% 95%", "--secondary-foreground": "340 65% 35%",
       "--sidebar-background": "340 55% 24%", "--sidebar-primary": "340 70% 60%",
       "--sidebar-accent": "340 55% 32%", "--sidebar-border": "340 45% 34%", "--sidebar-ring": "340 70% 60%",
+    },
+  },
+  {
+    id: "maroon", label: "Barangay Maroon", swatch: "hsl(345 75% 28%)",
+    vars: {
+      "--primary": "345 75% 28%", "--ring": "345 75% 28%", "--accent": "345 75% 38%",
+      "--secondary": "345 40% 94%", "--secondary-foreground": "345 70% 25%",
+      "--sidebar-background": "345 75% 18%", "--sidebar-primary": "345 75% 45%",
+      "--sidebar-accent": "345 75% 24%", "--sidebar-border": "345 40% 26%", "--sidebar-ring": "345 75% 45%",
     },
   },
   {
