@@ -785,14 +785,14 @@ const DenguePreventionForm = () => {
             overflow: hidden !important;
           }
           tr {
-            height: 25px !important;
-            max-height: 25px !important;
+            height: 22px !important;
+            max-height: 22px !important;
             page-break-inside: avoid !important;
           }
           td, th {
-            padding: 1px 3px !important;
-            font-size: 11px !important;
-            line-height: 1.15 !important;
+            padding: 1px 2px !important;
+            font-size: 10.5px !important;
+            line-height: 1.1 !important;
           }
           h1, table, th, td {
             color: black !important;
@@ -802,13 +802,13 @@ const DenguePreventionForm = () => {
           }
           .header-border {
             border-bottom: 3px double #0f172a !important;
-            padding-bottom: 8px !important;
-            margin-bottom: 12px !important;
+            padding-bottom: 4px !important;
+            margin-bottom: 6px !important;
             width: 100% !important;
           }
           .header-border img, #saved-form-print-area .header-border img {
-            height: 75px !important;
-            max-height: 75px !important;
+            height: 68px !important;
+            max-height: 68px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
@@ -835,7 +835,7 @@ const DenguePreventionForm = () => {
           }
           @page {
             size: A4 portrait;
-            margin: 5mm;
+            margin: 4mm 5mm;
           }
         }
       `}</style>
@@ -869,9 +869,9 @@ const DenguePreventionForm = () => {
             className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-4 text-center"
             style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "3px double #000", paddingBottom: "12px", marginBottom: "16px", textAlign: "center" }}
           >
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
           </div>
 
           <div className="text-center space-y-1 py-2">
@@ -1215,76 +1215,109 @@ const DenguePreventionForm = () => {
           </DialogHeader>
 
           {viewingSavedForm && (
-            <div id="saved-form-print-area" className="printable-dengue-sheet space-y-4 p-6 border border-border rounded-lg bg-background">
-              {/* Official Header Layout - Visible ONLY when printing */}
-              <div 
-                className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-3 text-center"
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "3px double #000", paddingBottom: "12px", marginBottom: "12px", textAlign: "center" }}
-              >
-                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-              </div>
+            <Card
+              id="saved-form-print-area"
+              className="border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden"
+              style={{ fontFamily: "var(--font-body)" }}
+            >
+              <CardContent className="p-8 space-y-6">
+                {/* Official Header Layout - Visible ONLY when printing */}
+                <div 
+                  className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-4 text-center"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "3px double #000", paddingBottom: "12px", marginBottom: "16px", textAlign: "center" }}
+                >
+                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                </div>
 
-              <div className="text-center space-y-1 py-1">
-                <h1 className="text-xl md:text-2xl font-bold tracking-widest text-foreground uppercase font-heading">
-                  SEARCH AND DESTROY 2025
-                </h1>
-                <p className="font-serif italic text-xs md:text-sm text-muted-foreground tracking-wide">
-                  &ldquo;Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue&rdquo;
-                </p>
-              </div>
+                <div className="text-center space-y-1 py-2">
+                  <h1 
+                    className="text-xl md:text-2xl font-bold tracking-widest text-foreground uppercase"
+                    style={{ fontFamily: "var(--font-heading)" }}
+                  >
+                    SEARCH AND DESTROY 2025
+                  </h1>
+                  <p className="font-serif italic text-xs md:text-sm text-muted-foreground tracking-wide">
+                    &ldquo;Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue&rdquo;
+                  </p>
+                </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-border text-left text-xs md:text-sm">
-                  <thead>
-                    <tr className="bg-primary/10 text-primary font-heading">
-                      <th className="border border-border p-2 font-bold text-center w-[28%]" rowSpan={2}>
-                        PANGALAN NG MAYBAHAY
-                      </th>
-                      <th className="border border-border p-2 font-bold text-center w-[28%]" rowSpan={2}>
-                        URI NG LALAGYAN O TIRAHAN NG LAMOK
-                      </th>
-                      <th className="border border-border p-1.5 font-bold text-center w-[14%]" colSpan={2}>
-                        KITI-KITI
-                      </th>
-                      <th className="border border-border p-2 font-bold text-center w-[20%]" rowSpan={2}>
-                        ACTION PLAN/DAPAT NA GAWIN
-                      </th>
-                      <th className="border border-border p-2 font-bold text-center w-[10%]" rowSpan={2}>
-                        LAGDA
-                      </th>
-                    </tr>
-                    <tr className="bg-primary/10 text-primary font-heading">
-                      <th className="border border-border p-1 text-[10px] font-bold text-center">
-                        MERON
-                      </th>
-                      <th className="border border-border p-1 text-[10px] font-bold text-center">
-                        WALA
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getPaddedSavedRecords(viewingSavedForm.records).map((rec: any, idx: number) => (
-                      <tr key={rec.id || idx} className="hover:bg-muted/30 transition-colors h-7">
-                        <td className="border border-border px-3 py-0.5 font-medium">{rec.household_name || ""}</td>
-                        <td className="border border-border px-3 py-0.5">{rec.container_type || ""}</td>
-                        <td className="border border-border px-1 py-0.5 text-center font-bold text-primary">{rec.has_larvae === true ? "✓" : ""}</td>
-                        <td className="border border-border px-1 py-0.5 text-center font-bold text-muted-foreground">{rec.has_larvae === false ? "✓" : ""}</td>
-                        <td className="border border-border px-3 py-0.5">{rec.action_plan || ""}</td>
-                        <td className="border border-border p-0.5 text-center h-7">
-                          {rec.signature ? (
-                            <img src={rec.signature} alt="Signature" className="h-5 object-contain mx-auto print:h-5" />
-                          ) : (
-                            ""
-                          )}
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-border text-left text-xs md:text-sm">
+                    <thead>
+                      <tr className="bg-primary/10 text-primary font-heading">
+                        <th className="border border-border p-2 font-bold text-center w-[28%]" rowSpan={2}>
+                          PANGALAN NG MAYBAHAY
+                        </th>
+                        <th className="border border-border p-2 font-bold text-center w-[28%]" rowSpan={2}>
+                          URI NG LALAGYAN O TIRAHAN NG LAMOK
+                        </th>
+                        <th className="border border-border p-1.5 font-bold text-center w-[14%]" colSpan={2}>
+                          KITI-KITI
+                        </th>
+                        <th className="border border-border p-2 font-bold text-center w-[20%]" rowSpan={2}>
+                          ACTION PLAN/DAPAT NA GAWIN
+                        </th>
+                        <th className="border border-border p-2 font-bold text-center w-[10%]" rowSpan={2}>
+                          LAGDA
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                      <tr className="bg-primary/10 text-primary font-heading">
+                        <th className="border border-border p-1 text-[10px] font-bold text-center">
+                          MERON
+                        </th>
+                        <th className="border border-border p-1 text-[10px] font-bold text-center">
+                          WALA
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getPaddedSavedRecords(viewingSavedForm.records).map((rec: any, idx: number) => (
+                        <tr key={rec.id || idx} className="hover:bg-muted/30 transition-colors">
+                          <td className="border border-border p-0 font-medium relative">
+                            <span className="px-2 py-0.5 font-medium text-foreground dark:text-foreground">
+                              {rec.household_name || ""}
+                            </span>
+                          </td>
+                          <td className="border border-border p-0">
+                            <span className="px-2 py-0.5 text-foreground dark:text-foreground">
+                              {rec.container_type || ""}
+                            </span>
+                          </td>
+                          <td className="border border-border p-0 text-center text-base text-primary font-bold w-7">
+                            <div className="flex items-center justify-center h-full w-full">
+                              {rec.has_larvae === true ? "✓" : ""}
+                            </div>
+                          </td>
+                          <td className="border border-border p-0 text-center text-base text-muted-foreground font-bold w-7">
+                            <div className="flex items-center justify-center h-full w-full">
+                              {rec.has_larvae === false ? "✓" : ""}
+                            </div>
+                          </td>
+                          <td className="border border-border p-0">
+                            <span className="px-2 py-0.5 text-foreground dark:text-foreground">
+                              {rec.action_plan || ""}
+                            </span>
+                          </td>
+                          <td className="border border-border p-1 text-center w-[10%] h-7">
+                            {rec.signature ? (
+                              <img 
+                                src={rec.signature} 
+                                alt="Signature" 
+                                className="h-5 object-contain mx-auto print:h-5" 
+                              />
+                            ) : (
+                              ""
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           <DialogFooter className="gap-2 mt-4 no-print">
