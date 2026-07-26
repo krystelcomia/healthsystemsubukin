@@ -770,15 +770,17 @@ const DenguePreventionForm = () => {
             border-color: #94a3b8 !important;
           }
           .header-border {
-            border-color: #0f172a !important;
-            padding-bottom: 6px !important;
-            margin-bottom: 8px !important;
+            border-bottom: 3px double #0f172a !important;
+            padding-bottom: 8px !important;
+            margin-bottom: 12px !important;
+            width: 100% !important;
           }
           .header-border img, #saved-form-print-area .header-border img {
-            height: 80px !important;
-            max-height: 80px !important;
+            height: 75px !important;
+            max-height: 75px !important;
             width: auto !important;
             object-fit: contain !important;
+            mix-blend-mode: multiply !important;
           }
           td img {
             height: 18px !important;
@@ -788,7 +790,10 @@ const DenguePreventionForm = () => {
             display: none !important;
           }
           .print-only {
-            display: block !important;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
           }
           .cell-input {
             display: none !important;
@@ -828,11 +833,14 @@ const DenguePreventionForm = () => {
       >
         <CardContent className="p-8 space-y-6">
           
-          {/* Header Seal Layout - Visible ONLY when printing */}
-          <div className="print-only flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-3 header-border">
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-20 md:h-24 w-auto object-contain shrink-0 mix-blend-multiply" />
-            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-20 md:h-24 w-auto object-contain shrink-0 mix-blend-multiply" />
-            <img src={barangayLogo} alt="Subukin Logo" className="h-20 md:h-24 w-auto object-contain shrink-0 mix-blend-multiply" />
+          {/* Official Header Layout - Visible ONLY when printing */}
+          <div 
+            className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-4 text-center"
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "3px double #000", paddingBottom: "12px", marginBottom: "16px", textAlign: "center" }}
+          >
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
           </div>
 
           <div className="text-center space-y-1 py-2">
@@ -1177,11 +1185,14 @@ const DenguePreventionForm = () => {
 
           {viewingSavedForm && (
             <div id="saved-form-print-area" className="printable-dengue-sheet space-y-6 p-6 border border-border rounded-lg bg-background">
-              {/* Header Seal Layout - ONLY visible when printing */}
-              <div className="print-only flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-2 header-border">
-                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
-                <img src={headerTextImg} alt="Header Text" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
-                <img src={barangayLogo} alt="Subukin Logo" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
+              {/* Official Header Layout - Visible ONLY when printing */}
+              <div 
+                className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-4 text-center"
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "3px double #000", paddingBottom: "12px", marginBottom: "16px", textAlign: "center" }}
+              >
+                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
               </div>
 
               <div className="text-center space-y-1 py-1">
