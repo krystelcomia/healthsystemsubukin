@@ -76,6 +76,21 @@ const DenguePreventionForm = () => {
     return rows;
   };
 
+  const getPaddedSavedRecords = (savedRecords: any[]) => {
+    const list = [...(savedRecords || [])];
+    for (let i = list.length; i < MAX_ROWS; i++) {
+      list.push({
+        id: `blank-saved-${i}`,
+        household_name: "",
+        container_type: "",
+        has_larvae: null,
+        action_plan: "",
+        signature: ""
+      });
+    }
+    return list;
+  };
+
   // Retain draft inputs across page switches, reloads, and sign-outs
   useEffect(() => {
     if (records.length > 0) {
@@ -738,6 +753,22 @@ const DenguePreventionForm = () => {
           #saved-form-print-area, #saved-form-print-area * {
             visibility: visible !important;
           }
+          div[data-radix-portal],
+          div[role="dialog"],
+          .fixed,
+          [data-state="open"] {
+            position: static !important;
+            transform: none !important;
+            top: auto !important;
+            left: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            max-height: none !important;
+            box-shadow: none !important;
+            border: none !important;
+            background: transparent !important;
+          }
           #dengue-print-area, #saved-form-print-area {
             position: absolute !important;
             left: 0 !important;
@@ -1184,11 +1215,11 @@ const DenguePreventionForm = () => {
           </DialogHeader>
 
           {viewingSavedForm && (
-            <div id="saved-form-print-area" className="printable-dengue-sheet space-y-6 p-6 border border-border rounded-lg bg-background">
+            <div id="saved-form-print-area" className="printable-dengue-sheet space-y-4 p-6 border border-border rounded-lg bg-background">
               {/* Official Header Layout - Visible ONLY when printing */}
               <div 
-                className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-4 text-center"
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "3px double #000", paddingBottom: "12px", marginBottom: "16px", textAlign: "center" }}
+                className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-3 text-center"
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "3px double #000", paddingBottom: "12px", marginBottom: "12px", textAlign: "center" }}
               >
                 <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
                 <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
@@ -1234,18 +1265,18 @@ const DenguePreventionForm = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {viewingSavedForm.records.map((rec: any, idx: number) => (
-                      <tr key={rec.id || idx} className="hover:bg-muted/30 transition-colors h-8">
-                        <td className="border border-border px-3 py-1 font-medium">{rec.household_name || "—"}</td>
-                        <td className="border border-border px-3 py-1">{rec.container_type || "—"}</td>
-                        <td className="border border-border px-1 py-1 text-center font-bold text-primary">{rec.has_larvae === true ? "✓" : ""}</td>
-                        <td className="border border-border px-1 py-1 text-center font-bold text-muted-foreground">{rec.has_larvae === false ? "✓" : ""}</td>
-                        <td className="border border-border px-3 py-1">{rec.action_plan || "—"}</td>
-                        <td className="border border-border p-1 text-center h-8">
+                    {getPaddedSavedRecords(viewingSavedForm.records).map((rec: any, idx: number) => (
+                      <tr key={rec.id || idx} className="hover:bg-muted/30 transition-colors h-7">
+                        <td className="border border-border px-3 py-0.5 font-medium">{rec.household_name || ""}</td>
+                        <td className="border border-border px-3 py-0.5">{rec.container_type || ""}</td>
+                        <td className="border border-border px-1 py-0.5 text-center font-bold text-primary">{rec.has_larvae === true ? "✓" : ""}</td>
+                        <td className="border border-border px-1 py-0.5 text-center font-bold text-muted-foreground">{rec.has_larvae === false ? "✓" : ""}</td>
+                        <td className="border border-border px-3 py-0.5">{rec.action_plan || ""}</td>
+                        <td className="border border-border p-0.5 text-center h-7">
                           {rec.signature ? (
-                            <img src={rec.signature} alt="Signature" className="h-6 object-contain mx-auto" />
+                            <img src={rec.signature} alt="Signature" className="h-5 object-contain mx-auto print:h-5" />
                           ) : (
-                            "—"
+                            ""
                           )}
                         </td>
                       </tr>
