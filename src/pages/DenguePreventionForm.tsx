@@ -91,14 +91,14 @@ const DenguePreventionForm = () => {
     return list;
   };
 
-  // Retain draft inputs across page switches, reloads, and sign-outs
+  // Retain draft inputs across page switches, reloads, and sign-outs locally
   useEffect(() => {
     if (records.length > 0) {
       localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(records));
     }
   }, [records]);
 
-  // Check if all 20 rows are completed
+  // Check if all 20 rows are completed to notify user and offer archiving
   useEffect(() => {
     if (loading) return;
     const filledCount = records.filter(r => !isRowEmpty(r)).length;
@@ -375,31 +375,31 @@ const DenguePreventionForm = () => {
     );
   };
 
-  const saveSignature = async () => {
+  // Signature is stored in local React state only; no DB call until explicitly saved/printed
+  const saveSignature = () => {
     const canvas = canvasRef.current;
     if (!canvas || !activeSignRecordId) return;
 
     const dataUrl = canvas.toDataURL("image/png");
     setSignatureModalOpen(false);
 
-    const record = records.find(r => r.id === activeSignRecordId);
-    if (!record) return;
-
-    const resId = await resolveResidentId(record.household_name, record.resident_id);
-
-    setRecords(prev => prev.map(r => r.id === activeSignRecordId ? { ...r, signature: dataUrl, resident_id: resId } : r));
+    setRecords(prev => prev.map(r => r.id === activeSignRecordId ? { ...r, signature: dataUrl } : r));
   };
 
-  const handleToggleLarvae = async (id: string, hasLarvae: boolean) => {
-    const record = records.find(r => r.id === id);
-    if (!record) return;
-
-    const targetVal = record.has_larvae === hasLarvae ? null : hasLarvae;
-    const resId = await resolveResidentId(record.household_name, record.resident_id);
-
-    setRecords(prev => prev.map(r => r.id === id ? { ...r, has_larvae: targetVal, resident_id: resId } : r));
+  // Toggle larvae checkmark in local React state only; no auto-save network requests
+  const handleToggleLarvae = (id: string, hasLarvae: boolean) => {
+    setRecords(prev => prev.map(r => {
+      if (r.id === id) {
+        return {
+          ...r,
+          has_larvae: r.has_larvae === hasLarvae ? null : hasLarvae
+        };
+      }
+      return r;
+    }));
   };
 
+  // Save Progress button: explicitly saves current records to Supabase WITHOUT transferring to Saved Forms list
   const handleSaveAll = async () => {
     const nonEmptyRecords = records.filter(r => !isRowEmpty(r));
     if (nonEmptyRecords.length === 0) {
@@ -430,7 +430,7 @@ const DenguePreventionForm = () => {
 
         if (error) {
           hasError = true;
-        } else {
+        } else if (data) {
           setRecords(prev => prev.map(r => r.id === record.id ? data : r));
         }
       } else {
@@ -464,6 +464,7 @@ const DenguePreventionForm = () => {
     }
   };
 
+  // Triggered when 20 rows are completed: saves to DB, archives batch into Saved Forms, and resets active draft
   const handleAcknowledgeCompletion = async () => {
     setLimitModalOpen(false);
 
@@ -544,6 +545,7 @@ const DenguePreventionForm = () => {
     }
   };
 
+  // Print Form button: saves data to DB, archives batch into Saved Forms, prints, and resets active draft
   const handlePrintForm = async () => {
     setLimitModalOpen(false);
 
@@ -649,9 +651,14 @@ const DenguePreventionForm = () => {
 
       // Print immediately while active `records` state holds all entered user inputs
       window.print();
+
+      // Reset form after print workflow completes
+      localStorage.removeItem(STORAGE_KEY_ACTIVE_DRAFT);
+      setRecords(createBlankRows(MAX_ROWS));
     }
   };
 
+  // Delete single previous record/batch stored in saved list
   const handleDeleteSavedForm = async (batchId: string) => {
     const savedBatchesMap = getSavedBatchesFromStorage();
     const batchInfo = savedBatchesMap[batchId];
@@ -1100,31 +1107,34 @@ const DenguePreventionForm = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                    <div className="flex items-center gap-1.5 shrink-0 justify-end">
                       <Button
-                        size="sm"
+                        size="icon"
                         variant="outline"
                         onClick={() => {
                           setViewingSavedForm(sf);
                           setViewModalOpen(true);
                         }}
-                        className="gap-1.5 text-xs font-medium border-primary/20 text-primary hover:bg-primary/10"
+                        className="h-8 w-8 text-primary border-primary/20 hover:bg-primary/10"
+                        title="View Form"
                       >
-                        <Eye className="h-3.5 w-3.5" /> View Form
+                        <Eye className="h-4 w-4" />
                       </Button>
                       <Button
-                        size="sm"
+                        size="icon"
                         variant="default"
                         onClick={() => handlePrintSavedForm(sf)}
-                        className="gap-1.5 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90"
+                        className="h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90"
+                        title="Re-Print Form"
                       >
-                        <Printer className="h-3.5 w-3.5" /> Re-Print
+                        <Printer className="h-4 w-4" />
                       </Button>
                       <Button
-                        size="sm"
+                        size="icon"
                         variant="ghost"
                         onClick={() => handleDeleteSavedForm(sf.id)}
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        title="Delete Form"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
