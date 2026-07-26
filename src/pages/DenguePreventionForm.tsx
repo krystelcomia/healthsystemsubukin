@@ -683,7 +683,7 @@ const DenguePreventionForm = () => {
       description: `Deleted saved Dengue prevention form batch: ${batchId}`
     });
 
-    toast.success("Saved form deleted successfully");
+    toast.success("Form deleted successfully");
     fetchRecords();
   };
 
@@ -1107,36 +1107,36 @@ const DenguePreventionForm = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0 justify-end">
+                    <div className="flex items-center gap-1 shrink-0 justify-end">
                       <Button
                         size="icon"
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => {
                           setViewingSavedForm(sf);
                           setViewModalOpen(true);
                         }}
-                        className="h-8 w-8 text-primary border-primary/20 hover:bg-primary/10"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                         title="View Form"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-4.5 w-4.5" />
                       </Button>
                       <Button
                         size="icon"
-                        variant="default"
+                        variant="ghost"
                         onClick={() => handlePrintSavedForm(sf)}
-                        className="h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                         title="Re-Print Form"
                       >
-                        <Printer className="h-4 w-4" />
+                        <Printer className="h-4.5 w-4.5" />
                       </Button>
                       <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => handleDeleteSavedForm(sf.id)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
                         title="Delete Form"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4.5 w-4.5 text-destructive" />
                       </Button>
                     </div>
                   </CardContent>
