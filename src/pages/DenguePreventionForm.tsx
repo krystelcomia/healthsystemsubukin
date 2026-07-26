@@ -182,30 +182,8 @@ const DenguePreventionForm = () => {
           });
         }
         batchGroupsMap.get(assignedBatchId)!.records.push(rec);
-      } else {
-        unassignedRecords.push(rec);
       }
     });
-
-    if (unassignedRecords.length > 0) {
-      const legacyGroups = new Map<string, any[]>();
-      unassignedRecords.forEach((rec: any) => {
-        const dateKey = rec.created_at ? rec.created_at.substring(0, 10) : "legacy";
-        if (!legacyGroups.has(dateKey)) {
-          legacyGroups.set(dateKey, []);
-        }
-        legacyGroups.get(dateKey)!.push(rec);
-      });
-
-      legacyGroups.forEach((recs, dateKey) => {
-        const legacyBatchId = `legacy_${dateKey}`;
-        batchGroupsMap.set(legacyBatchId, {
-          id: legacyBatchId,
-          timestamp: recs[0]?.created_at || new Date().toISOString(),
-          records: recs
-        });
-      });
-    }
 
     const compiledSavedForms: SavedDengueForm[] = Array.from(batchGroupsMap.values())
       .map((b) => {

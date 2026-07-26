@@ -517,22 +517,9 @@ export function seedMockDatabase() {
   if (!db['consultations']) db['consultations'] = [];
   if (!db['family_data']) db['family_data'] = [];
   if (!db['philpen_health']) db['philpen_health'] = [];
-  if (!db['dengue_prevention']) db['dengue_prevention'] = [];
-  if (!db['family_planning']) db['family_planning'] = [];
-  if (!db['maternal_care']) db['maternal_care'] = [];
-  if (!db['child_health']) db['child_health'] = [];
-
-  // Reset dummy seed entries if present to start with a clean system
-  if (db['residents'].some((r: any) => r.id === "res-1" || r.id === "res-2")) {
-    db['residents'] = [];
-    db['family_data'] = [];
-    db['consultations'] = [];
-    db['philpen_health'] = [];
-    db['dengue_prevention'] = [];
-    db['family_planning'] = [];
-    db['maternal_care'] = [];
-    db['child_health'] = [];
-  }
+  db['dengue_prevention'] = [];
+  localStorage.removeItem("bhw_dengue_saved_batches");
+  localStorage.removeItem("bhw_dengue_active_draft");
 
   if (!db['user_sessions']) db['user_sessions'] = [];
   if (!db['user_activity_logs']) db['user_activity_logs'] = [];
