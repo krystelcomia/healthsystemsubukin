@@ -518,20 +518,33 @@ const DenguePreventionForm = () => {
       };
       saveBatchesToStorage(savedBatchesMap);
 
-      // Clear active draft after printing/saving completed form
-      localStorage.removeItem(STORAGE_KEY_ACTIVE_DRAFT);
-
       toast.success("Form saved successfully and archived at the bottom!");
       logActivity("submit_dengue", {
         entity_type: "dengue_prevention",
         description: `Saved and archived Dengue prevention checklist form (${savedDbRecords.length} records)`
       });
 
-      await fetchRecords();
+      const dateObj = new Date(batchTimestamp);
+      const formattedDate = dateObj.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
 
-      setTimeout(() => {
-        window.print();
-      }, 200);
+      setSavedForms((prev) => [
+        {
+          id: batchId,
+          timestamp: batchTimestamp,
+          formattedDate,
+          records: savedDbRecords
+        },
+        ...prev
+      ]);
+
+      // Print immediately while active `records` state holds all entered user inputs
+      window.print();
     }
   };
 
@@ -669,12 +682,14 @@ const DenguePreventionForm = () => {
           }
           .header-border {
             border-color: #0f172a !important;
-            padding-bottom: 4px !important;
+            padding-bottom: 6px !important;
+            margin-bottom: 8px !important;
           }
-          .print-only img, #saved-form-print-area img {
-            height: 55px !important;
-            max-height: 55px !important;
+          .header-border img, #saved-form-print-area .header-border img {
+            height: 80px !important;
+            max-height: 80px !important;
             width: auto !important;
+            object-fit: contain !important;
           }
           td img {
             height: 18px !important;
@@ -684,23 +699,10 @@ const DenguePreventionForm = () => {
             display: none !important;
           }
           .print-only {
-            display: flex !important;
+            display: block !important;
           }
           .cell-input {
-            border: none !important;
-            box-shadow: none !important;
-            background-color: transparent !important;
-            padding: 0 !important;
-            color: black !important;
-            font-size: 11px !important;
-          }
-          .cell-input::placeholder,
-          .cell-input::-webkit-input-placeholder,
-          .cell-input:-ms-input-placeholder,
-          ::placeholder {
-            color: transparent !important;
-            opacity: 0 !important;
-            -webkit-text-fill-color: transparent !important;
+            display: none !important;
           }
           * {
             -webkit-print-color-adjust: exact !important;
@@ -708,7 +710,7 @@ const DenguePreventionForm = () => {
           }
           @page {
             size: A4 portrait;
-            margin: 4mm 5mm;
+            margin: 5mm;
           }
         }
       `}</style>
@@ -738,10 +740,10 @@ const DenguePreventionForm = () => {
         <CardContent className="p-8 space-y-6">
           
           {/* Header Seal Layout - Visible ONLY when printing */}
-          <div className="print-only flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-2 header-border">
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
-            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
-            <img src={barangayLogo} alt="Subukin Logo" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
+          <div className="print-only flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-3 header-border">
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-20 md:h-24 w-auto object-contain shrink-0 mix-blend-multiply" />
+            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-20 md:h-24 w-auto object-contain shrink-0 mix-blend-multiply" />
+            <img src={barangayLogo} alt="Subukin Logo" className="h-20 md:h-24 w-auto object-contain shrink-0 mix-blend-multiply" />
           </div>
 
           <div className="text-center space-y-1 py-2">
@@ -792,6 +794,9 @@ const DenguePreventionForm = () => {
                 {records.map((rec) => (
                   <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
                     <td className="border border-border p-0 font-medium relative">
+                      <span className="print-only px-2 py-0.5 font-medium text-black">
+                        {rec.household_name || ""}
+                      </span>
                       <input
                         list="household-heads-list"
                         type="text"
@@ -802,6 +807,9 @@ const DenguePreventionForm = () => {
                       />
                     </td>
                     <td className="border border-border p-0">
+                      <span className="print-only px-2 py-0.5 text-black">
+                        {rec.container_type || ""}
+                      </span>
                       <input
                         type="text"
                         value={rec.container_type || ""}
@@ -829,6 +837,9 @@ const DenguePreventionForm = () => {
                       </div>
                     </td>
                     <td className="border border-border p-0">
+                      <span className="print-only px-2 py-0.5 text-black">
+                        {rec.action_plan || ""}
+                      </span>
                       <input
                         type="text"
                         value={rec.action_plan || ""}
@@ -850,7 +861,7 @@ const DenguePreventionForm = () => {
                         <img 
                           src={rec.signature} 
                           alt="Signature" 
-                          className="h-8 object-contain mx-auto print:h-8" 
+                          className="h-8 object-contain mx-auto print:h-5" 
                         />
                       ) : (
                         ""
@@ -1075,10 +1086,10 @@ const DenguePreventionForm = () => {
           {viewingSavedForm && (
             <div id="saved-form-print-area" className="printable-dengue-sheet space-y-6 p-6 border border-border rounded-lg bg-background">
               {/* Header Seal Layout */}
-              <div className="flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-2 header-border">
-                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
-                <img src={headerTextImg} alt="Header Text" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
-                <img src={barangayLogo} alt="Subukin Logo" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
+              <div className="flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-3 header-border">
+                <img src={sanjuanLogo} alt="San Juan Seal" className="h-20 w-auto object-contain shrink-0 mix-blend-multiply" />
+                <img src={headerTextImg} alt="Header Text" className="h-20 w-auto object-contain shrink-0 mix-blend-multiply" />
+                <img src={barangayLogo} alt="Subukin Logo" className="h-20 w-auto object-contain shrink-0 mix-blend-multiply" />
               </div>
 
               <div className="text-center space-y-1 py-1">
