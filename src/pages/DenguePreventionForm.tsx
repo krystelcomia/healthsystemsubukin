@@ -624,8 +624,14 @@ const DenguePreventionForm = () => {
             overflow: hidden !important;
           }
           tr {
-            height: 32px !important;
+            height: 25px !important;
+            max-height: 25px !important;
             page-break-inside: avoid !important;
+          }
+          td, th {
+            padding: 1px 3px !important;
+            font-size: 11px !important;
+            line-height: 1.15 !important;
           }
           h1, table, th, td {
             color: black !important;
@@ -635,6 +641,16 @@ const DenguePreventionForm = () => {
           }
           .header-border {
             border-color: #0f172a !important;
+            padding-bottom: 4px !important;
+          }
+          .print-only img, #saved-form-print-area img {
+            height: 55px !important;
+            max-height: 55px !important;
+            width: auto !important;
+          }
+          td img {
+            height: 18px !important;
+            max-height: 18px !important;
           }
           .no-print {
             display: none !important;
@@ -648,6 +664,7 @@ const DenguePreventionForm = () => {
             background-color: transparent !important;
             padding: 0 !important;
             color: black !important;
+            font-size: 11px !important;
           }
           .cell-input::placeholder,
           .cell-input::-webkit-input-placeholder,
@@ -662,8 +679,8 @@ const DenguePreventionForm = () => {
             print-color-adjust: exact !important;
           }
           @page {
-            size: A4 landscape;
-            margin: 6mm;
+            size: A4 portrait;
+            margin: 4mm 5mm;
           }
         }
       `}</style>
@@ -693,10 +710,10 @@ const DenguePreventionForm = () => {
         <CardContent className="p-8 space-y-6">
           
           {/* Header Seal Layout - Visible ONLY when printing */}
-          <div className="print-only flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-4 header-border" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "32px" }}>
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-24 md:h-32 object-contain shrink-0 mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-24 md:h-32 object-contain shrink-0 mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={barangayLogo} alt="Subukin Logo" className="h-24 md:h-32 object-contain shrink-0 mix-blend-multiply" style={{ height: "115px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          <div className="print-only flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-2 header-border">
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
+            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
+            <img src={barangayLogo} alt="Subukin Logo" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
           </div>
 
           <div className="text-center space-y-1 py-2">
@@ -1045,10 +1062,10 @@ const DenguePreventionForm = () => {
           {viewingSavedForm && (
             <div id="saved-form-print-area" className="printable-dengue-sheet space-y-6 p-6 border border-border rounded-lg bg-background">
               {/* Header Seal Layout */}
-              <div className="flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-4" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "32px" }}>
-                <img src={sanjuanLogo} alt="San Juan Seal" className="h-20 w-auto object-contain mix-blend-multiply" style={{ height: "90px", width: "auto" }} />
-                <img src={headerTextImg} alt="Header Text" className="h-20 w-auto object-contain mix-blend-multiply" style={{ height: "90px", width: "auto" }} />
-                <img src={barangayLogo} alt="Subukin Logo" className="h-20 w-auto object-contain mix-blend-multiply" style={{ height: "90px", width: "auto" }} />
+              <div className="flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-2 header-border">
+                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
+                <img src={headerTextImg} alt="Header Text" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
+                <img src={barangayLogo} alt="Subukin Logo" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
               </div>
 
               <div className="text-center space-y-1 py-1">
