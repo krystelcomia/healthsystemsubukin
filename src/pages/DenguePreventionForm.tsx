@@ -83,6 +83,15 @@ const DenguePreventionForm = () => {
     }
   }, [records]);
 
+  // Check if all 20 rows are completed
+  useEffect(() => {
+    if (loading) return;
+    const filledCount = records.filter(r => !isRowEmpty(r)).length;
+    if (filledCount >= MAX_ROWS && !limitModalOpen) {
+      setLimitModalOpen(true);
+    }
+  }, [records, loading]);
+
   const fetchHouseholdHeads = async () => {
     try {
       const [famRes, resRes] = await Promise.all([
@@ -437,6 +446,86 @@ const DenguePreventionForm = () => {
         entity_type: "dengue_prevention",
         description: "Saved all records in Dengue prevention checklist form"
       });
+    }
+  };
+
+  const handleAcknowledgeCompletion = async () => {
+    setLimitModalOpen(false);
+
+    const nonEmptyRecords = records.filter((r) => !isRowEmpty(r));
+    if (nonEmptyRecords.length === 0) return;
+
+    setSaving(true);
+    const batchId = `batch_${Date.now()}`;
+    const batchTimestamp = new Date().toISOString();
+    const savedDbRecords: any[] = [];
+
+    let hasError = false;
+
+    for (const record of records) {
+      if (isRowEmpty(record)) continue;
+      const resId = await resolveResidentId(record.household_name, record.resident_id);
+
+      if (record.id.startsWith("temp-")) {
+        const { data, error } = await supabase
+          .from("dengue_prevention")
+          .insert({
+            resident_id: resId,
+            household_name: record.household_name,
+            container_type: record.container_type,
+            has_larvae: record.has_larvae,
+            action_plan: record.action_plan,
+            signature: record.signature,
+            created_at: batchTimestamp
+          })
+          .select()
+          .single();
+
+        if (error) {
+          hasError = true;
+        } else if (data) {
+          savedDbRecords.push(data);
+        }
+      } else {
+        const { data, error } = await supabase
+          .from("dengue_prevention")
+          .update({
+            resident_id: resId,
+            household_name: record.household_name,
+            container_type: record.container_type,
+            has_larvae: record.has_larvae,
+            action_plan: record.action_plan,
+            signature: record.signature
+          })
+          .eq("id", record.id)
+          .select()
+          .single();
+
+        if (error) {
+          hasError = true;
+        } else if (data) {
+          savedDbRecords.push(data);
+        }
+      }
+    }
+
+    setSaving(false);
+
+    if (!hasError) {
+      const savedBatchesMap = getSavedBatchesFromStorage();
+      savedBatchesMap[batchId] = {
+        timestamp: batchTimestamp,
+        recordIds: savedDbRecords.map((r) => r.id),
+        records: savedDbRecords
+      };
+      saveBatchesToStorage(savedBatchesMap);
+
+      // Clear active draft & reset to blank rows for new 20 items
+      localStorage.removeItem(STORAGE_KEY_ACTIVE_DRAFT);
+      setRecords(createBlankRows(MAX_ROWS));
+
+      toast.success(`Data moved to Saved Dengue Prevention Forms (${savedForms.length + 1}). Form reset for new entries.`);
+      await fetchRecords();
     }
   };
 
@@ -898,8 +987,7 @@ const DenguePreventionForm = () => {
               onClick={handleSaveAll} 
               disabled={saving} 
               size="sm" 
-              variant="outline"
-              className="gap-1 font-medium shadow-xs"
+              className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md"
             >
               <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Progress"}
             </Button>
@@ -907,7 +995,8 @@ const DenguePreventionForm = () => {
               onClick={handlePrintForm} 
               disabled={saving}
               size="sm" 
-              className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md"
+              variant="outline"
+              className="gap-1.5 border-primary/20 text-primary hover:bg-primary/10 font-medium shadow-xs"
             >
               <Printer className="h-4 w-4" /> Print Form
             </Button>
@@ -1046,29 +1135,32 @@ const DenguePreventionForm = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Limit Modal */}
+      {/* 20 Rows Completion Notification Modal */}
       <Dialog open={limitModalOpen} onOpenChange={setLimitModalOpen}>
-        <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200">
+        <DialogContent className="max-w-md bg-card text-card-foreground border border-border">
           <DialogHeader>
             <DialogTitle className="text-lg font-heading font-bold text-foreground">
-              {t("dengue.limitTitle") || "Limit Reached (20 Rows)"}
+              20 Rows Completed & Form Saved
             </DialogTitle>
           </DialogHeader>
-          <div className="py-2 text-sm text-slate-600 space-y-2">
+          <div className="py-2 text-sm text-muted-foreground space-y-3">
             <p>
-              {t("dengue.limitDesc1") || "You have reached the 20-row limit for Dengue Prevention records."}
+              You have completed all 20 rows for Dengue Prevention.
             </p>
-            <p>
-              Click 'Print Form' to save all filled out form records to the system database, print a physical copy, and view it.
+            <p className="bg-primary/10 p-3 rounded-lg border border-primary/20 text-foreground text-xs leading-relaxed">
+              The filled out data has been automatically moved to <strong className="text-primary font-bold">&ldquo;Saved Dengue Prevention Forms ({savedForms.length + 1})&rdquo;</strong>, ensuring a record is retained even after printing.
+            </p>
+            <p className="text-xs">
+              Acknowledging this notice will reset the form, allowing you to enter a new set of 20 items.
             </p>
           </div>
           <DialogFooter className="gap-2 mt-4">
-            <Button type="button" variant="outline" onClick={() => setLimitModalOpen(false)}>
-              {t("common.cancel") || "Cancel"}
-            </Button>
-            <Button type="button" onClick={handlePrintForm} className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md">
-              <Printer className="h-4 w-4 mr-1.5" />
-              Print Form
+            <Button 
+              type="button" 
+              onClick={handleAcknowledgeCompletion} 
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md w-full"
+            >
+              Acknowledge & Reset Form
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1085,11 +1177,11 @@ const DenguePreventionForm = () => {
 
           {viewingSavedForm && (
             <div id="saved-form-print-area" className="printable-dengue-sheet space-y-6 p-6 border border-border rounded-lg bg-background">
-              {/* Header Seal Layout */}
-              <div className="flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-3 header-border">
-                <img src={sanjuanLogo} alt="San Juan Seal" className="h-20 w-auto object-contain shrink-0 mix-blend-multiply" />
-                <img src={headerTextImg} alt="Header Text" className="h-20 w-auto object-contain shrink-0 mix-blend-multiply" />
-                <img src={barangayLogo} alt="Subukin Logo" className="h-20 w-auto object-contain shrink-0 mix-blend-multiply" />
+              {/* Header Seal Layout - ONLY visible when printing */}
+              <div className="print-only flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-2 header-border">
+                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
+                <img src={headerTextImg} alt="Header Text" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
+                <img src={barangayLogo} alt="Subukin Logo" className="h-16 w-auto object-contain shrink-0 mix-blend-multiply" />
               </div>
 
               <div className="text-center space-y-1 py-1">
