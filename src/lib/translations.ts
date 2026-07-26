@@ -357,8 +357,8 @@ export const translations: Record<Language, Record<string, string>> = {
     // Dengue Prevention Notice & Form
     "dengue.limitTitle": "Limit Reached (20 Rows)",
     "dengue.limitDesc1": "You have reached the 20-row limit for Dengue Prevention records.",
-    "dengue.limitDesc2": "Click 'Print and Save' to save all filled out form records to the system database, print a physical copy, and view it.",
-    "dengue.printAndSave": "Print and Save",
+    "dengue.limitDesc2": "Click 'Print Form' to save all filled out form records to the system database, print a physical copy, and view it.",
+    "dengue.printAndSave": "Print Form",
     "dengue.printAndSaveSuccess": "Form saved successfully and sent to print!",
     "dengue.noRecordsToSave": "No records to save. Please enter or add a record first.",
     "dengue.saveSuccess": "Records saved successfully."

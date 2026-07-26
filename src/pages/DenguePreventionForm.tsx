@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Bug, Plus, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar } from "lucide-react";
+import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
@@ -27,6 +27,7 @@ export interface SavedDengueForm {
 }
 
 const STORAGE_KEY_SAVED_BATCHES = "bhw_dengue_saved_batches";
+const STORAGE_KEY_ACTIVE_DRAFT = "bhw_dengue_active_draft";
 
 const getSavedBatchesFromStorage = (): Record<string, { timestamp: string; recordIds: string[]; records?: any[] }> => {
   try {
@@ -74,6 +75,13 @@ const DenguePreventionForm = () => {
     }
     return rows;
   };
+
+  // Retain draft inputs across page switches, reloads, and sign-outs
+  useEffect(() => {
+    if (records.length > 0) {
+      localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(records));
+    }
+  }, [records]);
 
   const fetchHouseholdHeads = async () => {
     try {
@@ -197,7 +205,36 @@ const DenguePreventionForm = () => {
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
     setSavedForms(compiledSavedForms);
-    setRecords(createBlankRows(MAX_ROWS));
+
+    // Load active working draft from localStorage if available
+    const activeDraftStr = localStorage.getItem(STORAGE_KEY_ACTIVE_DRAFT);
+    if (activeDraftStr) {
+      try {
+        const parsed = JSON.parse(activeDraftStr);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const padded = parsed.slice(0, MAX_ROWS);
+          for (let i = padded.length; i < MAX_ROWS; i++) {
+            padded.push({
+              id: `temp-${i}-${Date.now()}`,
+              resident_id: null,
+              household_name: "",
+              container_type: "",
+              has_larvae: null,
+              action_plan: "",
+              signature: ""
+            });
+          }
+          setRecords(padded);
+        } else {
+          setRecords(createBlankRows(MAX_ROWS));
+        }
+      } catch {
+        setRecords(createBlankRows(MAX_ROWS));
+      }
+    } else {
+      setRecords(createBlankRows(MAX_ROWS));
+    }
+
     setLoading(false);
   };
 
@@ -403,12 +440,14 @@ const DenguePreventionForm = () => {
     }
   };
 
-  const handlePrintAndSave = async () => {
+  const handlePrintForm = async () => {
     setLimitModalOpen(false);
 
     const nonEmptyRecords = records.filter((r) => !isRowEmpty(r));
+
+    // If no data has been entered, print the blank form directly
     if (nonEmptyRecords.length === 0) {
-      toast.error(t("dengue.noRecordsToSave") || "No records to save. Please enter or add a record first.");
+      window.print();
       return;
     }
 
@@ -479,7 +518,10 @@ const DenguePreventionForm = () => {
       };
       saveBatchesToStorage(savedBatchesMap);
 
-      toast.success(t("dengue.printAndSaveSuccess") || "Form saved successfully and archived at the bottom!");
+      // Clear active draft after printing/saving completed form
+      localStorage.removeItem(STORAGE_KEY_ACTIVE_DRAFT);
+
+      toast.success("Form saved successfully and archived at the bottom!");
       logActivity("submit_dengue", {
         entity_type: "dengue_prevention",
         description: `Saved and archived Dengue prevention checklist form (${savedDbRecords.length} records)`
@@ -529,28 +571,18 @@ const DenguePreventionForm = () => {
     }, 250);
   };
 
-  const handleAddRow = () => {
-    if (records.length >= MAX_ROWS) {
-      setLimitModalOpen(true);
-      return;
-    }
-    const tempId = `temp-${Date.now()}`;
-    const newRow = {
-      id: tempId,
-      resident_id: null,
-      household_name: "",
-      container_type: "",
-      has_larvae: null,
-      action_plan: "",
-      signature: ""
-    };
-    setRecords(prev => [...prev, newRow]);
-  };
-
   const handleDeleteRow = async (id: string, name: string) => {
     if (id.startsWith("temp-")) {
-      setRecords(prev => prev.filter(r => r.id !== id));
-      toast.success("Row removed");
+      setRecords(prev => prev.map(r => r.id === id ? {
+        id: `temp-${Date.now()}`,
+        resident_id: null,
+        household_name: "",
+        container_type: "",
+        has_larvae: null,
+        action_plan: "",
+        signature: ""
+      } : r));
+      toast.success("Row cleared");
       return;
     }
 
@@ -570,10 +602,6 @@ const DenguePreventionForm = () => {
       toast.success("Row deleted successfully");
       fetchRecords();
     }
-  };
-
-  const handlePrint = () => {
-    window.print();
   };
 
   return (
@@ -865,27 +893,12 @@ const DenguePreventionForm = () => {
               <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Progress"}
             </Button>
             <Button 
-              onClick={handleAddRow} 
-              size="sm" 
-              className="gap-1 bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium shadow-xs"
-            >
-              <Plus className="h-4 w-4" /> Add Row
-            </Button>
-            <Button 
-              onClick={handlePrintAndSave} 
+              onClick={handlePrintForm} 
               disabled={saving}
               size="sm" 
               className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md"
             >
-              <Printer className="h-4 w-4" /> Print/Save
-            </Button>
-            <Button 
-              onClick={handlePrint} 
-              size="sm" 
-              variant="ghost" 
-              className="gap-1 text-muted-foreground hover:text-foreground font-medium"
-            >
-              <Printer className="h-4 w-4" /> Quick Print
+              <Printer className="h-4 w-4" /> Print Form
             </Button>
           </div>
         </CardContent>
@@ -901,7 +914,7 @@ const DenguePreventionForm = () => {
             </h3>
           </div>
           <span className="text-xs text-muted-foreground">
-            Forms saved via "Print/Save" appear here for viewing and re-printing.
+            Forms saved via "Print Form" appear here for viewing and re-printing.
           </span>
         </div>
 
@@ -911,7 +924,7 @@ const DenguePreventionForm = () => {
               <FileCheck className="h-10 w-10 text-muted-foreground/60 mb-2" />
               <p className="text-sm font-medium text-foreground">No saved forms yet.</p>
               <p className="text-xs text-muted-foreground mt-1 max-w-md">
-                When you fill out the checklist and click "Print/Save", the completed form will be saved and listed here so you can view or re-print it anytime.
+                When you fill out the checklist and click "Print Form", the completed form will be saved and listed here so you can view or re-print it anytime.
               </p>
             </CardContent>
           </Card>
@@ -1035,16 +1048,16 @@ const DenguePreventionForm = () => {
               {t("dengue.limitDesc1") || "You have reached the 20-row limit for Dengue Prevention records."}
             </p>
             <p>
-              {t("dengue.limitDesc2") || "Click 'Print and Save' to save all filled out form records to the system database, print a physical copy, and view it."}
+              Click 'Print Form' to save all filled out form records to the system database, print a physical copy, and view it.
             </p>
           </div>
           <DialogFooter className="gap-2 mt-4">
             <Button type="button" variant="outline" onClick={() => setLimitModalOpen(false)}>
               {t("common.cancel") || "Cancel"}
             </Button>
-            <Button type="button" onClick={handlePrintAndSave} className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md">
+            <Button type="button" onClick={handlePrintForm} className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md">
               <Printer className="h-4 w-4 mr-1.5" />
-              {t("dengue.printAndSave") || "Print and Save"}
+              Print Form
             </Button>
           </DialogFooter>
         </DialogContent>
