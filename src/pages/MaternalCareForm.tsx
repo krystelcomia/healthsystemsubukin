@@ -598,11 +598,42 @@ const MaternalCareForm = () => {
           input, textarea, select {
             background-color: transparent !important;
             box-shadow: none !important;
+          /* Fit printout cleanly onto portrait sheet */
+          .header-border {
+            padding-bottom: 6px !important;
+            margin-bottom: 8px !important;
+            gap: 16px !important;
+          }
+          .header-border img {
+            height: 75px !important;
+            max-height: 75px !important;
+          }
+          #maternal-print-area .p-6,
+          #maternal-print-area .md\:p-8,
+          #maternal-print-area .p-4,
+          #maternal-print-area .md\:p-5 {
+            padding: 8px !important;
+          }
+          #maternal-print-area form > * + * {
+            margin-top: 8px !important;
+          }
+          #maternal-print-area label,
+          #maternal-print-area input,
+          #maternal-print-area select,
+          #maternal-print-area textarea,
+          #maternal-print-area span,
+          #maternal-print-area h3 {
+            font-size: 11px !important;
+          }
+          #maternal-print-area table th,
+          #maternal-print-area table td {
+            padding: 2px 4px !important;
+            font-size: 10px !important;
           }
 
           @page {
-            size: A4 landscape;
-            margin: 6mm;
+            size: A4 portrait;
+            margin: 4mm;
           }
         }
       `}</style>

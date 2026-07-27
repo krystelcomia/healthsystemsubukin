@@ -576,15 +576,18 @@ const FamilyDataForm = () => {
             height: auto !important;
             overflow: visible !important;
           }
-          .no-print {
-            display: none !important;
+          .header-seal img {
+            height: 75px !important;
+            mix-blend-mode: multiply !important;
           }
-          .print-only {
-            display: flex !important;
+          #family-print-area table td, #family-print-area table th,
+          #individual-file-print-area table td, #individual-file-print-area table th {
+            padding: 3px 6px !important;
+            font-size: 11px !important;
           }
           @page {
-            size: A4 landscape;
-            margin: 6mm;
+            size: A4 portrait;
+            margin: 5mm;
           }
         }
       `}</style>

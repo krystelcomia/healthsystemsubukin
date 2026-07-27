@@ -1045,10 +1045,15 @@ const ChildHealthForm = () => {
           }
           th, td {
             min-width: 0 !important;
+            padding: 3px 5px !important;
+            font-size: 11px !important;
+          }
+          .header-seal img {
+            height: 75px !important;
           }
           @page {
-            size: ${activeTab === "sick-children" ? "A4 portrait" : "A4 landscape"};
-            margin: ${activeTab === "sick-children" ? "8mm" : "6mm"};
+            size: A4 portrait;
+            margin: 5mm;
           }
         }
       `}</style>

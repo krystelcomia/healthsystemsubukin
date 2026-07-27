@@ -112,9 +112,9 @@ const AdminResidents = () => {
           }
           .no-print { display: none !important; }
           .print-only { display: flex !important; }
-          .print-only-table { display: table !important; }
-          .header-seal img { mix-blend-mode: multiply !important; }
-          @page { size: A4 landscape; margin: 10mm; }
+          .header-seal img { height: 75px !important; mix-blend-mode: multiply !important; }
+          #admin-residents-print-area table td, #admin-residents-print-area table th { padding: 3px 6px !important; font-size: 11px !important; }
+          @page { size: A4 portrait; margin: 5mm; }
         }
       `}</style>
 

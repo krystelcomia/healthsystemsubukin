@@ -177,12 +177,9 @@ const ConsultationForm = () => {
           }
           .no-print { display: none !important; }
           .print-only { display: flex !important; }
-          .header-seal img { mix-blend-mode: multiply !important; }
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          @page { size: A4 portrait; margin: 8mm; }
+          .header-seal img { height: 75px !important; mix-blend-mode: multiply !important; }
+          #consultation-print-area table td, #consultation-print-area table th { padding: 3px 5px !important; font-size: 11px !important; }
+          @page { size: A4 portrait; margin: 5mm; }
         }
       `}</style>
 

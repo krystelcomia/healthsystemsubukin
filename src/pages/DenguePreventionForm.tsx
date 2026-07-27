@@ -705,16 +705,13 @@ const DenguePreventionForm = () => {
             align-items: center !important;
             justify-content: center !important;
           }
-          .cell-input {
-            display: none !important;
-          }
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
+          .header-border img, .print-only img {
+            height: 70px !important;
+            max-height: 70px !important;
           }
           @page {
             size: A4 portrait;
-            margin: 4mm 5mm;
+            margin: 4mm;
           }
         }
       `}</style>
