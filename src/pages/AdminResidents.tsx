@@ -14,6 +14,8 @@ import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 
+import { syncFamilyDataToResidents, getFamilyDataNamesSet } from "@/lib/residentLinker";
+
 interface Resident {
   id: string; full_name: string; gender: string; age: number; status: string; sitio: string; birthday: string | null; family_number?: string | null; created_at: string;
 }
@@ -35,10 +37,18 @@ const AdminResidents = () => {
   useEffect(() => { fetchResidents(); }, []);
 
   const fetchResidents = async () => {
+    await syncFamilyDataToResidents();
+    const familyNamesSet = await getFamilyDataNamesSet();
     const { data, error } = await supabase.from("residents").select("*").order("full_name");
     if (error) { toast.error("Failed to load residents"); return; }
-    setResidents(data || []);
-    const dbSitios = Array.from(new Set((data || []).map(r => r.sitio).filter(s => Boolean(s) && s !== "Centro" && s !== "Sitio Centro"))).sort() as string[];
+    
+    const filteredResidents = (data || []).filter((r: any) => {
+      const cleanName = (r.full_name || "").trim().toLowerCase();
+      return familyNamesSet.has(cleanName) || Boolean(r.family_number);
+    });
+
+    setResidents(filteredResidents);
+    const dbSitios = Array.from(new Set(filteredResidents.map(r => r.sitio).filter(s => Boolean(s) && s !== "Centro" && s !== "Sitio Centro"))).sort() as string[];
     const uniqueSitios = dbSitios.length > 0 ? dbSitios : SUBUKIN_SITIOS;
     setSitios(uniqueSitios);
     setLoading(false);

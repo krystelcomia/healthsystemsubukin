@@ -34,7 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
-import { calculateAge, syncFamilyDataToResidents } from "@/lib/residentLinker";
+import { calculateAge, syncFamilyDataToResidents, getFamilyDataNamesSet } from "@/lib/residentLinker";
 import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
@@ -82,9 +82,16 @@ const ResidentRecords = () => {
 
   const fetchResidents = async () => {
     await syncFamilyDataToResidents();
+    const familyNamesSet = await getFamilyDataNamesSet();
     const { data, error } = await supabase.from("residents").select("*").order("created_at", { ascending: false });
     if (error) { toast.error("Failed to load residents"); return; }
-    setResidents(data || []);
+    
+    const filteredResidents = (data || []).filter((r: any) => {
+      const cleanName = (r.full_name || "").trim().toLowerCase();
+      return familyNamesSet.has(cleanName) || Boolean(r.family_number);
+    });
+
+    setResidents(filteredResidents || []);
     setLoading(false);
   };
 
