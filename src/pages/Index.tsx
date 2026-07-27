@@ -11,6 +11,8 @@ import {
   TrendingUp,
   Baby,
   Heart,
+  HeartPulse,
+  HeartHandshake,
   Syringe,
   Bug,
   Sparkles,
