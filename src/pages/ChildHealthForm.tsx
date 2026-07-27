@@ -378,7 +378,7 @@ const ChildHealthForm = () => {
         dob: "",
         age_months: "",
         gender: "",
-        barangay: "",
+        barangay: "Subukin",
         purok_sitio_street: "",
         mother_family_name: "",
         mother_given_name: "",
@@ -418,6 +418,7 @@ const ChildHealthForm = () => {
     region: "IV-A CALABARZON",
     province: "BATANGAS",
     municipality: "SAN JUAN",
+    barangay: "SUBUKIN",
     activity_date: "SEPT 2021 - FEB 2024",
   });
   const [siaRows, setSiaRows] = useState<SIARow[]>(() => {
@@ -1069,6 +1070,12 @@ const ChildHealthForm = () => {
           }
           .header-seal img {
             height: 75px !important;
+          }
+          select {
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            background: transparent !important;
           }
           @page {
             size: legal landscape;
@@ -2357,6 +2364,10 @@ const ChildHealthForm = () => {
                     <Label className="text-[10px] text-slate-500 font-medium">Municipality:</Label>
                     <Input type="text" value={siaInfo.municipality} onChange={e => setSiaInfo(p => ({ ...p, municipality: e.target.value }))} className={lineInputClass} />
                   </div>
+                  <div>
+                    <Label className="text-[10px] text-slate-500 font-medium">Barangay:</Label>
+                    <Input type="text" value={siaInfo.barangay} onChange={e => setSiaInfo(p => ({ ...p, barangay: e.target.value }))} className={lineInputClass} />
+                  </div>
                 </div>
               </div>
 
@@ -2416,12 +2427,15 @@ const ChildHealthForm = () => {
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.age_months} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, age_months: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center" /></td>
 
                         {/* Gender */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5">
-                          <select value={row.gender || ""} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, gender: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center">
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5 text-center">
+                          <select value={row.gender || ""} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, gender: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center print:hidden">
                             <option value=""></option>
                             <option value="M">M</option>
                             <option value="F">F</option>
                           </select>
+                          <span className="hidden print:inline-block w-full text-center text-[11px] font-medium">
+                            {row.gender || ""}
+                          </span>
                         </td>
 
                         {/* Address */}
