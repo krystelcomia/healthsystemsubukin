@@ -377,8 +377,8 @@ const ChildHealthForm = () => {
         child_middle_name: "",
         dob: "",
         age_months: "",
-        gender: "M",
-        barangay: "Subukin",
+        gender: "",
+        barangay: "",
         purok_sitio_street: "",
         mother_family_name: "",
         mother_given_name: "",
@@ -425,7 +425,19 @@ const ChildHealthForm = () => {
       const saved = localStorage.getItem(STORAGE_KEY_SIA_DRAFT);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length === 20) return parsed;
+        if (Array.isArray(parsed) && parsed.length === 20) {
+          const hasInput = parsed.some((r: any) =>
+            Boolean(
+              (r.child_family_name && r.child_family_name.trim()) ||
+              (r.child_given_name && r.child_given_name.trim()) ||
+              (r.child_middle_name && r.child_middle_name.trim()) ||
+              (r.dob && r.dob.trim()) ||
+              (r.mother_family_name && r.mother_family_name.trim()) ||
+              (r.vaccine_given && r.vaccine_given.trim())
+            )
+          );
+          if (hasInput) return parsed;
+        }
       }
     } catch {}
     return createBlankSIARows(20);
@@ -2405,14 +2417,15 @@ const ChildHealthForm = () => {
 
                         {/* Gender */}
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5">
-                          <select value={row.gender} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, gender: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center">
+                          <select value={row.gender || ""} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, gender: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center">
+                            <option value=""></option>
                             <option value="M">M</option>
                             <option value="F">F</option>
                           </select>
                         </td>
 
                         {/* Address */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.barangay} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, barangay: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1 text-center" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.barangay || ""} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, barangay: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1 text-center" /></td>
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.purok_sitio_street} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, purok_sitio_street: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
 
                         {/* Mother Name */}
