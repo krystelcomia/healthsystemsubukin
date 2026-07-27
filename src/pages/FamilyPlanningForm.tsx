@@ -5,12 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Heart, Plus, Pencil, Trash2, Printer, RefreshCw, Save, Search, Eye, Stethoscope, CheckSquare, Calendar, UserCheck } from "lucide-react";
+import { Heart, Plus, Pencil, Trash2, Printer, RefreshCw, Save, Search, Eye, Stethoscope, Calendar, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -185,7 +183,7 @@ export interface FPFullFormState {
   pregnancyChecklist: FPPregnancyChecklist;
 }
 
-// Initial Blank State generator
+// Initial Blank State generator (All checkboxes UNCHECKED by default)
 const createInitialFPForm = (): FPFullFormState => ({
   sideA: {
     fp_no: "",
@@ -243,13 +241,13 @@ const createInitialFPForm = (): FPFullFormState => ({
     },
     physical_exam: {
       weight_kg: "", height_m: "", bp: "", pulse_rate: "",
-      skin_normal: true, skin_pale: false, skin_yellowish: false, skin_hematoma: false,
-      extremities_normal: true, extremities_edema: false, extremities_varicosities: false,
-      conjunctiva_normal: true, conjunctiva_pale: false, conjunctiva_yellowish: false,
-      neck_normal: true, neck_mass: false, neck_enlarged_lymph_nodes: false,
-      breast_normal: true, breast_mass: false, breast_nipple_discharge: false,
-      abdomen_normal: true, abdomen_mass: false, abdomen_varicosities: false,
-      pelvic_normal: true, pelvic_mass: false, pelvic_abnormal_discharge: false, pelvic_cervical_abnormalities: false,
+      skin_normal: false, skin_pale: false, skin_yellowish: false, skin_hematoma: false,
+      extremities_normal: false, extremities_edema: false, extremities_varicosities: false,
+      conjunctiva_normal: false, conjunctiva_pale: false, conjunctiva_yellowish: false,
+      neck_normal: false, neck_mass: false, neck_enlarged_lymph_nodes: false,
+      breast_normal: false, breast_mass: false, breast_nipple_discharge: false,
+      abdomen_normal: false, abdomen_mass: false, abdomen_varicosities: false,
+      pelvic_normal: false, pelvic_mass: false, pelvic_abnormal_discharge: false, pelvic_cervical_abnormalities: false,
       cervical_warts: false, cervical_polyp_cyst: false, cervical_inflammation_erosion: false, cervical_bloody_discharge: false,
       cervical_consistency: "", cervical_tenderness: false, adnexal_mass_tenderness: false, uterine_position: "", uterine_depth_cm: ""
     },
@@ -288,7 +286,6 @@ const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:b
 
 const FamilyPlanningForm = () => {
   const { t } = useSettings();
-  const [activeTab, setActiveTab] = useState<string>("side-a");
   const [fpState, setFpState] = useState<FPFullFormState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_FP_DRAFT);
@@ -584,984 +581,967 @@ const FamilyPlanningForm = () => {
             </Button>
 
             <Button type="button" size="sm" onClick={handleSaveFPRecord} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground">
-              <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Record"}
+              <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save FP Record"}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Main Tabs Container */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 no-print mb-4">
-          <TabsTrigger value="side-a" className="gap-2 text-xs font-semibold">
-            <Stethoscope className="h-4 w-4" /> SIDE A: Client Assessment
-          </TabsTrigger>
-          <TabsTrigger value="side-b" className="gap-2 text-xs font-semibold">
-            <Calendar className="h-4 w-4" /> SIDE B: Visit Log & Checklist
-          </TabsTrigger>
-          <TabsTrigger value="history" className="gap-2 text-xs font-semibold">
-            <UserCheck className="h-4 w-4" /> Saved Records ({savedRecords.length})
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Printable Area Wrapper */}
-        <div id="fp-print-area">
-          {/* TAB 1: SIDE A - Assessment Record Replica */}
-          <TabsContent value="side-a" className="space-y-4 m-0">
-            <div className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 border border-slate-300 dark:border-slate-700 rounded-md shadow-xs text-xs space-y-3 font-sans">
-              
-              {/* Form Title Header Banner */}
-              <div className="border-b-2 border-slate-900 dark:border-slate-100 pb-2 flex items-start justify-between">
-                <div>
-                  <div className="text-[11px] font-bold tracking-widest text-slate-600 dark:text-slate-400">SIDE A</div>
-                  <h1 className="text-base font-extrabold uppercase tracking-tight text-slate-900 dark:text-slate-100 font-heading">
-                    FAMILY PLANNING CLIENT ASSESSMENT RECORD
-                  </h1>
-                  <p className="text-[10px] text-slate-600 dark:text-slate-400 italic">
-                    Instructions for Physicians, Nurses and Midwives: Make sure that the client is not pregnant by using the questions listed in SIDE B. Completely fill out or check the required information. Refer accordingly for any abnormal history/findings for further medical evaluation.
-                  </p>
-                </div>
-                <div className="text-right text-[11px] font-mono space-y-1">
-                  <div className="font-extrabold text-slate-800 dark:text-slate-200">FP FORM 1</div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold">FP NO / CLIENT ID:</span>
-                    <input type="text" value={fpState.sideA.fp_no} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, fp_no: e.target.value } }))} className="w-24 border-b border-slate-400 bg-transparent text-center text-xs font-semibold outline-none" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold">PHILHEALTH NO:</span>
-                    <input type="text" value={fpState.sideA.philhealth_no} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, philhealth_no: e.target.value } }))} className="w-24 border-b border-slate-400 bg-transparent text-center text-xs font-semibold outline-none" />
-                  </div>
-                  <div className="flex items-center justify-end gap-2 text-[10px]">
-                    <span className="font-bold">NHTS?</span>
-                    <label className="inline-flex items-center gap-1 cursor-pointer">
-                      <input type="checkbox" checked={fpState.sideA.nhts === true} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, nhts: e.target.checked } }))} className="h-3 w-3" /> Yes
-                    </label>
-                    <label className="inline-flex items-center gap-1 cursor-pointer">
-                      <input type="checkbox" checked={fpState.sideA.nhts === false} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, nhts: !e.target.checked ? false : null } }))} className="h-3 w-3" /> No
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Client Demographics Box */}
-              <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-2 bg-slate-50/50 dark:bg-slate-900/40">
-                {/* Row 1: Name of Client */}
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-center">
-                  <div className="md:col-span-1 font-bold text-slate-800 dark:text-slate-200">NAME OF CLIENT:</div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Last Name</span>
-                    <Input type="text" value={fpState.sideA.client_last_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_last_name: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Given Name</span>
-                    <Input type="text" value={fpState.sideA.client_given_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_given_name: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div className="w-16">
-                    <span className="text-[10px] text-slate-500 block">MI</span>
-                    <Input type="text" value={fpState.sideA.client_mi} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_mi: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Date of Birth</span>
-                    <Input type="date" value={fpState.sideA.client_dob} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_dob: e.target.value, client_age: String(calculateAge(e.target.value)) } }))} className={lineInputClass} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-1">
-                    <div>
-                      <span className="text-[10px] text-slate-500 block">Age</span>
-                      <Input type="text" value={fpState.sideA.client_age} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_age: e.target.value } }))} className={lineInputClass} />
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500 block">Occupation</span>
-                      <Input type="text" value={fpState.sideA.client_occupation} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_occupation: e.target.value } }))} className={lineInputClass} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Row 2: Address */}
-                <div className="grid grid-cols-1 md:grid-cols-8 gap-2 items-center">
-                  <div className="md:col-span-1 font-bold text-slate-800 dark:text-slate-200">ADDRESS:</div>
-                  <div className="w-16">
-                    <span className="text-[10px] text-slate-500 block">No.</span>
-                    <Input type="text" value={fpState.sideA.address_no} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_no: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Street / Sitio</span>
-                    <Input type="text" value={fpState.sideA.address_street} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_street: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Barangay</span>
-                    <Input type="text" value={fpState.sideA.address_barangay} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_barangay: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Municipality/City</span>
-                    <Input type="text" value={fpState.sideA.address_municipality} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_municipality: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Province</span>
-                    <Input type="text" value={fpState.sideA.address_province} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_province: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Contact Number</span>
-                    <Input type="text" value={fpState.sideA.contact_number} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, contact_number: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-1">
-                    <div>
-                      <span className="text-[10px] text-slate-500 block">Civil Status</span>
-                      <Input type="text" value={fpState.sideA.civil_status} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, civil_status: e.target.value } }))} className={lineInputClass} />
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500 block">Religion</span>
-                      <Input type="text" value={fpState.sideA.religion} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, religion: e.target.value } }))} className={lineInputClass} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Row 3: Name of Spouse */}
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-center">
-                  <div className="md:col-span-1 font-bold text-slate-800 dark:text-slate-200">NAME OF SPOUSE:</div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Last Name</span>
-                    <Input type="text" value={fpState.sideA.spouse_last_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_last_name: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Given Name</span>
-                    <Input type="text" value={fpState.sideA.spouse_given_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_given_name: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div className="w-16">
-                    <span className="text-[10px] text-slate-500 block">MI</span>
-                    <Input type="text" value={fpState.sideA.spouse_mi} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_mi: e.target.value } }))} className={lineInputClass} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Date of Birth</span>
-                    <Input type="date" value={fpState.sideA.spouse_dob} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_dob: e.target.value, spouse_age: String(calculateAge(e.target.value)) } }))} className={lineInputClass} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-1">
-                    <div>
-                      <span className="text-[10px] text-slate-500 block">Age</span>
-                      <Input type="text" value={fpState.sideA.spouse_age} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_age: e.target.value } }))} className={lineInputClass} />
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500 block">Occupation</span>
-                      <Input type="text" value={fpState.sideA.spouse_occupation} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_occupation: e.target.value } }))} className={lineInputClass} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Row 4: Children & Income */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center border-t border-slate-300 dark:border-slate-700 pt-2 text-[11px]">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold">NO. OF LIVING CHILDREN:</span>
-                    <Input type="text" value={fpState.sideA.no_living_children} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, no_living_children: e.target.value } }))} className="w-16 h-6 border-b border-t-0 border-x-0 rounded-none text-center" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold">PLAN TO HAVE MORE CHILDREN?</span>
-                    <label className="inline-flex items-center gap-1 cursor-pointer">
-                      <input type="checkbox" checked={fpState.sideA.plan_more_children === true} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, plan_more_children: e.target.checked } }))} className="h-3.5 w-3.5" /> Yes
-                    </label>
-                    <label className="inline-flex items-center gap-1 cursor-pointer">
-                      <input type="checkbox" checked={fpState.sideA.plan_more_children === false} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, plan_more_children: !e.target.checked ? false : null } }))} className="h-3.5 w-3.5" /> No
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold">AVERAGE MONTHLY INCOME:</span>
-                    <span className="font-semibold">₱</span>
-                    <Input type="text" value={fpState.sideA.average_monthly_income} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, average_monthly_income: e.target.value } }))} className="w-28 h-6 border-b border-t-0 border-x-0 rounded-none text-center" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Type of Client & Previously Used Method Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Left: Type of Client */}
-                <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1.5 bg-slate-50/50 dark:bg-slate-900/40">
-                  <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">Type of Client</div>
-                  
-                  <div className="space-y-1 text-[11px]">
-                    <div className="flex items-center gap-2">
-                      <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold">
-                        <input type="radio" name="type_of_client" checked={fpState.sideA.type_of_client === "new_acceptor"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "new_acceptor" } }))} className="h-3.5 w-3.5" />
-                        New Acceptor
-                      </label>
-                      <span className="text-slate-500 font-medium">Reason for FP:</span>
-                      <label className="inline-flex items-center gap-1 cursor-pointer">
-                        <input type="radio" name="reason_fp_new" checked={fpState.sideA.type_of_client === "new_acceptor" && fpState.sideA.reason_fp === "spacing"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "new_acceptor", reason_fp: "spacing" } }))} className="h-3 w-3" /> spacing
-                      </label>
-                      <label className="inline-flex items-center gap-1 cursor-pointer">
-                        <input type="radio" name="reason_fp_new" checked={fpState.sideA.type_of_client === "new_acceptor" && fpState.sideA.reason_fp === "limiting"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "new_acceptor", reason_fp: "limiting" } }))} className="h-3 w-3" /> limiting
-                      </label>
-                      <label className="inline-flex items-center gap-1 cursor-pointer">
-                        <input type="radio" name="reason_fp_new" checked={fpState.sideA.type_of_client === "new_acceptor" && fpState.sideA.reason_fp === "others"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "new_acceptor", reason_fp: "others" } }))} className="h-3 w-3" /> others
-                      </label>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold">
-                        <input type="radio" name="type_of_client" checked={fpState.sideA.type_of_client === "current_user"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "current_user" } }))} className="h-3.5 w-3.5" />
-                        Current User
-                      </label>
-                      <span className="text-slate-500 font-medium">Reason for FP:</span>
-                      <label className="inline-flex items-center gap-1 cursor-pointer">
-                        <input type="radio" name="reason_fp_curr" checked={fpState.sideA.type_of_client === "current_user" && fpState.sideA.reason_fp === "spacing"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "current_user", reason_fp: "spacing" } }))} className="h-3 w-3" /> spacing
-                      </label>
-                      <label className="inline-flex items-center gap-1 cursor-pointer">
-                        <input type="radio" name="reason_fp_curr" checked={fpState.sideA.type_of_client === "current_user" && fpState.sideA.reason_fp === "limiting"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "current_user", reason_fp: "limiting" } }))} className="h-3 w-3" /> limiting
-                      </label>
-                      <label className="inline-flex items-center gap-1 cursor-pointer">
-                        <input type="radio" name="reason_fp_curr" checked={fpState.sideA.type_of_client === "current_user" && fpState.sideA.reason_fp === "others"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "current_user", reason_fp: "others" } }))} className="h-3 w-3" /> others
-                      </label>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold">
-                        <input type="radio" name="type_of_client" checked={fpState.sideA.type_of_client === "changing_method"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "changing_method" } }))} className="h-3.5 w-3.5" />
-                        Changing Method
-                      </label>
-                      <span className="text-slate-500 font-medium">Reason:</span>
-                      <label className="inline-flex items-center gap-1 cursor-pointer">
-                        <input type="radio" name="reason_changing" checked={fpState.sideA.reason_changing === "medical_condition"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, reason_changing: "medical_condition" } }))} className="h-3 w-3" /> medical condition
-                      </label>
-                      <label className="inline-flex items-center gap-1 cursor-pointer">
-                        <input type="radio" name="reason_changing" checked={fpState.sideA.reason_changing === "side_effects"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, reason_changing: "side_effects" } }))} className="h-3 w-3" /> side-effects
-                      </label>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                      <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold">
-                        <input type="radio" name="type_of_client" checked={fpState.sideA.type_of_client === "changing_clinic"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "changing_clinic" } }))} className="h-3.5 w-3.5" />
-                        Changing Clinic
-                      </label>
-                      <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold">
-                        <input type="radio" name="type_of_client" checked={fpState.sideA.type_of_client === "dropout_restart"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "dropout_restart" } }))} className="h-3.5 w-3.5" />
-                        Dropout / Restart
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right: Previously Used Method */}
-                <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1 bg-slate-50/50 dark:bg-slate-900/40">
-                  <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">Previously Used Method (for Current User)</div>
-                  <div className="grid grid-cols-4 gap-1.5 text-[11px] pt-1">
-                    {[
-                      { key: "implant", label: "Implant" }, { key: "iud", label: "IUD" }, { key: "btl", label: "BTL" }, { key: "nsv", label: "NSV" },
-                      { key: "injectable", label: "Injectable" }, { key: "coc", label: "COC" }, { key: "pop", label: "POP" }, { key: "condom", label: "Condom" },
-                      { key: "lam", label: "LAM" }, { key: "sdm", label: "SDM" }, { key: "bbt", label: "BBT" }, { key: "bom_cmm_stm", label: "BOM/CMM/STM" }
-                    ].map((item) => (
-                      <label key={item.key} className="inline-flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={(fpState.sideA.prev_method as any)[item.key]}
-                          onChange={(e) => setFpState((p) => ({
-                            ...p,
-                            sideA: {
-                              ...p.sideA,
-                              prev_method: { ...p.sideA.prev_method, [item.key]: e.target.checked }
-                            }
-                          }))}
-                          className="h-3.5 w-3.5"
-                        />
-                        {item.label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Main Medical & Assessment Grid (2 Columns) */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
-                
-                {/* LEFT COLUMN: Medical, Obstetrical, STI History */}
-                <div className="space-y-3">
-                  
-                  {/* I. MEDICAL HISTORY */}
-                  <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1.5">
-                    <div className="font-bold border-b pb-1 flex justify-between items-center text-slate-900 dark:text-slate-100">
-                      <span>I. MEDICAL HISTORY</span>
-                      <span className="text-[10px] font-normal text-slate-500">Does the client have any of the following?</span>
-                    </div>
-
-                    <div className="space-y-1 text-[11px]">
-                      {[
-                        { key: "severe_headaches", label: "severe headaches / migraine" },
-                        { key: "history_stroke_hypertension", label: "history of stroke / heart attack / hypertension" },
-                        { key: "non_traumatic_hematoma", label: "non-traumatic hematoma / frequent bruising or gum bleeding" },
-                        { key: "breast_cancer_mass", label: "current or history of breast cancer / breast mass" },
-                        { key: "severe_chest_pain", label: "severe chest pain" },
-                        { key: "cough_14_days", label: "cough for more than 14 days" },
-                        { key: "jaundice", label: "jaundice" },
-                        { key: "unexplained_vaginal_bleeding", label: "unexplained vaginal bleeding" },
-                        { key: "abnormal_vaginal_discharge", label: "abnormal vaginal discharge" },
-                        { key: "phenobarbital_rifampicin", label: "intake of phenobarbital (anti-seizure) or rifampicin (anti-TB)" },
-                        { key: "is_smoker", label: "Is the client a SMOKER?" },
-                        { key: "with_disability", label: "With Disability?" }
-                      ].map((item) => (
-                        <div key={item.key} className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-0.5">
-                          <span className="text-slate-800 dark:text-slate-200">• {item.label}</span>
-                          <div className="flex items-center gap-3 font-semibold shrink-0">
-                            <label className="inline-flex items-center gap-1 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={(fpState.sideA.medical_history as any)[item.key] === true}
-                                onChange={(e) => setFpState((p) => ({
-                                  ...p,
-                                  sideA: {
-                                    ...p.sideA,
-                                    medical_history: { ...p.sideA.medical_history, [item.key]: e.target.checked }
-                                  }
-                                }))}
-                                className="h-3 w-3"
-                              /> Yes
-                            </label>
-                            <label className="inline-flex items-center gap-1 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={(fpState.sideA.medical_history as any)[item.key] === false}
-                                onChange={(e) => setFpState((p) => ({
-                                  ...p,
-                                  sideA: {
-                                    ...p.sideA,
-                                    medical_history: { ...p.sideA.medical_history, [item.key]: !e.target.checked ? false : null }
-                                  }
-                                }))}
-                                className="h-3 w-3"
-                              /> No
-                            </label>
-                          </div>
-                        </div>
-                      ))}
-
-                      {fpState.sideA.medical_history.with_disability && (
-                        <div className="flex items-center gap-2 pt-1">
-                          <span className="text-slate-500 font-medium">If YES please specify:</span>
-                          <Input type="text" value={fpState.sideA.medical_history.disability_specify} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, medical_history: { ...p.sideA.medical_history, disability_specify: e.target.value } } }))} className={lineInputClass} />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* II. OBSTETRICAL HISTORY */}
-                  <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1.5">
-                    <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">II. OBSTETRICAL HISTORY</div>
-                    
-                    <div className="space-y-2 text-[11px]">
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="flex items-center gap-1">
-                          <span>Number of pregnancies:</span>
-                          <span className="font-bold">G</span>
-                          <Input type="text" value={fpState.sideA.obstetrical_history.g_pregnancies} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, g_pregnancies: e.target.value } } }))} className="w-8 h-5 border-b text-center p-0" />
-                          <span className="font-bold">P</span>
-                          <Input type="text" value={fpState.sideA.obstetrical_history.p_pregnancies} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, p_pregnancies: e.target.value } } }))} className="w-8 h-5 border-b text-center p-0" />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>Full term:</span>
-                          <Input type="text" value={fpState.sideA.obstetrical_history.full_term} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, full_term: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>Premature:</span>
-                          <Input type="text" value={fpState.sideA.obstetrical_history.premature} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, premature: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="flex items-center gap-1">
-                          <span>Abortion:</span>
-                          <Input type="text" value={fpState.sideA.obstetrical_history.abortion} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, abortion: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>Living children:</span>
-                          <Input type="text" value={fpState.sideA.obstetrical_history.living_children} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, living_children: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 pt-1 border-t">
-                        <div className="flex items-center gap-1">
-                          <span>Date of last delivery:</span>
-                          <Input type="date" value={fpState.sideA.obstetrical_history.date_last_delivery} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, date_last_delivery: e.target.value } } }))} className="w-28 h-5 border-b text-center p-0 text-[11px]" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span>Type of last delivery:</span>
-                          <label className="inline-flex items-center gap-1 cursor-pointer">
-                            <input type="radio" name="type_last_del" checked={fpState.sideA.obstetrical_history.type_last_delivery === "vaginal"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, type_last_delivery: "vaginal" } } }))} className="h-3 w-3" /> Vaginal
-                          </label>
-                          <label className="inline-flex items-center gap-1 cursor-pointer">
-                            <input type="radio" name="type_last_del" checked={fpState.sideA.obstetrical_history.type_last_delivery === "cesarean"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, type_last_delivery: "cesarean" } } }))} className="h-3 w-3" /> Cesarean
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="flex items-center gap-1">
-                          <span>Last menstrual period:</span>
-                          <Input type="date" value={fpState.sideA.obstetrical_history.last_menstrual_period} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, last_menstrual_period: e.target.value } } }))} className="w-28 h-5 border-b text-center p-0 text-[11px]" />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span>Previous menstrual period:</span>
-                          <Input type="date" value={fpState.sideA.obstetrical_history.previous_menstrual_period} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, previous_menstrual_period: e.target.value } } }))} className="w-28 h-5 border-b text-center p-0 text-[11px]" />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1 pt-1 border-t">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">Menstrual flow:</span>
-                        <div className="flex items-center gap-4">
-                          <label className="inline-flex items-center gap-1 cursor-pointer">
-                            <input type="radio" name="m_flow" checked={fpState.sideA.obstetrical_history.menstrual_flow === "scanty"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, menstrual_flow: "scanty" } } }))} className="h-3 w-3" /> Scanty (1-2 pads/day)
-                          </label>
-                          <label className="inline-flex items-center gap-1 cursor-pointer">
-                            <input type="radio" name="m_flow" checked={fpState.sideA.obstetrical_history.menstrual_flow === "moderate"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, menstrual_flow: "moderate" } } }))} className="h-3 w-3" /> Moderate (3-5 pads/day)
-                          </label>
-                          <label className="inline-flex items-center gap-1 cursor-pointer">
-                            <input type="radio" name="m_flow" checked={fpState.sideA.obstetrical_history.menstrual_flow === "heavy"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, menstrual_flow: "heavy" } } }))} className="h-3 w-3" /> Heavy (&gt;5 pads/day)
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-2 pt-1 font-medium">
-                        <label className="inline-flex items-center gap-1 cursor-pointer">
-                          <input type="checkbox" checked={fpState.sideA.obstetrical_history.dysmenorrhea} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, dysmenorrhea: e.target.checked } } }))} className="h-3.5 w-3.5" /> Dysmenorrhea
-                        </label>
-                        <label className="inline-flex items-center gap-1 cursor-pointer">
-                          <input type="checkbox" checked={fpState.sideA.obstetrical_history.hydatidiform_mole} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, hydatidiform_mole: e.target.checked } } }))} className="h-3.5 w-3.5" /> Hydatidiform mole
-                        </label>
-                        <label className="inline-flex items-center gap-1 cursor-pointer">
-                          <input type="checkbox" checked={fpState.sideA.obstetrical_history.history_ectopic_pregnancy} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, history_ectopic_pregnancy: e.target.checked } } }))} className="h-3.5 w-3.5" /> History of ectopic pregnancy
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* III. RISKS FOR SEXUALLY TRANSMITTED INFECTIONS */}
-                  <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1.5">
-                    <div className="font-bold border-b pb-1 flex justify-between items-center text-slate-900 dark:text-slate-100">
-                      <span>III. RISKS FOR SEXUALLY TRANSMITTED INFECTIONS</span>
-                    </div>
-
-                    <div className="space-y-1 text-[11px]">
-                      {[
-                        { key: "abnormal_discharge_genital", label: "abnormal discharge from the genital area" },
-                        { key: "sores_ulcers_genital", label: "sores or ulcers in the genital area" },
-                        { key: "pain_burning_genital", label: "pain or burning sensation in the genital area" },
-                        { key: "history_sti_treatment", label: "history of treatment for sexually transmitted infections" },
-                        { key: "hiv_aids_pid", label: "HIV / AIDS / Pelvic inflammatory disease" }
-                      ].map((item) => (
-                        <div key={item.key} className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-0.5">
-                          <span className="text-slate-800 dark:text-slate-200">• {item.label}</span>
-                          <div className="flex items-center gap-3 font-semibold shrink-0">
-                            <label className="inline-flex items-center gap-1 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={(fpState.sideA.sti_risks as any)[item.key] === true}
-                                onChange={(e) => setFpState((p) => ({
-                                  ...p,
-                                  sideA: {
-                                    ...p.sideA,
-                                    sti_risks: { ...p.sideA.sti_risks, [item.key]: e.target.checked }
-                                  }
-                                }))}
-                                className="h-3 w-3"
-                              /> Yes
-                            </label>
-                            <label className="inline-flex items-center gap-1 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={(fpState.sideA.sti_risks as any)[item.key] === false}
-                                onChange={(e) => setFpState((p) => ({
-                                  ...p,
-                                  sideA: {
-                                    ...p.sideA,
-                                    sti_risks: { ...p.sideA.sti_risks, [item.key]: !e.target.checked ? false : null }
-                                  }
-                                }))}
-                                className="h-3 w-3"
-                              /> No
-                            </label>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* RIGHT COLUMN: VAW, Physical Exam, Pelvic Exam, Acknowledgements */}
-                <div className="space-y-3">
-                  
-                  {/* IV. RISKS FOR VIOLENCE AGAINST WOMEN (VAW) */}
-                  <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1.5">
-                    <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">IV. RISKS FOR VIOLENCE AGAINST WOMEN (VAW)</div>
-                    <div className="space-y-1 text-[11px]">
-                      {[
-                        { key: "history_domestic_violence", label: "history of domestic violence or VAW" },
-                        { key: "unpleasant_relationship_partner", label: "unpleasant relationship with partner" },
-                        { key: "partner_disapproves_fp", label: "partner does not approve of the visit to FP clinic" }
-                      ].map((item) => (
-                        <div key={item.key} className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-0.5">
-                          <span className="text-slate-800 dark:text-slate-200">• {item.label}</span>
-                          <div className="flex items-center gap-3 font-semibold shrink-0">
-                            <label className="inline-flex items-center gap-1 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={(fpState.sideA.vaw_risks as any)[item.key] === true}
-                                onChange={(e) => setFpState((p) => ({
-                                  ...p,
-                                  sideA: {
-                                    ...p.sideA,
-                                    vaw_risks: { ...p.sideA.vaw_risks, [item.key]: e.target.checked }
-                                  }
-                                }))}
-                                className="h-3 w-3"
-                              /> Yes
-                            </label>
-                            <label className="inline-flex items-center gap-1 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={(fpState.sideA.vaw_risks as any)[item.key] === false}
-                                onChange={(e) => setFpState((p) => ({
-                                  ...p,
-                                  sideA: {
-                                    ...p.sideA,
-                                    vaw_risks: { ...p.sideA.vaw_risks, [item.key]: !e.target.checked ? false : null }
-                                  }
-                                }))}
-                                className="h-3 w-3"
-                              /> No
-                            </label>
-                          </div>
-                        </div>
-                      ))}
-
-                      <div className="flex items-center gap-3 pt-1">
-                        <span className="font-semibold">Referred to:</span>
-                        <label className="inline-flex items-center gap-1 cursor-pointer">
-                          <input type="checkbox" checked={fpState.sideA.vaw_risks.referred_dswd} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, vaw_risks: { ...p.sideA.vaw_risks, referred_dswd: e.target.checked } } }))} className="h-3 w-3" /> DSWD
-                        </label>
-                        <label className="inline-flex items-center gap-1 cursor-pointer">
-                          <input type="checkbox" checked={fpState.sideA.vaw_risks.referred_wcpu} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, vaw_risks: { ...p.sideA.vaw_risks, referred_wcpu: e.target.checked } } }))} className="h-3 w-3" /> WCPU
-                        </label>
-                        <label className="inline-flex items-center gap-1 cursor-pointer">
-                          <input type="checkbox" checked={fpState.sideA.vaw_risks.referred_ngos} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, vaw_risks: { ...p.sideA.vaw_risks, referred_ngos: e.target.checked } } }))} className="h-3 w-3" /> NGOs
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* V. PHYSICAL EXAMINATION */}
-                  <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-2">
-                    <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">V. PHYSICAL EXAMINATION</div>
-
-                    {/* Vitals Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] bg-slate-100 dark:bg-slate-900 p-1.5 rounded-xs">
-                      <div className="flex items-center gap-1">
-                        <span>Weight:</span>
-                        <Input type="text" value={fpState.sideA.physical_exam.weight_kg} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, weight_kg: e.target.value } } }))} className="w-12 h-5 border-b p-0 text-center" />
-                        <span>kg</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span>Height:</span>
-                        <Input type="text" value={fpState.sideA.physical_exam.height_m} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, height_m: e.target.value } } }))} className="w-12 h-5 border-b p-0 text-center" />
-                        <span>m</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span>BP:</span>
-                        <Input type="text" value={fpState.sideA.physical_exam.bp} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, bp: e.target.value } } }))} className="w-16 h-5 border-b p-0 text-center" />
-                        <span>mmHg</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span>Pulse:</span>
-                        <Input type="text" value={fpState.sideA.physical_exam.pulse_rate} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pulse_rate: e.target.value } } }))} className="w-12 h-5 border-b p-0 text-center" />
-                        <span>/min</span>
-                      </div>
-                    </div>
-
-                    {/* Organ System Examination Checks */}
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
-                      <div>
-                        <span className="font-semibold block">SKIN:</span>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.skin_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, skin_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.skin_pale} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, skin_pale: e.target.checked } } }))} className="h-3 w-3" /> pale</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.skin_yellowish} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, skin_yellowish: e.target.checked } } }))} className="h-3 w-3" /> yellowish</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.skin_hematoma} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, skin_hematoma: e.target.checked } } }))} className="h-3 w-3" /> hematoma</label>
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="font-semibold block">EXTREMITIES:</span>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.extremities_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, extremities_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.extremities_edema} onChange={e => setSiaInfo ? setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, extremities_edema: e.target.checked } } })) : null} className="h-3 w-3" /> edema</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.extremities_varicosities} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, extremities_varicosities: e.target.checked } } }))} className="h-3 w-3" /> varicosities</label>
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="font-semibold block">CONJUNCTIVA:</span>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.conjunctiva_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, conjunctiva_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.conjunctiva_pale} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, conjunctiva_pale: e.target.checked } } }))} className="h-3 w-3" /> pale</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.conjunctiva_yellowish} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, conjunctiva_yellowish: e.target.checked } } }))} className="h-3 w-3" /> yellowish</label>
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="font-semibold block">NECK:</span>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.neck_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, neck_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.neck_mass} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, neck_mass: e.target.checked } } }))} className="h-3 w-3" /> neck mass</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.neck_enlarged_lymph_nodes} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, neck_enlarged_lymph_nodes: e.target.checked } } }))} className="h-3 w-3" /> enlarged lymph nodes</label>
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="font-semibold block">BREAST:</span>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.breast_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, breast_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.breast_mass} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, breast_mass: e.target.checked } } }))} className="h-3 w-3" /> mass</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.breast_nipple_discharge} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, breast_nipple_discharge: e.target.checked } } }))} className="h-3 w-3" /> nipple discharge</label>
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="font-semibold block">ABDOMEN:</span>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.abdomen_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, abdomen_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.abdomen_mass} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, abdomen_mass: e.target.checked } } }))} className="h-3 w-3" /> abdominal mass</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.abdomen_varicosities} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, abdomen_varicosities: e.target.checked } } }))} className="h-3 w-3" /> varicosities</label>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Pelvic Examination Box */}
-                    <div className="border-t pt-2 space-y-1 text-[11px]">
-                      <span className="font-bold text-slate-800 dark:text-slate-200">PELVIC EXAMINATION (For IUD Acceptors)</span>
-                      <div className="grid grid-cols-2 gap-2">
-                        <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.pelvic_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pelvic_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
-                        <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.pelvic_mass} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pelvic_mass: e.target.checked } } }))} className="h-3 w-3" /> mass</label>
-                        <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.pelvic_abnormal_discharge} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pelvic_abnormal_discharge: e.target.checked } } }))} className="h-3 w-3" /> abnormal discharge</label>
-                        <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.pelvic_cervical_abnormalities} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pelvic_cervical_abnormalities: e.target.checked } } }))} className="h-3 w-3" /> cervical abnormalities</label>
-                      </div>
-
-                      {fpState.sideA.physical_exam.pelvic_cervical_abnormalities && (
-                        <div className="pl-4 grid grid-cols-2 gap-1 text-[10px]">
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.cervical_warts} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_warts: e.target.checked } } }))} className="h-3 w-3" /> warts</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.cervical_polyp_cyst} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_polyp_cyst: e.target.checked } } }))} className="h-3 w-3" /> polyp or cyst</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.cervical_inflammation_erosion} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_inflammation_erosion: e.target.checked } } }))} className="h-3 w-3" /> inflammation or erosion</label>
-                          <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.cervical_bloody_discharge} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_bloody_discharge: e.target.checked } } }))} className="h-3 w-3" /> bloody discharge</label>
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-4 pt-1">
-                        <span>cervical consistency:</span>
-                        <label className="inline-flex items-center gap-1"><input type="radio" name="c_consistency" checked={fpState.sideA.physical_exam.cervical_consistency === "firm"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_consistency: "firm" } } }))} className="h-3 w-3" /> firm</label>
-                        <label className="inline-flex items-center gap-1"><input type="radio" name="c_consistency" checked={fpState.sideA.physical_exam.cervical_consistency === "soft"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_consistency: "soft" } } }))} className="h-3 w-3" /> soft</label>
-                      </div>
-
-                      <div className="flex items-center gap-4">
-                        <span>uterine position:</span>
-                        <label className="inline-flex items-center gap-1"><input type="radio" name="u_pos" checked={fpState.sideA.physical_exam.uterine_position === "mid"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, uterine_position: "mid" } } }))} className="h-3 w-3" /> mid</label>
-                        <label className="inline-flex items-center gap-1"><input type="radio" name="u_pos" checked={fpState.sideA.physical_exam.uterine_position === "anteflexed"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, uterine_position: "anteflexed" } } }))} className="h-3 w-3" /> anteflexed</label>
-                        <label className="inline-flex items-center gap-1"><input type="radio" name="u_pos" checked={fpState.sideA.physical_exam.uterine_position === "retroflexed"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, uterine_position: "retroflexed" } } }))} className="h-3 w-3" /> retroflexed</label>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span>uterine depth:</span>
-                        <Input type="text" value={fpState.sideA.physical_exam.uterine_depth_cm} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, uterine_depth_cm: e.target.value } } }))} className="w-16 h-5 border-b p-0 text-center" />
-                        <span>cm</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ACKNOWLEDGEMENT & CONSENT */}
-                  <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-2 bg-slate-50/50 dark:bg-slate-900/40 text-[11px]">
-                    <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">ACKNOWLEDGEMENT & CONSENT</div>
-                    
-                    <p className="italic">
-                      This is to certify that the Physician/Nurse/Midwife of the clinic has fully explained to me the different methods available in family planning and I freely choose the
-                      <Select value={fpState.sideA.chosen_method} onValueChange={v => setFpState(p => ({ ...p, sideA: { ...p.sideA, chosen_method: v } }))}>
-                        <SelectTrigger className="inline-flex w-36 h-6 text-xs mx-1 border-b border-t-0 border-x-0 rounded-none">
-                          <SelectValue placeholder="Select Method" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FP_METHODS.map(m => (
-                            <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      method.
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-4 pt-2">
-                      <div className="text-center space-y-1">
-                        <Input type="text" value={`${fpState.sideA.client_given_name} ${fpState.sideA.client_last_name}`} readOnly className="border-b border-t-0 border-x-0 rounded-none text-center font-bold h-6" />
-                        <span className="text-[10px] text-slate-500 block">Client Signature</span>
-                      </div>
-                      <div className="text-center space-y-1">
-                        <Input type="date" value={fpState.sideA.client_signature_date} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_signature_date: e.target.value } }))} className="border-b border-t-0 border-x-0 rounded-none text-center h-6" />
-                        <span className="text-[10px] text-slate-500 block">Date</span>
-                      </div>
-                    </div>
-
-                    <p className="pt-2 italic border-t">
-                      I hereby consent to the inclusion of my FP Form 1 in the Family Health Registry.
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-4 pt-1">
-                      <div className="text-center space-y-1">
-                        <Input type="text" value={`${fpState.sideA.client_given_name} ${fpState.sideA.client_last_name}`} readOnly className="border-b border-t-0 border-x-0 rounded-none text-center font-bold h-6" />
-                        <span className="text-[10px] text-slate-500 block">Client Signature</span>
-                      </div>
-                      <div className="text-center space-y-1">
-                        <Input type="date" value={fpState.sideA.registry_consent_date} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, registry_consent_date: e.target.value } }))} className="border-b border-t-0 border-x-0 rounded-none text-center h-6" />
-                        <span className="text-[10px] text-slate-500 block">Date</span>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* Form Legend Footer */}
-              <div className="border-t border-slate-300 dark:border-slate-700 pt-1 text-[9px] text-slate-500 dark:text-slate-400 space-y-0.5">
-                <p><strong>Implant</strong> = Progestin subdermal implant; <strong>IUD</strong> = Intrauterine device; <strong>BTL</strong> = Bilateral tubal ligation; <strong>NSV</strong> = No-scalpel vasectomy; <strong>COC</strong> = Combined oral contraceptives; <strong>POP</strong> = Progestin only pills;</p>
-                <p><strong>LAM</strong> = Lactational amenorrhea method; <strong>SDM</strong> = Standard days method; <strong>BBT</strong> = Basal body temperature; <strong>BOM</strong> = Billings ovulation method; <strong>CMM</strong> = Cervical mucus method; <strong>STM</strong> = Symptothermal method</p>
-              </div>
-
+      {/* Main Linked Form (Side A & Side B in Continuous Official Layout) */}
+      <div id="fp-print-area" className="space-y-6">
+        
+        {/* SECTION 1: SIDE A - Assessment Record Replica */}
+        <div className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 border border-slate-300 dark:border-slate-700 rounded-md shadow-xs text-xs space-y-3 font-sans">
+          
+          {/* Form Title Header Banner */}
+          <div className="border-b-2 border-slate-900 dark:border-slate-100 pb-2 flex items-start justify-between">
+            <div>
+              <div className="text-[11px] font-bold tracking-widest text-slate-600 dark:text-slate-400">SIDE A</div>
+              <h1 className="text-base font-extrabold uppercase tracking-tight text-slate-900 dark:text-slate-100 font-heading">
+                FAMILY PLANNING CLIENT ASSESSMENT RECORD
+              </h1>
+              <p className="text-[10px] text-slate-600 dark:text-slate-400 italic">
+                Instructions for Physicians, Nurses and Midwives: Make sure that the client is not pregnant by using the questions listed in SIDE B. Completely fill out or check the required information. Refer accordingly for any abnormal history/findings for further medical evaluation.
+              </p>
             </div>
-          </TabsContent>
+            <div className="text-right text-[11px] font-mono space-y-1">
+              <div className="font-extrabold text-slate-800 dark:text-slate-200">FP FORM 1</div>
+              <div className="flex items-center gap-1">
+                <span className="font-bold">FP NO / CLIENT ID:</span>
+                <input type="text" value={fpState.sideA.fp_no} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, fp_no: e.target.value } }))} className="w-24 border-b border-slate-400 bg-transparent text-center text-xs font-semibold outline-none" />
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="font-bold">PHILHEALTH NO:</span>
+                <input type="text" value={fpState.sideA.philhealth_no} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, philhealth_no: e.target.value } }))} className="w-24 border-b border-slate-400 bg-transparent text-center text-xs font-semibold outline-none" />
+              </div>
+              <div className="flex items-center justify-end gap-2 text-[10px]">
+                <span className="font-bold">NHTS?</span>
+                <label className="inline-flex items-center gap-1 cursor-pointer">
+                  <input type="checkbox" checked={fpState.sideA.nhts === true} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, nhts: e.target.checked } }))} className="h-3 w-3" /> Yes
+                </label>
+                <label className="inline-flex items-center gap-1 cursor-pointer">
+                  <input type="checkbox" checked={fpState.sideA.nhts === false} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, nhts: !e.target.checked ? false : null } }))} className="h-3 w-3" /> No
+                </label>
+              </div>
+            </div>
+          </div>
 
-          {/* TAB 2: SIDE B - Visit Log & Pregnancy Screening Checklist */}
-          <TabsContent value="side-b" className="space-y-4 m-0">
-            <div className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 border border-slate-300 dark:border-slate-700 rounded-md shadow-xs text-xs space-y-4 font-sans">
-              
-              {/* Header */}
-              <div className="border-b-2 border-slate-900 dark:border-slate-100 pb-2 flex justify-between items-center">
+          {/* Client Demographics Box */}
+          <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-2 bg-slate-50/50 dark:bg-slate-900/40">
+            {/* Row 1: Name of Client */}
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-center">
+              <div className="md:col-span-1 font-bold text-slate-800 dark:text-slate-200">NAME OF CLIENT:</div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Last Name</span>
+                <Input type="text" value={fpState.sideA.client_last_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_last_name: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Given Name</span>
+                <Input type="text" value={fpState.sideA.client_given_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_given_name: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div className="w-16">
+                <span className="text-[10px] text-slate-500 block">MI</span>
+                <Input type="text" value={fpState.sideA.client_mi} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_mi: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Date of Birth</span>
+                <Input type="date" value={fpState.sideA.client_dob} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_dob: e.target.value, client_age: String(calculateAge(e.target.value)) } }))} className={lineInputClass} />
+              </div>
+              <div className="grid grid-cols-2 gap-1">
                 <div>
-                  <div className="text-[11px] font-bold tracking-widest text-slate-600 dark:text-slate-400">SIDE B</div>
-                  <h1 className="text-base font-extrabold uppercase tracking-tight text-slate-900 dark:text-slate-100 font-heading">
-                    FAMILY PLANNING CLIENT ASSESSMENT RECORD
-                  </h1>
+                  <span className="text-[10px] text-slate-500 block">Age</span>
+                  <Input type="text" value={fpState.sideA.client_age} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_age: e.target.value } }))} className={lineInputClass} />
                 </div>
-                <div className="text-right text-xs font-mono font-bold">FP FORM 1</div>
-              </div>
-
-              {/* Service & Follow-Up Table */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between no-print">
-                  <h3 className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wide">
-                    Service & Follow-Up Visit Log
-                  </h3>
-                  <Button type="button" variant="outline" size="sm" onClick={handleAddVisitRow} className="gap-1 text-xs h-7">
-                    <Plus className="h-3.5 w-3.5" /> Add Visit Row
-                  </Button>
-                </div>
-
-                <div className="overflow-x-auto border border-slate-300 dark:border-slate-700 rounded-xs">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold border-b text-center">
-                        <th className="border p-1.5 w-28">DATE OF VISIT<br/><span className="text-[9px] font-normal">(MM/DD/YYYY)</span></th>
-                        <th className="border p-1.5 min-w-[240px]">MEDICAL FINDINGS<br/><span className="text-[9px] font-normal">(Medical observation, complaints, service rendered, lab exam, treatment)</span></th>
-                        <th className="border p-1.5 w-36">METHOD ACCEPTED</th>
-                        <th className="border p-1.5 min-w-[180px]">NAME AND SIGNATURE OF SERVICE PROVIDER</th>
-                        <th className="border p-1.5 w-28">DATE OF FOLLOW-UP VISIT<br/><span className="text-[9px] font-normal">(MM/DD/YYYY)</span></th>
-                        <th className="border p-1.5 w-8 no-print"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {fpState.sideBVisits.map((row, idx) => (
-                        <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
-                          <td className="border p-1">
-                            <Input type="date" value={row.visit_date} onChange={e => setFpState(p => ({ ...p, sideBVisits: p.sideBVisits.map(v => v.id === row.id ? { ...v, visit_date: e.target.value } : v) }))} className="h-7 text-xs border-0 text-center bg-transparent" />
-                          </td>
-                          <td className="border p-1">
-                            <Textarea value={row.medical_findings} onChange={e => setFpState(p => ({ ...p, sideBVisits: p.sideBVisits.map(v => v.id === row.id ? { ...v, medical_findings: e.target.value } : v) }))} rows={2} placeholder="Observations / service rendered..." className="text-xs border-0 bg-transparent min-h-[40px] resize-y p-1" />
-                          </td>
-                          <td className="border p-1">
-                            <Select value={row.method_accepted} onValueChange={val => setFpState(p => ({ ...p, sideBVisits: p.sideBVisits.map(v => v.id === row.id ? { ...v, method_accepted: val } : v) }))}>
-                              <SelectTrigger className="h-7 text-xs border-0 bg-transparent">
-                                <SelectValue placeholder="Method" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {FP_METHODS.map(m => (
-                                  <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </td>
-                          <td className="border p-1">
-                            <Input type="text" value={row.provider_name} onChange={e => setFpState(p => ({ ...p, sideBVisits: p.sideBVisits.map(v => v.id === row.id ? { ...v, provider_name: e.target.value } : v) }))} placeholder="Provider Name" className="h-7 text-xs border-0 bg-transparent" />
-                          </td>
-                          <td className="border p-1">
-                            <Input type="date" value={row.followup_date} onChange={e => setFpState(p => ({ ...p, sideBVisits: p.sideBVisits.map(v => v.id === row.id ? { ...v, followup_date: e.target.value } : v) }))} className="h-7 text-xs border-0 text-center bg-transparent" />
-                          </td>
-                          <td className="border p-1 text-center no-print">
-                            {fpState.sideBVisits.length > 1 && (
-                              <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveVisitRow(row.id)} className="h-6 w-6 text-muted-foreground hover:text-destructive">
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div>
+                  <span className="text-[10px] text-slate-500 block">Occupation</span>
+                  <Input type="text" value={fpState.sideA.client_occupation} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_occupation: e.target.value } }))} className={lineInputClass} />
                 </div>
               </div>
+            </div>
 
-              {/* How to be Reasonably Sure a Client is Not Pregnant Checklist Box */}
-              <div className="border border-slate-400 dark:border-slate-600 p-3 rounded-xs space-y-3 bg-slate-50/50 dark:bg-slate-900/40">
-                <h3 className="font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-tight border-b pb-1">
-                  How to be Reasonably Sure a Client is Not Pregnant
-                </h3>
+            {/* Row 2: Address */}
+            <div className="grid grid-cols-1 md:grid-cols-8 gap-2 items-center">
+              <div className="md:col-span-1 font-bold text-slate-800 dark:text-slate-200">ADDRESS:</div>
+              <div className="w-16">
+                <span className="text-[10px] text-slate-500 block">No.</span>
+                <Input type="text" value={fpState.sideA.address_no} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_no: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Street / Sitio</span>
+                <Input type="text" value={fpState.sideA.address_street} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_street: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Barangay</span>
+                <Input type="text" value={fpState.sideA.address_barangay} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_barangay: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Municipality/City</span>
+                <Input type="text" value={fpState.sideA.address_municipality} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_municipality: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Province</span>
+                <Input type="text" value={fpState.sideA.address_province} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_province: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Contact Number</span>
+                <Input type="text" value={fpState.sideA.contact_number} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, contact_number: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div className="grid grid-cols-2 gap-1">
+                <div>
+                  <span className="text-[10px] text-slate-500 block">Civil Status</span>
+                  <Input type="text" value={fpState.sideA.civil_status} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, civil_status: e.target.value } }))} className={lineInputClass} />
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 block">Religion</span>
+                  <Input type="text" value={fpState.sideA.religion} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, religion: e.target.value } }))} className={lineInputClass} />
+                </div>
+              </div>
+            </div>
 
-                <div className="space-y-2 text-xs">
+            {/* Row 3: Name of Spouse */}
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-center">
+              <div className="md:col-span-1 font-bold text-slate-800 dark:text-slate-200">NAME OF SPOUSE:</div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Last Name</span>
+                <Input type="text" value={fpState.sideA.spouse_last_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_last_name: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Given Name</span>
+                <Input type="text" value={fpState.sideA.spouse_given_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_given_name: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div className="w-16">
+                <span className="text-[10px] text-slate-500 block">MI</span>
+                <Input type="text" value={fpState.sideA.spouse_mi} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_mi: e.target.value } }))} className={lineInputClass} />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Date of Birth</span>
+                <Input type="date" value={fpState.sideA.spouse_dob} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_dob: e.target.value, spouse_age: String(calculateAge(e.target.value)) } }))} className={lineInputClass} />
+              </div>
+              <div className="grid grid-cols-2 gap-1">
+                <div>
+                  <span className="text-[10px] text-slate-500 block">Age</span>
+                  <Input type="text" value={fpState.sideA.spouse_age} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_age: e.target.value } }))} className={lineInputClass} />
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 block">Occupation</span>
+                  <Input type="text" value={fpState.sideA.spouse_occupation} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_occupation: e.target.value } }))} className={lineInputClass} />
+                </div>
+              </div>
+            </div>
+
+            {/* Row 4: Children & Income */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center border-t border-slate-300 dark:border-slate-700 pt-2 text-[11px]">
+              <div className="flex items-center gap-2">
+                <span className="font-bold">NO. OF LIVING CHILDREN:</span>
+                <Input type="text" value={fpState.sideA.no_living_children} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, no_living_children: e.target.value } }))} className="w-16 h-6 border-b border-t-0 border-x-0 rounded-none text-center" />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold">PLAN TO HAVE MORE CHILDREN?</span>
+                <label className="inline-flex items-center gap-1 cursor-pointer">
+                  <input type="checkbox" checked={fpState.sideA.plan_more_children === true} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, plan_more_children: e.target.checked } }))} className="h-3.5 w-3.5" /> Yes
+                </label>
+                <label className="inline-flex items-center gap-1 cursor-pointer">
+                  <input type="checkbox" checked={fpState.sideA.plan_more_children === false} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, plan_more_children: !e.target.checked ? false : null } }))} className="h-3.5 w-3.5" /> No
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold">AVERAGE MONTHLY INCOME:</span>
+                <span className="font-semibold">₱</span>
+                <Input type="text" value={fpState.sideA.average_monthly_income} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, average_monthly_income: e.target.value } }))} className="w-28 h-6 border-b border-t-0 border-x-0 rounded-none text-center" />
+              </div>
+            </div>
+          </div>
+
+          {/* Type of Client & Previously Used Method Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Left: Type of Client */}
+            <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1.5 bg-slate-50/50 dark:bg-slate-900/40">
+              <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">Type of Client</div>
+              
+              <div className="space-y-1 text-[11px]">
+                <div className="flex items-center gap-2">
+                  <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold">
+                    <input type="radio" name="type_of_client" checked={fpState.sideA.type_of_client === "new_acceptor"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "new_acceptor" } }))} className="h-3.5 w-3.5" />
+                    New Acceptor
+                  </label>
+                  <span className="text-slate-500 font-medium">Reason for FP:</span>
+                  <label className="inline-flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="reason_fp_new" checked={fpState.sideA.type_of_client === "new_acceptor" && fpState.sideA.reason_fp === "spacing"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "new_acceptor", reason_fp: "spacing" } }))} className="h-3 w-3" /> spacing
+                  </label>
+                  <label className="inline-flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="reason_fp_new" checked={fpState.sideA.type_of_client === "new_acceptor" && fpState.sideA.reason_fp === "limiting"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "new_acceptor", reason_fp: "limiting" } }))} className="h-3 w-3" /> limiting
+                  </label>
+                  <label className="inline-flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="reason_fp_new" checked={fpState.sideA.type_of_client === "new_acceptor" && fpState.sideA.reason_fp === "others"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "new_acceptor", reason_fp: "others" } }))} className="h-3 w-3" /> others
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold">
+                    <input type="radio" name="type_of_client" checked={fpState.sideA.type_of_client === "current_user"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "current_user" } }))} className="h-3.5 w-3.5" />
+                    Current User
+                  </label>
+                  <span className="text-slate-500 font-medium">Reason for FP:</span>
+                  <label className="inline-flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="reason_fp_curr" checked={fpState.sideA.type_of_client === "current_user" && fpState.sideA.reason_fp === "spacing"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "current_user", reason_fp: "spacing" } }))} className="h-3 w-3" /> spacing
+                  </label>
+                  <label className="inline-flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="reason_fp_curr" checked={fpState.sideA.type_of_client === "current_user" && fpState.sideA.reason_fp === "limiting"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "current_user", reason_fp: "limiting" } }))} className="h-3 w-3" /> limiting
+                  </label>
+                  <label className="inline-flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="reason_fp_curr" checked={fpState.sideA.type_of_client === "current_user" && fpState.sideA.reason_fp === "others"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "current_user", reason_fp: "others" } }))} className="h-3 w-3" /> others
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold">
+                    <input type="radio" name="type_of_client" checked={fpState.sideA.type_of_client === "changing_method"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "changing_method" } }))} className="h-3.5 w-3.5" />
+                    Changing Method
+                  </label>
+                  <span className="text-slate-500 font-medium">Reason:</span>
+                  <label className="inline-flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="reason_changing" checked={fpState.sideA.reason_changing === "medical_condition"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, reason_changing: "medical_condition" } }))} className="h-3 w-3" /> medical condition
+                  </label>
+                  <label className="inline-flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="reason_changing" checked={fpState.sideA.reason_changing === "side_effects"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, reason_changing: "side_effects" } }))} className="h-3 w-3" /> side-effects
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold">
+                    <input type="radio" name="type_of_client" checked={fpState.sideA.type_of_client === "changing_clinic"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "changing_clinic" } }))} className="h-3.5 w-3.5" />
+                    Changing Clinic
+                  </label>
+                  <label className="inline-flex items-center gap-1.5 cursor-pointer font-semibold">
+                    <input type="radio" name="type_of_client" checked={fpState.sideA.type_of_client === "dropout_restart"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, type_of_client: "dropout_restart" } }))} className="h-3.5 w-3.5" />
+                    Dropout / Restart
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Previously Used Method */}
+            <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1 bg-slate-50/50 dark:bg-slate-900/40">
+              <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">Previously Used Method (for Current User)</div>
+              <div className="grid grid-cols-4 gap-1.5 text-[11px] pt-1">
+                {[
+                  { key: "implant", label: "Implant" }, { key: "iud", label: "IUD" }, { key: "btl", label: "BTL" }, { key: "nsv", label: "NSV" },
+                  { key: "injectable", label: "Injectable" }, { key: "coc", label: "COC" }, { key: "pop", label: "POP" }, { key: "condom", label: "Condom" },
+                  { key: "lam", label: "LAM" }, { key: "sdm", label: "SDM" }, { key: "bbt", label: "BBT" }, { key: "bom_cmm_stm", label: "BOM/CMM/STM" }
+                ].map((item) => (
+                  <label key={item.key} className="inline-flex items-center gap-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={(fpState.sideA.prev_method as any)[item.key]}
+                      onChange={(e) => setFpState((p) => ({
+                        ...p,
+                        sideA: {
+                          ...p.sideA,
+                          prev_method: { ...p.sideA.prev_method, [item.key]: e.target.checked }
+                        }
+                      }))}
+                      className="h-3.5 w-3.5"
+                    />
+                    {item.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Main Medical & Assessment Grid (2 Columns) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
+            
+            {/* LEFT COLUMN: Medical, Obstetrical, STI History */}
+            <div className="space-y-3">
+              
+              {/* I. MEDICAL HISTORY */}
+              <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1.5">
+                <div className="font-bold border-b pb-1 flex justify-between items-center text-slate-900 dark:text-slate-100">
+                  <span>I. MEDICAL HISTORY</span>
+                  <span className="text-[10px] font-normal text-slate-500">Does the client have any of the following?</span>
+                </div>
+
+                <div className="space-y-1 text-[11px]">
                   {[
-                    { key: "q1_baby_under_6m_breastfeeding_no_menses", text: "1. Did you have a baby less than six (6) months ago, are you fully or nearly-fully breastfeeding, AND have you had no menstrual period since then?" },
-                    { key: "q2_abstained_since_lmp_delivery", text: "2. Have you abstained from sexual intercourse since your last menstrual period or delivery?" },
-                    { key: "q3_baby_in_last_4_weeks", text: "3. Have you had a baby in the last four (4) weeks?" },
-                    { key: "q4_lmp_within_past_7_days", text: "4. Did your last menstrual period start within the past seven (7) days?" },
-                    { key: "q5_miscarriage_abortion_last_7_days", text: "5. Have you had a miscarriage or abortion in the last seven (7) days?" },
-                    { key: "q6_using_contraceptive_consistently", text: "6. Have you been using a reliable contraceptive method consistently and correctly?" }
-                  ].map((q) => (
-                    <div key={q.key} className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-1.5 gap-4">
-                      <span className="text-slate-800 dark:text-slate-200 leading-snug">{q.text}</span>
-                      <div className="flex items-center gap-4 font-bold shrink-0">
+                    { key: "severe_headaches", label: "severe headaches / migraine" },
+                    { key: "history_stroke_hypertension", label: "history of stroke / heart attack / hypertension" },
+                    { key: "non_traumatic_hematoma", label: "non-traumatic hematoma / frequent bruising or gum bleeding" },
+                    { key: "breast_cancer_mass", label: "current or history of breast cancer / breast mass" },
+                    { key: "severe_chest_pain", label: "severe chest pain" },
+                    { key: "cough_14_days", label: "cough for more than 14 days" },
+                    { key: "jaundice", label: "jaundice" },
+                    { key: "unexplained_vaginal_bleeding", label: "unexplained vaginal bleeding" },
+                    { key: "abnormal_vaginal_discharge", label: "abnormal vaginal discharge" },
+                    { key: "phenobarbital_rifampicin", label: "intake of phenobarbital (anti-seizure) or rifampicin (anti-TB)" },
+                    { key: "is_smoker", label: "Is the client a SMOKER?" },
+                    { key: "with_disability", label: "With Disability?" }
+                  ].map((item) => (
+                    <div key={item.key} className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-0.5">
+                      <span className="text-slate-800 dark:text-slate-200">• {item.label}</span>
+                      <div className="flex items-center gap-3 font-semibold shrink-0">
                         <label className="inline-flex items-center gap-1 cursor-pointer">
                           <input
                             type="checkbox"
-                            checked={(fpState.pregnancyChecklist as any)[q.key] === true}
+                            checked={(fpState.sideA.medical_history as any)[item.key] === true}
                             onChange={(e) => setFpState((p) => ({
                               ...p,
-                              pregnancyChecklist: { ...p.pregnancyChecklist, [q.key]: e.target.checked }
+                              sideA: {
+                                ...p.sideA,
+                                medical_history: { ...p.sideA.medical_history, [item.key]: e.target.checked }
+                              }
                             }))}
-                            className="h-3.5 w-3.5"
+                            className="h-3 w-3"
                           /> Yes
                         </label>
                         <label className="inline-flex items-center gap-1 cursor-pointer">
                           <input
                             type="checkbox"
-                            checked={(fpState.pregnancyChecklist as any)[q.key] === false}
+                            checked={(fpState.sideA.medical_history as any)[item.key] === false}
                             onChange={(e) => setFpState((p) => ({
                               ...p,
-                              pregnancyChecklist: { ...p.pregnancyChecklist, [q.key]: !e.target.checked ? false : null }
+                              sideA: {
+                                ...p.sideA,
+                                medical_history: { ...p.sideA.medical_history, [item.key]: !e.target.checked ? false : null }
+                              }
                             }))}
-                            className="h-3.5 w-3.5"
+                            className="h-3 w-3"
+                          /> No
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+
+                  {fpState.sideA.medical_history.with_disability && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-slate-500 font-medium">If YES please specify:</span>
+                      <Input type="text" value={fpState.sideA.medical_history.disability_specify} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, medical_history: { ...p.sideA.medical_history, disability_specify: e.target.value } } }))} className={lineInputClass} />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* II. OBSTETRICAL HISTORY */}
+              <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1.5">
+                <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">II. OBSTETRICAL HISTORY</div>
+                
+                <div className="space-y-2 text-[11px]">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="flex items-center gap-1">
+                      <span>Number of pregnancies:</span>
+                      <span className="font-bold">G</span>
+                      <Input type="text" value={fpState.sideA.obstetrical_history.g_pregnancies} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, g_pregnancies: e.target.value } } }))} className="w-8 h-5 border-b text-center p-0" />
+                      <span className="font-bold">P</span>
+                      <Input type="text" value={fpState.sideA.obstetrical_history.p_pregnancies} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, p_pregnancies: e.target.value } } }))} className="w-8 h-5 border-b text-center p-0" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span>Full term:</span>
+                      <Input type="text" value={fpState.sideA.obstetrical_history.full_term} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, full_term: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span>Premature:</span>
+                      <Input type="text" value={fpState.sideA.obstetrical_history.premature} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, premature: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center gap-1">
+                      <span>Abortion:</span>
+                      <Input type="text" value={fpState.sideA.obstetrical_history.abortion} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, abortion: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span>Living children:</span>
+                      <Input type="text" value={fpState.sideA.obstetrical_history.living_children} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, living_children: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1 border-t">
+                    <div className="flex items-center gap-1">
+                      <span>Date of last delivery:</span>
+                      <Input type="date" value={fpState.sideA.obstetrical_history.date_last_delivery} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, date_last_delivery: e.target.value } } }))} className="w-28 h-5 border-b text-center p-0 text-[11px]" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span>Type of last delivery:</span>
+                      <label className="inline-flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="type_last_del" checked={fpState.sideA.obstetrical_history.type_last_delivery === "vaginal"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, type_last_delivery: "vaginal" } } }))} className="h-3 w-3" /> Vaginal
+                      </label>
+                      <label className="inline-flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="type_last_del" checked={fpState.sideA.obstetrical_history.type_last_delivery === "cesarean"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, type_last_delivery: "cesarean" } } }))} className="h-3 w-3" /> Cesarean
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center gap-1">
+                      <span>Last menstrual period:</span>
+                      <Input type="date" value={fpState.sideA.obstetrical_history.last_menstrual_period} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, last_menstrual_period: e.target.value } } }))} className="w-28 h-5 border-b text-center p-0 text-[11px]" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span>Previous menstrual period:</span>
+                      <Input type="date" value={fpState.sideA.obstetrical_history.previous_menstrual_period} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, previous_menstrual_period: e.target.value } } }))} className="w-28 h-5 border-b text-center p-0 text-[11px]" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 pt-1 border-t">
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">Menstrual flow:</span>
+                    <div className="flex items-center gap-4">
+                      <label className="inline-flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="m_flow" checked={fpState.sideA.obstetrical_history.menstrual_flow === "scanty"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, menstrual_flow: "scanty" } } }))} className="h-3 w-3" /> Scanty (1-2 pads/day)
+                      </label>
+                      <label className="inline-flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="m_flow" checked={fpState.sideA.obstetrical_history.menstrual_flow === "moderate"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, menstrual_flow: "moderate" } } }))} className="h-3 w-3" /> Moderate (3-5 pads/day)
+                      </label>
+                      <label className="inline-flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="m_flow" checked={fpState.sideA.obstetrical_history.menstrual_flow === "heavy"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, menstrual_flow: "heavy" } } }))} className="h-3 w-3" /> Heavy (&gt;5 pads/day)
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 pt-1 font-medium">
+                    <label className="inline-flex items-center gap-1 cursor-pointer">
+                      <input type="checkbox" checked={fpState.sideA.obstetrical_history.dysmenorrhea} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, dysmenorrhea: e.target.checked } } }))} className="h-3.5 w-3.5" /> Dysmenorrhea
+                    </label>
+                    <label className="inline-flex items-center gap-1 cursor-pointer">
+                      <input type="checkbox" checked={fpState.sideA.obstetrical_history.hydatidiform_mole} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, hydatidiform_mole: e.target.checked } } }))} className="h-3.5 w-3.5" /> Hydatidiform mole
+                    </label>
+                    <label className="inline-flex items-center gap-1 cursor-pointer">
+                      <input type="checkbox" checked={fpState.sideA.obstetrical_history.history_ectopic_pregnancy} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, history_ectopic_pregnancy: e.target.checked } } }))} className="h-3.5 w-3.5" /> History of ectopic pregnancy
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* III. RISKS FOR SEXUALLY TRANSMITTED INFECTIONS */}
+              <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1.5">
+                <div className="font-bold border-b pb-1 flex justify-between items-center text-slate-900 dark:text-slate-100">
+                  <span>III. RISKS FOR SEXUALLY TRANSMITTED INFECTIONS</span>
+                </div>
+
+                <div className="space-y-1 text-[11px]">
+                  {[
+                    { key: "abnormal_discharge_genital", label: "abnormal discharge from the genital area" },
+                    { key: "sores_ulcers_genital", label: "sores or ulcers in the genital area" },
+                    { key: "pain_burning_genital", label: "pain or burning sensation in the genital area" },
+                    { key: "history_sti_treatment", label: "history of treatment for sexually transmitted infections" },
+                    { key: "hiv_aids_pid", label: "HIV / AIDS / Pelvic inflammatory disease" }
+                  ].map((item) => (
+                    <div key={item.key} className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-0.5">
+                      <span className="text-slate-800 dark:text-slate-200">• {item.label}</span>
+                      <div className="flex items-center gap-3 font-semibold shrink-0">
+                        <label className="inline-flex items-center gap-1 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={(fpState.sideA.sti_risks as any)[item.key] === true}
+                            onChange={(e) => setFpState((p) => ({
+                              ...p,
+                              sideA: {
+                                ...p.sideA,
+                                sti_risks: { ...p.sideA.sti_risks, [item.key]: e.target.checked }
+                              }
+                            }))}
+                            className="h-3 w-3"
+                          /> Yes
+                        </label>
+                        <label className="inline-flex items-center gap-1 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={(fpState.sideA.sti_risks as any)[item.key] === false}
+                            onChange={(e) => setFpState((p) => ({
+                              ...p,
+                              sideA: {
+                                ...p.sideA,
+                                sti_risks: { ...p.sideA.sti_risks, [item.key]: !e.target.checked ? false : null }
+                              }
+                            }))}
+                            className="h-3 w-3"
                           /> No
                         </label>
                       </div>
                     </div>
                   ))}
                 </div>
+              </div>
 
-                <div className="border-t border-slate-300 dark:border-slate-700 pt-2 text-[11px] text-slate-700 dark:text-slate-300 space-y-1 font-medium italic">
-                  <p>■ If the client answered <strong>YES</strong> to at least one of the questions and she is free of signs or symptoms of pregnancy, provide client with desired method.</p>
-                  <p>■ If the client answered <strong>NO</strong> to all of the questions, pregnancy cannot be ruled out. The client should await menses or use a pregnancy test.</p>
+            </div>
+
+            {/* RIGHT COLUMN: VAW, Physical Exam, Pelvic Exam, Acknowledgements */}
+            <div className="space-y-3">
+              
+              {/* IV. RISKS FOR VIOLENCE AGAINST WOMEN (VAW) */}
+              <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-1.5">
+                <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">IV. RISKS FOR VIOLENCE AGAINST WOMEN (VAW)</div>
+                <div className="space-y-1 text-[11px]">
+                  {[
+                    { key: "history_domestic_violence", label: "history of domestic violence or VAW" },
+                    { key: "unpleasant_relationship_partner", label: "unpleasant relationship with partner" },
+                    { key: "partner_disapproves_fp", label: "partner does not approve of the visit to FP clinic" }
+                  ].map((item) => (
+                    <div key={item.key} className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-0.5">
+                      <span className="text-slate-800 dark:text-slate-200">• {item.label}</span>
+                      <div className="flex items-center gap-3 font-semibold shrink-0">
+                        <label className="inline-flex items-center gap-1 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={(fpState.sideA.vaw_risks as any)[item.key] === true}
+                            onChange={(e) => setFpState((p) => ({
+                              ...p,
+                              sideA: {
+                                ...p.sideA,
+                                vaw_risks: { ...p.sideA.vaw_risks, [item.key]: e.target.checked }
+                              }
+                            }))}
+                            className="h-3 w-3"
+                          /> Yes
+                        </label>
+                        <label className="inline-flex items-center gap-1 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={(fpState.sideA.vaw_risks as any)[item.key] === false}
+                            onChange={(e) => setFpState((p) => ({
+                              ...p,
+                              sideA: {
+                                ...p.sideA,
+                                vaw_risks: { ...p.sideA.vaw_risks, [item.key]: !e.target.checked ? false : null }
+                              }
+                            }))}
+                            className="h-3 w-3"
+                          /> No
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="flex items-center gap-3 pt-1">
+                    <span className="font-semibold">Referred to:</span>
+                    <label className="inline-flex items-center gap-1 cursor-pointer">
+                      <input type="checkbox" checked={fpState.sideA.vaw_risks.referred_dswd} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, vaw_risks: { ...p.sideA.vaw_risks, referred_dswd: e.target.checked } } }))} className="h-3 w-3" /> DSWD
+                    </label>
+                    <label className="inline-flex items-center gap-1 cursor-pointer">
+                      <input type="checkbox" checked={fpState.sideA.vaw_risks.referred_wcpu} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, vaw_risks: { ...p.sideA.vaw_risks, referred_wcpu: e.target.checked } } }))} className="h-3 w-3" /> WCPU
+                    </label>
+                    <label className="inline-flex items-center gap-1 cursor-pointer">
+                      <input type="checkbox" checked={fpState.sideA.vaw_risks.referred_ngos} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, vaw_risks: { ...p.sideA.vaw_risks, referred_ngos: e.target.checked } } }))} className="h-3 w-3" /> NGOs
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* V. PHYSICAL EXAMINATION */}
+              <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-2">
+                <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">V. PHYSICAL EXAMINATION</div>
+
+                {/* Vitals Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] bg-slate-100 dark:bg-slate-900 p-1.5 rounded-xs">
+                  <div className="flex items-center gap-1">
+                    <span>Weight:</span>
+                    <Input type="text" value={fpState.sideA.physical_exam.weight_kg} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, weight_kg: e.target.value } } }))} className="w-12 h-5 border-b p-0 text-center" />
+                    <span>kg</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span>Height:</span>
+                    <Input type="text" value={fpState.sideA.physical_exam.height_m} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, height_m: e.target.value } } }))} className="w-12 h-5 border-b p-0 text-center" />
+                    <span>m</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span>BP:</span>
+                    <Input type="text" value={fpState.sideA.physical_exam.bp} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, bp: e.target.value } } }))} className="w-16 h-5 border-b p-0 text-center" />
+                    <span>mmHg</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span>Pulse:</span>
+                    <Input type="text" value={fpState.sideA.physical_exam.pulse_rate} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pulse_rate: e.target.value } } }))} className="w-12 h-5 border-b p-0 text-center" />
+                    <span>/min</span>
+                  </div>
+                </div>
+
+                {/* Organ System Examination Checks (Boxes only checked when selected by user) */}
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div>
+                    <span className="font-semibold block">SKIN:</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.skin_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, skin_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.skin_pale} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, skin_pale: e.target.checked } } }))} className="h-3 w-3" /> pale</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.skin_yellowish} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, skin_yellowish: e.target.checked } } }))} className="h-3 w-3" /> yellowish</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.skin_hematoma} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, skin_hematoma: e.target.checked } } }))} className="h-3 w-3" /> hematoma</label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="font-semibold block">EXTREMITIES:</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.extremities_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, extremities_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.extremities_edema} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, extremities_edema: e.target.checked } } }))} className="h-3 w-3" /> edema</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.extremities_varicosities} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, extremities_varicosities: e.target.checked } } }))} className="h-3 w-3" /> varicosities</label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="font-semibold block">CONJUNCTIVA:</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.conjunctiva_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, conjunctiva_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.conjunctiva_pale} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, conjunctiva_pale: e.target.checked } } }))} className="h-3 w-3" /> pale</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.conjunctiva_yellowish} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, conjunctiva_yellowish: e.target.checked } } }))} className="h-3 w-3" /> yellowish</label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="font-semibold block">NECK:</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.neck_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, neck_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.neck_mass} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, neck_mass: e.target.checked } } }))} className="h-3 w-3" /> neck mass</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.neck_enlarged_lymph_nodes} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, neck_enlarged_lymph_nodes: e.target.checked } } }))} className="h-3 w-3" /> enlarged lymph nodes</label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="font-semibold block">BREAST:</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.breast_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, breast_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.breast_mass} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, breast_mass: e.target.checked } } }))} className="h-3 w-3" /> mass</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.breast_nipple_discharge} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, breast_nipple_discharge: e.target.checked } } }))} className="h-3 w-3" /> nipple discharge</label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="font-semibold block">ABDOMEN:</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.abdomen_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, abdomen_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.abdomen_mass} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, abdomen_mass: e.target.checked } } }))} className="h-3 w-3" /> abdominal mass</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.abdomen_varicosities} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, abdomen_varicosities: e.target.checked } } }))} className="h-3 w-3" /> varicosities</label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pelvic Examination Box */}
+                <div className="border-t pt-2 space-y-1 text-[11px]">
+                  <span className="font-bold text-slate-800 dark:text-slate-200">PELVIC EXAMINATION (For IUD Acceptors)</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.pelvic_normal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pelvic_normal: e.target.checked } } }))} className="h-3 w-3" /> normal</label>
+                    <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.pelvic_mass} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pelvic_mass: e.target.checked } } }))} className="h-3 w-3" /> mass</label>
+                    <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.pelvic_abnormal_discharge} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pelvic_abnormal_discharge: e.target.checked } } }))} className="h-3 w-3" /> abnormal discharge</label>
+                    <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.pelvic_cervical_abnormalities} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pelvic_cervical_abnormalities: e.target.checked } } }))} className="h-3 w-3" /> cervical abnormalities</label>
+                  </div>
+
+                  {fpState.sideA.physical_exam.pelvic_cervical_abnormalities && (
+                    <div className="pl-4 grid grid-cols-2 gap-1 text-[10px]">
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.cervical_warts} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_warts: e.target.checked } } }))} className="h-3 w-3" /> warts</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.cervical_polyp_cyst} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_polyp_cyst: e.target.checked } } }))} className="h-3 w-3" /> polyp or cyst</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.cervical_inflammation_erosion} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_inflammation_erosion: e.target.checked } } }))} className="h-3 w-3" /> inflammation or erosion</label>
+                      <label className="inline-flex items-center gap-1"><input type="checkbox" checked={fpState.sideA.physical_exam.cervical_bloody_discharge} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_bloody_discharge: e.target.checked } } }))} className="h-3 w-3" /> bloody discharge</label>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-4 pt-1">
+                    <span>cervical consistency:</span>
+                    <label className="inline-flex items-center gap-1"><input type="radio" name="c_consistency" checked={fpState.sideA.physical_exam.cervical_consistency === "firm"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_consistency: "firm" } } }))} className="h-3 w-3" /> firm</label>
+                    <label className="inline-flex items-center gap-1"><input type="radio" name="c_consistency" checked={fpState.sideA.physical_exam.cervical_consistency === "soft"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, cervical_consistency: "soft" } } }))} className="h-3 w-3" /> soft</label>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <span>uterine position:</span>
+                    <label className="inline-flex items-center gap-1"><input type="radio" name="u_pos" checked={fpState.sideA.physical_exam.uterine_position === "mid"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, uterine_position: "mid" } } }))} className="h-3 w-3" /> mid</label>
+                    <label className="inline-flex items-center gap-1"><input type="radio" name="u_pos" checked={fpState.sideA.physical_exam.uterine_position === "anteflexed"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, uterine_position: "anteflexed" } } }))} className="h-3 w-3" /> anteflexed</label>
+                    <label className="inline-flex items-center gap-1"><input type="radio" name="u_pos" checked={fpState.sideA.physical_exam.uterine_position === "retroflexed"} onChange={() => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, uterine_position: "retroflexed" } } }))} className="h-3 w-3" /> retroflexed</label>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span>uterine depth:</span>
+                    <Input type="text" value={fpState.sideA.physical_exam.uterine_depth_cm} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, uterine_depth_cm: e.target.value } } }))} className="w-16 h-5 border-b p-0 text-center" />
+                    <span>cm</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ACKNOWLEDGEMENT & CONSENT */}
+              <div className="border border-slate-400 dark:border-slate-600 p-2 rounded-xs space-y-2 bg-slate-50/50 dark:bg-slate-900/40 text-[11px]">
+                <div className="font-bold border-b pb-1 text-slate-900 dark:text-slate-100">ACKNOWLEDGEMENT & CONSENT</div>
+                
+                <p className="italic">
+                  This is to certify that the Physician/Nurse/Midwife of the clinic has fully explained to me the different methods available in family planning and I freely choose the
+                  <Select value={fpState.sideA.chosen_method} onValueChange={v => setFpState(p => ({ ...p, sideA: { ...p.sideA, chosen_method: v } }))}>
+                    <SelectTrigger className="inline-flex w-36 h-6 text-xs mx-1 border-b border-t-0 border-x-0 rounded-none">
+                      <SelectValue placeholder="Select Method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FP_METHODS.map(m => (
+                        <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  method.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="text-center space-y-1">
+                    <Input type="text" value={`${fpState.sideA.client_given_name} ${fpState.sideA.client_last_name}`} readOnly className="border-b border-t-0 border-x-0 rounded-none text-center font-bold h-6" />
+                    <span className="text-[10px] text-slate-500 block">Client Signature</span>
+                  </div>
+                  <div className="text-center space-y-1">
+                    <Input type="date" value={fpState.sideA.client_signature_date} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_signature_date: e.target.value } }))} className="border-b border-t-0 border-x-0 rounded-none text-center h-6" />
+                    <span className="text-[10px] text-slate-500 block">Date</span>
+                  </div>
+                </div>
+
+                <p className="pt-2 italic border-t">
+                  I hereby consent to the inclusion of my FP Form 1 in the Family Health Registry.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 pt-1">
+                  <div className="text-center space-y-1">
+                    <Input type="text" value={`${fpState.sideA.client_given_name} ${fpState.sideA.client_last_name}`} readOnly className="border-b border-t-0 border-x-0 rounded-none text-center font-bold h-6" />
+                    <span className="text-[10px] text-slate-500 block">Client Signature</span>
+                  </div>
+                  <div className="text-center space-y-1">
+                    <Input type="date" value={fpState.sideA.registry_consent_date} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, registry_consent_date: e.target.value } }))} className="border-b border-t-0 border-x-0 rounded-none text-center h-6" />
+                    <span className="text-[10px] text-slate-500 block">Date</span>
+                  </div>
                 </div>
               </div>
 
             </div>
-          </TabsContent>
+
+          </div>
+
+          {/* Form Legend Footer */}
+          <div className="border-t border-slate-300 dark:border-slate-700 pt-1 text-[9px] text-slate-500 dark:text-slate-400 space-y-0.5">
+            <p><strong>Implant</strong> = Progestin subdermal implant; <strong>IUD</strong> = Intrauterine device; <strong>BTL</strong> = Bilateral tubal ligation; <strong>NSV</strong> = No-scalpel vasectomy; <strong>COC</strong> = Combined oral contraceptives; <strong>POP</strong> = Progestin only pills;</p>
+            <p><strong>LAM</strong> = Lactational amenorrhea method; <strong>SDM</strong> = Standard days method; <strong>BBT</strong> = Basal body temperature; <strong>BOM</strong> = Billings ovulation method; <strong>CMM</strong> = Cervical mucus method; <strong>STM</strong> = Symptothermal method</p>
+          </div>
+
         </div>
 
-        {/* TAB 3: Saved Family Planning Records & History */}
-        <TabsContent value="history" className="space-y-4 no-print m-0">
-          <Card className="border-border/50 shadow-xs">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-base font-bold font-heading">
-                Saved Family Planning Records ({filteredHistoryRecords.length})
-              </CardTitle>
-              <div className="relative w-64">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search resident or method..."
-                  value={historySearch}
-                  onChange={(e) => setHistorySearch(e.target.value)}
-                  className="pl-9 h-9 text-xs"
-                />
-              </div>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="py-8 text-center text-xs text-muted-foreground">Loading records...</div>
-              ) : filteredHistoryRecords.length === 0 ? (
-                <div className="py-8 text-center text-xs text-muted-foreground">No Family Planning records found.</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Resident / Client Name</TableHead>
-                        <TableHead>Method Accepted</TableHead>
-                        <TableHead>Start Date</TableHead>
-                        <TableHead>Remarks / FP Info</TableHead>
-                        <TableHead className="w-28 text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredHistoryRecords.map((rec) => {
-                        const parsed = parseRecordDetails(rec);
-                        const clientName = rec.residents?.full_name || parsed?.sideA ? `${parsed.sideA.client_given_name} ${parsed.sideA.client_last_name}` : "—";
-                        return (
-                          <TableRow key={rec.id}>
-                            <TableCell className="font-semibold text-xs">{clientName}</TableCell>
-                            <TableCell className="text-xs">{rec.method || "—"}</TableCell>
-                            <TableCell className="text-xs">{rec.start_date || "—"}</TableCell>
-                            <TableCell className="text-xs max-w-[260px] truncate">{rec.remarks || "—"}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                {parsed && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => {
-                                      setSelectedRecordForView(rec);
-                                      setViewModalOpen(true);
-                                    }}
-                                    title="View Detail"
-                                    className="h-7 w-7"
-                                  >
-                                    <Eye className="h-3.5 w-3.5 text-primary" />
-                                  </Button>
-                                )}
+        {/* SECTION 2: SIDE B - Service Log & Pregnancy Screening Checklist */}
+        <div className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 border border-slate-300 dark:border-slate-700 rounded-md shadow-xs text-xs space-y-4 font-sans print:break-before-page">
+          
+          {/* Header */}
+          <div className="border-b-2 border-slate-900 dark:border-slate-100 pb-2 flex justify-between items-center">
+            <div>
+              <div className="text-[11px] font-bold tracking-widest text-slate-600 dark:text-slate-400">SIDE B</div>
+              <h1 className="text-base font-extrabold uppercase tracking-tight text-slate-900 dark:text-slate-100 font-heading">
+                FAMILY PLANNING CLIENT ASSESSMENT RECORD
+              </h1>
+            </div>
+            <div className="text-right text-xs font-mono font-bold">FP FORM 1</div>
+          </div>
+
+          {/* Service & Follow-Up Table */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between no-print">
+              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wide">
+                Service & Follow-Up Visit Log
+              </h3>
+              <Button type="button" variant="outline" size="sm" onClick={handleAddVisitRow} className="gap-1 text-xs h-7">
+                <Plus className="h-3.5 w-3.5" /> Add Visit Row
+              </Button>
+            </div>
+
+            <div className="overflow-x-auto border border-slate-300 dark:border-slate-700 rounded-xs">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold border-b text-center">
+                    <th className="border p-1.5 w-28">DATE OF VISIT<br/><span className="text-[9px] font-normal">(MM/DD/YYYY)</span></th>
+                    <th className="border p-1.5 min-w-[240px]">MEDICAL FINDINGS<br/><span className="text-[9px] font-normal">(Medical observation, complaints, service rendered, lab exam, treatment)</span></th>
+                    <th className="border p-1.5 w-36">METHOD ACCEPTED</th>
+                    <th className="border p-1.5 min-w-[180px]">NAME AND SIGNATURE OF SERVICE PROVIDER</th>
+                    <th className="border p-1.5 w-28">DATE OF FOLLOW-UP VISIT<br/><span className="text-[9px] font-normal">(MM/DD/YYYY)</span></th>
+                    <th className="border p-1.5 w-8 no-print"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {fpState.sideBVisits.map((row) => (
+                    <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                      <td className="border p-1">
+                        <Input type="date" value={row.visit_date} onChange={e => setFpState(p => ({ ...p, sideBVisits: p.sideBVisits.map(v => v.id === row.id ? { ...v, visit_date: e.target.value } : v) }))} className="h-7 text-xs border-0 text-center bg-transparent" />
+                      </td>
+                      <td className="border p-1">
+                        <Textarea value={row.medical_findings} onChange={e => setFpState(p => ({ ...p, sideBVisits: p.sideBVisits.map(v => v.id === row.id ? { ...v, medical_findings: e.target.value } : v) }))} rows={2} placeholder="Observations / service rendered..." className="text-xs border-0 bg-transparent min-h-[40px] resize-y p-1" />
+                      </td>
+                      <td className="border p-1">
+                        <Select value={row.method_accepted} onValueChange={val => setFpState(p => ({ ...p, sideBVisits: p.sideBVisits.map(v => v.id === row.id ? { ...v, method_accepted: val } : v) }))}>
+                          <SelectTrigger className="h-7 text-xs border-0 bg-transparent">
+                            <SelectValue placeholder="Method" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {FP_METHODS.map(m => (
+                              <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="border p-1">
+                        <Input type="text" value={row.provider_name} onChange={e => setFpState(p => ({ ...p, sideBVisits: p.sideBVisits.map(v => v.id === row.id ? { ...v, provider_name: e.target.value } : v) }))} placeholder="Provider Name" className="h-7 text-xs border-0 bg-transparent" />
+                      </td>
+                      <td className="border p-1">
+                        <Input type="date" value={row.followup_date} onChange={e => setFpState(p => ({ ...p, sideBVisits: p.sideBVisits.map(v => v.id === row.id ? { ...v, followup_date: e.target.value } : v) }))} className="h-7 text-xs border-0 text-center bg-transparent" />
+                      </td>
+                      <td className="border p-1 text-center no-print">
+                        {fpState.sideBVisits.length > 1 && (
+                          <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveVisitRow(row.id)} className="h-6 w-6 text-muted-foreground hover:text-destructive">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* How to be Reasonably Sure a Client is Not Pregnant Checklist Box */}
+          <div className="border border-slate-400 dark:border-slate-600 p-3 rounded-xs space-y-3 bg-slate-50/50 dark:bg-slate-900/40">
+            <h3 className="font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-tight border-b pb-1">
+              How to be Reasonably Sure a Client is Not Pregnant
+            </h3>
+
+            <div className="space-y-2 text-xs">
+              {[
+                { key: "q1_baby_under_6m_breastfeeding_no_menses", text: "1. Did you have a baby less than six (6) months ago, are you fully or nearly-fully breastfeeding, AND have you had no menstrual period since then?" },
+                { key: "q2_abstained_since_lmp_delivery", text: "2. Have you abstained from sexual intercourse since your last menstrual period or delivery?" },
+                { key: "q3_baby_in_last_4_weeks", text: "3. Have you had a baby in the last four (4) weeks?" },
+                { key: "q4_lmp_within_past_7_days", text: "4. Did your last menstrual period start within the past seven (7) days?" },
+                { key: "q5_miscarriage_abortion_last_7_days", text: "5. Have you had a miscarriage or abortion in the last seven (7) days?" },
+                { key: "q6_using_contraceptive_consistently", text: "6. Have you been using a reliable contraceptive method consistently and correctly?" }
+              ].map((q) => (
+                <div key={q.key} className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-1.5 gap-4">
+                  <span className="text-slate-800 dark:text-slate-200 leading-snug">{q.text}</span>
+                  <div className="flex items-center gap-4 font-bold shrink-0">
+                    <label className="inline-flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(fpState.pregnancyChecklist as any)[q.key] === true}
+                        onChange={(e) => setFpState((p) => ({
+                          ...p,
+                          pregnancyChecklist: { ...p.pregnancyChecklist, [q.key]: e.target.checked }
+                        }))}
+                        className="h-3.5 w-3.5"
+                      /> Yes
+                    </label>
+                    <label className="inline-flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(fpState.pregnancyChecklist as any)[q.key] === false}
+                        onChange={(e) => setFpState((p) => ({
+                          ...p,
+                          pregnancyChecklist: { ...p.pregnancyChecklist, [q.key]: !e.target.checked ? false : null }
+                        }))}
+                        className="h-3.5 w-3.5"
+                      /> No
+                    </label>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-slate-300 dark:border-slate-700 pt-2 text-[11px] text-slate-700 dark:text-slate-300 space-y-1 font-medium italic">
+              <p>■ If the client answered <strong>YES</strong> to at least one of the questions and she is free of signs or symptoms of pregnancy, provide client with desired method.</p>
+              <p>■ If the client answered <strong>NO</strong> to all of the questions, pregnancy cannot be ruled out. The client should await menses or use a pregnancy test.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* SAVED FAMILY PLANNING RECORDS (Positioned at the bottom of the page) */}
+      <div className="no-print pt-4">
+        <Card className="border-border/50 shadow-xs">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-base font-bold font-heading">
+              Saved Family Planning Records ({filteredHistoryRecords.length})
+            </CardTitle>
+            <div className="relative w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search resident or method..."
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                className="pl-9 h-9 text-xs"
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">Loading records...</div>
+            ) : filteredHistoryRecords.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">No Family Planning records found.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Resident / Client Name</TableHead>
+                      <TableHead>Method Accepted</TableHead>
+                      <TableHead>Start Date</TableHead>
+                      <TableHead>Remarks / FP Info</TableHead>
+                      <TableHead className="w-28 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredHistoryRecords.map((rec) => {
+                      const parsed = parseRecordDetails(rec);
+                      const clientName = rec.residents?.full_name || parsed?.sideA ? `${parsed.sideA.client_given_name} ${parsed.sideA.client_last_name}` : "—";
+                      return (
+                        <TableRow key={rec.id}>
+                          <TableCell className="font-semibold text-xs">{clientName}</TableCell>
+                          <TableCell className="text-xs">{rec.method || "—"}</TableCell>
+                          <TableCell className="text-xs">{rec.start_date || "—"}</TableCell>
+                          <TableCell className="text-xs max-w-[260px] truncate">{rec.remarks || "—"}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              {parsed && (
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => {
-                                    if (parsed) {
-                                      setFpState(parsed);
-                                      setActiveTab("side-a");
-                                      toast.info(`Loaded ${clientName}'s record into form.`);
-                                    } else {
-                                      toast.warning("Standard legacy record loaded.");
-                                    }
+                                    setSelectedRecordForView(rec);
+                                    setViewModalOpen(true);
                                   }}
-                                  title="Edit Record"
+                                  title="View Detail"
                                   className="h-7 w-7"
                                 >
-                                  <Pencil className="h-3.5 w-3.5" />
+                                  <Eye className="h-3.5 w-3.5 text-primary" />
                                 </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => setDeleteConfirmId(rec.id)}
-                                  title="Delete Record"
-                                  className="h-7 w-7 text-destructive"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  if (parsed) {
+                                    setFpState(parsed);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    toast.info(`Loaded ${clientName}'s record into form.`);
+                                  } else {
+                                    toast.warning("Standard legacy record loaded.");
+                                  }
+                                }}
+                                title="Edit Record"
+                                className="h-7 w-7"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeleteConfirmId(rec.id)}
+                                title="Delete Record"
+                                className="h-7 w-7 text-destructive"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* VIEW RECORD DETAIL MODAL */}
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
@@ -1597,7 +1577,7 @@ const FamilyPlanningForm = () => {
                       onClick={() => {
                         setFpState(parsed);
                         setViewModalOpen(false);
-                        setActiveTab("side-a");
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
                         toast.info("Record loaded into main editor.");
                       }}
                       className="gap-1 text-xs"
