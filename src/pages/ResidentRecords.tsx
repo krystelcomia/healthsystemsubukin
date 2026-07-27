@@ -18,8 +18,6 @@ import {
   MapPin, 
   Calendar, 
   Heart, 
-  HeartPulse,
-  HeartHandshake,
   Activity, 
   LayoutGrid, 
   List as ListIcon, 
@@ -36,7 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
-import { calculateAge, syncFamilyDataToResidents, getFamilyDataNamesSet } from "@/lib/residentLinker";
+import { calculateAge, syncFamilyDataToResidents } from "@/lib/residentLinker";
 import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
@@ -84,16 +82,9 @@ const ResidentRecords = () => {
 
   const fetchResidents = async () => {
     await syncFamilyDataToResidents();
-    const familyNamesSet = await getFamilyDataNamesSet();
     const { data, error } = await supabase.from("residents").select("*").order("created_at", { ascending: false });
     if (error) { toast.error("Failed to load residents"); return; }
-    
-    const filteredResidents = (data || []).filter((r: any) => {
-      const cleanName = (r.full_name || "").trim().toLowerCase();
-      return familyNamesSet.has(cleanName) || Boolean(r.family_number);
-    });
-
-    setResidents(filteredResidents || []);
+    setResidents(data || []);
     setLoading(false);
   };
 
@@ -189,9 +180,18 @@ const ResidentRecords = () => {
       return cleanName && full && full === cleanName;
     });
 
-    const familyPlanning = (fpRes.data || []).filter((rec: any) => 
-      rec.resident_id === residentId
-    );
+    const familyPlanning = (fpRes.data || []).filter((rec: any) => {
+      if (rec.resident_id === residentId) return true;
+      if (cleanName && rec.remarks && rec.remarks.toLowerCase().includes(cleanName)) return true;
+      if (rec.details) {
+        try {
+          const parsed = JSON.parse(rec.details);
+          const cName = `${parsed.sideA?.client_given_name || ""} ${parsed.sideA?.client_last_name || ""}`.trim().toLowerCase();
+          if (cleanName && cName && cName === cleanName) return true;
+        } catch {}
+      }
+      return false;
+    });
 
     setHealthRecords({
       consultations,
@@ -472,7 +472,7 @@ const ResidentRecords = () => {
           {healthRecords.maternal_care.length > 0 && (
             <div>
               <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <HeartPulse className="h-4 w-4 text-pink-600" /> {t("nav.maternalCare")} ({healthRecords.maternal_care.length})
+                <Heart className="h-4 w-4 text-pink-600" /> {t("nav.maternalCare")} ({healthRecords.maternal_care.length})
               </h3>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
@@ -520,7 +520,7 @@ const ResidentRecords = () => {
           {healthRecords.family_planning.length > 0 && (
             <div>
               <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <HeartHandshake className="h-4 w-4 text-indigo-600" /> {t("nav.familyPlanning")} ({healthRecords.family_planning.length})
+                <Activity className="h-4 w-4 text-indigo-600" /> {t("nav.familyPlanning")} ({healthRecords.family_planning.length})
               </h3>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>

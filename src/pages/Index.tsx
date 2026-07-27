@@ -11,8 +11,6 @@ import {
   TrendingUp,
   Baby,
   Heart,
-  HeartPulse,
-  HeartHandshake,
   Syringe,
   Bug,
   Sparkles,
@@ -30,7 +28,6 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 
 const Index = () => {
   const { t, colorTheme } = useSettings();
-
   const [stats, setStats] = useState({
     totalResidents: 0,
     consultations: 0,
@@ -56,7 +53,6 @@ const Index = () => {
     heroBorder: string;
     badgeStyle: string;
     btnStyle: string;
-    accentText: string;
     chartColors: string[];
   }> = {
     emerald: {
@@ -64,7 +60,6 @@ const Index = () => {
       heroBorder: "border-emerald-700/40",
       badgeStyle: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
       btnStyle: "bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold",
-      accentText: "text-emerald-300",
       chartColors: ["#059669", "#0284c7", "#7c3aed", "#d97706", "#e11d48", "#2563eb", "#db2777"],
     },
     ocean: {
@@ -72,7 +67,6 @@ const Index = () => {
       heroBorder: "border-sky-700/40",
       badgeStyle: "bg-sky-500/20 text-sky-300 border-sky-400/30",
       btnStyle: "bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold",
-      accentText: "text-sky-300",
       chartColors: ["#0284c7", "#059669", "#7c3aed", "#d97706", "#e11d48", "#2563eb", "#db2777"],
     },
     purple: {
@@ -80,7 +74,6 @@ const Index = () => {
       heroBorder: "border-purple-700/40",
       badgeStyle: "bg-purple-500/20 text-purple-300 border-purple-400/30",
       btnStyle: "bg-purple-500 hover:bg-purple-400 text-white font-bold",
-      accentText: "text-purple-300",
       chartColors: ["#7c3aed", "#0284c7", "#059669", "#d97706", "#e11d48", "#2563eb", "#db2777"],
     },
     rose: {
@@ -88,7 +81,6 @@ const Index = () => {
       heroBorder: "border-rose-700/40",
       badgeStyle: "bg-rose-500/20 text-rose-300 border-rose-400/30",
       btnStyle: "bg-rose-500 hover:bg-rose-400 text-white font-bold",
-      accentText: "text-rose-300",
       chartColors: ["#e11d48", "#db2777", "#7c3aed", "#0284c7", "#059669", "#d97706", "#2563eb"],
     },
     maroon: {
@@ -96,7 +88,6 @@ const Index = () => {
       heroBorder: "border-rose-800/40",
       badgeStyle: "bg-rose-500/20 text-rose-300 border-rose-400/30",
       btnStyle: "bg-rose-600 hover:bg-rose-500 text-white font-bold",
-      accentText: "text-rose-300",
       chartColors: ["#be123c", "#e11d48", "#7c3aed", "#0284c7", "#059669", "#d97706", "#db2777"],
     },
     amber: {
@@ -104,7 +95,6 @@ const Index = () => {
       heroBorder: "border-amber-700/40",
       badgeStyle: "bg-amber-500/20 text-amber-300 border-amber-400/30",
       btnStyle: "bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold",
-      accentText: "text-amber-300",
       chartColors: ["#d97706", "#059669", "#0284c7", "#7c3aed", "#e11d48", "#2563eb", "#db2777"],
     },
     slate: {
@@ -112,13 +102,11 @@ const Index = () => {
       heroBorder: "border-slate-700/40",
       badgeStyle: "bg-slate-500/20 text-slate-300 border-slate-400/30",
       btnStyle: "bg-slate-700 hover:bg-slate-600 text-white font-bold",
-      accentText: "text-slate-300",
       chartColors: ["#475569", "#0284c7", "#059669", "#7c3aed", "#d97706", "#e11d48", "#2563eb"],
     },
   };
 
   const currentStyle = THEME_STYLES[colorTheme] || THEME_STYLES.emerald;
-  const CHART_COLORS = currentStyle.chartColors;
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -224,14 +212,16 @@ const Index = () => {
     return `${diffDays} days ago`;
   };
 
+  const CHART_COLORS = currentStyle.chartColors;
+
   const quickForms = [
     { title: t("nav.consultation"), href: "/forms/consultation", icon: Stethoscope, color: "from-emerald-500/20 to-emerald-600/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:border-emerald-500/50", desc: "Log illness, vitals & diagnosis" },
     { title: t("nav.familyData"), href: "/forms/family-data", icon: ClipboardList, color: "from-sky-500/20 to-sky-600/10 text-sky-600 dark:text-sky-400 border-sky-500/20 hover:border-sky-500/50", desc: "Household profiles & members" },
     { title: t("nav.philpenHealth"), href: "/forms/philpen-health", icon: Activity, color: "from-rose-500/20 to-rose-600/10 text-rose-600 dark:text-rose-400 border-rose-500/20 hover:border-rose-500/50", desc: "NCD risk screening & BP" },
     { title: t("nav.childHealth"), href: "/forms/child-health", icon: Baby, color: "from-amber-500/20 to-amber-600/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:border-amber-500/50", desc: "Sick child, Vit A & SIA list" },
-    { title: t("nav.maternalCare"), href: "/forms/maternal-care", icon: HeartPulse, color: "from-pink-500/20 to-pink-600/10 text-pink-600 dark:text-pink-400 border-pink-500/20 hover:border-pink-500/50", desc: "Prenatal & pregnant records" },
+    { title: t("nav.maternalCare"), href: "/forms/maternal-care", icon: Heart, color: "from-pink-500/20 to-pink-600/10 text-pink-600 dark:text-pink-400 border-pink-500/20 hover:border-pink-500/50", desc: "Prenatal & pregnant records" },
     { title: t("nav.denguePrevention"), href: "/forms/dengue-prevention", icon: Bug, color: "from-teal-500/20 to-teal-600/10 text-teal-600 dark:text-teal-400 border-teal-500/20 hover:border-teal-500/50", desc: "Household larvae inspection" },
-    { title: t("nav.familyPlanning"), href: "/forms/family-planning", icon: HeartHandshake, color: "from-indigo-500/20 to-indigo-600/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 hover:border-indigo-500/50", desc: "Contraceptive method tracking" },
+    { title: t("nav.familyPlanning"), href: "/forms/family-planning", icon: Syringe, color: "from-indigo-500/20 to-indigo-600/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 hover:border-indigo-500/50", desc: "Contraceptive method tracking" },
     { title: t("nav.residents"), href: "/residents", icon: Users, color: "from-purple-500/20 to-purple-600/10 text-purple-600 dark:text-purple-400 border-purple-500/20 hover:border-purple-500/50", desc: "Browse resident database" },
   ];
 

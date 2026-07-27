@@ -91,32 +91,6 @@ export async function ensureResidentExists(opts: {
   }
 }
 
-export async function getFamilyDataNamesSet(): Promise<Set<string>> {
-  try {
-    const { data: familyData } = await supabase.from("family_data").select("*");
-    const nameSet = new Set<string>();
-    (familyData || []).forEach((fam: any) => {
-      if (fam.head_name && fam.head_name.trim()) nameSet.add(fam.head_name.trim().toLowerCase());
-      if (fam.father_name && fam.father_name.trim()) nameSet.add(fam.father_name.trim().toLowerCase());
-      if (fam.mother_name && fam.mother_name.trim()) nameSet.add(fam.mother_name.trim().toLowerCase());
-      
-      let members: any[] = [];
-      if (Array.isArray(fam.members_detail)) {
-        members = fam.members_detail;
-      } else if (typeof fam.members_detail === "string") {
-        try { members = JSON.parse(fam.members_detail); } catch (e) {}
-      }
-
-      members.forEach((m: any) => {
-        if (m.full_name && m.full_name.trim()) nameSet.add(m.full_name.trim().toLowerCase());
-      });
-    });
-    return nameSet;
-  } catch (e) {
-    return new Set<string>();
-  }
-}
-
 export async function syncFamilyDataToResidents(): Promise<void> {
   try {
     const [famRes, resRes] = await Promise.all([
@@ -131,37 +105,31 @@ export async function syncFamilyDataToResidents(): Promise<void> {
       const famNum = fam.family_number;
       const sitio = fam.sitio;
 
-      const familyNamesToSync = [
-        { name: fam.head_name, gender: "Male" },
-        { name: fam.father_name, gender: "Male" },
-        { name: fam.mother_name, gender: "Female" },
-      ];
-
-      for (const item of familyNamesToSync) {
-        if (!item.name || !item.name.trim()) continue;
-        const cleanName = item.name.trim();
-        const match = residentRecords.find(
-          (r) => r.full_name.trim().toLowerCase() === cleanName.toLowerCase()
+      if (fam.father_name && fam.father_name.trim()) {
+        const fatherMatch = residentRecords.find(
+          (r) => r.full_name.trim().toLowerCase() === fam.father_name.trim().toLowerCase()
         );
-        if (match) {
+        if (fatherMatch) {
           const updates: any = {};
-          if (famNum && match.family_number !== famNum) updates.family_number = famNum;
-          if (sitio && !match.sitio) updates.sitio = sitio;
+          if (famNum && fatherMatch.family_number !== famNum) updates.family_number = famNum;
+          if (sitio && !fatherMatch.sitio) updates.sitio = sitio;
           if (Object.keys(updates).length > 0) {
-            await supabase.from("residents").update(updates).eq("id", match.id);
+            await supabase.from("residents").update(updates).eq("id", fatherMatch.id);
           }
-        } else {
-          await supabase.from("residents").insert({
-            full_name: cleanName,
-            gender: item.gender,
-            age: 0,
-            status: "Married",
-            religion: "",
-            blood_type: "",
-            nationality: "Filipino",
-            sitio: sitio || "",
-            family_number: famNum || null,
-          });
+        }
+      }
+
+      if (fam.mother_name && fam.mother_name.trim()) {
+        const motherMatch = residentRecords.find(
+          (r) => r.full_name.trim().toLowerCase() === fam.mother_name.trim().toLowerCase()
+        );
+        if (motherMatch) {
+          const updates: any = {};
+          if (famNum && motherMatch.family_number !== famNum) updates.family_number = famNum;
+          if (sitio && !motherMatch.sitio) updates.sitio = sitio;
+          if (Object.keys(updates).length > 0) {
+            await supabase.from("residents").update(updates).eq("id", motherMatch.id);
+          }
         }
       }
 
