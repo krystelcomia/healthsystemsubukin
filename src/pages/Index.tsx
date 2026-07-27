@@ -30,6 +30,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 
 const Index = () => {
   const { t, colorTheme } = useSettings();
+
   const [stats, setStats] = useState({
     totalResidents: 0,
     consultations: 0,
@@ -55,6 +56,7 @@ const Index = () => {
     heroBorder: string;
     badgeStyle: string;
     btnStyle: string;
+    accentText: string;
     chartColors: string[];
   }> = {
     emerald: {
@@ -62,6 +64,7 @@ const Index = () => {
       heroBorder: "border-emerald-700/40",
       badgeStyle: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
       btnStyle: "bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold",
+      accentText: "text-emerald-300",
       chartColors: ["#059669", "#0284c7", "#7c3aed", "#d97706", "#e11d48", "#2563eb", "#db2777"],
     },
     ocean: {
@@ -69,6 +72,7 @@ const Index = () => {
       heroBorder: "border-sky-700/40",
       badgeStyle: "bg-sky-500/20 text-sky-300 border-sky-400/30",
       btnStyle: "bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold",
+      accentText: "text-sky-300",
       chartColors: ["#0284c7", "#059669", "#7c3aed", "#d97706", "#e11d48", "#2563eb", "#db2777"],
     },
     purple: {
@@ -76,6 +80,7 @@ const Index = () => {
       heroBorder: "border-purple-700/40",
       badgeStyle: "bg-purple-500/20 text-purple-300 border-purple-400/30",
       btnStyle: "bg-purple-500 hover:bg-purple-400 text-white font-bold",
+      accentText: "text-purple-300",
       chartColors: ["#7c3aed", "#0284c7", "#059669", "#d97706", "#e11d48", "#2563eb", "#db2777"],
     },
     rose: {
@@ -83,6 +88,7 @@ const Index = () => {
       heroBorder: "border-rose-700/40",
       badgeStyle: "bg-rose-500/20 text-rose-300 border-rose-400/30",
       btnStyle: "bg-rose-500 hover:bg-rose-400 text-white font-bold",
+      accentText: "text-rose-300",
       chartColors: ["#e11d48", "#db2777", "#7c3aed", "#0284c7", "#059669", "#d97706", "#2563eb"],
     },
     maroon: {
@@ -90,6 +96,7 @@ const Index = () => {
       heroBorder: "border-rose-800/40",
       badgeStyle: "bg-rose-500/20 text-rose-300 border-rose-400/30",
       btnStyle: "bg-rose-600 hover:bg-rose-500 text-white font-bold",
+      accentText: "text-rose-300",
       chartColors: ["#be123c", "#e11d48", "#7c3aed", "#0284c7", "#059669", "#d97706", "#db2777"],
     },
     amber: {
@@ -97,6 +104,7 @@ const Index = () => {
       heroBorder: "border-amber-700/40",
       badgeStyle: "bg-amber-500/20 text-amber-300 border-amber-400/30",
       btnStyle: "bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold",
+      accentText: "text-amber-300",
       chartColors: ["#d97706", "#059669", "#0284c7", "#7c3aed", "#e11d48", "#2563eb", "#db2777"],
     },
     slate: {
@@ -104,11 +112,13 @@ const Index = () => {
       heroBorder: "border-slate-700/40",
       badgeStyle: "bg-slate-500/20 text-slate-300 border-slate-400/30",
       btnStyle: "bg-slate-700 hover:bg-slate-600 text-white font-bold",
+      accentText: "text-slate-300",
       chartColors: ["#475569", "#0284c7", "#059669", "#7c3aed", "#d97706", "#e11d48", "#2563eb"],
     },
   };
 
   const currentStyle = THEME_STYLES[colorTheme] || THEME_STYLES.emerald;
+  const CHART_COLORS = currentStyle.chartColors;
 
   useEffect(() => {
     const fetchStats = async () => {
