@@ -125,28 +125,77 @@ const ResidentRecords = () => {
     setDeleteConfirmId(null); fetchResidents();
   };
 
-  const fetchHealthRecords = async (residentId: string) => {
-    const [c, f, p, d, m, ch, fp] = await Promise.all([
-      supabase.from("consultations").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
-      supabase.from("family_data").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
-      supabase.from("philpen_health").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
-      supabase.from("dengue_prevention").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
-      supabase.from("maternal_care" as any).select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
-      supabase.from("child_health" as any).select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
-      supabase.from("family_planning").select("*").eq("resident_id", residentId).order("created_at", { ascending: false }),
+  const fetchHealthRecords = async (resident: Resident) => {
+    const residentId = resident.id;
+    const cleanName = (resident.full_name || "").trim().toLowerCase();
+    const famNum = (resident.family_number || "").trim();
+
+    const [cRes, fRes, pRes, dRes, mRes, chRes, fpRes] = await Promise.all([
+      supabase.from("consultations").select("*").order("created_at", { ascending: false }),
+      supabase.from("family_data").select("*").order("created_at", { ascending: false }),
+      supabase.from("philpen_health").select("*").order("created_at", { ascending: false }),
+      supabase.from("dengue_prevention").select("*").order("created_at", { ascending: false }),
+      supabase.from("maternal_care" as any).select("*").order("created_at", { ascending: false }),
+      supabase.from("child_health" as any).select("*").order("created_at", { ascending: false }),
+      supabase.from("family_planning").select("*").order("created_at", { ascending: false }),
     ]);
+
+    const consultations = (cRes.data || []).filter((rec: any) => 
+      rec.resident_id === residentId || (cleanName && rec.full_name && rec.full_name.trim().toLowerCase() === cleanName)
+    );
+
+    const familyData = (fRes.data || []).filter((rec: any) => {
+      if (rec.resident_id === residentId) return true;
+      if (famNum && rec.family_number && rec.family_number.trim() === famNum) return true;
+      if (cleanName) {
+        if (rec.father_name && rec.father_name.trim().toLowerCase() === cleanName) return true;
+        if (rec.mother_name && rec.mother_name.trim().toLowerCase() === cleanName) return true;
+        let members: any[] = [];
+        if (Array.isArray(rec.members_detail)) members = rec.members_detail;
+        else if (typeof rec.members_detail === "string") {
+          try { members = JSON.parse(rec.members_detail); } catch (e) {}
+        }
+        if (members.some((m: any) => m.full_name && m.full_name.trim().toLowerCase() === cleanName)) return true;
+      }
+      return false;
+    });
+
+    const philpenHealth = (pRes.data || []).filter((rec: any) => 
+      rec.resident_id === residentId || (cleanName && rec.full_name && rec.full_name.trim().toLowerCase() === cleanName)
+    );
+
+    const denguePrevention = (dRes.data || []).filter((rec: any) => 
+      rec.resident_id === residentId || (cleanName && rec.household_name && rec.household_name.trim().toLowerCase() === cleanName)
+    );
+
+    const maternalCare = ((mRes.data as any[]) || []).filter((rec: any) => {
+      if (rec.resident_id === residentId) return true;
+      const full = (rec.patient_name || `${rec.patient_first_name || ""} ${rec.patient_last_name || ""}`).trim().toLowerCase();
+      return cleanName && full && full === cleanName;
+    });
+
+    const childHealth = ((chRes.data as any[]) || []).filter((rec: any) => {
+      if (rec.resident_id === residentId) return true;
+      const full = (rec.child_name || `${rec.first_name || ""} ${rec.surname || ""}`).trim().toLowerCase();
+      return cleanName && full && full === cleanName;
+    });
+
+    const familyPlanning = (fpRes.data || []).filter((rec: any) => 
+      rec.resident_id === residentId
+    );
+
     setHealthRecords({
-      consultations: c.data || [],
-      family_data: f.data || [],
-      philpen_health: p.data || [],
-      dengue_prevention: d.data || [],
-      maternal_care: (m.data as any[]) || [],
-      child_health: (ch.data as any[]) || [],
-      family_planning: fp.data || [],
+      consultations,
+      family_data: familyData,
+      philpen_health: philpenHealth,
+      dengue_prevention: denguePrevention,
+      maternal_care: maternalCare,
+      child_health: childHealth,
+      family_planning: familyPlanning,
     });
   };
 
-  const handleSelectResident = (resident: Resident) => { setSelectedResident(resident); fetchHealthRecords(resident.id); };
+  const handleSelectResident = (resident: Resident) => { setSelectedResident(resident); fetchHealthRecords(resident); };
 
   const handlePrint = () => {
     window.print();
