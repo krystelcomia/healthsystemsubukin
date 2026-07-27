@@ -1071,7 +1071,7 @@ const ChildHealthForm = () => {
             height: 75px !important;
           }
           @page {
-            size: A4 landscape;
+            size: legal landscape;
             margin: 5mm;
           }
         }
@@ -2187,11 +2187,11 @@ const ChildHealthForm = () => {
 
               {/* Masterlist 20-Column Table (Scrolls horizontally on screen, fits cleanly on paper during print without slide function) */}
               <div className="overflow-x-auto print:overflow-visible print:border-0 w-full max-w-full rounded-md border border-slate-300 dark:border-slate-700 shadow-xs">
-                <table className="min-w-[1350px] print:min-w-0 print:w-full w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
+                <table className="min-w-[1550px] print:min-w-0 print:w-full w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
                   <thead>
                     <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
                       <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-8">NO.</th>
-                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[180px]">
+                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[280px] w-[280px]">
                         NAME OF CHILD<br/><span className="text-[10px] font-normal text-slate-600 dark:text-slate-400">(First Name, MI, Last Name)</span>
                       </th>
                       <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px]">BIRTH DATE</th>
@@ -2362,11 +2362,11 @@ const ChildHealthForm = () => {
 
               {/* SIA Masterlist Table (Scrolls horizontally on screen, fits cleanly on paper during print without slide function) */}
               <div className="overflow-x-auto print:overflow-visible print:border-0 w-full max-w-full rounded-md border border-slate-300 dark:border-slate-700 shadow-xs">
-                <table className="min-w-[1350px] print:min-w-0 print:w-full w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
+                <table className="min-w-[1550px] print:min-w-0 print:w-full w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
                   <thead>
                     <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-6">#</th>
-                      <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[240px]">NAME</th>
+                      <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[320px]">NAME</th>
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[85px]">Date of Birth<br/><span className="text-[9px] font-normal">(YYYY-MM-DD)</span></th>
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-14">Age in Months</th>
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-12">Gender<br/><span className="text-[9px] font-normal">(M/F)</span></th>
