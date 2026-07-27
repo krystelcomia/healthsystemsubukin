@@ -347,6 +347,52 @@ const ChildHealthForm = () => {
   const [viewRecordModalOpen, setViewRecordModalOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  const STORAGE_KEY_VITA_DRAFT = "bhw_child_health_vita_draft";
+  const STORAGE_KEY_SIA_DRAFT = "bhw_child_health_sia_draft";
+
+  const createBlankVitARows = (count = 20): VitaminARow[] => {
+    const rows: VitaminARow[] = [];
+    for (let i = 0; i < count; i++) {
+      rows.push({
+        id: `vrow-${i + 1}`,
+        child_name: "",
+        dob: "",
+        v6m_1st: "",
+        v12_23_v1: "", v12_23_v2: "", v12_23_d1: "", v12_23_d2: "",
+        v24_35_v1: "", v24_35_v2: "", v24_35_d1: "", v24_35_d2: "",
+        v36_47_v1: "", v36_47_v2: "", v36_47_d1: "", v36_47_d2: "",
+        v48_59_v1: "", v48_59_v2: "", v48_59_d1: "", v48_59_d2: "",
+      });
+    }
+    return rows;
+  };
+
+  const createBlankSIARows = (count = 20): SIARow[] => {
+    const rows: SIARow[] = [];
+    for (let i = 0; i < count; i++) {
+      rows.push({
+        id: `srow-${i + 1}`,
+        child_family_name: "",
+        child_given_name: "",
+        child_middle_name: "",
+        dob: "",
+        age_months: "",
+        gender: "M",
+        barangay: "Subukin",
+        purok_sitio_street: "",
+        mother_family_name: "",
+        mother_given_name: "",
+        mother_middle_name: "",
+        vaccine_given: "",
+        vaccination_date: "",
+        vaccinator_family_name: "",
+        vaccinator_given_name: "",
+        vaccinator_middle_name: "",
+      });
+    }
+    return rows;
+  };
+
   // FORM 1 State
   const [sickForm, setSickForm] = useState<SickChildFormFull>(initialSickForm);
   const [selectedResidentId, setSelectedResidentId] = useState<string>("");
@@ -356,18 +402,16 @@ const ChildHealthForm = () => {
     sitio: "Subukin",
     year: new Date().getFullYear().toString(),
   });
-  const [vitARows, setVitARows] = useState<VitaminARow[]>([
-    {
-      id: "vrow-1",
-      child_name: "",
-      dob: "",
-      v6m_1st: "",
-      v12_23_v1: "", v12_23_v2: "", v12_23_d1: "", v12_23_d2: "",
-      v24_35_v1: "", v24_35_v2: "", v24_35_d1: "", v24_35_d2: "",
-      v36_47_v1: "", v36_47_v2: "", v36_47_d1: "", v36_47_d2: "",
-      v48_59_v1: "", v48_59_v2: "", v48_59_d1: "", v48_59_d2: "",
-    }
-  ]);
+  const [vitARows, setVitARows] = useState<VitaminARow[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_VITA_DRAFT);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length === 20) return parsed;
+      }
+    } catch {}
+    return createBlankVitARows(20);
+  });
 
   // FORM 3 State (Supplemental Immunization Activity - SIA Masterlist)
   const [siaInfo, setSiaInfo] = useState({
@@ -376,27 +420,28 @@ const ChildHealthForm = () => {
     municipality: "SAN JUAN",
     activity_date: "SEPT 2021 - FEB 2024",
   });
-  const [siaRows, setSiaRows] = useState<SIARow[]>([
-    {
-      id: "srow-1",
-      child_family_name: "",
-      child_given_name: "",
-      child_middle_name: "",
-      dob: "",
-      age_months: "",
-      gender: "M",
-      barangay: "Subukin",
-      purok_sitio_street: "",
-      mother_family_name: "",
-      mother_given_name: "",
-      mother_middle_name: "",
-      vaccine_given: "",
-      vaccination_date: "",
-      vaccinator_family_name: "",
-      vaccinator_given_name: "",
-      vaccinator_middle_name: "",
+  const [siaRows, setSiaRows] = useState<SIARow[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_SIA_DRAFT);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length === 20) return parsed;
+      }
+    } catch {}
+    return createBlankSIARows(20);
+  });
+
+  useEffect(() => {
+    if (vitARows.length > 0) {
+      localStorage.setItem(STORAGE_KEY_VITA_DRAFT, JSON.stringify(vitARows));
     }
-  ]);
+  }, [vitARows]);
+
+  useEffect(() => {
+    if (siaRows.length > 0) {
+      localStorage.setItem(STORAGE_KEY_SIA_DRAFT, JSON.stringify(siaRows));
+    }
+  }, [siaRows]);
 
   const fetchResidents = async () => {
     const { data } = await supabase
@@ -776,23 +821,7 @@ const ChildHealthForm = () => {
     }
   };
 
-  // Form 2 & Form 3 logic handlers
-  const handleAddVitARow = () => {
-    setVitARows(prev => [
-      ...prev,
-      {
-        id: `vrow-${Date.now()}`,
-        child_name: "",
-        dob: "",
-        v6m_1st: "",
-        v12_23_v1: "", v12_23_v2: "", v12_23_d1: "", v12_23_d2: "",
-        v24_35_v1: "", v24_35_v2: "", v24_35_d1: "", v24_35_d2: "",
-        v36_47_v1: "", v36_47_v2: "", v36_47_d1: "", v36_47_d2: "",
-        v48_59_v1: "", v48_59_v2: "", v48_59_d1: "", v48_59_d2: "",
-      }
-    ]);
-  };
-  const handleRemoveVitARow = (id: string) => setVitARows(prev => prev.filter(r => r.id !== id));
+
 
   const handleSaveVitAMasterlist = async () => {
     const validRows = vitARows.filter(r => r.child_name.trim());
@@ -826,6 +855,8 @@ const ChildHealthForm = () => {
 
       toast.success(`Successfully saved ${savedCount} Vitamin A & Deworming entries.`);
       logActivity("submit_child_health", { entity_type: "child_health", description: `Saved ${savedCount} Vitamin A & Deworming records` });
+      localStorage.removeItem(STORAGE_KEY_VITA_DRAFT);
+      setVitARows(createBlankVitARows(20));
       fetchSavedRecords();
     } catch (err) {
       console.error(err);
@@ -834,32 +865,6 @@ const ChildHealthForm = () => {
       setSaving(false);
     }
   };
-
-  const handleAddSIARow = () => {
-    setSiaRows(prev => [
-      ...prev,
-      {
-        id: `srow-${Date.now()}`,
-        child_family_name: "",
-        child_given_name: "",
-        child_middle_name: "",
-        dob: "",
-        age_months: "",
-        gender: "M",
-        barangay: "Subukin",
-        purok_sitio_street: "",
-        mother_family_name: "",
-        mother_given_name: "",
-        mother_middle_name: "",
-        vaccine_given: "",
-        vaccination_date: "",
-        vaccinator_family_name: "",
-        vaccinator_given_name: "",
-        vaccinator_middle_name: "",
-      }
-    ]);
-  };
-  const handleRemoveSIARow = (id: string) => setSiaRows(prev => prev.filter(r => r.id !== id));
 
   const handleSaveSIAMasterlist = async () => {
     const validRows = siaRows.filter(r => r.child_family_name.trim() || r.child_given_name.trim());
@@ -895,6 +900,8 @@ const ChildHealthForm = () => {
 
       toast.success(`Successfully saved ${savedCount} SIA masterlist entries.`);
       logActivity("submit_child_health", { entity_type: "child_health", description: `Saved ${savedCount} SIA records` });
+      localStorage.removeItem(STORAGE_KEY_SIA_DRAFT);
+      setSiaRows(createBlankSIARows(20));
       fetchSavedRecords();
     } catch (err) {
       console.error(err);
@@ -1052,7 +1059,7 @@ const ChildHealthForm = () => {
             height: 75px !important;
           }
           @page {
-            size: A4 portrait;
+            size: A4 landscape;
             margin: 5mm;
           }
         }
@@ -2163,10 +2170,6 @@ const ChildHealthForm = () => {
                       </SelectContent>
                     </Select>
                   </div>
-
-                  <Button type="button" variant="outline" size="sm" onClick={handleAddVitARow} className="gap-1 text-xs">
-                    <Plus className="h-3.5 w-3.5" /> Add Child Row
-                  </Button>
                 </div>
               </div>
 
@@ -2186,8 +2189,6 @@ const ChildHealthForm = () => {
                       <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200">24-35 MONTHS</th>
                       <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200">36-47 MONTHS</th>
                       <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200">48-59 MONTHS</th>
-                      
-                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-8 no-print"></th>
                     </tr>
                     
                     <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-[10px] font-bold text-center border-b border-slate-300 dark:border-slate-700">
@@ -2297,24 +2298,13 @@ const ChildHealthForm = () => {
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
 
-                        <td className="border border-slate-300 dark:border-slate-700 p-1 text-center no-print">
-                          {vitARows.length > 1 && (
-                            <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveVitARow(row.id)} className="h-6 w-6 text-muted-foreground hover:text-destructive">
-                              <Trash className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              <div className="flex items-center justify-between no-print pt-2 border-t">
-                <Button type="button" variant="outline" size="sm" onClick={handleAddVitARow} className="gap-1 text-xs">
-                  <Plus className="h-3.5 w-3.5" /> Add Child Row
-                </Button>
-
+              <div className="flex items-center justify-end no-print pt-2 border-t">
                 <Button type="button" onClick={handleSaveVitAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
                   <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Vitamin A Master List"}
                 </Button>
@@ -2355,11 +2345,6 @@ const ChildHealthForm = () => {
                     <Label className="text-[10px] text-slate-500 font-medium">Municipality:</Label>
                     <Input type="text" value={siaInfo.municipality} onChange={e => setSiaInfo(p => ({ ...p, municipality: e.target.value }))} className={lineInputClass} />
                   </div>
-                  <div className="flex items-end justify-end no-print">
-                    <Button type="button" variant="outline" size="sm" onClick={handleAddSIARow} className="gap-1 text-xs">
-                      <Plus className="h-3.5 w-3.5" /> Add Child Row
-                    </Button>
-                  </div>
                 </div>
               </div>
 
@@ -2378,7 +2363,6 @@ const ChildHealthForm = () => {
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px]">Vaccine Given</th>
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[85px]">Date of Vaccination<br/><span className="text-[9px] font-normal">(YYYY-MM-DD)</span></th>
                       <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[240px]">Name of Vaccinator</th>
-                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-6 no-print"></th>
                     </tr>
 
                     <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-[10px] font-semibold text-center border-b border-slate-300 dark:border-slate-700">
@@ -2446,25 +2430,13 @@ const ChildHealthForm = () => {
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_family_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_family_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_given_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_given_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_middle_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_middle_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
-
-                        <td className="border border-slate-300 dark:border-slate-700 p-1 text-center no-print">
-                          {siaRows.length > 1 && (
-                            <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveSIARow(row.id)} className="h-6 w-6 text-muted-foreground hover:text-destructive">
-                              <Trash className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              <div className="flex items-center justify-between no-print pt-2 border-t">
-                <Button type="button" variant="outline" size="sm" onClick={handleAddSIARow} className="gap-1 text-xs">
-                  <Plus className="h-3.5 w-3.5" /> Add Child Row
-                </Button>
-
+              <div className="flex items-center justify-end no-print pt-2 border-t">
                 <Button type="button" onClick={handleSaveSIAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
                   <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save SIA Master List"}
                 </Button>
