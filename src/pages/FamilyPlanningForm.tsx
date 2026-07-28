@@ -221,10 +221,10 @@ const createInitialFPForm = (): FPFullFormState => ({
       coc: false, pop: false, condom: false, lam: false, sdm: false, bbt: false, bom_cmm_stm: false
     },
     medical_history: {
-      severe_headaches: false, history_stroke_hypertension: false, non_traumatic_hematoma: false,
-      breast_cancer_mass: false, severe_chest_pain: false, cough_14_days: false, jaundice: false,
-      unexplained_vaginal_bleeding: false, abnormal_vaginal_discharge: false, phenobarbital_rifampicin: false,
-      is_smoker: false, with_disability: false, disability_specify: ""
+      severe_headaches: null, history_stroke_hypertension: null, non_traumatic_hematoma: null,
+      breast_cancer_mass: null, severe_chest_pain: null, cough_14_days: null, jaundice: null,
+      unexplained_vaginal_bleeding: null, abnormal_vaginal_discharge: null, phenobarbital_rifampicin: null,
+      is_smoker: null, with_disability: null, disability_specify: ""
     },
     obstetrical_history: {
       g_pregnancies: "", p_pregnancies: "", full_term: "", premature: "", abortion: "", living_children: "",
@@ -232,11 +232,11 @@ const createInitialFPForm = (): FPFullFormState => ({
       menstrual_flow: "", dysmenorrhea: false, hydatidiform_mole: false, history_ectopic_pregnancy: false
     },
     sti_risks: {
-      abnormal_discharge_genital: false, discharge_location: "", sores_ulcers_genital: false,
-      pain_burning_genital: false, history_sti_treatment: false, hiv_aids_pid: false
+      abnormal_discharge_genital: null, discharge_location: "", sores_ulcers_genital: null,
+      pain_burning_genital: null, history_sti_treatment: null, hiv_aids_pid: null
     },
     vaw_risks: {
-      history_domestic_violence: false, unpleasant_relationship_partner: false, partner_disapproves_fp: false,
+      history_domestic_violence: null, unpleasant_relationship_partner: null, partner_disapproves_fp: null,
       referred_dswd: false, referred_wcpu: false, referred_ngos: false, referred_others: false, referred_others_specify: ""
     },
     physical_exam: {
@@ -617,10 +617,10 @@ const FamilyPlanningForm = () => {
               <div className="flex items-center justify-end gap-2 text-[10px]">
                 <span className="font-bold">NHTS?</span>
                 <label className="inline-flex items-center gap-1 cursor-pointer">
-                  <input type="checkbox" checked={fpState.sideA.nhts === true} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, nhts: e.target.checked } }))} className="h-3 w-3" /> Yes
+                  <input type="checkbox" checked={fpState.sideA.nhts === true} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, nhts: e.target.checked ? true : null } }))} className="h-3 w-3" /> Yes
                 </label>
                 <label className="inline-flex items-center gap-1 cursor-pointer">
-                  <input type="checkbox" checked={fpState.sideA.nhts === false} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, nhts: !e.target.checked ? false : null } }))} className="h-3 w-3" /> No
+                  <input type="checkbox" checked={fpState.sideA.nhts === false} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, nhts: e.target.checked ? false : null } }))} className="h-3 w-3" /> No
                 </label>
               </div>
             </div>
@@ -738,10 +738,10 @@ const FamilyPlanningForm = () => {
               <div className="flex items-center gap-2">
                 <span className="font-bold">PLAN TO HAVE MORE CHILDREN?</span>
                 <label className="inline-flex items-center gap-1 cursor-pointer">
-                  <input type="checkbox" checked={fpState.sideA.plan_more_children === true} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, plan_more_children: e.target.checked } }))} className="h-3.5 w-3.5" /> Yes
+                  <input type="checkbox" checked={fpState.sideA.plan_more_children === true} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, plan_more_children: e.target.checked ? true : null } }))} className="h-3.5 w-3.5" /> Yes
                 </label>
                 <label className="inline-flex items-center gap-1 cursor-pointer">
-                  <input type="checkbox" checked={fpState.sideA.plan_more_children === false} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, plan_more_children: !e.target.checked ? false : null } }))} className="h-3.5 w-3.5" /> No
+                  <input type="checkbox" checked={fpState.sideA.plan_more_children === false} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, plan_more_children: e.target.checked ? false : null } }))} className="h-3.5 w-3.5" /> No
                 </label>
               </div>
               <div className="flex items-center gap-2">
@@ -888,7 +888,7 @@ const FamilyPlanningForm = () => {
                               ...p,
                               sideA: {
                                 ...p.sideA,
-                                medical_history: { ...p.sideA.medical_history, [item.key]: e.target.checked }
+                                medical_history: { ...p.sideA.medical_history, [item.key]: e.target.checked ? true : null }
                               }
                             }))}
                             className="h-3 w-3"
@@ -902,7 +902,7 @@ const FamilyPlanningForm = () => {
                               ...p,
                               sideA: {
                                 ...p.sideA,
-                                medical_history: { ...p.sideA.medical_history, [item.key]: !e.target.checked ? false : null }
+                                medical_history: { ...p.sideA.medical_history, [item.key]: e.target.checked ? false : null }
                               }
                             }))}
                             className="h-3 w-3"
@@ -1036,7 +1036,7 @@ const FamilyPlanningForm = () => {
                               ...p,
                               sideA: {
                                 ...p.sideA,
-                                sti_risks: { ...p.sideA.sti_risks, [item.key]: e.target.checked }
+                                sti_risks: { ...p.sideA.sti_risks, [item.key]: e.target.checked ? true : null }
                               }
                             }))}
                             className="h-3 w-3"
@@ -1050,7 +1050,7 @@ const FamilyPlanningForm = () => {
                               ...p,
                               sideA: {
                                 ...p.sideA,
-                                sti_risks: { ...p.sideA.sti_risks, [item.key]: !e.target.checked ? false : null }
+                                sti_risks: { ...p.sideA.sti_risks, [item.key]: e.target.checked ? false : null }
                               }
                             }))}
                             className="h-3 w-3"
@@ -1087,7 +1087,7 @@ const FamilyPlanningForm = () => {
                               ...p,
                               sideA: {
                                 ...p.sideA,
-                                vaw_risks: { ...p.sideA.vaw_risks, [item.key]: e.target.checked }
+                                vaw_risks: { ...p.sideA.vaw_risks, [item.key]: e.target.checked ? true : null }
                               }
                             }))}
                             className="h-3 w-3"
@@ -1101,7 +1101,7 @@ const FamilyPlanningForm = () => {
                               ...p,
                               sideA: {
                                 ...p.sideA,
-                                vaw_risks: { ...p.sideA.vaw_risks, [item.key]: !e.target.checked ? false : null }
+                                vaw_risks: { ...p.sideA.vaw_risks, [item.key]: e.target.checked ? false : null }
                               }
                             }))}
                             className="h-3 w-3"
@@ -1412,7 +1412,7 @@ const FamilyPlanningForm = () => {
                         checked={(fpState.pregnancyChecklist as any)[q.key] === true}
                         onChange={(e) => setFpState((p) => ({
                           ...p,
-                          pregnancyChecklist: { ...p.pregnancyChecklist, [q.key]: e.target.checked }
+                          pregnancyChecklist: { ...p.pregnancyChecklist, [q.key]: e.target.checked ? true : null }
                         }))}
                         className="h-3.5 w-3.5"
                       /> Yes
@@ -1423,7 +1423,7 @@ const FamilyPlanningForm = () => {
                         checked={(fpState.pregnancyChecklist as any)[q.key] === false}
                         onChange={(e) => setFpState((p) => ({
                           ...p,
-                          pregnancyChecklist: { ...p.pregnancyChecklist, [q.key]: !e.target.checked ? false : null }
+                          pregnancyChecklist: { ...p.pregnancyChecklist, [q.key]: e.target.checked ? false : null }
                         }))}
                         className="h-3.5 w-3.5"
                       /> No
