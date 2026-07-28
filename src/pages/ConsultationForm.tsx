@@ -9,8 +9,9 @@ import { toast } from "sonner";
 import { Stethoscope, Printer, RefreshCw, UserCheck, Activity, FileText, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { ensureResidentExists, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
-import { calculateAge } from "@/lib/residentLinker";
+import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import barangayLogo from "@/assets/barangay-logo.png";
@@ -45,7 +46,7 @@ const ConsultationForm = () => {
   });
 
   useEffect(() => { 
-    supabase.from("residents").select("id, full_name, sitio, age, birthday").order("full_name").then(({ data }) => setResidents(data || [])); 
+    getFamilyOnlyResidents().then((data) => setResidents(data || [])); 
   }, []);
 
   const handleChange = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));

@@ -30,7 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
-import { ensureResidentExists } from "@/lib/residentLinker";
+import { ensureResidentExists, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
@@ -457,10 +457,7 @@ const ChildHealthForm = () => {
   }, [siaRows]);
 
   const fetchResidents = async () => {
-    const { data } = await supabase
-      .from("residents")
-      .select("id, full_name, age, birthday, sitio, gender, family_number, father_name, mother_name")
-      .order("full_name");
+    const data = await getFamilyOnlyResidents();
     setResidents(data || []);
   };
 

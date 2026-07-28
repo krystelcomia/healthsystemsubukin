@@ -221,3 +221,11 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
 
   return familyNamesSet;
 }
+
+export async function getFamilyOnlyResidents(): Promise<any[]> {
+  const familyNamesSet = await syncFamilyDataToResidents();
+  const { data } = await supabase.from("residents").select("*").order("full_name");
+  return (data || []).filter((r: any) =>
+    r.full_name && familyNamesSet.has(r.full_name.trim().toLowerCase())
+  );
+}

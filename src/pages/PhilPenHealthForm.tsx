@@ -9,7 +9,7 @@ import { Activity, Save, Printer, RefreshCw, HeartPulse, CheckCircle2 } from "lu
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
-import { calculateAge } from "@/lib/residentLinker";
+import { calculateAge, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -86,10 +86,7 @@ const PhilPenHealthForm = () => {
   });
 
   useEffect(() => {
-    supabase.from("residents")
-      .select("*")
-      .order("full_name")
-      .then(({ data }) => setResidents(data || []));
+    getFamilyOnlyResidents().then((data) => setResidents(data || []));
   }, []);
 
   // Calculate BMI

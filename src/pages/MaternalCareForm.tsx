@@ -115,57 +115,48 @@ export interface MaternalCareRecord {
   created_at?: string;
 }
 
-const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-8 text-sm";
+import { ensureResidentExists, calculateAge, getFamilyOnlyResidents } from "@/lib/residentLinker";
+import { logActivity } from "@/lib/activityLogger";
+import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
+import sanjuanLogo from "@/assets/sanjuan_logo.png";
+import barangayLogo from "@/assets/barangay-logo.png";
+import headerTextImg from "@/assets/header_text.png";
+
+const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs";
 
 const MaternalCareForm = () => {
   const { t } = useSettings();
   const [residents, setResidents] = useState<any[]>([]);
-  const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
-  const [savedRecords, setSavedRecords] = useState<MaternalCareRecord[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [sitios, setSitios] = useState<string[]>([]);
+  const [savedRecords, setSavedRecords] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedResidentId, setSelectedResidentId] = useState<string>("");
+  const [viewingRecord, setViewingRecord] = useState<any | null>(null);
+  const [searchFilter, setSearchFilter] = useState<string>("");
 
-  // Search & Filter for History list
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSitioFilter, setSelectedSitioFilter] = useState("all");
-
-  // Edit State
-  const [editRecordId, setEditRecordId] = useState<string | null>(null);
-
-  // View / Print Modal State
-  const [viewRecordModalOpen, setViewRecordModalOpen] = useState(false);
-  const [selectedRecordForView, setSelectedRecordForView] = useState<MaternalCareRecord | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-
-  // Main Form State
   const [form, setForm] = useState({
+    id: "",
     resident_id: "",
     family_number: "",
-    patient_last_name: "",
-    patient_first_name: "",
-    patient_middle_name: "",
+    full_name: "",
     age: "",
-    sitio: "Subukin",
-    edc: "",
+    birthday: "",
+    sitio: "",
+    husband_name: "",
+    gravida: "",
+    para: "",
+    abortion: "",
+    stillbirth: "",
     lmp: "",
-    obstetric_score: "",
-    fpal: "",
-    end_1st_trim: "",
-    end_2nd_trim: "",
-    end_3rd_trim: "",
-    end_postpartum: "",
-    period: "",
-    patient_height: "",
-    blood_type: "Unspecified",
+    edc: "",
     risk_factors: [] as string[],
     prenatal_visits: [] as PrenatalVisit[],
   });
 
   const fetchResidents = async () => {
-    const { data } = await supabase
-      .from("residents")
-      .select("id, full_name, first_name, last_name, middle_name, age, birthday, sitio, gender, family_number")
-      .order("full_name");
+    const data = await getFamilyOnlyResidents();
     setResidents(data || []);
   };
 

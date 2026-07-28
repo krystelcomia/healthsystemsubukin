@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
+import { getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
 
 // --- INTERFACES FOR FP FORM 1 ---
@@ -316,8 +317,8 @@ const FamilyPlanningForm = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [{ data: resData }, { data: fpData }] = await Promise.all([
-        supabase.from("residents").select("*").order("full_name"),
+      const [resData, { data: fpData }] = await Promise.all([
+        getFamilyOnlyResidents(),
         supabase.from("family_planning").select("*, residents(full_name, sitio, age, gender, birthday, family_number)").order("created_at", { ascending: false })
       ]);
       setResidents(resData || []);
