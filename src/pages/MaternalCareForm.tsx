@@ -27,7 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
-import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
+import { ensureResidentExists, calculateAge, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
@@ -115,14 +115,7 @@ export interface MaternalCareRecord {
   created_at?: string;
 }
 
-import { ensureResidentExists, calculateAge, getFamilyOnlyResidents } from "@/lib/residentLinker";
-import { logActivity } from "@/lib/activityLogger";
-import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
-import sanjuanLogo from "@/assets/sanjuan_logo.png";
-import barangayLogo from "@/assets/barangay-logo.png";
-import headerTextImg from "@/assets/header_text.png";
-
-const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs";
+const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-8 text-sm";
 
 const MaternalCareForm = () => {
   const { t } = useSettings();
