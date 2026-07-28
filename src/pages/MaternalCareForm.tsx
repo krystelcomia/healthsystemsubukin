@@ -120,30 +120,43 @@ const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:b
 const MaternalCareForm = () => {
   const { t } = useSettings();
   const [residents, setResidents] = useState<any[]>([]);
-  const [sitios, setSitios] = useState<string[]>([]);
-  const [savedRecords, setSavedRecords] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
+  const [savedRecords, setSavedRecords] = useState<MaternalCareRecord[]>([]);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedResidentId, setSelectedResidentId] = useState<string>("");
-  const [viewingRecord, setViewingRecord] = useState<any | null>(null);
-  const [searchFilter, setSearchFilter] = useState<string>("");
 
+  // Search & Filter for History list
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSitioFilter, setSelectedSitioFilter] = useState("all");
+
+  // Edit State
+  const [editRecordId, setEditRecordId] = useState<string | null>(null);
+
+  // View / Print Modal State
+  const [viewRecordModalOpen, setViewRecordModalOpen] = useState(false);
+  const [selectedRecordForView, setSelectedRecordForView] = useState<MaternalCareRecord | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  // Main Form State
   const [form, setForm] = useState({
-    id: "",
     resident_id: "",
     family_number: "",
-    full_name: "",
+    patient_last_name: "",
+    patient_first_name: "",
+    patient_middle_name: "",
     age: "",
-    birthday: "",
-    sitio: "",
-    husband_name: "",
-    gravida: "",
-    para: "",
-    abortion: "",
-    stillbirth: "",
-    lmp: "",
+    sitio: "Subukin",
     edc: "",
+    lmp: "",
+    obstetric_score: "",
+    fpal: "",
+    end_1st_trim: "",
+    end_2nd_trim: "",
+    end_3rd_trim: "",
+    end_postpartum: "",
+    period: "",
+    patient_height: "",
+    blood_type: "Unspecified",
     risk_factors: [] as string[],
     prenatal_visits: [] as PrenatalVisit[],
   });
