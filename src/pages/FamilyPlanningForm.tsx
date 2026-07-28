@@ -285,6 +285,40 @@ const FP_METHODS = [
 const STORAGE_KEY_FP_DRAFT = "bhw_fp_form_1_draft";
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-6 text-xs";
 
+const sanitizeDraftState = (parsed: any): FPFullFormState => {
+  const initial = createInitialFPForm();
+  if (!parsed || !parsed.sideA) return initial;
+
+  const mh = parsed.sideA.medical_history;
+  if (mh) {
+    const keys = Object.keys(mh).filter(k => k !== "disability_specify");
+    const allFalse = keys.length > 0 && keys.every(k => mh[k] === false);
+    if (allFalse) {
+      keys.forEach(k => { mh[k] = null; });
+    }
+  }
+
+  const sti = parsed.sideA.sti_risks;
+  if (sti) {
+    const keys = Object.keys(sti).filter(k => k !== "discharge_location");
+    const allFalse = keys.length > 0 && keys.every(k => sti[k] === false);
+    if (allFalse) {
+      keys.forEach(k => { sti[k] = null; });
+    }
+  }
+
+  const vaw = parsed.sideA.vaw_risks;
+  if (vaw) {
+    const keys = ["history_domestic_violence", "unpleasant_relationship_partner", "partner_disapproves_fp"];
+    const allFalse = keys.every(k => vaw[k] === false);
+    if (allFalse) {
+      keys.forEach(k => { vaw[k] = null; });
+    }
+  }
+
+  return parsed;
+};
+
 const FamilyPlanningForm = () => {
   const { t } = useSettings();
   const [fpState, setFpState] = useState<FPFullFormState>(() => {
@@ -292,7 +326,7 @@ const FamilyPlanningForm = () => {
       const saved = localStorage.getItem(STORAGE_KEY_FP_DRAFT);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && parsed.sideA) return parsed;
+        if (parsed && parsed.sideA) return sanitizeDraftState(parsed);
       }
     } catch {}
     return createInitialFPForm();
