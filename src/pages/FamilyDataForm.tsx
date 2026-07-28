@@ -557,6 +557,22 @@ const FamilyDataForm = () => {
           #family-print-area, #family-print-area * {
             visibility: visible !important;
           }
+          .no-print {
+            display: none !important;
+          }
+          .print-only {
+            display: flex !important;
+          }
+          .header-seal {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 24px !important;
+            border-bottom: 4px double #000000 !important;
+            padding-bottom: 16px !important;
+            margin-bottom: 20px !important;
+            text-align: center !important;
+          }
           #individual-file-print-area, #family-print-area {
             position: absolute !important;
             left: 0 !important;
@@ -578,6 +594,8 @@ const FamilyDataForm = () => {
           }
           .header-seal img {
             height: 75px !important;
+            width: auto !important;
+            object-fit: contain !important;
             mix-blend-mode: multiply !important;
           }
           #family-print-area table td, #family-print-area table th,
@@ -603,6 +621,21 @@ const FamilyDataForm = () => {
           >
             <Plus className="h-4 w-4" />
             {t("familyData.createNewFile")}
+          </Button>
+
+          <Button
+            onClick={() => {
+              setViewMode("ledger");
+              setTimeout(() => {
+                window.print();
+              }, 100);
+            }}
+            size="sm"
+            variant="outline"
+            className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-medium"
+          >
+            <Printer className="h-4 w-4" />
+            Print Master Directory
           </Button>
 
           <div className="flex items-center border border-border rounded-lg p-0.5 bg-muted/40">
@@ -765,13 +798,10 @@ const FamilyDataForm = () => {
         >
           <CardContent className="p-6 md:p-8 space-y-6">
             {/* Official Barangay Printable Header */}
-            <div 
-              className="print-only header-seal flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-            >
-              <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-              <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-              <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <div className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6">
+              <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+              <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+              <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
             </div>
 
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
@@ -884,13 +914,10 @@ const FamilyDataForm = () => {
           {selectedFile && (
             <div className="space-y-6">
               {/* Official Barangay Printable Header */}
-              <div 
-                className="print-only header-seal flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-              >
-                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+              <div className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6">
+                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+                <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+                <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
               </div>
 
               {/* Opened File Folder Banner */}
