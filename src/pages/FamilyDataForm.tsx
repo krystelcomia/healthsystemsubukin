@@ -623,21 +623,6 @@ const FamilyDataForm = () => {
             {t("familyData.createNewFile")}
           </Button>
 
-          <Button
-            onClick={() => {
-              setViewMode("ledger");
-              setTimeout(() => {
-                window.print();
-              }, 100);
-            }}
-            size="sm"
-            variant="outline"
-            className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-medium"
-          >
-            <Printer className="h-4 w-4" />
-            Print Master Directory
-          </Button>
-
           <div className="flex items-center border border-border rounded-lg p-0.5 bg-muted/40">
             <Button
               variant={viewMode === "grid" ? "secondary" : "ghost"}
