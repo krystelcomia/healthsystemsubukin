@@ -1107,6 +1107,9 @@ const ChildHealthForm = () => {
                   BRGY: <strong className="text-foreground">SUBUKIN</strong>
                 </span>
                 <div className="flex items-center gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={handleResetSickForm} className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium">
+                    <RefreshCw className="h-3.5 w-3.5" /> Reset Form
+                  </Button>
                   <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
                     <Printer className="h-3.5 w-3.5" /> Print Form
                   </Button>
@@ -2145,12 +2148,8 @@ const ChildHealthForm = () => {
 
                 {/* Form Action Buttons */}
                 <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
-                  <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
                     <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Sick Child Record"}
-                  </Button>
-
-                  <Button type="button" variant="outline" onClick={handleResetSickForm} className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium">
-                    <RefreshCw className="h-3.5 w-3.5" /> Reset Form
                   </Button>
                 </div>
 
