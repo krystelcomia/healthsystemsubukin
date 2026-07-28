@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { syncFamilyDataToResidents } from "@/lib/residentLinker";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 interface BHWWorker {
@@ -111,8 +112,10 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [residents, workersCount, onlineWorkers, consultations, families, philpen, dengue] = await Promise.all([
-        supabase.from("residents").select("id", { count: "exact", head: true }),
+      const familyNamesSet = await syncFamilyDataToResidents();
+
+      const [residentsData, workersCount, onlineWorkers, consultations, families, philpen, dengue] = await Promise.all([
+        supabase.from("residents").select("*"),
         supabase.from("bhw_workers").select("id", { count: "exact", head: true }),
         supabase.from("bhw_workers").select("id", { count: "exact", head: true }).eq("is_online", true),
         supabase.from("consultations").select("id", { count: "exact", head: true }),
@@ -121,8 +124,12 @@ const AdminDashboard = () => {
         supabase.from("dengue_prevention").select("id", { count: "exact", head: true }),
       ]);
 
+      const validResidents = (residentsData.data || []).filter((r: any) =>
+        r.full_name && familyNamesSet.has(r.full_name.trim().toLowerCase())
+      );
+
       setStats({
-        totalResidents: residents.count || 0, totalWorkers: workersCount.count || 0, onlineWorkers: onlineWorkers.count || 0,
+        totalResidents: validResidents.length, totalWorkers: workersCount.count || 0, onlineWorkers: onlineWorkers.count || 0,
         consultations: consultations.count || 0, familyRecords: families.count || 0, philpenRecords: philpen.count || 0, dengueRecords: dengue.count || 0,
       });
 
