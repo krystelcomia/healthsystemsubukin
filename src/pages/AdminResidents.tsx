@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
+import { syncFamilyDataToResidents } from "@/lib/residentLinker";
 import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -35,10 +36,18 @@ const AdminResidents = () => {
   useEffect(() => { fetchResidents(); }, []);
 
   const fetchResidents = async () => {
+    setLoading(true);
+    const familyNamesSet = await syncFamilyDataToResidents();
     const { data, error } = await supabase.from("residents").select("*").order("full_name");
-    if (error) { toast.error("Failed to load residents"); return; }
-    setResidents(data || []);
-    const dbSitios = Array.from(new Set((data || []).map(r => r.sitio).filter(s => Boolean(s) && s !== "Centro" && s !== "Sitio Centro"))).sort() as string[];
+    if (error) { toast.error("Failed to load residents"); setLoading(false); return; }
+
+    // Resident records are strictly limited to those included in family data (regardless of placement)
+    const familyOnlyResidents = (data || []).filter(r => 
+      r.full_name && familyNamesSet.has(r.full_name.trim().toLowerCase())
+    );
+
+    setResidents(familyOnlyResidents);
+    const dbSitios = Array.from(new Set(familyOnlyResidents.map(r => r.sitio).filter(s => Boolean(s) && s !== "Centro" && s !== "Sitio Centro"))).sort() as string[];
     const uniqueSitios = dbSitios.length > 0 ? dbSitios : SUBUKIN_SITIOS;
     setSitios(uniqueSitios);
     setLoading(false);

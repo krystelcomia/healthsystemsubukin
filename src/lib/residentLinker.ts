@@ -91,7 +91,9 @@ export async function ensureResidentExists(opts: {
   }
 }
 
-export async function syncFamilyDataToResidents(): Promise<void> {
+export async function syncFamilyDataToResidents(): Promise<Set<string>> {
+  const familyNamesSet = new Set<string>();
+
   try {
     const [famRes, resRes] = await Promise.all([
       supabase.from("family_data").select("*"),
@@ -106,8 +108,11 @@ export async function syncFamilyDataToResidents(): Promise<void> {
       const sitio = fam.sitio;
 
       if (fam.father_name && fam.father_name.trim()) {
+        const fatherClean = fam.father_name.trim();
+        familyNamesSet.add(fatherClean.toLowerCase());
+
         const fatherMatch = residentRecords.find(
-          (r) => r.full_name.trim().toLowerCase() === fam.father_name.trim().toLowerCase()
+          (r) => r.full_name.trim().toLowerCase() === fatherClean.toLowerCase()
         );
         if (fatherMatch) {
           const updates: any = {};
@@ -116,12 +121,27 @@ export async function syncFamilyDataToResidents(): Promise<void> {
           if (Object.keys(updates).length > 0) {
             await supabase.from("residents").update(updates).eq("id", fatherMatch.id);
           }
+        } else {
+          await supabase.from("residents").insert({
+            full_name: fatherClean,
+            gender: "Male",
+            age: 0,
+            status: "Married",
+            religion: "",
+            blood_type: "",
+            nationality: "Filipino",
+            sitio: sitio || "",
+            family_number: famNum || null,
+          });
         }
       }
 
       if (fam.mother_name && fam.mother_name.trim()) {
+        const motherClean = fam.mother_name.trim();
+        familyNamesSet.add(motherClean.toLowerCase());
+
         const motherMatch = residentRecords.find(
-          (r) => r.full_name.trim().toLowerCase() === fam.mother_name.trim().toLowerCase()
+          (r) => r.full_name.trim().toLowerCase() === motherClean.toLowerCase()
         );
         if (motherMatch) {
           const updates: any = {};
@@ -130,6 +150,18 @@ export async function syncFamilyDataToResidents(): Promise<void> {
           if (Object.keys(updates).length > 0) {
             await supabase.from("residents").update(updates).eq("id", motherMatch.id);
           }
+        } else {
+          await supabase.from("residents").insert({
+            full_name: motherClean,
+            gender: "Female",
+            age: 0,
+            status: "Married",
+            religion: "",
+            blood_type: "",
+            nationality: "Filipino",
+            sitio: sitio || "",
+            family_number: famNum || null,
+          });
         }
       }
 
@@ -143,6 +175,8 @@ export async function syncFamilyDataToResidents(): Promise<void> {
       for (const mem of members) {
         if (!mem.full_name || !mem.full_name.trim()) continue;
         const nameClean = mem.full_name.trim();
+        familyNamesSet.add(nameClean.toLowerCase());
+
         const memMatch = residentRecords.find(
           (r) => r.full_name.trim().toLowerCase() === nameClean.toLowerCase()
         );
@@ -184,4 +218,6 @@ export async function syncFamilyDataToResidents(): Promise<void> {
   } catch (e) {
     console.error("Error in syncFamilyDataToResidents:", e);
   }
+
+  return familyNamesSet;
 }

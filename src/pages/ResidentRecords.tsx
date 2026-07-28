@@ -81,10 +81,17 @@ const ResidentRecords = () => {
   });
 
   const fetchResidents = async () => {
-    await syncFamilyDataToResidents();
+    setLoading(true);
+    const familyNamesSet = await syncFamilyDataToResidents();
     const { data, error } = await supabase.from("residents").select("*").order("created_at", { ascending: false });
-    if (error) { toast.error("Failed to load residents"); return; }
-    setResidents(data || []);
+    if (error) { toast.error("Failed to load residents"); setLoading(false); return; }
+
+    // Resident records are strictly limited to those included in the family data (regardless of placement)
+    const familyOnlyResidents = (data || []).filter(r => 
+      r.full_name && familyNamesSet.has(r.full_name.trim().toLowerCase())
+    );
+
+    setResidents(familyOnlyResidents);
     setLoading(false);
   };
 
@@ -92,12 +99,37 @@ const ResidentRecords = () => {
 
   const handleAddResident = async () => {
     if (!newResident.full_name.trim()) { toast.error(t("residents.fullName") + " required"); return; }
+    const cleanName = newResident.full_name.trim();
+    const isFemale = newResident.gender === "Female";
+
     const { error } = await supabase.from("residents").insert({
-      full_name: newResident.full_name.trim(), gender: newResident.gender, age: Number(newResident.age) || 0, status: newResident.status,
+      full_name: cleanName, gender: newResident.gender, age: Number(newResident.age) || 0, status: newResident.status,
       sitio: newResident.sitio, birthday: newResident.birthday || null,
     });
     if (error) { toast.error("Failed to add resident"); return; }
-    logActivity("create_resident", { entity_type: "resident", description: `Added resident: ${newResident.full_name.trim()}` });
+
+    // Register in family_data so this resident is included in family data records
+    await supabase.from("family_data").insert({
+      family_number: `FN-${Date.now().toString().slice(-6)}`,
+      father_name: isFemale ? "" : cleanName,
+      mother_name: isFemale ? cleanName : "",
+      num_households: 1,
+      num_males: isFemale ? 0 : 1,
+      num_females: isFemale ? 1 : 0,
+      total_members: 1,
+      sitio: newResident.sitio || "Subukin",
+      members_detail: JSON.stringify([{
+        id: `mem-${Date.now()}`,
+        full_name: cleanName,
+        relationship: isFemale ? "Mother" : "Head",
+        age: Number(newResident.age) || 0,
+        birthday: newResident.birthday || "",
+        gender: newResident.gender,
+        civil_status: newResident.status
+      }])
+    });
+
+    logActivity("create_resident", { entity_type: "resident", description: `Added resident: ${cleanName}` });
     toast.success("Resident added successfully!");
     setNewResident({ full_name: "", gender: "Male", age: "", status: "Single", sitio: "Cama", birthday: "" });
     setDialogOpen(false);
