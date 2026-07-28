@@ -556,8 +556,8 @@ const FamilyPlanningForm = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
-            <div className="w-48">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap shrink-0">
+            <div className="w-48 shrink-0">
               <Select value={selectedResidentId} onValueChange={handleSelectResident}>
                 <SelectTrigger className="h-9 text-xs">
                   <SelectValue placeholder="Select Resident" />
@@ -572,17 +572,19 @@ const FamilyPlanningForm = () => {
               </Select>
             </div>
 
-            <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs">
-              <Printer className="h-4 w-4" /> Print Form
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs shrink-0 whitespace-nowrap">
+                <Printer className="h-4 w-4" /> Print Form
+              </Button>
 
-            <Button type="button" variant="outline" size="sm" onClick={handleResetForm} className="gap-1 text-xs text-destructive hover:bg-destructive/10">
-              <RefreshCw className="h-3.5 w-3.5" /> Reset
-            </Button>
+              <Button type="button" variant="outline" size="sm" onClick={handleResetForm} className="gap-1 text-xs text-destructive hover:bg-destructive/10 shrink-0 whitespace-nowrap">
+                <RefreshCw className="h-3.5 w-3.5" /> Reset
+              </Button>
 
-            <Button type="button" size="sm" onClick={handleSaveFPRecord} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground">
-              <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save FP Record"}
-            </Button>
+              <Button type="button" size="sm" onClick={handleSaveFPRecord} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground shrink-0 whitespace-nowrap font-bold">
+                <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save FP Record"}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -1436,6 +1438,24 @@ const FamilyPlanningForm = () => {
             <div className="border-t border-slate-300 dark:border-slate-700 pt-2 text-[11px] text-slate-700 dark:text-slate-300 space-y-1 font-medium italic">
               <p>■ If the client answered <strong>YES</strong> to at least one of the questions and she is free of signs or symptoms of pregnancy, provide client with desired method.</p>
               <p>■ If the client answered <strong>NO</strong> to all of the questions, pregnancy cannot be ruled out. The client should await menses or use a pregnancy test.</p>
+            </div>
+          </div>
+
+          {/* Bottom Action Bar at the end of the form */}
+          <div className="no-print pt-4 border-t border-slate-300 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/80 dark:bg-slate-900/60 p-3 rounded-md mt-4">
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium italic">
+              Please review all entries in Side A & Side B before saving or printing.
+            </p>
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+              <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs shrink-0 whitespace-nowrap">
+                <Printer className="h-4 w-4" /> Print Form
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={handleResetForm} className="gap-1 text-xs text-destructive hover:bg-destructive/10 shrink-0 whitespace-nowrap">
+                <RefreshCw className="h-3.5 w-3.5" /> Reset
+              </Button>
+              <Button type="button" size="sm" onClick={handleSaveFPRecord} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground shrink-0 whitespace-nowrap font-bold px-5">
+                <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save FP Record"}
+              </Button>
             </div>
           </div>
 
