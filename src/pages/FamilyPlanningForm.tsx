@@ -573,16 +573,12 @@ const FamilyPlanningForm = () => {
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs shrink-0 whitespace-nowrap">
-                <Printer className="h-4 w-4" /> Print Form
-              </Button>
-
               <Button type="button" variant="outline" size="sm" onClick={handleResetForm} className="gap-1 text-xs text-destructive hover:bg-destructive/10 shrink-0 whitespace-nowrap">
                 <RefreshCw className="h-3.5 w-3.5" /> Reset
               </Button>
 
-              <Button type="button" size="sm" onClick={handleSaveFPRecord} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground shrink-0 whitespace-nowrap font-bold">
-                <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save FP Record"}
+              <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs shrink-0 whitespace-nowrap">
+                <Printer className="h-4 w-4" /> Print Form
               </Button>
             </div>
           </div>
