@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +28,7 @@ import {
   LogOut,
   Shield,
   Plus,
+  FileText,
 } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,23 @@ export function AppSidebar() {
   const { user, userRole, username, signOut } = useAuth();
   const { t } = useSettings();
   const [signOutOpen, setSignOutOpen] = useState(false);
+  const [customForms, setCustomForms] = useState<any[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("bhw_custom_forms") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      try {
+        setCustomForms(JSON.parse(localStorage.getItem("bhw_custom_forms") || "[]"));
+      } catch {}
+    };
+    window.addEventListener("custom-forms-updated", handleUpdate);
+    return () => window.removeEventListener("custom-forms-updated", handleUpdate);
+  }, []);
 
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isAdmin = userRole === "supervisor" && isAdminRoute;
@@ -48,6 +66,12 @@ export function AppSidebar() {
     { title: t("nav.residentRecords"), url: "/residents", icon: Users },
   ];
 
+  const customBhwItems = customForms.map((cf) => ({
+    title: cf.title,
+    url: `/forms/custom/${cf.id}`,
+    icon: FileText,
+  }));
+
   const bhwFormItems = [
     { title: t("nav.familyData"), url: "/forms/family-data", icon: ClipboardList },
     { title: t("nav.consultation"), url: "/forms/consultation", icon: Stethoscope },
@@ -56,6 +80,7 @@ export function AppSidebar() {
     { title: t("nav.maternalCare"), url: "/forms/maternal-care", icon: Heart },
     { title: t("nav.childHealth"), url: "/forms/child-health", icon: Baby },
     { title: t("nav.familyPlanning"), url: "/forms/family-planning", icon: Heart },
+    ...customBhwItems,
     { title: "Add New Form", url: "/forms/add-new", icon: Plus },
   ];
 
@@ -74,6 +99,12 @@ export function AppSidebar() {
     { title: t("nav.settings"), url: "/admin/settings", icon: Settings },
   ];
 
+  const customAdminItems = customForms.map((cf) => ({
+    title: cf.title,
+    url: `/admin/forms/custom/${cf.id}`,
+    icon: FileText,
+  }));
+
   const adminFormItems = [
     { title: t("nav.familyData"), url: "/admin/forms/family-data", icon: ClipboardList },
     { title: t("nav.consultation"), url: "/admin/forms/consultation", icon: Stethoscope },
@@ -82,6 +113,7 @@ export function AppSidebar() {
     { title: t("nav.maternalCare"), url: "/admin/forms/maternal-care", icon: Heart },
     { title: t("nav.childHealth"), url: "/admin/forms/child-health", icon: Baby },
     { title: t("nav.familyPlanning"), url: "/admin/forms/family-planning", icon: Heart },
+    ...customAdminItems,
     { title: "Add New Form", url: "/admin/forms/add-new", icon: Plus },
   ];
 

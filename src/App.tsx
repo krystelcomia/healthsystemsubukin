@@ -30,10 +30,7 @@ import About from "./pages/About";
 import CalendarPage from "./pages/Calendar";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
-
-
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-
 
 const queryClient = new QueryClient();
 
@@ -47,38 +44,40 @@ const App = () => (
           <BrowserRouter>
             <AuthProvider>
               <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/" element={<ProtectedRoute><Layout><Index /></Layout></ProtectedRoute>} />
-            <Route path="/about" element={<ProtectedRoute><Layout><About /></Layout></ProtectedRoute>} />
-            <Route path="/calendar" element={<ProtectedRoute><Layout><CalendarPage /></Layout></ProtectedRoute>} />
-            <Route path="/contact" element={<ProtectedRoute><Layout><Contact /></Layout></ProtectedRoute>} />
-            <Route path="/forms/family-data" element={<ProtectedRoute><Layout><FamilyDataForm /></Layout></ProtectedRoute>} />
-            <Route path="/forms/consultation" element={<ProtectedRoute><Layout><ConsultationForm /></Layout></ProtectedRoute>} />
-            <Route path="/forms/philpen-health" element={<ProtectedRoute><Layout><PhilPenHealthForm /></Layout></ProtectedRoute>} />
-            <Route path="/forms/dengue-prevention" element={<ProtectedRoute><Layout><DenguePreventionForm /></Layout></ProtectedRoute>} />
-            <Route path="/forms/maternal-care" element={<ProtectedRoute><Layout><MaternalCareForm /></Layout></ProtectedRoute>} />
-            <Route path="/forms/child-health" element={<ProtectedRoute><Layout><ChildHealthForm /></Layout></ProtectedRoute>} />
-            <Route path="/forms/family-planning" element={<ProtectedRoute><Layout><FamilyPlanningForm /></Layout></ProtectedRoute>} />
-            <Route path="/forms/add-new" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
-            <Route path="/residents" element={<ProtectedRoute><Layout><ResidentRecords /></Layout></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Layout><ProfilePage /></Layout></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
-            <Route path="/admin/residents" element={<ProtectedRoute><Layout><AdminResidents /></Layout></ProtectedRoute>} />
-            <Route path="/admin/workers" element={<ProtectedRoute><Layout><AdminWorkers /></Layout></ProtectedRoute>} />
-            <Route path="/admin/health" element={<ProtectedRoute><Layout><AdminHealthRecords /></Layout></ProtectedRoute>} />
-            <Route path="/admin/settings" element={<ProtectedRoute><Layout><AdminSettings /></Layout></ProtectedRoute>} />
-            <Route path="/admin/forms/family-data" element={<ProtectedRoute><Layout><FamilyDataForm /></Layout></ProtectedRoute>} />
-            <Route path="/admin/forms/consultation" element={<ProtectedRoute><Layout><ConsultationForm /></Layout></ProtectedRoute>} />
-            <Route path="/admin/forms/philpen-health" element={<ProtectedRoute><Layout><PhilPenHealthForm /></Layout></ProtectedRoute>} />
-            <Route path="/admin/forms/dengue-prevention" element={<ProtectedRoute><Layout><DenguePreventionForm /></Layout></ProtectedRoute>} />
-            <Route path="/admin/forms/maternal-care" element={<ProtectedRoute><Layout><MaternalCareForm /></Layout></ProtectedRoute>} />
-            <Route path="/admin/forms/child-health" element={<ProtectedRoute><Layout><ChildHealthForm /></Layout></ProtectedRoute>} />
-            <Route path="/admin/forms/family-planning" element={<ProtectedRoute><Layout><FamilyPlanningForm /></Layout></ProtectedRoute>} />
-            <Route path="/admin/forms/add-new" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/" element={<ProtectedRoute><Layout><Index /></Layout></ProtectedRoute>} />
+                <Route path="/about" element={<ProtectedRoute><Layout><About /></Layout></ProtectedRoute>} />
+                <Route path="/calendar" element={<ProtectedRoute><Layout><CalendarPage /></Layout></ProtectedRoute>} />
+                <Route path="/contact" element={<ProtectedRoute><Layout><Contact /></Layout></ProtectedRoute>} />
+                <Route path="/forms/family-data" element={<ProtectedRoute><Layout><FamilyDataForm /></Layout></ProtectedRoute>} />
+                <Route path="/forms/consultation" element={<ProtectedRoute><Layout><ConsultationForm /></Layout></ProtectedRoute>} />
+                <Route path="/forms/philpen-health" element={<ProtectedRoute><Layout><PhilPenHealthForm /></Layout></ProtectedRoute>} />
+                <Route path="/forms/dengue-prevention" element={<ProtectedRoute><Layout><DenguePreventionForm /></Layout></ProtectedRoute>} />
+                <Route path="/forms/maternal-care" element={<ProtectedRoute><Layout><MaternalCareForm /></Layout></ProtectedRoute>} />
+                <Route path="/forms/child-health" element={<ProtectedRoute><Layout><ChildHealthForm /></Layout></ProtectedRoute>} />
+                <Route path="/forms/family-planning" element={<ProtectedRoute><Layout><FamilyPlanningForm /></Layout></ProtectedRoute>} />
+                <Route path="/forms/custom/:formId" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
+                <Route path="/forms/add-new" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
+                <Route path="/residents" element={<ProtectedRoute><Layout><ResidentRecords /></Layout></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Layout><ProfilePage /></Layout></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
+                <Route path="/admin/residents" element={<ProtectedRoute><Layout><AdminResidents /></Layout></ProtectedRoute>} />
+                <Route path="/admin/workers" element={<ProtectedRoute><Layout><AdminWorkers /></Layout></ProtectedRoute>} />
+                <Route path="/admin/health" element={<ProtectedRoute><Layout><AdminHealthRecords /></Layout></ProtectedRoute>} />
+                <Route path="/admin/settings" element={<ProtectedRoute><Layout><AdminSettings /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/family-data" element={<ProtectedRoute><Layout><FamilyDataForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/consultation" element={<ProtectedRoute><Layout><ConsultationForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/philpen-health" element={<ProtectedRoute><Layout><PhilPenHealthForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/dengue-prevention" element={<ProtectedRoute><Layout><DenguePreventionForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/maternal-care" element={<ProtectedRoute><Layout><MaternalCareForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/child-health" element={<ProtectedRoute><Layout><ChildHealthForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/family-planning" element={<ProtectedRoute><Layout><FamilyPlanningForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/custom/:formId" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/add-new" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>

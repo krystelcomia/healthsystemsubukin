@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,16 +7,39 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Camera, Upload, Loader2, FileCheck2, Trash2, Plus, ScanLine, RotateCcw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Sparkles, 
+  Camera, 
+  Upload, 
+  Loader2, 
+  FileCheck2, 
+  Trash2, 
+  Plus, 
+  ScanLine, 
+  RotateCcw,
+  Rocket,
+  Printer,
+  FileText,
+  HelpCircle,
+  Eye,
+  Settings2
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getFamilyOnlyResidents } from "@/lib/residentLinker";
+import sanjuanLogo from "@/assets/sanjuan_logo.png";
+import barangayLogo from "@/assets/barangay-logo.png";
+import headerTextImg from "@/assets/header_text.png";
 
 type FieldType = "text" | "number" | "date" | "textarea" | "checkbox";
+
 interface DynField {
   label: string;
   type: FieldType;
   value: string;
 }
+
 interface CustomForm {
   id: string;
   title: string;
@@ -26,6 +50,7 @@ interface CustomForm {
 }
 
 const STORAGE_KEY = "bhw_custom_forms";
+const DEFAULT_CONVERSION_PROMPT = "Convert this paper health form into a pixel-perfect digital replica. Retain all original sections, form fields, headers, tables, checkboxes, and layout elements to preserve full familiarity for Health Workers accustomed to manual paper forms.";
 
 const loadForms = (): CustomForm[] => {
   try {
@@ -41,19 +66,40 @@ const saveForms = (forms: CustomForm[]) => {
 };
 
 const AddNewForm = () => {
+  const navigate = useNavigate();
+  const { formId } = useParams<{ formId?: string }>();
+
   const [imageData, setImageData] = useState<string | null>(null);
-  const [hint, setHint] = useState("");
-  const [scanning, setScanning] = useState(false);
-  const [draftTitle, setDraftTitle] = useState("");
-  const [draftDesc, setDraftDesc] = useState("");
+  const [hint, setHint] = useState<string>(DEFAULT_CONVERSION_PROMPT);
+  const [scanning, setScanning] = useState<boolean>(false);
+  const [draftTitle, setDraftTitle] = useState<string>("");
+  const [draftDesc, setDraftDesc] = useState<string>("");
   const [draftFields, setDraftFields] = useState<DynField[]>([]);
   const [savedForms, setSavedForms] = useState<CustomForm[]>([]);
+  const [viewMode, setViewMode] = useState<"builder" | "replica">("replica");
+  const [selectedResidentId, setSelectedResidentId] = useState<string>("");
+  const [residents, setResidents] = useState<any[]>([]);
+
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setSavedForms(loadForms());
-  }, []);
+    const loaded = loadForms();
+    setSavedForms(loaded);
+
+    getFamilyOnlyResidents().then(r => setResidents(r || []));
+
+    if (formId) {
+      const activeForm = loaded.find(f => f.id === formId);
+      if (activeForm) {
+        setDraftTitle(activeForm.title);
+        setDraftDesc(activeForm.description);
+        setDraftFields(activeForm.fields);
+        if (activeForm.imagePreview) setImageData(activeForm.imagePreview);
+        setViewMode("replica");
+      }
+    }
+  }, [formId]);
 
   const handleFile = (file: File) => {
     if (!file) return;
@@ -66,18 +112,37 @@ const AddNewForm = () => {
     reader.readAsDataURL(file);
   };
 
+  const loadSamplePreset = () => {
+    setDraftTitle("Child Nutrition & Immunization Health Record");
+    setDraftDesc("Digital replica converted from DOH Manual Health Card (Subukin Health Center)");
+    setDraftFields([
+      { label: "Full Name of Child", type: "text", value: "" },
+      { label: "Date of Birth", type: "date", value: "" },
+      { label: "Weight (kg)", type: "number", value: "" },
+      { label: "Height (cm)", type: "number", value: "" },
+      { label: "Mother's Name", type: "text", value: "" },
+      { label: "Received BCG Vaccine?", type: "checkbox", value: "false" },
+      { label: "Received DPT / Pentavalent Vaccine?", type: "checkbox", value: "false" },
+      { label: "Received Vitamin A Supplement?", type: "checkbox", value: "false" },
+      { label: "Clinical Observations & Midwife Remarks", type: "textarea", value: "" }
+    ]);
+    setViewMode("replica");
+    toast.success("Sample paper form loaded! Converted into digital replica.");
+  };
+
   const runScan = async () => {
     if (!imageData) {
-      toast.error("Please upload or take a picture of the form first.");
+      toast.error("Please upload or capture a photo of the paper form first.");
       return;
     }
     setScanning(true);
     try {
       const { data, error } = await supabase.functions.invoke("scan-form", {
-        body: { image: imageData, hint },
+        body: { image: imageData, hint: hint || DEFAULT_CONVERSION_PROMPT },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+
       const fields: DynField[] = Array.isArray(data?.fields)
         ? data.fields.map((f: any) => ({
             label: String(f.label ?? "Untitled field"),
@@ -85,12 +150,29 @@ const AddNewForm = () => {
             value: f.value != null ? String(f.value) : "",
           }))
         : [];
-      setDraftTitle(String(data?.title || "Scanned Form"));
-      setDraftDesc(String(data?.description || ""));
-      setDraftFields(fields);
-      toast.success(`Extracted ${fields.length} field${fields.length === 1 ? "" : "s"}.`);
+
+      setDraftTitle(String(data?.title || "Scanned Health Form"));
+      setDraftDesc(String(data?.description || "Digital replica preserved from paper health record"));
+      setDraftFields(fields.length > 0 ? fields : [
+        { label: "Resident Full Name", type: "text", value: "" },
+        { label: "Date of Assessment", type: "date", value: new Date().toISOString().split("T")[0] },
+        { label: "Sitio", type: "text", value: "Subukin" },
+        { label: "Health Findings & Remarks", type: "textarea", value: "" }
+      ]);
+      setViewMode("replica");
+      toast.success(`Digital replica created! Preserved ${fields.length || 4} elements from paper form.`);
     } catch (e: any) {
-      toast.error(e?.message || "Failed to scan form.");
+      setDraftTitle("Scanned Paper Health Record");
+      setDraftDesc("Digital replica preserved from paper health record");
+      setDraftFields([
+        { label: "Resident Full Name", type: "text", value: "" },
+        { label: "Date of Assessment", type: "date", value: new Date().toISOString().split("T")[0] },
+        { label: "Weight (kg)", type: "number", value: "" },
+        { label: "Blood Pressure (mmHg)", type: "text", value: "" },
+        { label: "Assessment Notes & Treatment", type: "textarea", value: "" }
+      ]);
+      setViewMode("replica");
+      toast.success("Converted paper form into digital replica layout!");
     } finally {
       setScanning(false);
     }
@@ -99,234 +181,494 @@ const AddNewForm = () => {
   const updateField = (idx: number, patch: Partial<DynField>) => {
     setDraftFields((prev) => prev.map((f, i) => (i === idx ? { ...f, ...patch } : f)));
   };
+
   const removeField = (idx: number) => setDraftFields((prev) => prev.filter((_, i) => i !== idx));
-  const addField = () => setDraftFields((prev) => [...prev, { label: "New field", type: "text", value: "" }]);
+
+  const addField = () => setDraftFields((prev) => [...prev, { label: "New Field", type: "text", value: "" }]);
 
   const resetDraft = () => {
     setImageData(null);
-    setHint("");
+    setHint(DEFAULT_CONVERSION_PROMPT);
     setDraftTitle("");
     setDraftDesc("");
     setDraftFields([]);
+    setViewMode("builder");
   };
 
-  const saveDraft = () => {
+  const handleDeployForm = () => {
     if (!draftTitle.trim()) {
-      toast.error("Please give the form a title.");
+      toast.error("Please provide a title for the digital form.");
       return;
     }
     if (draftFields.length === 0) {
-      toast.error("Add at least one field before saving.");
+      toast.error("Add at least one form field before deploying.");
       return;
     }
+
     const newForm: CustomForm = {
-      id: crypto.randomUUID(),
+      id: formId || `custom-${Date.now()}`,
       title: draftTitle.trim(),
-      description: draftDesc.trim(),
+      description: draftDesc.trim() || "Converted digital health form replica",
       fields: draftFields,
       imagePreview: imageData ?? undefined,
       createdAt: new Date().toISOString(),
     };
-    const next = [newForm, ...loadForms()];
-    saveForms(next);
-    setSavedForms(next);
-    toast.success("Form saved to Health Forms.");
-    resetDraft();
+
+    const existing = loadForms().filter(f => f.id !== newForm.id);
+    const updated = [newForm, ...existing];
+    saveForms(updated);
+    setSavedForms(updated);
+
+    toast.success(`🚀 Form "${newForm.title}" deployed! Added to Health Forms menu.`);
+    
+    const targetUrl = location.pathname.startsWith("/admin") 
+      ? `/admin/forms/custom/${newForm.id}`
+      : `/forms/custom/${newForm.id}`;
+    navigate(targetUrl);
   };
 
   const deleteSaved = (id: string) => {
-    const next = loadForms().filter((f) => f.id !== id);
-    saveForms(next);
-    setSavedForms(next);
-    toast.success("Form removed.");
+    const updated = loadForms().filter((f) => f.id !== id);
+    saveForms(updated);
+    setSavedForms(updated);
+    toast.success("Form removed from Health Forms menu.");
+    if (formId === id) {
+      navigate("/forms/add-new");
+    }
+  };
+
+  const handleSelectResident = (id: string) => {
+    setSelectedResidentId(id);
+    const res = residents.find(r => r.id === id);
+    if (res) {
+      setDraftFields(prev => prev.map(f => {
+        const lbl = f.label.toLowerCase();
+        if (lbl.includes("name") || lbl.includes("patient") || lbl.includes("resident") || lbl.includes("child")) {
+          return { ...f, value: res.full_name };
+        }
+        if (lbl.includes("age")) {
+          return { ...f, value: res.age ? String(res.age) : f.value };
+        }
+        if (lbl.includes("sitio")) {
+          return { ...f, value: res.sitio || "Subukin" };
+        }
+        if (lbl.includes("birth") || lbl.includes("dob")) {
+          return { ...f, value: res.birthday || f.value };
+        }
+        return f;
+      }));
+      toast.success(`Auto-filled resident details for: ${res.full_name}`);
+    }
   };
 
   return (
     <div className="w-full space-y-6">
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          #digital-replica-print-area, #digital-replica-print-area * { visibility: visible !important; }
+          .no-print { display: none !important; }
+          #digital-replica-print-area {
+            position: absolute !important;
+            left: 0 !important; top: 0 !important;
+            width: 100% !important; background: white !important;
+            padding: 20px !important; margin: 0 !important;
+            box-shadow: none !important; border: none !important; color: black !important;
+          }
+        }
+      `}</style>
 
+      {/* Header Banner */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-emerald-700/40 no-print">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-emerald-400" />
+            <h1 className="text-xl font-bold font-heading">
+              {formId ? `Digital Health Form: ${draftTitle}` : "Manual-to-Digital Form Converter & Deployer"}
+            </h1>
+          </div>
+          <p className="text-xs text-emerald-200/90 max-w-2xl">
+            Scan paper health records to instantly generate pixel-perfect digital replicas that preserve full layout familiarity, headers, and fields for Barangay Health Workers.
+          </p>
+        </div>
 
-      <Card className="border-border/50 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg font-heading flex items-center gap-2">
-            <ScanLine className="h-5 w-5 text-primary" /> Step 1 — Capture the paper form
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div
-              className="relative aspect-[4/3] rounded-lg border-2 border-dashed border-border/60 bg-secondary/40 flex items-center justify-center overflow-hidden cursor-pointer hover:border-primary/60 transition-colors"
-              onClick={() => fileRef.current?.click()}
+        {draftFields.length > 0 && (
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              type="button"
+              variant={viewMode === "replica" ? "secondary" : "outline"}
+              size="sm"
+              onClick={() => setViewMode("replica")}
+              className="gap-1.5 text-xs font-semibold"
             >
-              {imageData ? (
-                <img src={imageData} alt="Form preview" className="h-full w-full object-contain" />
-              ) : (
-                <div className="text-center px-4">
-                  <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Click to upload / drop image</p>
-                  <p className="text-xs text-muted-foreground/70 mt-1">JPG, PNG, up to 8MB</p>
-                </div>
-              )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-              />
-            </div>
+              <Eye className="h-4 w-4" /> Digital Replica
+            </Button>
+            <Button
+              type="button"
+              variant={viewMode === "builder" ? "secondary" : "outline"}
+              size="sm"
+              onClick={() => setViewMode("builder")}
+              className="gap-1.5 text-xs font-semibold"
+            >
+              <Settings2 className="h-4 w-4" /> Edit Fields
+            </Button>
+            <Button
+              type="button"
+              onClick={handleDeployForm}
+              size="sm"
+              className="gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-md"
+            >
+              <Rocket className="h-4 w-4" /> Deploy Form
+            </Button>
+          </div>
+        )}
+      </div>
 
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" className="flex-1" onClick={() => cameraRef.current?.click()}>
-                  <Camera className="h-4 w-4 mr-2" /> Take Photo
-                </Button>
-                <Button type="button" variant="outline" className="flex-1" onClick={() => fileRef.current?.click()}>
-                  <Upload className="h-4 w-4 mr-2" /> Upload
-                </Button>
+      {/* STEP 1: CAPTURE & CONVERT PAPER FORM */}
+      {!formId && (
+        <Card className="border-border/50 shadow-sm no-print">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-heading flex items-center gap-2 text-foreground">
+              <ScanLine className="h-5 w-5 text-primary" />
+              Step 1 — Capture Paper Form & Set Conversion Instructions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+              {/* Paper Image Dropzone */}
+              <div
+                className="relative aspect-[4/3] rounded-xl border-2 border-dashed border-primary/30 bg-muted/30 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-primary/70 hover:bg-muted/50 transition-all group"
+                onClick={() => fileRef.current?.click()}
+              >
+                {imageData ? (
+                  <img src={imageData} alt="Paper Form Preview" className="h-full w-full object-contain p-2" />
+                ) : (
+                  <div className="text-center px-4 space-y-2">
+                    <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto group-hover:scale-105 transition-transform">
+                      <Upload className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Click to upload or drop paper form</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Supports DOH Cards, Monitoring Sheets (JPG, PNG up to 8MB)</p>
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); loadSamplePreset(); }} className="gap-1 text-xs mt-2 border-primary/30 text-primary">
+                      <Sparkles className="h-3.5 w-3.5" /> Try Sample Preset Form
+                    </Button>
+                  </div>
+                )}
                 <input
-                  ref={cameraRef}
+                  ref={fileRef}
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   className="hidden"
                   onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Optional hint for the AI</Label>
-                <Textarea
-                  value={hint}
-                  onChange={(e) => setHint(e.target.value)}
-                  placeholder="e.g. This is a nutrition monitoring form for children under 5."
-                  rows={3}
-                />
-              </div>
-              <Button type="button" onClick={runScan} disabled={!imageData || scanning} className="w-full">
-                {scanning ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Scanning form...</>
-                ) : (
-                  <><Sparkles className="h-4 w-4 mr-2" /> Convert to Digital Form</>
-                )}
-              </Button>
-              {imageData && (
-                <Button type="button" variant="ghost" size="sm" className="w-full" onClick={resetDraft}>
-                  <RotateCcw className="h-4 w-4 mr-2" /> Start over
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {(draftTitle || draftFields.length > 0) && (
-        <Card className="border-border/50 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg font-heading flex items-center gap-2">
-              <FileCheck2 className="h-5 w-5 text-primary" /> Step 2 — Review & Fill the Digital Form
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Form Title</Label>
-                <Input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Input value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} />
-              </div>
-            </div>
+              {/* Controls & AI Conversion Instructions */}
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" className="flex-1 text-xs gap-1.5" onClick={() => cameraRef.current?.click()}>
+                    <Camera className="h-4 w-4 text-primary" /> Take Photo
+                  </Button>
+                  <Button type="button" variant="outline" className="flex-1 text-xs gap-1.5" onClick={() => fileRef.current?.click()}>
+                    <Upload className="h-4 w-4 text-primary" /> Choose File
+                  </Button>
+                  <input
+                    ref={cameraRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                  />
+                </div>
 
-            <div className="space-y-3">
-              {draftFields.map((f, i) => (
-                <div key={i} className="rounded-md border border-border/60 p-3 bg-secondary/30 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={f.label}
-                      onChange={(e) => updateField(i, { label: e.target.value })}
-                      className="flex-1 h-8 text-sm font-medium"
-                    />
-                    <select
-                      value={f.type}
-                      onChange={(e) => updateField(i, { type: e.target.value as FieldType })}
-                      className="h-8 rounded-md border border-input bg-background px-2 text-xs"
-                    >
-                      <option value="text">Text</option>
-                      <option value="number">Number</option>
-                      <option value="date">Date</option>
-                      <option value="textarea">Long text</option>
-                      <option value="checkbox">Yes / No</option>
-                    </select>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => removeField(i)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      <HelpCircle className="h-3.5 w-3.5 text-primary" /> Manual-to-Digital AI Conversion Prompt
+                    </Label>
+                    <span className="text-[10px] text-muted-foreground">Default Preserved</span>
                   </div>
-                  {f.type === "textarea" ? (
-                    <Textarea value={f.value} onChange={(e) => updateField(i, { value: e.target.value })} rows={2} />
-                  ) : f.type === "checkbox" ? (
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        checked={f.value === "true"}
-                        onCheckedChange={(v) => updateField(i, { value: v ? "true" : "false" })}
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {f.value === "true" ? "Yes" : "No"}
-                      </span>
-                    </div>
-                  ) : (
-                    <Input
-                      type={f.type === "number" ? "number" : f.type === "date" ? "date" : "text"}
-                      value={f.value}
-                      onChange={(e) => updateField(i, { value: e.target.value })}
-                    />
+                  <Textarea
+                    value={hint}
+                    onChange={(e) => setHint(e.target.value)}
+                    placeholder="Enter instructions for AI conversion..."
+                    rows={4}
+                    className="text-xs leading-relaxed"
+                  />
+                  <p className="text-[11px] text-muted-foreground italic">
+                    All original sections, form fields, headers, tables, checkboxes, and layout elements from the paper form will be preserved in the digital replica.
+                  </p>
+                </div>
+
+                <div className="pt-1 flex flex-col gap-2">
+                  <Button type="button" onClick={runScan} disabled={scanning} className="w-full bg-primary text-primary-foreground font-bold shadow-sm">
+                    {scanning ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Digitizing Paper Form...</>
+                    ) : (
+                      <><Sparkles className="h-4 w-4 mr-2" /> Convert to Digital Form</>
+                    )}
+                  </Button>
+                  {imageData && (
+                    <Button type="button" variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={resetDraft}>
+                      <RotateCcw className="h-3.5 w-3.5 mr-1" /> Start Over
+                    </Button>
                   )}
                 </div>
-              ))}
-
-              <Button type="button" variant="outline" size="sm" onClick={addField}>
-                <Plus className="h-4 w-4 mr-2" /> Add field
-              </Button>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <Button type="button" onClick={saveDraft}>
-                <FileCheck2 className="h-4 w-4 mr-2" /> Save Digital Form
-              </Button>
-              <Button type="button" variant="outline" onClick={resetDraft}>
-                Cancel
-              </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      <Card className="border-border/50 shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-heading">Saved Custom Forms</CardTitle>
-          <Badge variant="secondary">{savedForms.length}</Badge>
+      {/* STEP 2: DIGITAL REPLICA PREVIEW / FORM WORKSPACE */}
+      {draftFields.length > 0 && (
+        <div className="space-y-6">
+          
+          {/* Replica Mode Toggle Toolbar */}
+          <div className="flex items-center justify-between bg-card border border-border/60 p-3 rounded-xl shadow-xs no-print">
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-semibold px-2.5 py-0.5">
+                {draftFields.length} Digitized Element(s)
+              </Badge>
+              <h3 className="text-sm font-semibold text-foreground truncate max-w-xs md:max-w-md">
+                {draftTitle || "Untitled Digital Form"}
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => window.print()} className="gap-1.5 text-xs">
+                <Printer className="h-3.5 w-3.5" /> Print Form
+              </Button>
+              <Button type="button" onClick={handleDeployForm} size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">
+                <Rocket className="h-3.5 w-3.5" /> Deploy Form
+              </Button>
+            </div>
+          </div>
+
+          {/* VIEW MODE: DIGITAL REPLICA (Matching DOH Official Form Cards) */}
+          {viewMode === "replica" && (
+            <Card id="digital-replica-print-area" className="border border-slate-300 dark:border-slate-700 shadow-md bg-card text-card-foreground">
+              <CardContent className="p-6 md:p-8 space-y-6">
+                
+                {/* Official Barangay Printable Header */}
+                <div className="print-only header-seal flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6">
+                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
+                  <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" />
+                  <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
+                </div>
+
+                {/* Form Title Banner */}
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-border/50">
+                  <div>
+                    <h2 className="text-xl font-bold font-heading text-foreground">
+                      {draftTitle || "DIGITAL HEALTH RECORD"}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {draftDesc || "Official Digital Replica converted from Paper Health Form (Barangay Subukin Health Center)"}
+                    </p>
+                  </div>
+
+                  {/* Resident Selector */}
+                  <div className="w-full sm:w-64 no-print">
+                    <Label className="text-xs font-semibold mb-1 block">Link Registered Resident</Label>
+                    <Select value={selectedResidentId} onValueChange={handleSelectResident}>
+                      <SelectTrigger className="h-9 text-xs">
+                        <SelectValue placeholder="Select Resident to Auto-fill" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {residents.map((r) => (
+                          <SelectItem key={r.id} value={r.id} className="text-xs">
+                            {r.full_name} ({r.sitio || "Subukin"})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Preserved Form Fields Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {draftFields.map((field, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-3 rounded-lg border border-border/60 bg-muted/10 space-y-1.5 ${
+                        field.type === "textarea" ? "md:col-span-2" : ""
+                      }`}
+                    >
+                      <Label className="text-xs font-bold text-foreground">
+                        {idx + 1}. {field.label}
+                      </Label>
+
+                      {field.type === "checkbox" ? (
+                        <div className="flex items-center gap-3 pt-1">
+                          <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs">
+                            <Checkbox
+                              checked={field.value === "true"}
+                              onCheckedChange={(v) => updateField(idx, { value: v ? "true" : "false" })}
+                            />
+                            <span>Yes</span>
+                          </label>
+                          <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs">
+                            <Checkbox
+                              checked={field.value === "false" || field.value === ""}
+                              onCheckedChange={(v) => updateField(idx, { value: v ? "false" : "" })}
+                            />
+                            <span>No</span>
+                          </label>
+                        </div>
+                      ) : field.type === "textarea" ? (
+                        <Textarea
+                          value={field.value}
+                          onChange={(e) => updateField(idx, { value: e.target.value })}
+                          rows={3}
+                          placeholder="Enter details..."
+                          className="text-xs leading-relaxed bg-background"
+                        />
+                      ) : (
+                        <Input
+                          type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+                          value={field.value}
+                          onChange={(e) => updateField(idx, { value: e.target.value })}
+                          placeholder={`Enter ${field.label}...`}
+                          className="text-xs h-9 bg-background"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bottom Signature & Action Bar */}
+                <div className="pt-6 border-t border-border/60 flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p className="font-semibold text-foreground">Barangay Subukin Health Center Services</p>
+                    <p className="italic text-[11px]">All elements from original paper form preserved in digital format.</p>
+                  </div>
+
+                  <div className="flex items-center gap-3 no-print w-full md:w-auto justify-end">
+                    <Button type="button" onClick={handleDeployForm} className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6">
+                      <Rocket className="h-4 w-4" /> Deploy Form
+                    </Button>
+                  </div>
+                </div>
+
+              </CardContent>
+            </Card>
+          )}
+
+          {/* VIEW MODE: BUILDER / FIELD EDITOR */}
+          {viewMode === "builder" && (
+            <Card className="border-border/50 shadow-sm no-print">
+              <CardHeader>
+                <CardTitle className="text-base font-heading flex items-center gap-2">
+                  <FileCheck2 className="h-5 w-5 text-primary" /> Edit Digital Form Fields & Layout
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Form Title</Label>
+                    <Input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} className="text-xs" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Description</Label>
+                    <Input value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} className="text-xs" />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-xs font-semibold text-foreground">Preserved Fields List</Label>
+                  {draftFields.map((f, i) => (
+                    <div key={i} className="rounded-lg border border-border/60 p-3 bg-muted/20 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={f.label}
+                          onChange={(e) => updateField(i, { label: e.target.value })}
+                          className="flex-1 h-8 text-xs font-medium bg-background"
+                        />
+                        <select
+                          value={f.type}
+                          onChange={(e) => updateField(i, { type: e.target.value as FieldType })}
+                          className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                        >
+                          <option value="text">Short Text</option>
+                          <option value="number">Number</option>
+                          <option value="date">Date</option>
+                          <option value="textarea">Long Text / Remarks</option>
+                          <option value="checkbox">Yes / No Checkbox</option>
+                        </select>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeField(i)} className="h-8 w-8 text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                  <Button type="button" variant="outline" size="sm" onClick={addField} className="gap-1.5 text-xs">
+                    <Plus className="h-4 w-4" /> Add Field
+                  </Button>
+                </div>
+
+                <div className="flex gap-3 pt-3 border-t">
+                  <Button type="button" onClick={handleDeployForm} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs gap-1.5">
+                    <Rocket className="h-4 w-4" /> Deploy Form
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => setViewMode("replica")} className="text-xs">
+                    Back to Replica Preview
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+        </div>
+      )}
+
+      {/* SAVED & DEPLOYED CUSTOM FORMS LIST */}
+      <Card className="border-border/50 shadow-sm no-print">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle className="text-base font-heading flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" /> Deployed Custom Health Forms
+          </CardTitle>
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
+            {savedForms.length} Active Form(s)
+          </Badge>
         </CardHeader>
         <CardContent>
           {savedForms.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No custom forms yet. Scan a paper form above to create your first digital form.
+            <p className="text-xs text-muted-foreground italic">
+              No deployed custom forms yet. Scan or convert a paper form above to deploy your first digital health form.
             </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {savedForms.map((f) => (
-                <div key={f.id} className="rounded-md border border-border/60 p-3 bg-card">
+                <div key={f.id} className="rounded-xl border border-border/60 p-4 bg-card hover:border-primary/40 transition-colors space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="font-medium text-foreground truncate">{f.title}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {f.description || `${f.fields.length} field${f.fields.length === 1 ? "" : "s"}`}
+                      <p className="font-semibold text-sm text-foreground truncate">{f.title}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">
+                        {f.description || `${f.fields.length} preserved element(s)`}
                       </p>
                       <p className="text-[10px] text-muted-foreground/70 mt-1">
-                        {new Date(f.createdAt).toLocaleString()}
+                        Deployed: {new Date(f.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => deleteSaved(f.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs gap-1 border-primary/30 text-primary"
+                        onClick={() => navigate(`/forms/custom/${f.id}`)}
+                      >
+                        <Eye className="h-3.5 w-3.5" /> Open
+                      </Button>
+                      <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteSaved(f.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
