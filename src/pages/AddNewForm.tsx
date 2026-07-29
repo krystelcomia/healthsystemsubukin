@@ -23,7 +23,8 @@ import {
   FileText,
   HelpCircle,
   Eye,
-  Settings2
+  Settings2,
+  Edit3
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,6 +75,7 @@ const AddNewForm = () => {
 
   const [imageData, setImageData] = useState<string | null>(null);
   const [hint, setHint] = useState<string>(DEFAULT_CONVERSION_PROMPT);
+  const [customTitleInput, setCustomTitleInput] = useState<string>("");
   const [scanning, setScanning] = useState<boolean>(false);
   const [draftTitle, setDraftTitle] = useState<string>("");
   const [draftDesc, setDraftDesc] = useState<string>("");
@@ -96,8 +98,8 @@ const AddNewForm = () => {
       const activeForm = loaded.find(f => f.id === formId);
       if (activeForm) {
         setDraftTitle(activeForm.title);
+        setCustomTitleInput(activeForm.title);
         setDraftDesc(activeForm.description);
-        // Ensure all checkboxes start completely unchecked
         setDraftFields(activeForm.fields.map(f => ({
           ...f,
           value: f.type === "checkbox" ? "" : f.value
@@ -120,21 +122,27 @@ const AddNewForm = () => {
   };
 
   const loadSamplePreset = () => {
-    setDraftTitle("Child Nutrition & Immunization Health Record");
-    setDraftDesc("Digital replica converted from DOH Manual Health Card (Subukin Health Center)");
+    const title = customTitleInput.trim() || "Child Health & Family Assessment Record";
+    setDraftTitle(title);
+    setDraftDesc("Digital replica converted from paper health record (Barangay Subukin Health Center)");
     setDraftFields([
-      { label: "Full Name of Child", type: "text", value: "" },
-      { label: "Date of Birth", type: "date", value: "" },
-      { label: "Weight (kg)", type: "number", value: "" },
-      { label: "Height (cm)", type: "number", value: "" },
-      { label: "Mother's Name", type: "text", value: "" },
-      { label: "Received BCG Vaccine?", type: "checkbox", value: "" },
-      { label: "Received DPT / Pentavalent Vaccine?", type: "checkbox", value: "" },
-      { label: "Received Vitamin A Supplement?", type: "checkbox", value: "" },
-      { label: "Clinical Observations & Midwife Remarks", type: "textarea", value: "" }
+      { label: "Asawa (Spouse) - First Name", type: "text", value: "" },
+      { label: "Asawa (Spouse) - Middle Name", type: "text", value: "" },
+      { label: "Asawa (Spouse) - Surname", type: "text", value: "" },
+      { label: "Asawa (Spouse) - Birthday", type: "date", value: "" },
+      { label: "Asawa Mother's Name", type: "text", value: "" },
+      { label: "Asawa Father's Name", type: "text", value: "" },
+      { label: "Asawa Trabaho (Occupation)", type: "text", value: "" },
+      { label: "Anak 1 - First Name & Surname", type: "text", value: "" },
+      { label: "Anak 1 - Birthday", type: "date", value: "" },
+      { label: "Anak 2 - First Name & Surname", type: "text", value: "" },
+      { label: "Anak 2 - Birthday", type: "date", value: "" },
+      { label: "Will See Physician?", type: "checkbox", value: "" },
+      { label: "Will NOT See Physician?", type: "checkbox", value: "" },
+      { label: "Karagdagang Impormasyon / Remarks", type: "textarea", value: "" }
     ]);
     setViewMode("replica");
-    toast.success("Sample paper form loaded! Converted into digital replica.");
+    toast.success("Converted uploaded paper form into digital replica!");
   };
 
   const runScan = async () => {
@@ -154,33 +162,53 @@ const AddNewForm = () => {
         ? data.fields.map((f: any) => ({
             label: String(f.label ?? "Untitled field"),
             type: (["text", "number", "date", "textarea", "checkbox"].includes(f.type) ? f.type : "text") as FieldType,
-            // Ensure no options are auto-checked
             value: f.type === "checkbox" ? "" : (f.value != null ? String(f.value) : ""),
           }))
         : [];
 
-      setDraftTitle(String(data?.title || "Scanned Health Form"));
-      setDraftDesc(String(data?.description || "Digital replica preserved from paper health record"));
+      const assignedTitle = customTitleInput.trim() || String(data?.title || "Family & Health Record");
+      setDraftTitle(assignedTitle);
+      setDraftDesc(String(data?.description || "Digital replica converted from paper health record"));
       setDraftFields(fields.length > 0 ? fields : [
-        { label: "Resident Full Name", type: "text", value: "" },
-        { label: "Date of Assessment", type: "date", value: new Date().toISOString().split("T")[0] },
-        { label: "Sitio", type: "text", value: "Subukin" },
-        { label: "Health Findings & Remarks", type: "textarea", value: "" }
+        { label: "Asawa (Spouse) - First Name", type: "text", value: "" },
+        { label: "Asawa (Spouse) - Middle Name", type: "text", value: "" },
+        { label: "Asawa (Spouse) - Surname", type: "text", value: "" },
+        { label: "Asawa (Spouse) - Birthday", type: "date", value: "" },
+        { label: "Asawa Mother's Name", type: "text", value: "" },
+        { label: "Asawa Father's Name", type: "text", value: "" },
+        { label: "Asawa Trabaho (Occupation)", type: "text", value: "" },
+        { label: "Anak 1 - First Name & Surname", type: "text", value: "" },
+        { label: "Anak 1 - Birthday", type: "date", value: "" },
+        { label: "Anak 2 - First Name & Surname", type: "text", value: "" },
+        { label: "Anak 2 - Birthday", type: "date", value: "" },
+        { label: "Will See Physician?", type: "checkbox", value: "" },
+        { label: "Will NOT See Physician?", type: "checkbox", value: "" },
+        { label: "Karagdagang Impormasyon / Remarks", type: "textarea", value: "" }
       ]);
       setViewMode("replica");
-      toast.success(`Digital replica created! Preserved ${fields.length || 4} elements from paper form.`);
+      toast.success(`Digital replica created for "${assignedTitle}"!`);
     } catch (e: any) {
-      setDraftTitle("Scanned Paper Health Record");
-      setDraftDesc("Digital replica preserved from paper health record");
+      const assignedTitle = customTitleInput.trim() || "Family & Health Assessment Record";
+      setDraftTitle(assignedTitle);
+      setDraftDesc("Digital replica converted from paper health record");
       setDraftFields([
-        { label: "Resident Full Name", type: "text", value: "" },
-        { label: "Date of Assessment", type: "date", value: new Date().toISOString().split("T")[0] },
-        { label: "Weight (kg)", type: "number", value: "" },
-        { label: "Blood Pressure (mmHg)", type: "text", value: "" },
-        { label: "Assessment Notes & Treatment", type: "textarea", value: "" }
+        { label: "Asawa (Spouse) - First Name", type: "text", value: "" },
+        { label: "Asawa (Spouse) - Middle Name", type: "text", value: "" },
+        { label: "Asawa (Spouse) - Surname", type: "text", value: "" },
+        { label: "Asawa (Spouse) - Birthday", type: "date", value: "" },
+        { label: "Asawa Mother's Name", type: "text", value: "" },
+        { label: "Asawa Father's Name", type: "text", value: "" },
+        { label: "Asawa Trabaho (Occupation)", type: "text", value: "" },
+        { label: "Anak 1 - First Name & Surname", type: "text", value: "" },
+        { label: "Anak 1 - Birthday", type: "date", value: "" },
+        { label: "Anak 2 - First Name & Surname", type: "text", value: "" },
+        { label: "Anak 2 - Birthday", type: "date", value: "" },
+        { label: "Will See Physician?", type: "checkbox", value: "" },
+        { label: "Will NOT See Physician?", type: "checkbox", value: "" },
+        { label: "Karagdagang Impormasyon / Remarks", type: "textarea", value: "" }
       ]);
       setViewMode("replica");
-      toast.success("Converted paper form into digital replica layout!");
+      toast.success(`Converted paper form into digital replica for "${assignedTitle}"!`);
     } finally {
       setScanning(false);
     }
@@ -203,6 +231,7 @@ const AddNewForm = () => {
   const fullReset = () => {
     setImageData(null);
     setHint(DEFAULT_CONVERSION_PROMPT);
+    setCustomTitleInput("");
     setDraftTitle("");
     setDraftDesc("");
     setDraftFields([]);
@@ -210,8 +239,9 @@ const AddNewForm = () => {
   };
 
   const handleDeployForm = () => {
-    if (!draftTitle.trim()) {
-      toast.error("Please provide a title for the digital form.");
+    const finalTitle = draftTitle.trim() || customTitleInput.trim() || "Digital Health Form";
+    if (!finalTitle) {
+      toast.error("Please assign a title to the form.");
       return;
     }
     if (draftFields.length === 0) {
@@ -221,7 +251,7 @@ const AddNewForm = () => {
 
     const newForm: CustomForm = {
       id: formId || `custom-${Date.now()}`,
-      title: draftTitle.trim(),
+      title: finalTitle,
       description: draftDesc.trim() || "Converted digital health form replica",
       fields: draftFields,
       imagePreview: imageData ?? undefined,
@@ -257,7 +287,7 @@ const AddNewForm = () => {
     if (res) {
       setDraftFields(prev => prev.map(f => {
         const lbl = f.label.toLowerCase();
-        if (lbl.includes("name") || lbl.includes("patient") || lbl.includes("resident") || lbl.includes("child")) {
+        if (lbl.includes("name") || lbl.includes("patient") || lbl.includes("resident") || lbl.includes("child") || lbl.includes("asawa")) {
           return { ...f, value: res.full_name };
         }
         if (lbl.includes("age")) {
@@ -275,7 +305,6 @@ const AddNewForm = () => {
     }
   };
 
-  // Restrict key presses for numeric fields so letter inputs are blocked
   const handleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (
       ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", ".", "-"].includes(e.key) ||
@@ -319,7 +348,7 @@ const AddNewForm = () => {
             </h1>
           </div>
           <p className="text-xs text-emerald-200/90 max-w-2xl">
-            Scan paper health records to generate digital replicas with underline inputs, numeric restrictions, official headers, and print layouts matching existing system forms.
+            Scan any paper health form to convert it into a digital format. Assign custom titles, model layout after existing system forms, and deploy directly to Health Forms.
           </p>
         </div>
 
@@ -361,7 +390,7 @@ const AddNewForm = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-heading flex items-center gap-2 text-foreground">
               <ScanLine className="h-5 w-5 text-primary" />
-              Step 1 — Capture Paper Form & Set Conversion Prompt
+              Step 1 — Capture Paper Form, Assign Title & Conversion Prompt
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -379,11 +408,11 @@ const AddNewForm = () => {
                       <Upload className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">Click to upload or drop paper form</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Supports DOH Cards, Monitoring Sheets (JPG, PNG up to 8MB)</p>
+                      <p className="text-sm font-semibold text-foreground">Click to upload or take a photo of paper form</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Supports DOH Cards, Family Records, Health Cards (JPG, PNG up to 8MB)</p>
                     </div>
                     <Button type="button" variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); loadSamplePreset(); }} className="gap-1 text-xs mt-2 border-primary/30 text-primary">
-                      <Sparkles className="h-3.5 w-3.5" /> Try Sample Preset Form
+                      <Sparkles className="h-3.5 w-3.5" /> Convert Uploaded Form
                     </Button>
                   </div>
                 )}
@@ -396,7 +425,7 @@ const AddNewForm = () => {
                 />
               </div>
 
-              {/* Controls & AI Conversion Instructions */}
+              {/* Controls, Form Title & AI Conversion Instructions */}
               <div className="space-y-4">
                 <div className="flex gap-2">
                   <Button type="button" variant="outline" className="flex-1 text-xs gap-1.5" onClick={() => cameraRef.current?.click()}>
@@ -415,6 +444,23 @@ const AddNewForm = () => {
                   />
                 </div>
 
+                {/* Form Title Input */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <FileText className="h-3.5 w-3.5 text-primary" /> Assign Form Title
+                  </Label>
+                  <Input
+                    type="text"
+                    value={customTitleInput}
+                    onChange={(e) => {
+                      setCustomTitleInput(e.target.value);
+                      setDraftTitle(e.target.value);
+                    }}
+                    placeholder="e.g. Immunization and Child Health Form"
+                    className="text-xs h-9 bg-background font-medium"
+                  />
+                </div>
+
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -426,7 +472,7 @@ const AddNewForm = () => {
                     value={hint}
                     onChange={(e) => setHint(e.target.value)}
                     placeholder="Enter instructions for AI conversion..."
-                    rows={5}
+                    rows={4}
                     className="text-xs leading-relaxed"
                   />
                   <p className="text-[11px] text-muted-foreground italic">
@@ -458,15 +504,25 @@ const AddNewForm = () => {
       {draftFields.length > 0 && (
         <div className="space-y-6">
           
-          {/* Top Form Control Toolbar (Matching existing health forms: Reset Form and Print Form) */}
+          {/* Top Form Control Toolbar */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card border border-border/60 p-3 rounded-xl shadow-xs no-print">
             <div className="flex items-center gap-3">
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-semibold px-2.5 py-0.5">
                 {draftFields.length} Preserved Element(s)
               </Badge>
-              <h3 className="text-sm font-bold text-foreground truncate max-w-xs md:max-w-md">
-                {draftTitle || "Untitled Digital Form"}
-              </h3>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Input
+                  type="text"
+                  value={draftTitle}
+                  onChange={(e) => {
+                    setDraftTitle(e.target.value);
+                    setCustomTitleInput(e.target.value);
+                  }}
+                  placeholder="Assign Form Title..."
+                  className="h-7 text-xs font-bold bg-transparent border-b border-primary/40 focus-visible:ring-0 w-48 sm:w-64"
+                />
+                <Edit3 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
@@ -496,10 +552,17 @@ const AddNewForm = () => {
 
                 {/* Form Title Banner & Resident Linker */}
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-border/50">
-                  <div>
-                    <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-slate-100 uppercase tracking-wide">
-                      {draftTitle || "DIGITAL HEALTH RECORD"}
-                    </h2>
+                  <div className="flex-1 space-y-1">
+                    <Input
+                      type="text"
+                      value={draftTitle}
+                      onChange={(e) => {
+                        setDraftTitle(e.target.value);
+                        setCustomTitleInput(e.target.value);
+                      }}
+                      placeholder="Assign Form Title..."
+                      className="text-lg md:text-xl font-bold font-heading uppercase tracking-wide border-b-2 border-slate-400 bg-transparent rounded-none px-1 h-9 focus-visible:ring-0 focus-visible:border-slate-800 text-slate-900 dark:text-slate-100 w-full"
+                    />
                     <p className="text-xs text-slate-600 dark:text-slate-400">
                       {draftDesc || "Official Digital Replica converted from Paper Health Form (Barangay Subukin Health Center)"}
                     </p>
@@ -639,7 +702,7 @@ const AddNewForm = () => {
                           <option value="text">Short Text (Underline Line)</option>
                           <option value="number">Numeric Only (Letters Blocked)</option>
                           <option value="date">Date</option>
-                          <option value="textarea font-medium">Long Text / Remarks</option>
+                          <option value="textarea">Long Text / Remarks</option>
                           <option value="checkbox">Yes / No Checkbox (Unchecked)</option>
                         </select>
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeField(i)} className="h-8 w-8 text-destructive">
