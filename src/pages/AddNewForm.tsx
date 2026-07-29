@@ -346,43 +346,6 @@ const AddNewForm = () => {
             Scan any paper health form (such as the RHU Information Sheet) to convert it into an accurate digital format. Assign custom titles, model layout after existing system forms, and deploy directly to Health Forms.
           </p>
         </div>
-
-        {draftFields.length > 0 && (
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setViewMode("replica")}
-              className={`gap-1.5 text-xs font-bold ${
-                viewMode === "replica"
-                  ? "bg-white text-emerald-950 shadow-sm hover:bg-slate-100"
-                  : "bg-emerald-950/60 text-emerald-100 border border-emerald-600/50 hover:bg-emerald-800/80 hover:text-white"
-              }`}
-            >
-              <Eye className="h-4 w-4" /> Digital Replica
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setViewMode("builder")}
-              className={`gap-1.5 text-xs font-bold ${
-                viewMode === "builder"
-                  ? "bg-white text-emerald-950 shadow-sm hover:bg-slate-100"
-                  : "bg-emerald-950/60 text-emerald-100 border border-emerald-600/50 hover:bg-emerald-800/80 hover:text-white"
-              }`}
-            >
-              <Settings2 className="h-4 w-4" /> Edit Fields
-            </Button>
-            <Button
-              type="button"
-              onClick={handleDeployForm}
-              size="sm"
-              className="gap-1.5 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold shadow-md text-xs"
-            >
-              <Rocket className="h-4 w-4 text-slate-950" /> Deploy Form
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* STEP 1: CAPTURE & CONVERT PAPER FORM */}
@@ -505,7 +468,7 @@ const AddNewForm = () => {
       {draftFields.length > 0 && (
         <div className="space-y-6">
           
-          {/* Top Form Control Toolbar */}
+          {/* Form Title & Preserved Badge Header */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card border border-border/60 p-3 rounded-xl shadow-xs no-print">
             <div className="flex items-center gap-3">
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-semibold px-2.5 py-0.5">
@@ -524,35 +487,6 @@ const AddNewForm = () => {
                 />
                 <Edit3 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={resetDraft}
-                className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
-              >
-                <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset Form
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => window.print()}
-                className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
-              >
-                <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print Form
-              </Button>
-              <Button
-                type="button"
-                onClick={handleDeployForm}
-                size="sm"
-                className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm"
-              >
-                <Rocket className="h-3.5 w-3.5" /> Deploy Form
-              </Button>
             </div>
           </div>
 
@@ -671,8 +605,59 @@ const AddNewForm = () => {
                     <p className="italic text-[11px]">Inputs modeled on lines with official header seal in printable format.</p>
                   </div>
 
-                  <div className="flex items-center gap-3 no-print w-full md:w-auto justify-end">
-                    <Button type="button" onClick={handleDeployForm} className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 text-xs">
+                  <div className="flex flex-wrap items-center gap-2 no-print w-full md:w-auto justify-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => setViewMode("replica")}
+                      className={`gap-1.5 text-xs font-bold ${
+                        viewMode === "replica"
+                          ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
+                          : "bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
+                      }`}
+                    >
+                      <Eye className="h-4 w-4" /> Digital Replica
+                    </Button>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => setViewMode("builder")}
+                      className={`gap-1.5 text-xs font-bold ${
+                        viewMode === "builder"
+                          ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
+                          : "bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
+                      }`}
+                    >
+                      <Settings2 className="h-4 w-4" /> Edit Fields
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={resetDraft}
+                      className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset Form
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.print()}
+                      className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print Form
+                    </Button>
+
+                    <Button
+                      type="button"
+                      onClick={handleDeployForm}
+                      size="sm"
+                      className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm px-5"
+                    >
                       <Rocket className="h-4 w-4" /> Deploy Form
                     </Button>
                   </div>
