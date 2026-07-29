@@ -351,19 +351,25 @@ const AddNewForm = () => {
           <div className="flex items-center gap-2 shrink-0">
             <Button
               type="button"
-              variant={viewMode === "replica" ? "secondary" : "outline"}
               size="sm"
               onClick={() => setViewMode("replica")}
-              className="gap-1.5 text-xs font-semibold"
+              className={`gap-1.5 text-xs font-bold ${
+                viewMode === "replica"
+                  ? "bg-white text-emerald-950 shadow-sm hover:bg-slate-100"
+                  : "bg-emerald-950/60 text-emerald-100 border border-emerald-600/50 hover:bg-emerald-800/80 hover:text-white"
+              }`}
             >
               <Eye className="h-4 w-4" /> Digital Replica
             </Button>
             <Button
               type="button"
-              variant={viewMode === "builder" ? "secondary" : "outline"}
               size="sm"
               onClick={() => setViewMode("builder")}
-              className="gap-1.5 text-xs font-semibold"
+              className={`gap-1.5 text-xs font-bold ${
+                viewMode === "builder"
+                  ? "bg-white text-emerald-950 shadow-sm hover:bg-slate-100"
+                  : "bg-emerald-950/60 text-emerald-100 border border-emerald-600/50 hover:bg-emerald-800/80 hover:text-white"
+              }`}
             >
               <Settings2 className="h-4 w-4" /> Edit Fields
             </Button>
@@ -371,9 +377,9 @@ const AddNewForm = () => {
               type="button"
               onClick={handleDeployForm}
               size="sm"
-              className="gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-md text-xs"
+              className="gap-1.5 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold shadow-md text-xs"
             >
-              <Rocket className="h-4 w-4" /> Deploy Form
+              <Rocket className="h-4 w-4 text-slate-950" /> Deploy Form
             </Button>
           </div>
         )}
@@ -521,13 +527,30 @@ const AddNewForm = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={resetDraft} className="gap-1.5 text-xs">
-                <RotateCcw className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" /> Reset Form
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={resetDraft}
+                className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+              >
+                <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset Form
               </Button>
-              <Button type="button" variant="outline" size="sm" onClick={() => window.print()} className="gap-1.5 text-xs font-semibold border-slate-300 dark:border-slate-700">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => window.print()}
+                className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+              >
                 <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print Form
               </Button>
-              <Button type="button" onClick={handleDeployForm} size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">
+              <Button
+                type="button"
+                onClick={handleDeployForm}
+                size="sm"
+                className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm"
+              >
                 <Rocket className="h-3.5 w-3.5" /> Deploy Form
               </Button>
             </div>
