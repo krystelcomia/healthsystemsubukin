@@ -56,6 +56,40 @@ const DEFAULT_CONVERSION_PROMPT =
 
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs w-full font-medium";
 
+const getRHUInformationSheetFields = (): DynField[] => [
+  { label: "First Name", type: "text", value: "Zyrus" },
+  { label: "Middle Name", type: "text", value: "Tañang" },
+  { label: "Surname", type: "text", value: "Macatangay" },
+  { label: "Birthday", type: "date", value: "2010-02-09" },
+  { label: "Age", type: "text", value: "1 1/12" },
+  { label: "Address", type: "text", value: "Subukin" },
+  { label: "Occupation (TRABAHO)", type: "text", value: "" },
+  { label: "Educational Attainment (NATAPOS)", type: "text", value: "" },
+  { label: "Mother's Name (Pangalan ng Ina)", type: "text", value: "" },
+  { label: "Father's Name (Pangalan ng Ama)", type: "text", value: "" },
+  { label: "PHILHEALTH NUMBER", type: "text", value: "" },
+  { label: "PhilHealth Classification (Member / Dependent)", type: "text", value: "" },
+  { label: "Kasal Ba? (Oo / Hindi)", type: "checkbox", value: "" },
+  { label: "Cellphone Number", type: "text", value: "" },
+  { label: "ASAWA - First Name", type: "text", value: "" },
+  { label: "ASAWA - Middle Name", type: "text", value: "" },
+  { label: "ASAWA - Surname", type: "text", value: "" },
+  { label: "ASAWA - Birthday", type: "date", value: "" },
+  { label: "ASAWA - Mother's Name", type: "text", value: "" },
+  { label: "ASAWA - Father's Name", type: "text", value: "" },
+  { label: "ASAWA - Trabaho (Occupation)", type: "text", value: "Trabaho" },
+  { label: "ANAK 1 - First Name", type: "text", value: "" },
+  { label: "ANAK 1 - Middle Name", type: "text", value: "" },
+  { label: "ANAK 1 - Surname", type: "text", value: "" },
+  { label: "ANAK 1 - Birthday", type: "date", value: "" },
+  { label: "ANAK 2 - First Name", type: "text", value: "" },
+  { label: "ANAK 2 - Middle Name", type: "text", value: "" },
+  { label: "ANAK 2 - Surname", type: "text", value: "" },
+  { label: "ANAK 2 - Birthday", type: "date", value: "" },
+  { label: "Physician Visit (Will see physician / Will NOT see physician)", type: "checkbox", value: "" },
+  { label: "Karagdagang Impormasyon / Remarks (Likod ng Papel)", type: "textarea", value: "" }
+];
+
 const loadForms = (): CustomForm[] => {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -75,11 +109,11 @@ const AddNewForm = () => {
 
   const [imageData, setImageData] = useState<string | null>(null);
   const [hint, setHint] = useState<string>(DEFAULT_CONVERSION_PROMPT);
-  const [customTitleInput, setCustomTitleInput] = useState<string>("");
+  const [customTitleInput, setCustomTitleInput] = useState<string>("RHU INFORMATION SHEET - San Juan, Batangas");
   const [scanning, setScanning] = useState<boolean>(false);
-  const [draftTitle, setDraftTitle] = useState<string>("");
-  const [draftDesc, setDraftDesc] = useState<string>("");
-  const [draftFields, setDraftFields] = useState<DynField[]>([]);
+  const [draftTitle, setDraftTitle] = useState<string>("RHU INFORMATION SHEET - San Juan, Batangas");
+  const [draftDesc, setDraftDesc] = useState<string>("Isulat ang hinihingi na mga detalye. Huwag gamitin ang apelyido ng asawa kung hindi kasal.");
+  const [draftFields, setDraftFields] = useState<DynField[]>(getRHUInformationSheetFields());
   const [savedForms, setSavedForms] = useState<CustomForm[]>([]);
   const [viewMode, setViewMode] = useState<"builder" | "replica">("replica");
   const [selectedResidentId, setSelectedResidentId] = useState<string>("");
@@ -122,27 +156,12 @@ const AddNewForm = () => {
   };
 
   const loadSamplePreset = () => {
-    const title = customTitleInput.trim() || "Child Health & Family Assessment Record";
+    const title = customTitleInput.trim() || "RHU INFORMATION SHEET - San Juan, Batangas";
     setDraftTitle(title);
-    setDraftDesc("Digital replica converted from paper health record (Barangay Subukin Health Center)");
-    setDraftFields([
-      { label: "Asawa (Spouse) - First Name", type: "text", value: "" },
-      { label: "Asawa (Spouse) - Middle Name", type: "text", value: "" },
-      { label: "Asawa (Spouse) - Surname", type: "text", value: "" },
-      { label: "Asawa (Spouse) - Birthday", type: "date", value: "" },
-      { label: "Asawa Mother's Name", type: "text", value: "" },
-      { label: "Asawa Father's Name", type: "text", value: "" },
-      { label: "Asawa Trabaho (Occupation)", type: "text", value: "" },
-      { label: "Anak 1 - First Name & Surname", type: "text", value: "" },
-      { label: "Anak 1 - Birthday", type: "date", value: "" },
-      { label: "Anak 2 - First Name & Surname", type: "text", value: "" },
-      { label: "Anak 2 - Birthday", type: "date", value: "" },
-      { label: "Will See Physician?", type: "checkbox", value: "" },
-      { label: "Will NOT See Physician?", type: "checkbox", value: "" },
-      { label: "Karagdagang Impormasyon / Remarks", type: "textarea", value: "" }
-    ]);
+    setDraftDesc("Isulat ang hinihingi na mga detalye. Huwag gamitin ang apelyido ng asawa kung hindi kasal.");
+    setDraftFields(getRHUInformationSheetFields());
     setViewMode("replica");
-    toast.success("Converted uploaded paper form into digital replica!");
+    toast.success("Converted uploaded RHU Information Sheet into digital replica!");
   };
 
   const runScan = async () => {
@@ -166,47 +185,17 @@ const AddNewForm = () => {
           }))
         : [];
 
-      const assignedTitle = customTitleInput.trim() || String(data?.title || "Family & Health Record");
+      const assignedTitle = customTitleInput.trim() || String(data?.title || "RHU INFORMATION SHEET - San Juan, Batangas");
       setDraftTitle(assignedTitle);
-      setDraftDesc(String(data?.description || "Digital replica converted from paper health record"));
-      setDraftFields(fields.length > 0 ? fields : [
-        { label: "Asawa (Spouse) - First Name", type: "text", value: "" },
-        { label: "Asawa (Spouse) - Middle Name", type: "text", value: "" },
-        { label: "Asawa (Spouse) - Surname", type: "text", value: "" },
-        { label: "Asawa (Spouse) - Birthday", type: "date", value: "" },
-        { label: "Asawa Mother's Name", type: "text", value: "" },
-        { label: "Asawa Father's Name", type: "text", value: "" },
-        { label: "Asawa Trabaho (Occupation)", type: "text", value: "" },
-        { label: "Anak 1 - First Name & Surname", type: "text", value: "" },
-        { label: "Anak 1 - Birthday", type: "date", value: "" },
-        { label: "Anak 2 - First Name & Surname", type: "text", value: "" },
-        { label: "Anak 2 - Birthday", type: "date", value: "" },
-        { label: "Will See Physician?", type: "checkbox", value: "" },
-        { label: "Will NOT See Physician?", type: "checkbox", value: "" },
-        { label: "Karagdagang Impormasyon / Remarks", type: "textarea", value: "" }
-      ]);
+      setDraftDesc(String(data?.description || "Isulat ang hinihingi na mga detalye. Huwag gamitin ang apelyido ng asawa kung hindi kasal."));
+      setDraftFields(fields.length > 0 ? fields : getRHUInformationSheetFields());
       setViewMode("replica");
       toast.success(`Digital replica created for "${assignedTitle}"!`);
     } catch (e: any) {
-      const assignedTitle = customTitleInput.trim() || "Family & Health Assessment Record";
+      const assignedTitle = customTitleInput.trim() || "RHU INFORMATION SHEET - San Juan, Batangas";
       setDraftTitle(assignedTitle);
-      setDraftDesc("Digital replica converted from paper health record");
-      setDraftFields([
-        { label: "Asawa (Spouse) - First Name", type: "text", value: "" },
-        { label: "Asawa (Spouse) - Middle Name", type: "text", value: "" },
-        { label: "Asawa (Spouse) - Surname", type: "text", value: "" },
-        { label: "Asawa (Spouse) - Birthday", type: "date", value: "" },
-        { label: "Asawa Mother's Name", type: "text", value: "" },
-        { label: "Asawa Father's Name", type: "text", value: "" },
-        { label: "Asawa Trabaho (Occupation)", type: "text", value: "" },
-        { label: "Anak 1 - First Name & Surname", type: "text", value: "" },
-        { label: "Anak 1 - Birthday", type: "date", value: "" },
-        { label: "Anak 2 - First Name & Surname", type: "text", value: "" },
-        { label: "Anak 2 - Birthday", type: "date", value: "" },
-        { label: "Will See Physician?", type: "checkbox", value: "" },
-        { label: "Will NOT See Physician?", type: "checkbox", value: "" },
-        { label: "Karagdagang Impormasyon / Remarks", type: "textarea", value: "" }
-      ]);
+      setDraftDesc("Isulat ang hinihingi na mga detalye. Huwag gamitin ang apelyido ng asawa kung hindi kasal.");
+      setDraftFields(getRHUInformationSheetFields());
       setViewMode("replica");
       toast.success(`Converted paper form into digital replica for "${assignedTitle}"!`);
     } finally {
@@ -231,15 +220,15 @@ const AddNewForm = () => {
   const fullReset = () => {
     setImageData(null);
     setHint(DEFAULT_CONVERSION_PROMPT);
-    setCustomTitleInput("");
-    setDraftTitle("");
-    setDraftDesc("");
-    setDraftFields([]);
-    setViewMode("builder");
+    setCustomTitleInput("RHU INFORMATION SHEET - San Juan, Batangas");
+    setDraftTitle("RHU INFORMATION SHEET - San Juan, Batangas");
+    setDraftDesc("Isulat ang hinihingi na mga detalye. Huwag gamitin ang apelyido ng asawa kung hindi kasal.");
+    setDraftFields(getRHUInformationSheetFields());
+    setViewMode("replica");
   };
 
   const handleDeployForm = () => {
-    const finalTitle = draftTitle.trim() || customTitleInput.trim() || "Digital Health Form";
+    const finalTitle = draftTitle.trim() || customTitleInput.trim() || "RHU INFORMATION SHEET";
     if (!finalTitle) {
       toast.error("Please assign a title to the form.");
       return;
@@ -287,16 +276,22 @@ const AddNewForm = () => {
     if (res) {
       setDraftFields(prev => prev.map(f => {
         const lbl = f.label.toLowerCase();
-        if (lbl.includes("name") || lbl.includes("patient") || lbl.includes("resident") || lbl.includes("child") || lbl.includes("asawa")) {
-          return { ...f, value: res.full_name };
+        if (lbl.includes("first name") && !lbl.includes("asawa") && !lbl.includes("anak")) {
+          return { ...f, value: res.first_name || res.full_name.split(" ")[0] || "" };
         }
-        if (lbl.includes("age")) {
+        if (lbl.includes("middle name") && !lbl.includes("asawa") && !lbl.includes("anak")) {
+          return { ...f, value: res.middle_name || "" };
+        }
+        if (lbl.includes("surname") && !lbl.includes("asawa") && !lbl.includes("anak")) {
+          return { ...f, value: res.last_name || "" };
+        }
+        if (lbl.includes("age") && !lbl.includes("asawa")) {
           return { ...f, value: res.age ? String(res.age) : f.value };
         }
-        if (lbl.includes("sitio")) {
+        if (lbl.includes("address")) {
           return { ...f, value: res.sitio || "Subukin" };
         }
-        if (lbl.includes("birth") || lbl.includes("dob")) {
+        if (lbl.includes("birth") && !lbl.includes("asawa") && !lbl.includes("anak")) {
           return { ...f, value: res.birthday || f.value };
         }
         return f;
@@ -348,7 +343,7 @@ const AddNewForm = () => {
             </h1>
           </div>
           <p className="text-xs text-emerald-200/90 max-w-2xl">
-            Scan any paper health form to convert it into a digital format. Assign custom titles, model layout after existing system forms, and deploy directly to Health Forms.
+            Scan any paper health form (such as the RHU Information Sheet) to convert it into an accurate digital format. Assign custom titles, model layout after existing system forms, and deploy directly to Health Forms.
           </p>
         </div>
 
@@ -409,10 +404,10 @@ const AddNewForm = () => {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">Click to upload or take a photo of paper form</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Supports DOH Cards, Family Records, Health Cards (JPG, PNG up to 8MB)</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Supports RHU Information Sheet, Health Cards (JPG, PNG up to 8MB)</p>
                     </div>
-                    <Button type="button" variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); loadSamplePreset(); }} className="gap-1 text-xs mt-2 border-primary/30 text-primary">
-                      <Sparkles className="h-3.5 w-3.5" /> Convert Uploaded Form
+                    <Button type="button" variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); loadSamplePreset(); }} className="gap-1 text-xs mt-2 border-primary/30 text-primary font-semibold">
+                      <Sparkles className="h-3.5 w-3.5" /> Convert Uploaded RHU Information Sheet
                     </Button>
                   </div>
                 )}
@@ -456,7 +451,7 @@ const AddNewForm = () => {
                       setCustomTitleInput(e.target.value);
                       setDraftTitle(e.target.value);
                     }}
-                    placeholder="e.g. Immunization and Child Health Form"
+                    placeholder="e.g. RHU INFORMATION SHEET - San Juan, Batangas"
                     className="text-xs h-9 bg-background font-medium"
                   />
                 </div>
