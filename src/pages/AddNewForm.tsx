@@ -111,9 +111,9 @@ const AddNewForm = () => {
   const [hint, setHint] = useState<string>(DEFAULT_CONVERSION_PROMPT);
   const [customTitleInput, setCustomTitleInput] = useState<string>("RHU INFORMATION SHEET - San Juan, Batangas");
   const [scanning, setScanning] = useState<boolean>(false);
-  const [draftTitle, setDraftTitle] = useState<string>("RHU INFORMATION SHEET - San Juan, Batangas");
-  const [draftDesc, setDraftDesc] = useState<string>("Isulat ang hinihingi na mga detalye. Huwag gamitin ang apelyido ng asawa kung hindi kasal.");
-  const [draftFields, setDraftFields] = useState<DynField[]>(getRHUInformationSheetFields());
+  const [draftTitle, setDraftTitle] = useState<string>("");
+  const [draftDesc, setDraftDesc] = useState<string>("");
+  const [draftFields, setDraftFields] = useState<DynField[]>([]);
   const [savedForms, setSavedForms] = useState<CustomForm[]>([]);
   const [viewMode, setViewMode] = useState<"builder" | "replica">("replica");
   const [selectedResidentId, setSelectedResidentId] = useState<string>("");
@@ -221,9 +221,9 @@ const AddNewForm = () => {
     setImageData(null);
     setHint(DEFAULT_CONVERSION_PROMPT);
     setCustomTitleInput("RHU INFORMATION SHEET - San Juan, Batangas");
-    setDraftTitle("RHU INFORMATION SHEET - San Juan, Batangas");
-    setDraftDesc("Isulat ang hinihingi na mga detalye. Huwag gamitin ang apelyido ng asawa kung hindi kasal.");
-    setDraftFields(getRHUInformationSheetFields());
+    setDraftTitle("");
+    setDraftDesc("");
+    setDraftFields([]);
     setViewMode("replica");
   };
 
