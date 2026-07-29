@@ -50,7 +50,10 @@ interface CustomForm {
 }
 
 const STORAGE_KEY = "bhw_custom_forms";
-const DEFAULT_CONVERSION_PROMPT = "Convert this paper health form into a pixel-perfect digital replica. Retain all original sections, form fields, headers, tables, checkboxes, and layout elements to preserve full familiarity for Health Workers accustomed to manual paper forms.";
+const DEFAULT_CONVERSION_PROMPT = 
+  "Convert this paper health form into a pixel-perfect digital replica. Retain all original sections, form fields, headers, tables, checkboxes, and layout elements to preserve full familiarity for Health Workers accustomed to manual paper forms. Model the form after existing forms in the system; inputs should be on lines rather than in boxes, and letter input should be restricted when only numbers are required. Include all form elements. Remove any auto-checked options; these should only be selectable by the user. Add a print button that functions exactly like those on existing forms. Ensure the official header is included in the printout. Adjust the print layout (portrait or landscape) to ensure the entire form is visible.";
+
+const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs w-full font-medium";
 
 const loadForms = (): CustomForm[] => {
   try {
@@ -94,7 +97,11 @@ const AddNewForm = () => {
       if (activeForm) {
         setDraftTitle(activeForm.title);
         setDraftDesc(activeForm.description);
-        setDraftFields(activeForm.fields);
+        // Ensure all checkboxes start completely unchecked
+        setDraftFields(activeForm.fields.map(f => ({
+          ...f,
+          value: f.type === "checkbox" ? "" : f.value
+        })));
         if (activeForm.imagePreview) setImageData(activeForm.imagePreview);
         setViewMode("replica");
       }
@@ -121,9 +128,9 @@ const AddNewForm = () => {
       { label: "Weight (kg)", type: "number", value: "" },
       { label: "Height (cm)", type: "number", value: "" },
       { label: "Mother's Name", type: "text", value: "" },
-      { label: "Received BCG Vaccine?", type: "checkbox", value: "false" },
-      { label: "Received DPT / Pentavalent Vaccine?", type: "checkbox", value: "false" },
-      { label: "Received Vitamin A Supplement?", type: "checkbox", value: "false" },
+      { label: "Received BCG Vaccine?", type: "checkbox", value: "" },
+      { label: "Received DPT / Pentavalent Vaccine?", type: "checkbox", value: "" },
+      { label: "Received Vitamin A Supplement?", type: "checkbox", value: "" },
       { label: "Clinical Observations & Midwife Remarks", type: "textarea", value: "" }
     ]);
     setViewMode("replica");
@@ -147,7 +154,8 @@ const AddNewForm = () => {
         ? data.fields.map((f: any) => ({
             label: String(f.label ?? "Untitled field"),
             type: (["text", "number", "date", "textarea", "checkbox"].includes(f.type) ? f.type : "text") as FieldType,
-            value: f.value != null ? String(f.value) : "",
+            // Ensure no options are auto-checked
+            value: f.type === "checkbox" ? "" : (f.value != null ? String(f.value) : ""),
           }))
         : [];
 
@@ -187,6 +195,12 @@ const AddNewForm = () => {
   const addField = () => setDraftFields((prev) => [...prev, { label: "New Field", type: "text", value: "" }]);
 
   const resetDraft = () => {
+    setDraftFields(prev => prev.map(f => ({ ...f, value: "" })));
+    setSelectedResidentId("");
+    toast.info("Form reset to blank.");
+  };
+
+  const fullReset = () => {
     setImageData(null);
     setHint(DEFAULT_CONVERSION_PROMPT);
     setDraftTitle("");
@@ -261,10 +275,27 @@ const AddNewForm = () => {
     }
   };
 
+  // Restrict key presses for numeric fields so letter inputs are blocked
+  const handleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (
+      ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", ".", "-"].includes(e.key) ||
+      (e.ctrlKey && ["a", "c", "v", "x"].includes(e.key.toLowerCase()))
+    ) {
+      return;
+    }
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <div className="w-full space-y-6">
       <style>{`
         @media print {
+          @page {
+            size: portrait;
+            margin: 10mm;
+          }
           body * { visibility: hidden !important; }
           #digital-replica-print-area, #digital-replica-print-area * { visibility: visible !important; }
           .no-print { display: none !important; }
@@ -272,7 +303,7 @@ const AddNewForm = () => {
             position: absolute !important;
             left: 0 !important; top: 0 !important;
             width: 100% !important; background: white !important;
-            padding: 20px !important; margin: 0 !important;
+            padding: 10px !important; margin: 0 !important;
             box-shadow: none !important; border: none !important; color: black !important;
           }
         }
@@ -288,7 +319,7 @@ const AddNewForm = () => {
             </h1>
           </div>
           <p className="text-xs text-emerald-200/90 max-w-2xl">
-            Scan paper health records to instantly generate pixel-perfect digital replicas that preserve full layout familiarity, headers, and fields for Barangay Health Workers.
+            Scan paper health records to generate digital replicas with underline inputs, numeric restrictions, official headers, and print layouts matching existing system forms.
           </p>
         </div>
 
@@ -316,7 +347,7 @@ const AddNewForm = () => {
               type="button"
               onClick={handleDeployForm}
               size="sm"
-              className="gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-md"
+              className="gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-md text-xs"
             >
               <Rocket className="h-4 w-4" /> Deploy Form
             </Button>
@@ -330,7 +361,7 @@ const AddNewForm = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-heading flex items-center gap-2 text-foreground">
               <ScanLine className="h-5 w-5 text-primary" />
-              Step 1 — Capture Paper Form & Set Conversion Instructions
+              Step 1 — Capture Paper Form & Set Conversion Prompt
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -389,17 +420,17 @@ const AddNewForm = () => {
                     <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                       <HelpCircle className="h-3.5 w-3.5 text-primary" /> Manual-to-Digital AI Conversion Prompt
                     </Label>
-                    <span className="text-[10px] text-muted-foreground">Default Preserved</span>
+                    <span className="text-[10px] text-muted-foreground font-semibold text-emerald-600 dark:text-emerald-400">System Model Aligned</span>
                   </div>
                   <Textarea
                     value={hint}
                     onChange={(e) => setHint(e.target.value)}
                     placeholder="Enter instructions for AI conversion..."
-                    rows={4}
+                    rows={5}
                     className="text-xs leading-relaxed"
                   />
                   <p className="text-[11px] text-muted-foreground italic">
-                    All original sections, form fields, headers, tables, checkboxes, and layout elements from the paper form will be preserved in the digital replica.
+                    Inputs will be rendered on underline lines rather than boxes, letter input restricted for number fields, auto-checked options removed, and official printable headers included.
                   </p>
                 </div>
 
@@ -412,7 +443,7 @@ const AddNewForm = () => {
                     )}
                   </Button>
                   {imageData && (
-                    <Button type="button" variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={resetDraft}>
+                    <Button type="button" variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={fullReset}>
                       <RotateCcw className="h-3.5 w-3.5 mr-1" /> Start Over
                     </Button>
                   )}
@@ -427,20 +458,23 @@ const AddNewForm = () => {
       {draftFields.length > 0 && (
         <div className="space-y-6">
           
-          {/* Replica Mode Toggle Toolbar */}
-          <div className="flex items-center justify-between bg-card border border-border/60 p-3 rounded-xl shadow-xs no-print">
+          {/* Top Form Control Toolbar (Matching existing health forms: Reset Form and Print Form) */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card border border-border/60 p-3 rounded-xl shadow-xs no-print">
             <div className="flex items-center gap-3">
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-semibold px-2.5 py-0.5">
-                {draftFields.length} Digitized Element(s)
+                {draftFields.length} Preserved Element(s)
               </Badge>
-              <h3 className="text-sm font-semibold text-foreground truncate max-w-xs md:max-w-md">
+              <h3 className="text-sm font-bold text-foreground truncate max-w-xs md:max-w-md">
                 {draftTitle || "Untitled Digital Form"}
               </h3>
             </div>
 
             <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => window.print()} className="gap-1.5 text-xs">
-                <Printer className="h-3.5 w-3.5" /> Print Form
+              <Button type="button" variant="outline" size="sm" onClick={resetDraft} className="gap-1.5 text-xs">
+                <RotateCcw className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" /> Reset Form
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => window.print()} className="gap-1.5 text-xs font-semibold border-slate-300 dark:border-slate-700">
+                <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print Form
               </Button>
               <Button type="button" onClick={handleDeployForm} size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">
                 <Rocket className="h-3.5 w-3.5" /> Deploy Form
@@ -448,25 +482,25 @@ const AddNewForm = () => {
             </div>
           </div>
 
-          {/* VIEW MODE: DIGITAL REPLICA (Matching DOH Official Form Cards) */}
+          {/* VIEW MODE: DIGITAL REPLICA (Matching System Health Form Style) */}
           {viewMode === "replica" && (
             <Card id="digital-replica-print-area" className="border border-slate-300 dark:border-slate-700 shadow-md bg-card text-card-foreground">
               <CardContent className="p-6 md:p-8 space-y-6">
                 
-                {/* Official Barangay Printable Header */}
-                <div className="print-only header-seal flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6">
+                {/* Official Barangay Printable & Screen Header (Preserved Seal) */}
+                <div className="header-seal flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6">
                   <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
                   <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" />
                   <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
                 </div>
 
-                {/* Form Title Banner */}
+                {/* Form Title Banner & Resident Linker */}
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-border/50">
                   <div>
-                    <h2 className="text-xl font-bold font-heading text-foreground">
+                    <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-slate-100 uppercase tracking-wide">
                       {draftTitle || "DIGITAL HEALTH RECORD"}
                     </h2>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
                       {draftDesc || "Official Digital Replica converted from Paper Health Form (Barangay Subukin Health Center)"}
                     </p>
                   </div>
@@ -475,7 +509,7 @@ const AddNewForm = () => {
                   <div className="w-full sm:w-64 no-print">
                     <Label className="text-xs font-semibold mb-1 block">Link Registered Resident</Label>
                     <Select value={selectedResidentId} onValueChange={handleSelectResident}>
-                      <SelectTrigger className="h-9 text-xs">
+                      <SelectTrigger className="h-8 text-xs">
                         <SelectValue placeholder="Select Resident to Auto-fill" />
                       </SelectTrigger>
                       <SelectContent>
@@ -489,32 +523,34 @@ const AddNewForm = () => {
                   </div>
                 </div>
 
-                {/* Preserved Form Fields Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Preserved Form Fields Grid (Underline Line Inputs matching existing forms) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {draftFields.map((field, idx) => (
                     <div
                       key={idx}
-                      className={`p-3 rounded-lg border border-border/60 bg-muted/10 space-y-1.5 ${
+                      className={`p-2.5 rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 space-y-1 ${
                         field.type === "textarea" ? "md:col-span-2" : ""
                       }`}
                     >
-                      <Label className="text-xs font-bold text-foreground">
-                        {idx + 1}. {field.label}
+                      <Label className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {field.label}:
                       </Label>
 
                       {field.type === "checkbox" ? (
-                        <div className="flex items-center gap-3 pt-1">
-                          <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs">
+                        <div className="flex items-center gap-4 pt-1 font-medium">
+                          <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-800 dark:text-slate-200">
                             <Checkbox
                               checked={field.value === "true"}
-                              onCheckedChange={(v) => updateField(idx, { value: v ? "true" : "false" })}
+                              onCheckedChange={(v) => updateField(idx, { value: v ? "true" : "" })}
+                              className="h-3.5 w-3.5"
                             />
                             <span>Yes</span>
                           </label>
-                          <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs">
+                          <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-800 dark:text-slate-200">
                             <Checkbox
-                              checked={field.value === "false" || field.value === ""}
+                              checked={field.value === "false"}
                               onCheckedChange={(v) => updateField(idx, { value: v ? "false" : "" })}
+                              className="h-3.5 w-3.5"
                             />
                             <span>No</span>
                           </label>
@@ -525,30 +561,37 @@ const AddNewForm = () => {
                           onChange={(e) => updateField(idx, { value: e.target.value })}
                           rows={3}
                           placeholder="Enter details..."
-                          className="text-xs leading-relaxed bg-background"
+                          className="text-xs leading-relaxed border border-slate-300 dark:border-slate-600 bg-transparent"
                         />
                       ) : (
                         <Input
-                          type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+                          type={field.type === "date" ? "date" : "text"}
                           value={field.value}
-                          onChange={(e) => updateField(idx, { value: e.target.value })}
+                          onKeyDown={field.type === "number" ? handleNumberKeyDown : undefined}
+                          onChange={(e) => {
+                            let val = e.target.value;
+                            if (field.type === "number") {
+                              val = val.replace(/[^0-9.-]/g, "");
+                            }
+                            updateField(idx, { value: val });
+                          }}
                           placeholder={`Enter ${field.label}...`}
-                          className="text-xs h-9 bg-background"
+                          className={lineInputClass}
                         />
                       )}
                     </div>
                   ))}
                 </div>
 
-                {/* Bottom Signature & Action Bar */}
-                <div className="pt-6 border-t border-border/60 flex flex-col md:flex-row items-center justify-between gap-4">
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <p className="font-semibold text-foreground">Barangay Subukin Health Center Services</p>
-                    <p className="italic text-[11px]">All elements from original paper form preserved in digital format.</p>
+                {/* Bottom Signature & Information Bar */}
+                <div className="pt-6 border-t border-slate-300 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="text-xs text-slate-600 dark:text-slate-400 space-y-0.5">
+                    <p className="font-bold text-slate-900 dark:text-slate-100">Barangay Subukin Health Center Services</p>
+                    <p className="italic text-[11px]">Inputs modeled on lines with official header seal in printable format.</p>
                   </div>
 
                   <div className="flex items-center gap-3 no-print w-full md:w-auto justify-end">
-                    <Button type="button" onClick={handleDeployForm} className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6">
+                    <Button type="button" onClick={handleDeployForm} className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 text-xs">
                       <Rocket className="h-4 w-4" /> Deploy Form
                     </Button>
                   </div>
@@ -563,23 +606,23 @@ const AddNewForm = () => {
             <Card className="border-border/50 shadow-sm no-print">
               <CardHeader>
                 <CardTitle className="text-base font-heading flex items-center gap-2">
-                  <FileCheck2 className="h-5 w-5 text-primary" /> Edit Digital Form Fields & Layout
+                  <FileCheck2 className="h-5 w-5 text-primary" /> Edit Digital Form Fields & Properties
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Form Title</Label>
+                    <Label className="text-xs font-semibold">Form Title</Label>
                     <Input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} className="text-xs" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Description</Label>
+                    <Label className="text-xs font-semibold">Description</Label>
                     <Input value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} className="text-xs" />
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <Label className="text-xs font-semibold text-foreground">Preserved Fields List</Label>
+                  <Label className="text-xs font-bold text-foreground">Preserved Fields List</Label>
                   {draftFields.map((f, i) => (
                     <div key={i} className="rounded-lg border border-border/60 p-3 bg-muted/20 space-y-2">
                       <div className="flex items-center gap-2">
@@ -593,11 +636,11 @@ const AddNewForm = () => {
                           onChange={(e) => updateField(i, { type: e.target.value as FieldType })}
                           className="h-8 rounded-md border border-input bg-background px-2 text-xs"
                         >
-                          <option value="text">Short Text</option>
-                          <option value="number">Number</option>
+                          <option value="text">Short Text (Underline Line)</option>
+                          <option value="number">Numeric Only (Letters Blocked)</option>
                           <option value="date">Date</option>
-                          <option value="textarea">Long Text / Remarks</option>
-                          <option value="checkbox">Yes / No Checkbox</option>
+                          <option value="textarea font-medium">Long Text / Remarks</option>
+                          <option value="checkbox">Yes / No Checkbox (Unchecked)</option>
                         </select>
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeField(i)} className="h-8 w-8 text-destructive">
                           <Trash2 className="h-4 w-4" />
