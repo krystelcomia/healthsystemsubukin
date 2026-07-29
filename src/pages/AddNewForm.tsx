@@ -327,8 +327,40 @@ const AddNewForm = () => {
             position: absolute !important;
             left: 0 !important; top: 0 !important;
             width: 100% !important; background: white !important;
-            padding: 10px !important; margin: 0 !important;
+            padding: 0 !important; margin: 0 !important;
             box-shadow: none !important; border: none !important; color: black !important;
+          }
+          html, body {
+            height: 100% !important;
+            overflow: visible !important;
+          }
+          /* Hide placeholder text when printing so form prints with clean underline lines */
+          ::placeholder,
+          ::-webkit-input-placeholder,
+          ::-moz-placeholder,
+          :-ms-input-placeholder,
+          input::placeholder,
+          textarea::placeholder {
+            color: transparent !important;
+            opacity: 0 !important;
+            -webkit-text-fill-color: transparent !important;
+          }
+          input[type="date"]:invalid::-webkit-datetime-edit,
+          input[type="date"]:not([value])::-webkit-datetime-edit,
+          input[type="date"][value=""]::-webkit-datetime-edit {
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+          }
+          input:placeholder-shown {
+            color: transparent !important;
+          }
+          input[type="date"]::-webkit-calendar-picker-indicator {
+            display: none !important;
+            opacity: 0 !important;
+          }
+          input {
+            border-bottom: 1.5px solid #000 !important;
+            background: transparent !important;
           }
         }
       `}</style>
