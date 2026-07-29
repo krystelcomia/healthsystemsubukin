@@ -373,11 +373,8 @@ const AddNewForm = () => {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">Click to upload or take a photo of paper form</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Supports RHU Information Sheet, Health Cards (JPG, PNG up to 8MB)</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Supports any paper form (JPG, PNG up to 8MB)</p>
                     </div>
-                    <Button type="button" variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); loadSamplePreset(); }} className="gap-1 text-xs mt-2 border-primary/30 text-primary font-semibold">
-                      <Sparkles className="h-3.5 w-3.5" /> Convert Uploaded RHU Information Sheet
-                    </Button>
                   </div>
                 )}
                 <input
@@ -606,18 +603,6 @@ const AddNewForm = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 no-print w-full md:w-auto justify-end">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => setViewMode("replica")}
-                      className={`gap-1.5 text-xs font-bold ${
-                        viewMode === "replica"
-                          ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
-                          : "bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
-                      }`}
-                    >
-                      <Eye className="h-4 w-4" /> Digital Replica
-                    </Button>
 
                     <Button
                       type="button"
