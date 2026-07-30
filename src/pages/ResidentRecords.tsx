@@ -18,6 +18,7 @@ import {
   MapPin, 
   Calendar, 
   Heart, 
+  HeartPulse, 
   Activity, 
   LayoutGrid, 
   List as ListIcon, 
@@ -504,7 +505,7 @@ const ResidentRecords = () => {
           {healthRecords.maternal_care.length > 0 && (
             <div>
               <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <Heart className="h-4 w-4 text-pink-600" /> {t("nav.maternalCare")} ({healthRecords.maternal_care.length})
+                <HeartPulse className="h-4 w-4 text-pink-600" /> {t("nav.maternalCare")} ({healthRecords.maternal_care.length})
               </h3>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
