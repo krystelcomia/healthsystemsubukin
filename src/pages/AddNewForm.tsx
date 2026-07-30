@@ -552,8 +552,8 @@ const AddNewForm = () => {
             <Card id="digital-replica-print-area" className="border border-slate-300 dark:border-slate-700 shadow-md bg-card text-card-foreground">
               <CardContent className="p-6 md:p-8 space-y-6">
                 
-                {/* Official Barangay Printable & Screen Header (Preserved Seal) */}
-                <div className="header-seal flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6">
+                {/* Official Barangay Printable Header (Omitted on screen, included when printing) */}
+                <div className="header-seal hidden print:flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6">
                   <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
                   <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" />
                   <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
@@ -595,16 +595,16 @@ const AddNewForm = () => {
                   </div>
                 </div>
 
-                {/* Preserved Form Fields Grid (Underline Line Inputs matching existing forms) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Preserved Form Fields Grid (Clean Underline Line Inputs - Outer Boxes Removed) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
                   {draftFields.map((field, idx) => (
                     <div
                       key={idx}
-                      className={`p-2.5 rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 space-y-1 ${
+                      className={`space-y-1 ${
                         field.type === "textarea" ? "md:col-span-2" : ""
                       }`}
                     >
-                      <Label className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                      <Label className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
                         {field.label}:
                       </Label>
 
@@ -633,7 +633,7 @@ const AddNewForm = () => {
                           onChange={(e) => updateField(idx, { value: e.target.value })}
                           rows={3}
                           placeholder="Enter details..."
-                          className="text-xs leading-relaxed border border-slate-300 dark:border-slate-600 bg-transparent"
+                          className="text-xs leading-relaxed border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 shadow-none w-full"
                         />
                       ) : (
                         <Input
