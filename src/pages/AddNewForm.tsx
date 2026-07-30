@@ -401,8 +401,8 @@ const AddNewForm = () => {
       <style>{`
         @media print {
           @page {
-            size: portrait;
-            margin: 8mm;
+            size: 8.5in 13in portrait;
+            margin: 0.25in;
           }
           body * {
             visibility: hidden !important;
@@ -413,23 +413,31 @@ const AddNewForm = () => {
           .no-print {
             display: none !important;
           }
+          /* Fit entire form onto 1/4 of long bond paper (4.125in x 6.375in) */
           #digital-replica-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
-            width: 100% !important;
+            width: 4.125in !important;
+            max-width: 50% !important;
+            height: auto !important;
+            max-height: 6.375in !important;
             background: white !important;
-            padding: 8px !important;
+            padding: 4px 6px !important;
             margin: 0 !important;
             box-shadow: none !important;
-            border: none !important;
+            border: 1px dashed #aaa !important;
             color: black !important;
+            font-size: 8px !important;
+            line-height: 1.15 !important;
+            overflow: hidden !important;
+            transform-origin: top left !important;
           }
           html, body {
             height: 100% !important;
             overflow: visible !important;
           }
-          /* Ensure crisp black text for labels, inputs, and text elements */
+          /* Reduced font size and compact spacing for 1/4 sheet fit */
           #digital-replica-print-area label,
           #digital-replica-print-area p,
           #digital-replica-print-area span,
@@ -438,8 +446,56 @@ const AddNewForm = () => {
             color: #000 !important;
             -webkit-text-fill-color: #000 !important;
             opacity: 1 !important;
+            font-size: 8px !important;
           }
-          /* Hide placeholder text when printing so form prints with clean underline lines */
+          #digital-replica-print-area label {
+            font-weight: 700 !important;
+            font-size: 8px !important;
+            line-height: 1 !important;
+            margin-bottom: 1px !important;
+          }
+          #digital-replica-print-area input {
+            height: 15px !important;
+            font-size: 8px !important;
+            padding: 0 2px !important;
+            border-bottom: 1px solid #000 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+          }
+          #digital-replica-print-area textarea {
+            height: 26px !important;
+            font-size: 8px !important;
+            padding: 2px !important;
+            border-bottom: 1px solid #000 !important;
+          }
+          #digital-replica-print-area .grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            column-gap: 8px !important;
+            row-gap: 3px !important;
+            padding-top: 2px !important;
+          }
+          #digital-replica-print-area .header-seal {
+            border-bottom: 2.5px double #000 !important;
+            padding-bottom: 4px !important;
+            margin-bottom: 4px !important;
+            gap: 6px !important;
+          }
+          #digital-replica-print-area .header-seal img {
+            height: 26px !important;
+            width: auto !important;
+          }
+          #digital-replica-print-area .border-b-2 {
+            padding-top: 3px !important;
+            padding-bottom: 1px !important;
+            margin-bottom: 2px !important;
+            border-bottom-width: 1px !important;
+          }
+          #digital-replica-print-area .border-b-2 p {
+            font-size: 8px !important;
+            font-weight: 800 !important;
+          }
+          /* Hide placeholder text when printing */
           ::placeholder,
           ::-webkit-input-placeholder,
           ::-moz-placeholder,
@@ -463,16 +519,6 @@ const AddNewForm = () => {
           input[type="date"]::-webkit-calendar-picker-indicator {
             display: none !important;
             opacity: 0 !important;
-          }
-          input {
-            border-bottom: 1.5px solid #000 !important;
-            background: transparent !important;
-            box-shadow: none !important;
-          }
-          .header-seal {
-            border-bottom: 4px double #000 !important;
-            padding-bottom: 8px !important;
-            margin-bottom: 12px !important;
           }
         }
       `}</style>
