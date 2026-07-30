@@ -312,6 +312,42 @@ const AddNewForm = () => {
     }
   };
 
+  const isNumericLabel = (lbl: string): boolean => {
+    const l = lbl.toLowerCase();
+    return l.includes("number") || l.includes("cellphone") || l.includes("phone") || l.includes("philhealth");
+  };
+
+  const renderSectionHeader = (label: string) => {
+    if (label.startsWith("ASAWA - First Name")) {
+      return (
+        <div className="md:col-span-2 pt-3 pb-1 border-b border-emerald-600/30 dark:border-emerald-500/30 mb-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+            ASAWA (Spouse Information)
+          </p>
+        </div>
+      );
+    }
+    if (label.startsWith("ANAK 1 - First Name")) {
+      return (
+        <div className="md:col-span-2 pt-3 pb-1 border-b border-emerald-600/30 dark:border-emerald-500/30 mb-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+            ANAK (Isulat ang apelyidong ginamit sa Birth Certificate ng iyong anak)
+          </p>
+        </div>
+      );
+    }
+    if (label.startsWith("Physician Visit")) {
+      return (
+        <div className="md:col-span-2 pt-3 pb-1 border-b border-emerald-600/30 dark:border-emerald-500/30 mb-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+            PHYSICIAN VISIT & REMARKS
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="w-full space-y-6">
       <style>{`
@@ -598,60 +634,62 @@ const AddNewForm = () => {
                 {/* Preserved Form Fields Grid (Clean Underline Line Inputs - Outer Boxes Removed) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
                   {draftFields.map((field, idx) => (
-                    <div
-                      key={idx}
-                      className={`space-y-1 ${
-                        field.type === "textarea" ? "md:col-span-2" : ""
-                      }`}
-                    >
-                      <Label className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
-                        {field.label}:
-                      </Label>
+                    <React.Fragment key={idx}>
+                      {renderSectionHeader(field.label)}
+                      <div
+                        className={`space-y-1 ${
+                          field.type === "textarea" ? "md:col-span-2" : ""
+                        }`}
+                      >
+                        <Label className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
+                          {field.label}:
+                        </Label>
 
-                      {field.type === "checkbox" ? (
-                        <div className="flex items-center gap-4 pt-1 font-medium">
-                          <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-800 dark:text-slate-200">
-                            <Checkbox
-                              checked={field.value === "true"}
-                              onCheckedChange={(v) => updateField(idx, { value: v ? "true" : "" })}
-                              className="h-3.5 w-3.5"
-                            />
-                            <span>Yes</span>
-                          </label>
-                          <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-800 dark:text-slate-200">
-                            <Checkbox
-                              checked={field.value === "false"}
-                              onCheckedChange={(v) => updateField(idx, { value: v ? "false" : "" })}
-                              className="h-3.5 w-3.5"
-                            />
-                            <span>No</span>
-                          </label>
-                        </div>
-                      ) : field.type === "textarea" ? (
-                        <Textarea
-                          value={field.value}
-                          onChange={(e) => updateField(idx, { value: e.target.value })}
-                          rows={3}
-                          placeholder="Enter details..."
-                          className="text-xs leading-relaxed border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 shadow-none w-full"
-                        />
-                      ) : (
-                        <Input
-                          type={field.type === "date" ? "date" : "text"}
-                          value={field.value}
-                          onKeyDown={field.type === "number" ? handleNumberKeyDown : undefined}
-                          onChange={(e) => {
-                            let val = e.target.value;
-                            if (field.type === "number") {
-                              val = val.replace(/[^0-9.-]/g, "");
-                            }
-                            updateField(idx, { value: val });
-                          }}
-                          placeholder={`Enter ${field.label}...`}
-                          className={lineInputClass}
-                        />
-                      )}
-                    </div>
+                        {field.type === "checkbox" ? (
+                          <div className="flex items-center gap-4 pt-1 font-medium">
+                            <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-800 dark:text-slate-200">
+                              <Checkbox
+                                checked={field.value === "true"}
+                                onCheckedChange={(v) => updateField(idx, { value: v ? "true" : "" })}
+                                className="h-3.5 w-3.5"
+                              />
+                              <span>Yes</span>
+                            </label>
+                            <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-800 dark:text-slate-200">
+                              <Checkbox
+                                checked={field.value === "false"}
+                                onCheckedChange={(v) => updateField(idx, { value: v ? "false" : "" })}
+                                className="h-3.5 w-3.5"
+                              />
+                              <span>No</span>
+                            </label>
+                          </div>
+                        ) : field.type === "textarea" ? (
+                          <Textarea
+                            value={field.value}
+                            onChange={(e) => updateField(idx, { value: e.target.value })}
+                            rows={3}
+                            placeholder="Enter details..."
+                            className="text-xs leading-relaxed border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 shadow-none w-full"
+                          />
+                        ) : (
+                          <Input
+                            type={field.type === "date" ? "date" : "text"}
+                            value={field.value}
+                            onKeyDown={field.type === "number" || isNumericLabel(field.label) ? handleNumberKeyDown : undefined}
+                            onChange={(e) => {
+                              let val = e.target.value;
+                              if (field.type === "number" || isNumericLabel(field.label)) {
+                                val = val.replace(/[^0-9.-]/g, "");
+                              }
+                              updateField(idx, { value: val });
+                            }}
+                            placeholder={`Enter ${field.label}...`}
+                            className={lineInputClass}
+                          />
+                        )}
+                      </div>
+                    </React.Fragment>
                   ))}
                 </div>
 
