@@ -668,11 +668,7 @@ const AddNewForm = () => {
                       type="button"
                       size="sm"
                       onClick={() => setViewMode("builder")}
-                      className={`gap-1.5 text-xs font-bold ${
-                        viewMode === "builder"
-                          ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
-                          : "bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
-                      }`}
+                      className="gap-1.5 text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
                     >
                       <Settings2 className="h-4 w-4" /> Edit Fields
                     </Button>
