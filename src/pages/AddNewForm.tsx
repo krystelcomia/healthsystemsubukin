@@ -53,7 +53,7 @@ interface CustomForm {
 
 const STORAGE_KEY = "bhw_custom_forms";
 const DEFAULT_CONVERSION_PROMPT = 
-  "Convert this paper health form into a pixel-perfect digital replica. Replicate the field positioning exactly so the layout remains consistent; the digital form should mirror the appearance of the uploaded original. Remove the boxes and use only lines for a cleaner look. Model the form after existing forms in the system; inputs should be on lines rather than in boxes, and letter input should be restricted when only numbers are required. Include all form elements. Do not repeat section names in individual field labels if a section title is already assigned (e.g. under 'Spouse' header use 'First Name' instead of 'Spouse First Name'). Separate child entries into distinct sub-sections ('Anak 1' / 'Anak 2'). Ensure the form looks clean, creative, organized, and accurate upon deployment. Remove any auto-checked options; these should only be selectable by the user. When deploying, follow the design of other forms: include a title but omit the header for now, unless the form is being printed. Add a print button that functions exactly like those on existing forms. Ensure the official header is included in the printout. Adjust the print layout (portrait or landscape) to ensure the entire form is visible.";
+  "Convert this paper health form into a pixel-perfect digital replica. Replicate the field positioning exactly so the layout remains consistent; the digital form should mirror the appearance of the uploaded original. Remove the boxes and use only lines for a cleaner look. Model the form after existing forms in the system; inputs should be on lines rather than in boxes, and letter input should be restricted when only numbers are required. Include all form elements. Always retain section titles (e.g., 'ASAWA / Spouse Information', 'ANAK / Children Information'). Underneath section titles, list field names simply (e.g. 'First Name', 'Middle Name', 'Surname', 'Birthday') without repeating the section title in every individual label. Separate child entries clearly into 'ANAK 1' (Child 1) and 'ANAK 2' (Child 2). Follow the format of the uploaded paper form precisely. Ensure the form looks clean, creative, organized, and accurate upon deployment. Remove any auto-checked options; these should only be selectable by the user. When deploying, follow the design of other forms: include a title but omit the header for now, unless the form is being printed. Add a print button that functions exactly like those on existing forms. Ensure the official header is included in the printout. Adjust the print layout (portrait or landscape) to ensure the entire form is visible.";
 
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs w-full font-medium";
 
@@ -135,45 +135,29 @@ const AddNewForm = () => {
         setDraftTitle(activeForm.title);
         setCustomTitleInput(activeForm.title);
         setDraftDesc(activeForm.description);
-        setDraftFields(activeForm.fields.map(f => ({
-          ...f,
-          value: f.type === "checkbox" ? "" : f.value
-        })));
-        if (activeForm.imagePreview) setImageData(activeForm.imagePreview);
-        setViewMode("replica");
+        setDraftFields(activeForm.fields || []);
+        setImageData(activeForm.imagePreview || null);
       }
     }
   }, [formId]);
 
   const handleFile = (file: File) => {
-    if (!file) return;
-    if (file.size > 8 * 1024 * 1024) {
-      toast.error("Image is too large (max 8MB).");
-      return;
-    }
     const reader = new FileReader();
-    reader.onload = () => setImageData(reader.result as string);
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setImageData(result);
+      if (draftFields.length === 0) {
+        runScanWithImage(result);
+      }
+    };
     reader.readAsDataURL(file);
   };
 
-  const loadSamplePreset = () => {
-    const title = customTitleInput.trim() || "RHU INFORMATION SHEET - San Juan, Batangas";
-    setDraftTitle(title);
-    setDraftDesc("Isulat ang hinihingi na mga detalye. Huwag gamitin ang apelyido ng asawa kung hindi kasal.");
-    setDraftFields(getRHUInformationSheetFields());
-    setViewMode("replica");
-    toast.success("Converted uploaded RHU Information Sheet into digital replica!");
-  };
-
-  const runScan = async () => {
-    if (!imageData) {
-      toast.error("Please upload or capture a photo of the paper form first.");
-      return;
-    }
+  const runScanWithImage = async (img: string) => {
     setScanning(true);
     try {
       const { data, error } = await supabase.functions.invoke("scan-form", {
-        body: { image: imageData, hint: hint || DEFAULT_CONVERSION_PROMPT },
+        body: { image: img, hint: hint || DEFAULT_CONVERSION_PROMPT },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -183,6 +167,7 @@ const AddNewForm = () => {
             label: String(f.label ?? "Untitled field"),
             type: (["text", "number", "date", "textarea", "checkbox"].includes(f.type) ? f.type : "text") as FieldType,
             value: f.type === "checkbox" ? "" : (f.value != null ? String(f.value) : ""),
+            section: f.section ? String(f.section) : undefined,
           }))
         : [];
 
@@ -202,6 +187,14 @@ const AddNewForm = () => {
     } finally {
       setScanning(false);
     }
+  };
+
+  const runScan = () => {
+    if (!imageData) {
+      toast.error("Please upload or capture a photo of a paper form first!");
+      return;
+    }
+    runScanWithImage(imageData);
   };
 
   const updateField = (idx: number, patch: Partial<DynField>) => {
@@ -229,87 +222,63 @@ const AddNewForm = () => {
   };
 
   const handleDeployForm = () => {
-    const finalTitle = draftTitle.trim() || customTitleInput.trim() || "RHU INFORMATION SHEET";
-    if (!finalTitle) {
-      toast.error("Please assign a title to the form.");
-      return;
-    }
-    if (draftFields.length === 0) {
-      toast.error("Add at least one form field before deploying.");
+    if (!draftTitle.trim()) {
+      toast.error("Please assign a title to the form before deploying.");
       return;
     }
 
     const newForm: CustomForm = {
       id: formId || `custom-${Date.now()}`,
-      title: finalTitle,
-      description: draftDesc.trim() || "Converted digital health form replica",
+      title: draftTitle,
+      description: draftDesc || "Deployed custom health form",
       fields: draftFields,
-      imagePreview: imageData ?? undefined,
+      imagePreview: imageData || undefined,
       createdAt: new Date().toISOString(),
     };
 
-    const existing = loadForms().filter(f => f.id !== newForm.id);
-    const updated = [newForm, ...existing];
+    const existing = loadForms();
+    const updated = formId ? existing.map((f) => (f.id === formId ? newForm : f)) : [newForm, ...existing];
+
     saveForms(updated);
     setSavedForms(updated);
-
-    toast.success(`🚀 Form "${newForm.title}" deployed! Added to Health Forms menu.`);
-    
-    const targetUrl = location.pathname.startsWith("/admin") 
-      ? `/admin/forms/custom/${newForm.id}`
-      : `/forms/custom/${newForm.id}`;
-    navigate(targetUrl);
+    toast.success(`Form "${draftTitle}" deployed successfully! Available in navigation.`);
+    navigate(`/form/${newForm.id}`);
   };
 
-  const deleteSaved = (id: string) => {
-    const updated = loadForms().filter((f) => f.id !== id);
+  const handleDeleteForm = (id: string) => {
+    const updated = savedForms.filter((f) => f.id !== id);
     saveForms(updated);
     setSavedForms(updated);
-    toast.success("Form removed from Health Forms menu.");
+    toast.success("Form deleted.");
     if (formId === id) {
-      navigate("/forms/add-new");
+      navigate("/add-new-form");
     }
   };
 
-  const handleSelectResident = (id: string) => {
-    setSelectedResidentId(id);
-    const res = residents.find(r => r.id === id);
+  const handleSelectResident = (residentId: string) => {
+    setSelectedResidentId(residentId);
+    const res = residents.find(r => r.id === residentId);
     if (res) {
       setDraftFields(prev => prev.map(f => {
         const lbl = f.label.toLowerCase();
-        if (lbl.includes("first name") && !lbl.includes("asawa") && !lbl.includes("anak")) {
-          return { ...f, value: res.first_name || res.full_name.split(" ")[0] || "" };
+        if (lbl.includes("first name") && !lbl.includes("mother") && !lbl.includes("father") && !lbl.includes("asawa") && !lbl.includes("anak") && !lbl.includes("spouse") && !lbl.includes("child")) {
+          return { ...f, value: res.first_name || f.value };
         }
-        if (lbl.includes("middle name") && !lbl.includes("asawa") && !lbl.includes("anak")) {
-          return { ...f, value: res.middle_name || "" };
+        if (lbl.includes("middle name") && !lbl.includes("mother") && !lbl.includes("father") && !lbl.includes("asawa") && !lbl.includes("anak") && !lbl.includes("spouse") && !lbl.includes("child")) {
+          return { ...f, value: res.middle_name || f.value };
         }
-        if (lbl.includes("surname") && !lbl.includes("asawa") && !lbl.includes("anak")) {
-          return { ...f, value: res.last_name || "" };
-        }
-        if (lbl.includes("age") && !lbl.includes("asawa")) {
-          return { ...f, value: res.age ? String(res.age) : f.value };
+        if ((lbl.includes("surname") || lbl.includes("last name")) && !lbl.includes("asawa") && !lbl.includes("anak") && !lbl.includes("spouse") && !lbl.includes("child")) {
+          return { ...f, value: res.last_name || f.value };
         }
         if (lbl.includes("address")) {
           return { ...f, value: res.sitio || "Subukin" };
         }
-        if (lbl.includes("birth") && !lbl.includes("asawa") && !lbl.includes("anak")) {
+        if (lbl.includes("birth") && !lbl.includes("asawa") && !lbl.includes("anak") && !lbl.includes("spouse") && !lbl.includes("child")) {
           return { ...f, value: res.birthday || f.value };
         }
         return f;
       }));
       toast.success(`Auto-filled resident details for: ${res.full_name}`);
-    }
-  };
-
-  const handleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (
-      ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", ".", "-"].includes(e.key) ||
-      (e.ctrlKey && ["a", "c", "v", "x"].includes(e.key.toLowerCase()))
-    ) {
-      return;
-    }
-    if (!/^[0-9]$/.test(e.key)) {
-      e.preventDefault();
     }
   };
 
@@ -322,9 +291,45 @@ const AddNewForm = () => {
     const prevSection = idx > 0 ? draftFields[idx - 1]?.section : undefined;
     if (field.section && field.section !== prevSection && field.section !== "Personal Details") {
       return (
-        <div className="md:col-span-2 pt-4 pb-1 border-b-2 border-emerald-600/30 dark:border-emerald-500/30 mb-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
             {field.section}
+          </p>
+        </div>
+      );
+    }
+    if (idx === 14) {
+      return (
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+            ASAWA (Spouse Information)
+          </p>
+        </div>
+      );
+    }
+    if (idx === 21) {
+      return (
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+            ANAK 1 (Child 1 Information)
+          </p>
+        </div>
+      );
+    }
+    if (idx === 25) {
+      return (
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+            ANAK 2 (Child 2 Information)
+          </p>
+        </div>
+      );
+    }
+    if (idx === 29) {
+      return (
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+            PHYSICIAN VISIT & REMARKS
           </p>
         </div>
       );
@@ -332,8 +337,8 @@ const AddNewForm = () => {
     const label = field.label;
     if (label.startsWith("Spouse First Name") || label.startsWith("ASAWA - First Name")) {
       return (
-        <div className="md:col-span-2 pt-4 pb-1 border-b-2 border-emerald-600/30 dark:border-emerald-500/30 mb-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
             ASAWA (Spouse Information)
           </p>
         </div>
@@ -341,8 +346,8 @@ const AddNewForm = () => {
     }
     if (label.startsWith("Child 1 First Name") || label.startsWith("ANAK 1 - First Name")) {
       return (
-        <div className="md:col-span-2 pt-4 pb-1 border-b-2 border-emerald-600/30 dark:border-emerald-500/30 mb-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
             ANAK 1 (Child 1 Information)
           </p>
         </div>
@@ -350,8 +355,8 @@ const AddNewForm = () => {
     }
     if (label.startsWith("Child 2 First Name") || label.startsWith("ANAK 2 - First Name")) {
       return (
-        <div className="md:col-span-2 pt-4 pb-1 border-b-2 border-emerald-600/30 dark:border-emerald-500/30 mb-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
             ANAK 2 (Child 2 Information)
           </p>
         </div>
@@ -359,8 +364,8 @@ const AddNewForm = () => {
     }
     if (label.startsWith("Physician Visit") || label.startsWith("Will see physician")) {
       return (
-        <div className="md:col-span-2 pt-4 pb-1 border-b-2 border-emerald-600/30 dark:border-emerald-500/30 mb-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
             PHYSICIAN VISIT & REMARKS
           </p>
         </div>
