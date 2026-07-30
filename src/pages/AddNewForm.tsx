@@ -71,21 +71,21 @@ const getRHUInformationSheetFields = (): DynField[] => [
   { label: "PhilHealth Classification (Member / Dependent)", type: "text", value: "" },
   { label: "Kasal Ba? (Oo / Hindi)", type: "checkbox", value: "" },
   { label: "Cellphone Number", type: "text", value: "" },
-  { label: "ASAWA - First Name", type: "text", value: "" },
-  { label: "ASAWA - Middle Name", type: "text", value: "" },
-  { label: "ASAWA - Surname", type: "text", value: "" },
-  { label: "ASAWA - Birthday", type: "date", value: "" },
-  { label: "ASAWA - Mother's Name", type: "text", value: "" },
-  { label: "ASAWA - Father's Name", type: "text", value: "" },
-  { label: "ASAWA - Trabaho (Occupation)", type: "text", value: "Trabaho" },
-  { label: "ANAK 1 - First Name", type: "text", value: "" },
-  { label: "ANAK 1 - Middle Name", type: "text", value: "" },
-  { label: "ANAK 1 - Surname", type: "text", value: "" },
-  { label: "ANAK 1 - Birthday", type: "date", value: "" },
-  { label: "ANAK 2 - First Name", type: "text", value: "" },
-  { label: "ANAK 2 - Middle Name", type: "text", value: "" },
-  { label: "ANAK 2 - Surname", type: "text", value: "" },
-  { label: "ANAK 2 - Birthday", type: "date", value: "" },
+  { label: "Spouse First Name", type: "text", value: "" },
+  { label: "Spouse Middle Name", type: "text", value: "" },
+  { label: "Spouse Surname", type: "text", value: "" },
+  { label: "Spouse Birthday", type: "date", value: "" },
+  { label: "Spouse Mother's Name", type: "text", value: "" },
+  { label: "Spouse Father's Name", type: "text", value: "" },
+  { label: "Spouse Occupation (Trabaho)", type: "text", value: "Trabaho" },
+  { label: "Child 1 First Name", type: "text", value: "" },
+  { label: "Child 1 Middle Name", type: "text", value: "" },
+  { label: "Child 1 Surname", type: "text", value: "" },
+  { label: "Child 1 Birthday", type: "date", value: "" },
+  { label: "Child 2 First Name", type: "text", value: "" },
+  { label: "Child 2 Middle Name", type: "text", value: "" },
+  { label: "Child 2 Surname", type: "text", value: "" },
+  { label: "Child 2 Birthday", type: "date", value: "" },
   { label: "Physician Visit (Will see physician / Will NOT see physician)", type: "checkbox", value: "" },
   { label: "Karagdagang Impormasyon / Remarks (Likod ng Papel)", type: "textarea", value: "" }
 ];
@@ -318,7 +318,7 @@ const AddNewForm = () => {
   };
 
   const renderSectionHeader = (label: string) => {
-    if (label.startsWith("ASAWA - First Name")) {
+    if (label.startsWith("Spouse First Name") || label.startsWith("ASAWA - First Name")) {
       return (
         <div className="md:col-span-2 pt-3 pb-1 border-b border-emerald-600/30 dark:border-emerald-500/30 mb-1">
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
@@ -327,7 +327,7 @@ const AddNewForm = () => {
         </div>
       );
     }
-    if (label.startsWith("ANAK 1 - First Name")) {
+    if (label.startsWith("Child 1 First Name") || label.startsWith("ANAK 1 - First Name")) {
       return (
         <div className="md:col-span-2 pt-3 pb-1 border-b border-emerald-600/30 dark:border-emerald-500/30 mb-1">
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
@@ -336,7 +336,7 @@ const AddNewForm = () => {
         </div>
       );
     }
-    if (label.startsWith("Physician Visit")) {
+    if (label.startsWith("Physician Visit") || label.startsWith("Will see physician")) {
       return (
         <div className="md:col-span-2 pt-3 pb-1 border-b border-emerald-600/30 dark:border-emerald-500/30 mb-1">
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
