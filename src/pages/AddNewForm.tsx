@@ -282,6 +282,28 @@ const AddNewForm = () => {
     }
   };
 
+  const handleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (
+      ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", ".", "-"].includes(e.key) ||
+      (e.ctrlKey && ["a", "c", "v", "x"].includes(e.key.toLowerCase()))
+    ) {
+      return;
+    }
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const deleteSaved = (id: string) => {
+    const updated = savedForms.filter((f) => f.id !== id);
+    saveForms(updated);
+    setSavedForms(updated);
+    toast.success("Form deleted.");
+    if (formId === id) {
+      navigate("/add-new-form");
+    }
+  };
+
   const isNumericLabel = (lbl: string): boolean => {
     const l = lbl.toLowerCase();
     return l.includes("number") || l.includes("cellphone") || l.includes("phone") || l.includes("philhealth");
