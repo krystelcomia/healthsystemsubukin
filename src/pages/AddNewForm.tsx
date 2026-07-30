@@ -440,12 +440,22 @@ const AddNewForm = () => {
           #digital-replica-print-area .header-seal {
             display: none !important;
           }
+          #digital-replica-print-area input.print-title-input {
+            border: none !important;
+            border-bottom: none !important;
+            box-shadow: none !important;
+            font-size: 10px !important;
+            font-weight: 800 !important;
+            text-transform: none !important;
+            padding: 0 !important;
+            margin-bottom: 2px !important;
+            height: 16px !important;
+          }
           /* Reduced font size and compact spacing for 1/4 sheet fit */
           #digital-replica-print-area label,
           #digital-replica-print-area p,
           #digital-replica-print-area span,
-          #digital-replica-print-area input,
-          #digital-replica-print-area textarea {
+          #digital-replica-print-area input {
             color: #000 !important;
             -webkit-text-fill-color: #000 !important;
             opacity: 1 !important;
@@ -465,11 +475,13 @@ const AddNewForm = () => {
             background: transparent !important;
             box-shadow: none !important;
           }
+          /* Hide remarks textarea space on print as it will be written on the back */
           #digital-replica-print-area textarea {
-            height: 14px !important;
-            font-size: 7.5px !important;
-            padding: 0 1px !important;
-            border-bottom: 1px solid #000 !important;
+            display: none !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
           }
           #digital-replica-print-area .grid {
             display: grid !important;
@@ -488,13 +500,17 @@ const AddNewForm = () => {
             font-size: 7.5px !important;
             font-weight: 800 !important;
           }
-          /* Hide placeholder text when printing */
+          /* Hide guide/sample placeholder text completely when printing */
+          #digital-replica-print-area ::placeholder,
+          #digital-replica-print-area input::placeholder,
+          #digital-replica-print-area textarea::placeholder,
           ::placeholder,
           ::-webkit-input-placeholder,
           ::-moz-placeholder,
           :-ms-input-placeholder,
           input::placeholder,
           textarea::placeholder {
+            display: none !important;
             color: transparent !important;
             opacity: 0 !important;
             -webkit-text-fill-color: transparent !important;
@@ -693,7 +709,7 @@ const AddNewForm = () => {
                         setCustomTitleInput(e.target.value);
                       }}
                       placeholder="Assign Form Title..."
-                      className="text-lg md:text-xl font-bold font-heading uppercase tracking-wide border-b-2 border-slate-400 bg-transparent rounded-none px-1 h-9 focus-visible:ring-0 focus-visible:border-slate-800 text-slate-900 dark:text-slate-100 w-full"
+                      className="text-lg md:text-xl font-bold font-heading print-title-input tracking-wide border-b-2 border-slate-400 bg-transparent rounded-none px-1 h-9 focus-visible:ring-0 focus-visible:border-slate-800 text-slate-900 dark:text-slate-100 w-full"
                     />
                     <p className="text-xs text-slate-600 dark:text-slate-400 no-print">
                       {draftDesc || "Official Digital Replica converted from Paper Health Form (Barangay Subukin Health Center)"}
@@ -725,7 +741,7 @@ const AddNewForm = () => {
                       {renderSectionHeader(field, idx)}
                       <div
                         className={`space-y-1 ${
-                          field.type === "textarea" ? "md:col-span-2" : ""
+                          field.type === "textarea" ? "md:col-span-2 no-print" : ""
                         }`}
                       >
                         <Label className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
