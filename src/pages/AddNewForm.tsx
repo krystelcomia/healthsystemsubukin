@@ -466,9 +466,9 @@ const AddNewForm = () => {
             box-shadow: none !important;
           }
           #digital-replica-print-area textarea {
-            height: 22px !important;
+            height: 14px !important;
             font-size: 7.5px !important;
-            padding: 1px !important;
+            padding: 0 1px !important;
             border-bottom: 1px solid #000 !important;
           }
           #digital-replica-print-area .grid {
@@ -675,15 +675,15 @@ const AddNewForm = () => {
             <Card id="digital-replica-print-area" className="border border-slate-300 dark:border-slate-700 shadow-md bg-card text-card-foreground">
               <CardContent className="p-6 md:p-8 space-y-6">
                 
-                {/* Official Barangay Printable Header (Omitted on screen, included when printing) */}
-                <div className="header-seal hidden print:flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6">
+                {/* Official Barangay Printable Header (Hidden) */}
+                <div className="header-seal hidden no-print">
                   <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
                   <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" />
                   <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
                 </div>
 
                 {/* Form Title Banner & Resident Linker */}
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-border/50">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-2 border-b border-border/50">
                   <div className="flex-1 space-y-1">
                     <Input
                       type="text"
@@ -695,7 +695,7 @@ const AddNewForm = () => {
                       placeholder="Assign Form Title..."
                       className="text-lg md:text-xl font-bold font-heading uppercase tracking-wide border-b-2 border-slate-400 bg-transparent rounded-none px-1 h-9 focus-visible:ring-0 focus-visible:border-slate-800 text-slate-900 dark:text-slate-100 w-full"
                     />
-                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 no-print">
                       {draftDesc || "Official Digital Replica converted from Paper Health Form (Barangay Subukin Health Center)"}
                     </p>
                   </div>
@@ -755,7 +755,7 @@ const AddNewForm = () => {
                           <Textarea
                             value={field.value}
                             onChange={(e) => updateField(idx, { value: e.target.value })}
-                            rows={3}
+                            rows={2}
                             placeholder="Enter details..."
                             className="text-xs leading-relaxed border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 shadow-none w-full"
                           />
@@ -781,8 +781,8 @@ const AddNewForm = () => {
                 </div>
 
                 {/* Bottom Signature & Information Bar */}
-                <div className="pt-6 border-t border-slate-300 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
-                  <div className="text-xs text-slate-600 dark:text-slate-400 space-y-0.5">
+                <div className="pt-4 border-t border-slate-300 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="text-xs text-slate-600 dark:text-slate-400 space-y-0.5 no-print">
                     <p className="font-bold text-slate-900 dark:text-slate-100">Barangay Subukin Health Center Services</p>
                     <p className="italic text-[11px]">Inputs modeled on lines with official header seal in printable format.</p>
                   </div>
