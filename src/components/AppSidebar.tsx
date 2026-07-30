@@ -22,6 +22,7 @@ import {
   Stethoscope,
   Heart,
   HeartPulse,
+  Syringe,
   Bug,
   Baby,
   Settings,
@@ -80,7 +81,7 @@ export function AppSidebar() {
     { title: t("nav.denguePrevention"), url: "/forms/dengue-prevention", icon: Bug },
     { title: t("nav.maternalCare"), url: "/forms/maternal-care", icon: HeartPulse },
     { title: t("nav.childHealth"), url: "/forms/child-health", icon: Baby },
-    { title: t("nav.familyPlanning"), url: "/forms/family-planning", icon: Heart },
+    { title: t("nav.familyPlanning"), url: "/forms/family-planning", icon: Syringe },
     ...customBhwItems,
     { title: "Add New Form", url: "/forms/add-new", icon: Plus },
   ];
@@ -113,7 +114,7 @@ export function AppSidebar() {
     { title: t("nav.denguePrevention"), url: "/admin/forms/dengue-prevention", icon: Bug },
     { title: t("nav.maternalCare"), url: "/admin/forms/maternal-care", icon: HeartPulse },
     { title: t("nav.childHealth"), url: "/admin/forms/child-health", icon: Baby },
-    { title: t("nav.familyPlanning"), url: "/admin/forms/family-planning", icon: Heart },
+    { title: t("nav.familyPlanning"), url: "/admin/forms/family-planning", icon: Syringe },
     ...customAdminItems,
     { title: "Add New Form", url: "/admin/forms/add-new", icon: Plus },
   ];

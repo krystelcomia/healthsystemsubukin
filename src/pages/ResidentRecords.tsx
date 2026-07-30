@@ -19,6 +19,7 @@ import {
   Calendar, 
   Heart, 
   HeartPulse, 
+  Syringe, 
   Activity, 
   LayoutGrid, 
   List as ListIcon, 
@@ -553,7 +554,7 @@ const ResidentRecords = () => {
           {healthRecords.family_planning.length > 0 && (
             <div>
               <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <Activity className="h-4 w-4 text-indigo-600" /> {t("nav.familyPlanning")} ({healthRecords.family_planning.length})
+                <Syringe className="h-4 w-4 text-indigo-600" /> {t("nav.familyPlanning")} ({healthRecords.family_planning.length})
               </h3>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
