@@ -318,21 +318,42 @@ const AddNewForm = () => {
         @media print {
           @page {
             size: portrait;
-            margin: 10mm;
+            margin: 8mm;
           }
-          body * { visibility: hidden !important; }
-          #digital-replica-print-area, #digital-replica-print-area * { visibility: visible !important; }
-          .no-print { display: none !important; }
+          body * {
+            visibility: hidden !important;
+          }
+          #digital-replica-print-area, #digital-replica-print-area * {
+            visibility: visible !important;
+          }
+          .no-print {
+            display: none !important;
+          }
           #digital-replica-print-area {
             position: absolute !important;
-            left: 0 !important; top: 0 !important;
-            width: 100% !important; background: white !important;
-            padding: 0 !important; margin: 0 !important;
-            box-shadow: none !important; border: none !important; color: black !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            padding: 8px !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            color: black !important;
           }
           html, body {
             height: 100% !important;
             overflow: visible !important;
+          }
+          /* Ensure crisp black text for labels, inputs, and text elements */
+          #digital-replica-print-area label,
+          #digital-replica-print-area p,
+          #digital-replica-print-area span,
+          #digital-replica-print-area input,
+          #digital-replica-print-area textarea {
+            color: #000 !important;
+            -webkit-text-fill-color: #000 !important;
+            opacity: 1 !important;
           }
           /* Hide placeholder text when printing so form prints with clean underline lines */
           ::placeholder,
@@ -353,6 +374,7 @@ const AddNewForm = () => {
           }
           input:placeholder-shown {
             color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
           }
           input[type="date"]::-webkit-calendar-picker-indicator {
             display: none !important;
@@ -361,6 +383,12 @@ const AddNewForm = () => {
           input {
             border-bottom: 1.5px solid #000 !important;
             background: transparent !important;
+            box-shadow: none !important;
+          }
+          .header-seal {
+            border-bottom: 4px double #000 !important;
+            padding-bottom: 8px !important;
+            margin-bottom: 12px !important;
           }
         }
       `}</style>
