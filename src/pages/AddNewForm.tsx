@@ -39,6 +39,7 @@ interface DynField {
   label: string;
   type: FieldType;
   value: string;
+  section?: string;
 }
 
 interface CustomForm {
@@ -52,42 +53,42 @@ interface CustomForm {
 
 const STORAGE_KEY = "bhw_custom_forms";
 const DEFAULT_CONVERSION_PROMPT = 
-  "Convert this paper health form into a pixel-perfect digital replica. Replicate the field positioning exactly so the layout remains consistent; the digital form should mirror the appearance of the uploaded original. Remove the boxes and use only lines for a cleaner look. Model the form after existing forms in the system; inputs should be on lines rather than in boxes, and letter input should be restricted when only numbers are required. Include all form elements. Avoid word redundancy in field labels (do not repeat section names in individual labels) for maximum clarity and ease of execution. Ensure the form looks clean, creative, and professional upon deployment. Remove any auto-checked options; these should only be selectable by the user. When deploying, follow the design of other forms: include a title but omit the header for now, unless the form is being printed. Add a print button that functions exactly like those on existing forms. Ensure the official header is included in the printout. Adjust the print layout (portrait or landscape) to ensure the entire form is visible.";
+  "Convert this paper health form into a pixel-perfect digital replica. Replicate the field positioning exactly so the layout remains consistent; the digital form should mirror the appearance of the uploaded original. Remove the boxes and use only lines for a cleaner look. Model the form after existing forms in the system; inputs should be on lines rather than in boxes, and letter input should be restricted when only numbers are required. Include all form elements. Do not repeat section names in individual field labels if a section title is already assigned (e.g. under 'Spouse' header use 'First Name' instead of 'Spouse First Name'). Separate child entries into distinct sub-sections ('Anak 1' / 'Anak 2'). Ensure the form looks clean, creative, organized, and accurate upon deployment. Remove any auto-checked options; these should only be selectable by the user. When deploying, follow the design of other forms: include a title but omit the header for now, unless the form is being printed. Add a print button that functions exactly like those on existing forms. Ensure the official header is included in the printout. Adjust the print layout (portrait or landscape) to ensure the entire form is visible.";
 
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs w-full font-medium";
 
 const getRHUInformationSheetFields = (): DynField[] => [
-  { label: "First Name", type: "text", value: "Zyrus" },
-  { label: "Middle Name", type: "text", value: "Tañang" },
-  { label: "Surname", type: "text", value: "Macatangay" },
-  { label: "Birthday", type: "date", value: "2010-02-09" },
-  { label: "Age", type: "text", value: "1 1/12" },
-  { label: "Address", type: "text", value: "Subukin" },
-  { label: "Occupation (TRABAHO)", type: "text", value: "" },
-  { label: "Educational Attainment (NATAPOS)", type: "text", value: "" },
-  { label: "Mother's Name (Pangalan ng Ina)", type: "text", value: "" },
-  { label: "Father's Name (Pangalan ng Ama)", type: "text", value: "" },
-  { label: "PHILHEALTH NUMBER", type: "text", value: "" },
-  { label: "PhilHealth Classification (Member / Dependent)", type: "text", value: "" },
-  { label: "Kasal Ba? (Oo / Hindi)", type: "checkbox", value: "" },
-  { label: "Cellphone Number", type: "text", value: "" },
-  { label: "Spouse First Name", type: "text", value: "" },
-  { label: "Spouse Middle Name", type: "text", value: "" },
-  { label: "Spouse Surname", type: "text", value: "" },
-  { label: "Spouse Birthday", type: "date", value: "" },
-  { label: "Spouse Mother's Name", type: "text", value: "" },
-  { label: "Spouse Father's Name", type: "text", value: "" },
-  { label: "Spouse Occupation (Trabaho)", type: "text", value: "Trabaho" },
-  { label: "Child 1 First Name", type: "text", value: "" },
-  { label: "Child 1 Middle Name", type: "text", value: "" },
-  { label: "Child 1 Surname", type: "text", value: "" },
-  { label: "Child 1 Birthday", type: "date", value: "" },
-  { label: "Child 2 First Name", type: "text", value: "" },
-  { label: "Child 2 Middle Name", type: "text", value: "" },
-  { label: "Child 2 Surname", type: "text", value: "" },
-  { label: "Child 2 Birthday", type: "date", value: "" },
-  { label: "Physician Visit (Will see physician / Will NOT see physician)", type: "checkbox", value: "" },
-  { label: "Karagdagang Impormasyon / Remarks (Likod ng Papel)", type: "textarea", value: "" }
+  { label: "First Name", type: "text", value: "Zyrus", section: "Personal Details" },
+  { label: "Middle Name", type: "text", value: "Tañang", section: "Personal Details" },
+  { label: "Surname", type: "text", value: "Macatangay", section: "Personal Details" },
+  { label: "Birthday", type: "date", value: "2010-02-09", section: "Personal Details" },
+  { label: "Age", type: "text", value: "1 1/12", section: "Personal Details" },
+  { label: "Address", type: "text", value: "Subukin", section: "Personal Details" },
+  { label: "Occupation (TRABAHO)", type: "text", value: "", section: "Personal Details" },
+  { label: "Educational Attainment (NATAPOS)", type: "text", value: "", section: "Personal Details" },
+  { label: "Mother's Name (Pangalan ng Ina)", type: "text", value: "", section: "Personal Details" },
+  { label: "Father's Name (Pangalan ng Ama)", type: "text", value: "", section: "Personal Details" },
+  { label: "PHILHEALTH NUMBER", type: "text", value: "", section: "Personal Details" },
+  { label: "PhilHealth Classification (Member / Dependent)", type: "text", value: "", section: "Personal Details" },
+  { label: "Kasal Ba? (Oo / Hindi)", type: "checkbox", value: "", section: "Personal Details" },
+  { label: "Cellphone Number", type: "text", value: "", section: "Personal Details" },
+  { label: "First Name", type: "text", value: "", section: "ASAWA (Spouse Information)" },
+  { label: "Middle Name", type: "text", value: "", section: "ASAWA (Spouse Information)" },
+  { label: "Surname", type: "text", value: "", section: "ASAWA (Spouse Information)" },
+  { label: "Birthday", type: "date", value: "", section: "ASAWA (Spouse Information)" },
+  { label: "Mother's Name", type: "text", value: "", section: "ASAWA (Spouse Information)" },
+  { label: "Father's Name", type: "text", value: "", section: "ASAWA (Spouse Information)" },
+  { label: "Trabaho (Occupation)", type: "text", value: "Trabaho", section: "ASAWA (Spouse Information)" },
+  { label: "First Name", type: "text", value: "", section: "ANAK 1 (Child 1 Information)" },
+  { label: "Middle Name", type: "text", value: "", section: "ANAK 1 (Child 1 Information)" },
+  { label: "Surname", type: "text", value: "", section: "ANAK 1 (Child 1 Information)" },
+  { label: "Birthday", type: "date", value: "", section: "ANAK 1 (Child 1 Information)" },
+  { label: "First Name", type: "text", value: "", section: "ANAK 2 (Child 2 Information)" },
+  { label: "Middle Name", type: "text", value: "", section: "ANAK 2 (Child 2 Information)" },
+  { label: "Surname", type: "text", value: "", section: "ANAK 2 (Child 2 Information)" },
+  { label: "Birthday", type: "date", value: "", section: "ANAK 2 (Child 2 Information)" },
+  { label: "Physician Visit (Will see physician / Will NOT see physician)", type: "checkbox", value: "", section: "PHYSICIAN VISIT & REMARKS" },
+  { label: "Karagdagang Impormasyon / Remarks (Likod ng Papel)", type: "textarea", value: "", section: "PHYSICIAN VISIT & REMARKS" }
 ];
 
 const loadForms = (): CustomForm[] => {
@@ -317,10 +318,21 @@ const AddNewForm = () => {
     return l.includes("number") || l.includes("cellphone") || l.includes("phone") || l.includes("philhealth");
   };
 
-  const renderSectionHeader = (label: string) => {
+  const renderSectionHeader = (field: DynField, idx: number) => {
+    const prevSection = idx > 0 ? draftFields[idx - 1]?.section : undefined;
+    if (field.section && field.section !== prevSection && field.section !== "Personal Details") {
+      return (
+        <div className="md:col-span-2 pt-4 pb-1 border-b-2 border-emerald-600/30 dark:border-emerald-500/30 mb-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+            {field.section}
+          </p>
+        </div>
+      );
+    }
+    const label = field.label;
     if (label.startsWith("Spouse First Name") || label.startsWith("ASAWA - First Name")) {
       return (
-        <div className="md:col-span-2 pt-3 pb-1 border-b border-emerald-600/30 dark:border-emerald-500/30 mb-1">
+        <div className="md:col-span-2 pt-4 pb-1 border-b-2 border-emerald-600/30 dark:border-emerald-500/30 mb-1">
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
             ASAWA (Spouse Information)
           </p>
@@ -329,16 +341,25 @@ const AddNewForm = () => {
     }
     if (label.startsWith("Child 1 First Name") || label.startsWith("ANAK 1 - First Name")) {
       return (
-        <div className="md:col-span-2 pt-3 pb-1 border-b border-emerald-600/30 dark:border-emerald-500/30 mb-1">
+        <div className="md:col-span-2 pt-4 pb-1 border-b-2 border-emerald-600/30 dark:border-emerald-500/30 mb-1">
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
-            ANAK (Isulat ang apelyidong ginamit sa Birth Certificate ng iyong anak)
+            ANAK 1 (Child 1 Information)
+          </p>
+        </div>
+      );
+    }
+    if (label.startsWith("Child 2 First Name") || label.startsWith("ANAK 2 - First Name")) {
+      return (
+        <div className="md:col-span-2 pt-4 pb-1 border-b-2 border-emerald-600/30 dark:border-emerald-500/30 mb-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+            ANAK 2 (Child 2 Information)
           </p>
         </div>
       );
     }
     if (label.startsWith("Physician Visit") || label.startsWith("Will see physician")) {
       return (
-        <div className="md:col-span-2 pt-3 pb-1 border-b border-emerald-600/30 dark:border-emerald-500/30 mb-1">
+        <div className="md:col-span-2 pt-4 pb-1 border-b-2 border-emerald-600/30 dark:border-emerald-500/30 mb-1">
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
             PHYSICIAN VISIT & REMARKS
           </p>
@@ -635,7 +656,7 @@ const AddNewForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
                   {draftFields.map((field, idx) => (
                     <React.Fragment key={idx}>
-                      {renderSectionHeader(field.label)}
+                      {renderSectionHeader(field, idx)}
                       <div
                         className={`space-y-1 ${
                           field.type === "textarea" ? "md:col-span-2" : ""
