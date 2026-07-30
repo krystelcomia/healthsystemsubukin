@@ -109,7 +109,7 @@ const AddNewForm = () => {
 
   const [imageData, setImageData] = useState<string | null>(null);
   const [hint, setHint] = useState<string>(DEFAULT_CONVERSION_PROMPT);
-  const [customTitleInput, setCustomTitleInput] = useState<string>("RHU INFORMATION SHEET - San Juan, Batangas");
+  const [customTitleInput, setCustomTitleInput] = useState<string>("");
   const [scanning, setScanning] = useState<boolean>(false);
   const [draftTitle, setDraftTitle] = useState<string>("");
   const [draftDesc, setDraftDesc] = useState<string>("");
@@ -185,16 +185,16 @@ const AddNewForm = () => {
           }))
         : [];
 
-      const assignedTitle = customTitleInput.trim() || String(data?.title || "RHU INFORMATION SHEET - San Juan, Batangas");
+      const assignedTitle = customTitleInput.trim() || String(data?.title || "Custom Health Form");
       setDraftTitle(assignedTitle);
-      setDraftDesc(String(data?.description || "Isulat ang hinihingi na mga detalye. Huwag gamitin ang apelyido ng asawa kung hindi kasal."));
+      setDraftDesc(String(data?.description || "Official Digital Replica converted from Paper Health Form (Barangay Subukin Health Center)"));
       setDraftFields(fields.length > 0 ? fields : getRHUInformationSheetFields());
       setViewMode("replica");
       toast.success(`Digital replica created for "${assignedTitle}"!`);
     } catch (e: any) {
-      const assignedTitle = customTitleInput.trim() || "RHU INFORMATION SHEET - San Juan, Batangas";
+      const assignedTitle = customTitleInput.trim() || "Custom Health Form";
       setDraftTitle(assignedTitle);
-      setDraftDesc("Isulat ang hinihingi na mga detalye. Huwag gamitin ang apelyido ng asawa kung hindi kasal.");
+      setDraftDesc("Official Digital Replica converted from Paper Health Form (Barangay Subukin Health Center)");
       setDraftFields(getRHUInformationSheetFields());
       setViewMode("replica");
       toast.success(`Converted paper form into digital replica for "${assignedTitle}"!`);
@@ -220,7 +220,7 @@ const AddNewForm = () => {
   const fullReset = () => {
     setImageData(null);
     setHint(DEFAULT_CONVERSION_PROMPT);
-    setCustomTitleInput("RHU INFORMATION SHEET - San Juan, Batangas");
+    setCustomTitleInput("");
     setDraftTitle("");
     setDraftDesc("");
     setDraftFields([]);
@@ -477,7 +477,7 @@ const AddNewForm = () => {
                       setCustomTitleInput(e.target.value);
                       setDraftTitle(e.target.value);
                     }}
-                    placeholder="e.g. RHU INFORMATION SHEET - San Juan, Batangas"
+                    placeholder="Enter form title (e.g. RHU Information Sheet)..."
                     className="text-xs h-9 bg-background font-medium"
                   />
                 </div>
