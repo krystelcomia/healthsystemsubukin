@@ -52,7 +52,7 @@ interface CustomForm {
 
 const STORAGE_KEY = "bhw_custom_forms";
 const DEFAULT_CONVERSION_PROMPT = 
-  "Convert this paper health form into a pixel-perfect digital replica. Replicate the field positioning exactly so the layout remains consistent; the digital form should mirror the appearance of the uploaded original. Remove the boxes and use only lines for a cleaner look. Model the form after existing forms in the system; inputs should be on lines rather than in boxes, and letter input should be restricted when only numbers are required. Include all form elements. Remove any auto-checked options; these should only be selectable by the user. When deploying, follow the design of other forms: include a title but omit the header for now, unless the form is being printed. Add a print button that functions exactly like those on existing forms. Ensure the official header is included in the printout. Adjust the print layout (portrait or landscape) to ensure the entire form is visible.";
+  "Convert this paper health form into a pixel-perfect digital replica. Replicate the field positioning exactly so the layout remains consistent; the digital form should mirror the appearance of the uploaded original. Remove the boxes and use only lines for a cleaner look. Model the form after existing forms in the system; inputs should be on lines rather than in boxes, and letter input should be restricted when only numbers are required. Include all form elements. Avoid word redundancy in field labels (do not repeat section names in individual labels) for maximum clarity and ease of execution. Ensure the form looks clean, creative, and professional upon deployment. Remove any auto-checked options; these should only be selectable by the user. When deploying, follow the design of other forms: include a title but omit the header for now, unless the form is being printed. Add a print button that functions exactly like those on existing forms. Ensure the official header is included in the printout. Adjust the print layout (portrait or landscape) to ensure the entire form is visible.";
 
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs w-full font-medium";
 
@@ -533,7 +533,7 @@ const AddNewForm = () => {
                     className="text-xs leading-relaxed"
                   />
                   <p className="text-[11px] text-muted-foreground italic">
-                    Inputs will be rendered on underline lines rather than boxes, letter input restricted for number fields, auto-checked options removed, and official printable headers included.
+                    Inputs will be rendered on underline lines rather than boxes, letter input restricted for number fields, label word redundancy avoided, auto-checked options removed, and clean creative deployment layouts enforced.
                   </p>
                 </div>
 
