@@ -413,7 +413,7 @@ const AddNewForm = () => {
           .no-print {
             display: none !important;
           }
-          /* Fit entire form onto 1/4 of long bond paper (4.125in x 6.375in) */
+          /* Fit entire form onto 1/4 of long bond paper (4.125in x 6.375in) without header seal */
           #digital-replica-print-area {
             position: absolute !important;
             left: 0 !important;
@@ -421,21 +421,24 @@ const AddNewForm = () => {
             width: 4.125in !important;
             max-width: 50% !important;
             height: auto !important;
-            max-height: 6.375in !important;
             background: white !important;
-            padding: 4px 6px !important;
+            padding: 2px 4px !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: 1px dashed #aaa !important;
             color: black !important;
-            font-size: 8px !important;
-            line-height: 1.15 !important;
+            font-size: 7.5px !important;
+            line-height: 1.1 !important;
             overflow: hidden !important;
             transform-origin: top left !important;
           }
           html, body {
             height: 100% !important;
             overflow: visible !important;
+          }
+          /* Remove top header seal on print out as requested */
+          #digital-replica-print-area .header-seal {
+            display: none !important;
           }
           /* Reduced font size and compact spacing for 1/4 sheet fit */
           #digital-replica-print-area label,
@@ -446,53 +449,43 @@ const AddNewForm = () => {
             color: #000 !important;
             -webkit-text-fill-color: #000 !important;
             opacity: 1 !important;
-            font-size: 8px !important;
+            font-size: 7.5px !important;
           }
           #digital-replica-print-area label {
             font-weight: 700 !important;
-            font-size: 8px !important;
+            font-size: 7.5px !important;
             line-height: 1 !important;
-            margin-bottom: 1px !important;
+            margin-bottom: 0px !important;
           }
           #digital-replica-print-area input {
-            height: 15px !important;
-            font-size: 8px !important;
-            padding: 0 2px !important;
+            height: 13px !important;
+            font-size: 7.5px !important;
+            padding: 0 1px !important;
             border-bottom: 1px solid #000 !important;
             background: transparent !important;
             box-shadow: none !important;
           }
           #digital-replica-print-area textarea {
-            height: 26px !important;
-            font-size: 8px !important;
-            padding: 2px !important;
+            height: 22px !important;
+            font-size: 7.5px !important;
+            padding: 1px !important;
             border-bottom: 1px solid #000 !important;
           }
           #digital-replica-print-area .grid {
             display: grid !important;
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            column-gap: 8px !important;
-            row-gap: 3px !important;
-            padding-top: 2px !important;
-          }
-          #digital-replica-print-area .header-seal {
-            border-bottom: 2.5px double #000 !important;
-            padding-bottom: 4px !important;
-            margin-bottom: 4px !important;
-            gap: 6px !important;
-          }
-          #digital-replica-print-area .header-seal img {
-            height: 26px !important;
-            width: auto !important;
+            column-gap: 6px !important;
+            row-gap: 2px !important;
+            padding-top: 1px !important;
           }
           #digital-replica-print-area .border-b-2 {
-            padding-top: 3px !important;
+            padding-top: 2px !important;
             padding-bottom: 1px !important;
-            margin-bottom: 2px !important;
+            margin-bottom: 1px !important;
             border-bottom-width: 1px !important;
           }
           #digital-replica-print-area .border-b-2 p {
-            font-size: 8px !important;
+            font-size: 7.5px !important;
             font-weight: 800 !important;
           }
           /* Hide placeholder text when printing */
