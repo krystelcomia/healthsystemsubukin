@@ -1081,6 +1081,41 @@ const ChildHealthForm = () => {
         }
       `}</style>
 
+      {/* Dynamic Theme Banner */}
+      <div className="no-print bg-gradient-to-r from-sky-500/15 via-indigo-500/10 to-card border border-sky-500/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 shadow-xs">
+            <Baby className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight flex items-center gap-2">
+              {t("child.title") || "Child Health & Immunization Registry"}
+              <Badge variant="outline" className="bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5">
+                IMCI & RHU2 Masterlist
+              </Badge>
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Comprehensive pediatric clinical management (Care for Sick Children 2m–5y), routine Vitamin A & Deworming distribution, and SIA vaccine masterlisting for Barangay Subukin.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 self-stretch md:self-auto justify-end flex-wrap">
+          <div className="bg-card/80 border border-border/60 rounded-xl px-3.5 py-1.5 text-center shrink-0 shadow-2xs">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground block">Sick Child Records</span>
+            <span className="text-sm font-extrabold text-sky-600 dark:text-sky-400">{sickRecordsCount}</span>
+          </div>
+          <div className="bg-card/80 border border-border/60 rounded-xl px-3.5 py-1.5 text-center shrink-0 shadow-2xs">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground block">Vit A / Deworming</span>
+            <span className="text-sm font-extrabold text-amber-600 dark:text-amber-400">{vitARecordsCount}</span>
+          </div>
+          <div className="bg-card/80 border border-border/60 rounded-xl px-3.5 py-1.5 text-center shrink-0 shadow-2xs">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground block">SIA Vaccine Entries</span>
+            <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">{siaRecordsCount}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Main Container Card */}
       <Card id="child-print-area" className="border border-border/50 shadow-md bg-card text-card-foreground overflow-visible">
         <CardContent className="p-4 md:p-6 space-y-5 overflow-visible">

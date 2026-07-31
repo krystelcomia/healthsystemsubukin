@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Heart, Plus, Pencil, Trash2, Printer, RefreshCw, Save, Search, Eye, Stethoscope, Calendar, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -574,28 +575,50 @@ const FamilyPlanningForm = () => {
         }
       `}</style>
 
-      {/* Top Header Controls Bar */}
+      {/* Dynamic Theme Banner */}
+      <div className="no-print bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-card border border-emerald-500/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-xs">
+            <Heart className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight flex items-center gap-2">
+              {t("fp.title") || "Family Planning Client Assessment Record"}
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5">
+                DOH FP FORM 1
+              </Badge>
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Official Digital Replica of Department of Health FP Form 1 (Side A & Side B) – Client clinical assessment, medical history evaluation, method tracking, and follow-up records.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 self-stretch md:self-auto justify-end flex-wrap">
+          <div className="bg-card/80 border border-border/60 rounded-xl px-4 py-2 text-center shrink-0 shadow-2xs">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground block">Registered Clients</span>
+            <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">{savedRecords.length}</span>
+          </div>
+          <div className="bg-card/80 border border-border/60 rounded-xl px-4 py-2 text-center shrink-0 shadow-2xs">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground block">Sections Included</span>
+            <span className="text-base font-extrabold text-teal-600 dark:text-teal-400">Side A & Side B</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Toolbar & Resident Selector Bar */}
       <Card className="border-border/50 shadow-xs no-print">
         <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <div className="p-2 bg-emerald-100 dark:bg-emerald-950/60 rounded-full text-emerald-700 dark:text-emerald-300">
-              <Heart className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-foreground font-heading">
-                Family Planning Client Assessment Record (FP FORM 1)
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Official Digital Replica of Department of Health FP Form 1 (Side A & Side B)
-              </p>
-            </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Select a registered resident to auto-fill demographic info:</span>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap shrink-0">
-            <div className="w-48 shrink-0">
+            <div className="w-56 shrink-0">
               <Select value={selectedResidentId} onValueChange={handleSelectResident}>
-                <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Select Resident" />
+                <SelectTrigger className="h-9 text-xs bg-background">
+                  <SelectValue placeholder="Pumili ng Residente..." />
                 </SelectTrigger>
                 <SelectContent>
                   {residents.map((r) => (
@@ -608,11 +631,11 @@ const FamilyPlanningForm = () => {
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <Button type="button" variant="outline" size="sm" onClick={handleResetForm} className="gap-1 text-xs text-destructive hover:bg-destructive/10 shrink-0 whitespace-nowrap">
-                <RefreshCw className="h-3.5 w-3.5" /> Reset
+              <Button type="button" variant="outline" size="sm" onClick={handleResetForm} className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 shrink-0 whitespace-nowrap">
+                <RefreshCw className="h-3.5 w-3.5" /> Reset Form
               </Button>
 
-              <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs shrink-0 whitespace-nowrap">
+              <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs border-primary/20 text-primary hover:bg-primary/10 shrink-0 whitespace-nowrap">
                 <Printer className="h-4 w-4" /> Print Form
               </Button>
             </div>
