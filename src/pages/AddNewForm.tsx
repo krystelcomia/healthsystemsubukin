@@ -173,17 +173,16 @@ const AddNewForm = () => {
 
       const assignedTitle = customTitleInput.trim() || String(data?.title || "Custom Health Form");
       setDraftTitle(assignedTitle);
-      setDraftDesc(String(data?.description || "Official Digital Replica converted from Paper Health Form (Barangay Subukin Health Center)"));
-      setDraftFields(fields.length > 0 ? fields : getRHUInformationSheetFields());
-      setViewMode("replica");
-      toast.success(`Digital replica created for "${assignedTitle}"!`);
+      setDraftDesc(String(data?.description || ""));
+      if (fields.length > 0) {
+        setDraftFields(fields);
+        setViewMode("replica");
+        toast.success(`Digital replica created for "${assignedTitle}"!`);
+      } else {
+        toast.error("No fields were extracted from the uploaded form. Please try again with a clearer image.");
+      }
     } catch (e: any) {
-      const assignedTitle = customTitleInput.trim() || "Custom Health Form";
-      setDraftTitle(assignedTitle);
-      setDraftDesc("Official Digital Replica converted from Paper Health Form (Barangay Subukin Health Center)");
-      setDraftFields(getRHUInformationSheetFields());
-      setViewMode("replica");
-      toast.success(`Converted paper form into digital replica for "${assignedTitle}"!`);
+      toast.error("Failed to convert the form. Please check the image and try again.");
     } finally {
       setScanning(false);
     }
@@ -668,7 +667,7 @@ const AddNewForm = () => {
                       setCustomTitleInput(e.target.value);
                       setDraftTitle(e.target.value);
                     }}
-                    placeholder="Enter form title (e.g. RHU Information Sheet)..."
+                    placeholder="Enter form title..."
                     className="text-xs h-9 bg-background font-medium"
                   />
                 </div>
@@ -763,9 +762,11 @@ const AddNewForm = () => {
                       placeholder="Assign Form Title..."
                       className="text-lg md:text-xl font-bold font-heading print-title-input tracking-wide border-b-2 border-slate-400 bg-transparent rounded-none px-1 h-9 focus-visible:ring-0 focus-visible:border-slate-800 text-slate-900 dark:text-slate-100 w-full"
                     />
-                    <p className="text-xs text-slate-600 dark:text-slate-400 no-print">
-                      {draftDesc || "Official Digital Replica converted from Paper Health Form (Barangay Subukin Health Center)"}
-                    </p>
+                    {draftDesc && (
+                      <p className="text-xs text-slate-600 dark:text-slate-400 no-print">
+                        {draftDesc}
+                      </p>
+                    )}
                   </div>
 
                   {/* Resident Selector */}
