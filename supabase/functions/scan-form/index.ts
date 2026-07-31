@@ -25,8 +25,10 @@ Return STRICT JSON with this shape:
 }
 
 Rules:
-- Preserve the exact label wording from the paper.
+- Replicate everything from the uploaded form exactly—including the layout, field positioning, and specific text—to create the digital version.
+- Use lines instead of boxes for fields.
 - Use "date" for date fields, "number" for numeric-only, "checkbox" for yes/no boxes, "textarea" for long remarks, else "text".
+- Restrict input so that letters cannot be entered when only numbers are required, and vice versa, unless both are needed.
 - If a field is blank on the paper, still include it with an empty "value".
 - Do NOT include commentary. Output ONLY the JSON.`;
 

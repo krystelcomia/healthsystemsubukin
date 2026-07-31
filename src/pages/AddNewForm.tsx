@@ -53,7 +53,7 @@ interface CustomForm {
 
 const STORAGE_KEY = "bhw_custom_forms";
 const DEFAULT_CONVERSION_PROMPT = 
-  "Convert this paper health form into a pixel-perfect digital replica. Replicate the field positioning exactly so the layout remains consistent; the digital form should mirror the appearance of the uploaded original. Remove the boxes and use only lines for a cleaner look. Model the form after existing forms in the system; inputs should be on lines rather than in boxes, and letter input should be restricted when only numbers are required. Include all form elements. Always retain section titles (e.g., 'ASAWA / Spouse Information', 'ANAK / Children Information'). Underneath section titles, list field names simply (e.g. 'First Name', 'Middle Name', 'Surname', 'Birthday') without repeating the section title in every individual label. Separate child entries clearly into 'ANAK 1' (Child 1) and 'ANAK 2' (Child 2). Follow the format of the uploaded paper form precisely. Ensure the form looks clean, creative, organized, and accurate upon deployment. Remove any auto-checked options; these should only be selectable by the user. When deploying, follow the design of other forms: include a title but omit the header for now, unless the form is being printed. Add a print button that functions exactly like those on existing forms. Ensure the official header is included in the printout. Adjust the print layout (portrait or landscape) to ensure the entire form is visible.";
+  "Convert the uploaded form into a digital format. Use lines instead of boxes for the fields. Restrict input so that letters cannot be entered when only numbers are required, and vice versa, unless both are needed. Replicate everything from the form exactly—including the layout and the specific text—to create the digital version.";
 
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs w-full font-medium";
 
@@ -282,31 +282,83 @@ const AddNewForm = () => {
     }
   };
 
-  const handleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const isNumberOnlyField = (field: DynField): boolean => {
+    if (field.type === "number") return true;
+    const l = field.label.toLowerCase();
+    return (
+      l.includes("number") ||
+      l.includes("cellphone") ||
+      l.includes("phone") ||
+      l.includes("philhealth") ||
+      l.includes("contact") ||
+      l.includes("zip")
+    );
+  };
+
+  const isLetterOnlyField = (field: DynField): boolean => {
+    if (field.type !== "text") return false;
+    if (isNumberOnlyField(field)) return false;
+    const l = field.label.toLowerCase();
     if (
-      ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", ".", "-"].includes(e.key) ||
-      (e.ctrlKey && ["a", "c", "v", "x"].includes(e.key.toLowerCase()))
+      l.includes("address") ||
+      l.includes("tirahan") ||
+      l.includes("trabaho") ||
+      l.includes("occupation") ||
+      l.includes("education") ||
+      l.includes("natapos") ||
+      l.includes("age") ||
+      l.includes("edad") ||
+      l.includes("remark") ||
+      l.includes("id") ||
+      l.includes("code")
+    ) {
+      return false;
+    }
+    return (
+      l.includes("name") ||
+      l.includes("pangalan") ||
+      l.includes("asawa") ||
+      l.includes("spouse") ||
+      l.includes("mother") ||
+      l.includes("father") ||
+      l.includes("ina") ||
+      l.includes("ama") ||
+      l.includes("surname") ||
+      l.includes("child") ||
+      l.includes("anak") ||
+      l.includes("sex") ||
+      l.includes("gender") ||
+      l.includes("kasal")
+    );
+  };
+
+  const handleFieldKeyDown = (field: DynField, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (
+      ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key) ||
+      (e.ctrlKey || e.metaKey)
     ) {
       return;
     }
-    if (!/^[0-9]$/.test(e.key)) {
-      e.preventDefault();
+
+    if (isNumberOnlyField(field)) {
+      if (!/^[0-9.+-]$/.test(e.key)) {
+        e.preventDefault();
+      }
+    } else if (isLetterOnlyField(field)) {
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+      }
     }
   };
 
-  const deleteSaved = (id: string) => {
-    const updated = savedForms.filter((f) => f.id !== id);
-    saveForms(updated);
-    setSavedForms(updated);
-    toast.success("Form deleted.");
-    if (formId === id) {
-      navigate("/add-new-form");
+  const handleFieldChange = (idx: number, field: DynField, rawValue: string) => {
+    let val = rawValue;
+    if (isNumberOnlyField(field)) {
+      val = val.replace(/[^0-9.+-]/g, "");
+    } else if (isLetterOnlyField(field)) {
+      val = val.replace(/[0-9]/g, "");
     }
-  };
-
-  const isNumericLabel = (lbl: string): boolean => {
-    const l = lbl.toLowerCase();
-    return l.includes("number") || l.includes("cellphone") || l.includes("phone") || l.includes("philhealth");
+    updateField(idx, { value: val });
   };
 
   const renderSectionHeader = (field: DynField, idx: number) => {
@@ -636,7 +688,7 @@ const AddNewForm = () => {
                     className="text-xs leading-relaxed"
                   />
                   <p className="text-[11px] text-muted-foreground italic">
-                    Inputs will be rendered on underline lines rather than boxes, letter input restricted for number fields, label word redundancy avoided, auto-checked options removed, and clean creative deployment layouts enforced.
+                    Inputs will be rendered on underline lines rather than boxes; letter input is restricted when only numbers are required, and vice versa, unless both are needed. Replicates everything from the form exactly into a digital version.
                   </p>
                 </div>
 
@@ -779,14 +831,8 @@ const AddNewForm = () => {
                           <Input
                             type={field.type === "date" ? "date" : "text"}
                             value={field.value}
-                            onKeyDown={field.type === "number" || isNumericLabel(field.label) ? handleNumberKeyDown : undefined}
-                            onChange={(e) => {
-                              let val = e.target.value;
-                              if (field.type === "number" || isNumericLabel(field.label)) {
-                                val = val.replace(/[^0-9.-]/g, "");
-                              }
-                              updateField(idx, { value: val });
-                            }}
+                            onKeyDown={(e) => handleFieldKeyDown(field, e)}
+                            onChange={(e) => handleFieldChange(idx, field, e.target.value)}
                             placeholder={`Enter ${field.label}...`}
                             className={lineInputClass}
                           />
