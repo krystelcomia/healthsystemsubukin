@@ -145,10 +145,14 @@ const AddNewForm = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
+      // Always reset previous conversion state so the new upload is freshly converted
       setImageData(result);
-      if (draftFields.length === 0) {
-        runScanWithImage(result);
-      }
+      setDraftTitle(customTitleInput.trim());
+      setDraftDesc("");
+      setDraftFields([]);
+      setViewMode("replica");
+      setSelectedResidentId("");
+      runScanWithImage(result);
     };
     reader.readAsDataURL(file);
   };

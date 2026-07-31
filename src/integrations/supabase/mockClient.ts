@@ -364,46 +364,36 @@ class MockFunctions {
     }
     
     if (name === "scan-form") {
-      return {
-        data: {
-          title: "RHU INFORMATION SHEET - San Juan, Batangas",
-          description: "Isulat ang hinihingi na mga detalye. Huwag gamitin ang apelyido ng asawa kung hindi kasal.",
-          fields: [
-            { label: "First Name", type: "text", value: "Zyrus", section: "Personal Details" },
-            { label: "Middle Name", type: "text", value: "Tañang", section: "Personal Details" },
-            { label: "Surname", type: "text", value: "Macatangay", section: "Personal Details" },
-            { label: "Birthday", type: "date", value: "2010-02-09", section: "Personal Details" },
-            { label: "Age", type: "text", value: "1 1/12", section: "Personal Details" },
-            { label: "Address", type: "text", value: "Subukin", section: "Personal Details" },
-            { label: "Occupation (TRABAHO)", type: "text", value: "", section: "Personal Details" },
-            { label: "Educational Attainment (NATAPOS)", type: "text", value: "", section: "Personal Details" },
-            { label: "Mother's Name (Pangalan ng Ina)", type: "text", value: "", section: "Personal Details" },
-            { label: "Father's Name (Pangalan ng Ama)", type: "text", value: "", section: "Personal Details" },
-            { label: "PHILHEALTH NUMBER", type: "text", value: "", section: "Personal Details" },
-            { label: "PhilHealth Classification (Member o Dependent)", type: "text", value: "", section: "Personal Details" },
-            { label: "Kasal Ba? (Oo / Hindi)", type: "checkbox", value: "", section: "Personal Details" },
-            { label: "Cellphone Number", type: "text", value: "", section: "Personal Details" },
-            { label: "First Name", type: "text", value: "", section: "ASAWA (Spouse Information)" },
-            { label: "Middle Name", type: "text", value: "", section: "ASAWA (Spouse Information)" },
-            { label: "Surname", type: "text", value: "", section: "ASAWA (Spouse Information)" },
-            { label: "Birthday", type: "date", value: "", section: "ASAWA (Spouse Information)" },
-            { label: "Mother's Name", type: "text", value: "", section: "ASAWA (Spouse Information)" },
-            { label: "Father's Name", type: "text", value: "", section: "ASAWA (Spouse Information)" },
-            { label: "Trabaho (Occupation)", type: "text", value: "Trabaho", section: "ASAWA (Spouse Information)" },
-            { label: "First Name", type: "text", value: "", section: "ANAK 1 (Child 1 Information)" },
-            { label: "Middle Name", type: "text", value: "", section: "ANAK 1 (Child 1 Information)" },
-            { label: "Surname", type: "text", value: "", section: "ANAK 1 (Child 1 Information)" },
-            { label: "Birthday", type: "date", value: "", section: "ANAK 1 (Child 1 Information)" },
-            { label: "First Name", type: "text", value: "", section: "ANAK 2 (Child 2 Information)" },
-            { label: "Middle Name", type: "text", value: "", section: "ANAK 2 (Child 2 Information)" },
-            { label: "Surname", type: "text", value: "", section: "ANAK 2 (Child 2 Information)" },
-            { label: "Birthday", type: "date", value: "", section: "ANAK 2 (Child 2 Information)" },
-            { label: "Physician Visit (Will see physician / Will NOT see physician)", type: "checkbox", value: "", section: "PHYSICIAN VISIT & REMARKS" },
-            { label: "Karagdagang Impormasyon / Remarks (Likod ng Papel)", type: "textarea", value: "", section: "PHYSICIAN VISIT & REMARKS" }
-          ]
-        },
-        error: null
-      };
+      // Forward to real Supabase edge function so the actual uploaded image is processed
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+        if (!supabaseUrl || !supabaseKey) {
+          throw new Error("Missing Supabase configuration. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.");
+        }
+
+        const resp = await fetch(`${supabaseUrl}/functions/v1/scan-form`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${supabaseKey}`,
+          },
+          body: JSON.stringify(options?.body || {}),
+        });
+
+        if (!resp.ok) {
+          const errText = await resp.text();
+          if (resp.status === 429) return { data: { error: "Rate limit reached. Please try again later." }, error: null };
+          if (resp.status === 402) return { data: { error: "AI credits exhausted. Please add credits." }, error: null };
+          return { data: { error: `Edge function error (${resp.status}): ${errText}` }, error: null };
+        }
+
+        const parsed = await resp.json();
+        return { data: parsed, error: null };
+      } catch (err: any) {
+        return { data: null, error: { message: err.message || "Failed to reach scan-form function" } };
+      }
     }
     
     return { data: null, error: { message: `Function ${name} not mocked` } };
