@@ -186,7 +186,8 @@ const AddNewForm = () => {
         toast.error("No fields were extracted from the uploaded form. Please try again with a clearer image.");
       }
     } catch (e: any) {
-      toast.error("Failed to convert the form. Please check the image and try again.");
+      const msg = e?.message || e?.error || "Unknown error";
+      toast.error(`Conversion failed: ${msg}`);
     } finally {
       setScanning(false);
     }
