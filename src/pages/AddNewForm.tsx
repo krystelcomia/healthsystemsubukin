@@ -258,6 +258,16 @@ const AddNewForm = () => {
     }
   };
 
+  const deleteSaved = (id: string) => {
+    const updated = savedForms.filter((f) => f.id !== id);
+    saveForms(updated);
+    setSavedForms(updated);
+    toast.success("Form deleted.");
+    if (formId === id) {
+      navigate("/forms/add-new");
+    }
+  };
+
   const handleSelectResident = (residentId: string) => {
     setSelectedResidentId(residentId);
     const res = residents.find(r => r.id === residentId);
