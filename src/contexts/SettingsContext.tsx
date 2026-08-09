@@ -7,66 +7,66 @@ export type ColorTheme = "emerald" | "ocean" | "purple" | "rose" | "maroon" | "a
 
 export const COLOR_THEMES: { id: ColorTheme; label: string; swatch: string; vars: Record<string, string> }[] = [
   {
-    id: "emerald", label: "Emerald Green", swatch: "hsl(123 46% 34%)",
+    id: "emerald", label: "Emerald Green", swatch: "hsl(123 38% 46%)",
     vars: {
-      "--primary": "123 46% 34%", "--ring": "123 46% 34%", "--accent": "123 46% 40%",
-      "--secondary": "123 40% 94%", "--secondary-foreground": "123 65% 30%",
-      "--sidebar-background": "123 46% 22%", "--sidebar-primary": "123 46% 49%",
-      "--sidebar-accent": "123 46% 30%", "--sidebar-border": "123 40% 32%", "--sidebar-ring": "123 46% 49%",
+      "--primary": "123 38% 46%", "--ring": "123 38% 46%", "--accent": "123 38% 54%",
+      "--secondary": "123 30% 93%", "--secondary-foreground": "123 50% 32%",
+      "--sidebar-background": "123 35% 32%", "--sidebar-primary": "123 38% 62%",
+      "--sidebar-accent": "123 35% 42%", "--sidebar-border": "123 30% 42%", "--sidebar-ring": "123 38% 62%",
     },
   },
   {
-    id: "ocean", label: "Ocean Blue", swatch: "hsl(210 70% 42%)",
+    id: "ocean", label: "Ocean Blue", swatch: "hsl(210 58% 52%)",
     vars: {
-      "--primary": "210 70% 42%", "--ring": "210 70% 42%", "--accent": "210 70% 50%",
-      "--secondary": "210 60% 94%", "--secondary-foreground": "210 75% 30%",
-      "--sidebar-background": "210 70% 22%", "--sidebar-primary": "210 70% 55%",
-      "--sidebar-accent": "210 70% 30%", "--sidebar-border": "210 60% 32%", "--sidebar-ring": "210 70% 55%",
+      "--primary": "210 58% 52%", "--ring": "210 58% 52%", "--accent": "210 58% 60%",
+      "--secondary": "210 45% 93%", "--secondary-foreground": "210 60% 34%",
+      "--sidebar-background": "210 50% 30%", "--sidebar-primary": "210 58% 66%",
+      "--sidebar-accent": "210 50% 40%", "--sidebar-border": "210 45% 40%", "--sidebar-ring": "210 58% 66%",
     },
   },
   {
-    id: "purple", label: "Royal Purple", swatch: "hsl(265 55% 45%)",
+    id: "purple", label: "Royal Purple", swatch: "hsl(265 45% 54%)",
     vars: {
-      "--primary": "265 55% 45%", "--ring": "265 55% 45%", "--accent": "265 55% 55%",
-      "--secondary": "265 50% 94%", "--secondary-foreground": "265 60% 32%",
-      "--sidebar-background": "265 50% 22%", "--sidebar-primary": "265 60% 60%",
-      "--sidebar-accent": "265 50% 30%", "--sidebar-border": "265 45% 32%", "--sidebar-ring": "265 60% 60%",
+      "--primary": "265 45% 54%", "--ring": "265 45% 54%", "--accent": "265 45% 62%",
+      "--secondary": "265 35% 94%", "--secondary-foreground": "265 50% 36%",
+      "--sidebar-background": "265 40% 30%", "--sidebar-primary": "265 50% 68%",
+      "--sidebar-accent": "265 40% 40%", "--sidebar-border": "265 35% 40%", "--sidebar-ring": "265 50% 68%",
     },
   },
   {
-    id: "rose", label: "Rose Pink", swatch: "hsl(340 65% 48%)",
+    id: "rose", label: "Rose Pink", swatch: "hsl(340 55% 56%)",
     vars: {
-      "--primary": "340 65% 48%", "--ring": "340 65% 48%", "--accent": "340 65% 55%",
-      "--secondary": "340 55% 95%", "--secondary-foreground": "340 65% 35%",
-      "--sidebar-background": "340 55% 24%", "--sidebar-primary": "340 70% 60%",
-      "--sidebar-accent": "340 55% 32%", "--sidebar-border": "340 45% 34%", "--sidebar-ring": "340 70% 60%",
+      "--primary": "340 55% 56%", "--ring": "340 55% 56%", "--accent": "340 55% 64%",
+      "--secondary": "340 40% 95%", "--secondary-foreground": "340 55% 38%",
+      "--sidebar-background": "340 45% 32%", "--sidebar-primary": "340 60% 68%",
+      "--sidebar-accent": "340 45% 42%", "--sidebar-border": "340 36% 42%", "--sidebar-ring": "340 60% 68%",
     },
   },
   {
-    id: "maroon", label: "Barangay Maroon", swatch: "hsl(345 75% 28%)",
+    id: "maroon", label: "Barangay Maroon", swatch: "hsl(345 60% 38%)",
     vars: {
-      "--primary": "345 75% 28%", "--ring": "345 75% 28%", "--accent": "345 75% 38%",
-      "--secondary": "345 40% 94%", "--secondary-foreground": "345 70% 25%",
-      "--sidebar-background": "345 75% 18%", "--sidebar-primary": "345 75% 45%",
-      "--sidebar-accent": "345 75% 24%", "--sidebar-border": "345 40% 26%", "--sidebar-ring": "345 75% 45%",
+      "--primary": "345 60% 38%", "--ring": "345 60% 38%", "--accent": "345 60% 48%",
+      "--secondary": "345 30% 94%", "--secondary-foreground": "345 55% 30%",
+      "--sidebar-background": "345 58% 26%", "--sidebar-primary": "345 60% 55%",
+      "--sidebar-accent": "345 58% 34%", "--sidebar-border": "345 32% 34%", "--sidebar-ring": "345 60% 55%",
     },
   },
   {
-    id: "amber", label: "Sunset Amber", swatch: "hsl(28 85% 48%)",
+    id: "amber", label: "Sunset Amber", swatch: "hsl(32 80% 52%)",
     vars: {
-      "--primary": "28 85% 45%", "--ring": "28 85% 45%", "--accent": "28 85% 55%",
-      "--secondary": "28 70% 94%", "--secondary-foreground": "28 80% 32%",
-      "--sidebar-background": "22 55% 22%", "--sidebar-primary": "28 85% 58%",
-      "--sidebar-accent": "22 55% 30%", "--sidebar-border": "22 45% 32%", "--sidebar-ring": "28 85% 58%",
+      "--primary": "32 75% 52%", "--ring": "32 75% 52%", "--accent": "32 75% 62%",
+      "--secondary": "32 55% 94%", "--secondary-foreground": "32 65% 36%",
+      "--sidebar-background": "26 45% 30%", "--sidebar-primary": "32 75% 65%",
+      "--sidebar-accent": "26 45% 40%", "--sidebar-border": "26 38% 40%", "--sidebar-ring": "32 75% 65%",
     },
   },
   {
-    id: "slate", label: "Graphite Slate", swatch: "hsl(215 20% 30%)",
+    id: "slate", label: "Graphite Slate", swatch: "hsl(215 20% 40%)",
     vars: {
-      "--primary": "215 25% 28%", "--ring": "215 25% 28%", "--accent": "215 25% 40%",
-      "--secondary": "215 20% 94%", "--secondary-foreground": "215 25% 25%",
-      "--sidebar-background": "215 25% 18%", "--sidebar-primary": "215 25% 55%",
-      "--sidebar-accent": "215 25% 26%", "--sidebar-border": "215 20% 30%", "--sidebar-ring": "215 25% 55%",
+      "--primary": "215 22% 40%", "--ring": "215 22% 40%", "--accent": "215 22% 50%",
+      "--secondary": "215 18% 94%", "--secondary-foreground": "215 22% 28%",
+      "--sidebar-background": "215 22% 26%", "--sidebar-primary": "215 22% 62%",
+      "--sidebar-accent": "215 22% 34%", "--sidebar-border": "215 18% 36%", "--sidebar-ring": "215 22% 62%",
     },
   },
 ];
@@ -92,7 +92,7 @@ const SettingsContext = createContext<SettingsContextType>({
   setFontSize: () => {},
   fontStyle: "inter",
   setFontStyle: () => {},
-  language: "en",
+  language: "tl",
   setLanguage: () => {},
   colorTheme: "emerald",
   setColorTheme: () => {},
@@ -125,7 +125,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("darkMode") === "true");
   const [fontSize, setFontSize] = useState(() => localStorage.getItem("fontSize") || "medium");
   const [fontStyle, setFontStyle] = useState(() => localStorage.getItem("fontStyle") || "inter");
-  const [language, setLanguage] = useState<Language>(() => (localStorage.getItem("language") as Language) || "en");
+  const [language, setLanguage] = useState<Language>(() => (localStorage.getItem("language") as Language) || "tl");
   const [colorTheme, setColorTheme] = useState<ColorTheme>(() => (localStorage.getItem("colorTheme") as ColorTheme) || "emerald");
 
   const t = (key: string): string => {
@@ -146,6 +146,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     const fontVal = FONT_STYLE_MAP[fontStyle] || FONT_STYLE_MAP.inter;
     document.documentElement.style.setProperty("--font-body", fontVal);
     document.documentElement.style.setProperty("--font-heading", fontVal);
+    // Also apply directly to body so all elements inherit the font change immediately
+    document.body.style.fontFamily = fontVal;
     localStorage.setItem("fontStyle", fontStyle);
   }, [fontStyle]);
 
