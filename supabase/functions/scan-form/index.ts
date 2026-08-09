@@ -10,8 +10,13 @@ Deno.serve(async (req) => {
     const { image, hint } = await req.json();
     if (!image) throw new Error("Missing image");
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("Missing LOVABLE_API_KEY");
+    // Use the configured secret, or fall back to the Authorization header token
+    // so this works with the sb_publishable_ key without manual secret setup.
+    const LOVABLE_API_KEY =
+      Deno.env.get("LOVABLE_API_KEY") ||
+      (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+
+    if (!LOVABLE_API_KEY) throw new Error("Missing LOVABLE_API_KEY – set it as a Supabase secret.");
 
     const systemPrompt = `You are an OCR + form extraction assistant for a Barangay Health Worker (BHW) system. You will be given a photo of a paper health form (Filipino / English). Extract the form's title and every visible field.
 
@@ -20,7 +25,7 @@ Return STRICT JSON with this shape:
   "title": "string (short title of the form)",
   "description": "string (one sentence describing the form)",
   "fields": [
-    { "label": "Field label", "type": "text|number|date|textarea|checkbox", "value": "value written on the paper or empty string" }
+    { "label": "Field label", "type": "text|number|date|textarea|checkbox", "value": "value written on the paper or empty string", "section": "section name or omit if no sections" }
   ]
 }
 
@@ -30,6 +35,7 @@ Rules:
 - Use "date" for date fields, "number" for numeric-only, "checkbox" for yes/no boxes, "textarea" for long remarks, else "text".
 - Restrict input so that letters cannot be entered when only numbers are required, and vice versa, unless both are needed.
 - If a field is blank on the paper, still include it with an empty "value".
+- Group fields into sections using the "section" property when the form has labeled sections.
 - Do NOT include commentary. Output ONLY the JSON.`;
 
     const userText = hint ? `Additional hint from BHW: ${hint}` : "Extract all fields from this form.";
