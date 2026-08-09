@@ -10,6 +10,16 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      // Proxy Lovable AI gateway through the Vite dev server to avoid CORS.
+      // Browser calls /api/lovable-ai → Vite Node server → ai.gateway.lovable.dev
+      "/api/lovable-ai": {
+        target: "https://ai.gateway.lovable.dev",
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api\/lovable-ai/, ""),
+        secure: true,
+      },
+    },
   },
   plugins: [react()],
   resolve: {
