@@ -364,88 +364,38 @@ class MockFunctions {
     }
     
     if (name === "scan-form") {
-      // Call the Lovable AI gateway directly from the client using the publishable key.
-      // The sb_publishable_ key is intended for client-side use with Lovable's AI gateway.
+      // Call the real deployed Supabase edge function for form scanning.
+      // This avoids CORS issues from calling the AI gateway directly from the browser.
       try {
-        const lovableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const { image, hint } = options?.body || {};
 
         if (!image) return { data: { error: "Missing image" }, error: null };
-        if (!lovableKey) return { data: { error: "Missing VITE_SUPABASE_PUBLISHABLE_KEY in environment variables." }, error: null };
+        if (!supabaseUrl || !supabaseKey) {
+          return { data: { error: "Missing Supabase URL or key in environment variables." }, error: null };
+        }
 
-        const systemPrompt = `You are an OCR + form extraction assistant for a Barangay Health Worker (BHW) system. You will be given a photo of a paper health form (Filipino / English). Extract the form's title and every visible field.
+        const edgeFunctionUrl = `${supabaseUrl}/functions/v1/scan-form`;
 
-Return STRICT JSON with this shape:
-{
-  "title": "string (short title of the form)",
-  "description": "string (one sentence describing the form)",
-  "fields": [
-    { "label": "Field label", "type": "text|number|date|textarea|checkbox", "value": "value written on the paper or empty string", "section": "section name or omit if no sections" }
-  ]
-}
-
-Rules:
-- Replicate everything from the uploaded form exactly—including the layout, field positioning, and specific text—to create the digital version.
-- Use lines instead of boxes for fields.
-- Use "date" for date fields, "number" for numeric-only fields, "checkbox" for yes/no boxes, "textarea" for long remarks, else "text".
-- Restrict input so that letters cannot be entered when only numbers are required, and vice versa, unless both are needed.
-- If a field is blank on the paper, still include it with an empty "value".
-- Group fields into sections using the "section" property when the form has labeled sections.
-- Do NOT include commentary. Output ONLY the JSON.`;
-
-        const userText = hint ? `Additional hint from BHW: ${hint}` : "Extract all fields from this form.";
-
-        const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const resp = await fetch(edgeFunctionUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${lovableKey}`,
+            "Authorization": `Bearer ${supabaseKey}`,
+            "apikey": supabaseKey,
           },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-              { role: "system", content: systemPrompt },
-              {
-                role: "user",
-                content: [
-                  { type: "text", text: userText },
-                  { type: "image_url", image_url: { url: image } },
-                ],
-              },
-            ],
-          }),
+          body: JSON.stringify({ image, hint: hint || "" }),
         });
 
-        if (!aiResp.ok) {
-          const errText = await aiResp.text();
-          if (aiResp.status === 429) return { data: { error: "Rate limit reached. Please try again later." }, error: null };
-          if (aiResp.status === 402) return { data: { error: "AI credits exhausted. Please add credits." }, error: null };
-          return { data: { error: `AI gateway error (${aiResp.status}): ${errText}` }, error: null };
+        if (!resp.ok) {
+          const errText = await resp.text();
+          if (resp.status === 429) return { data: { error: "Rate limit reached. Please try again later." }, error: null };
+          if (resp.status === 402) return { data: { error: "AI credits exhausted. Please add credits." }, error: null };
+          return { data: { error: `Edge function error (${resp.status}): ${errText}` }, error: null };
         }
 
-        const aiJson = await aiResp.json();
-        const content: string = aiJson?.choices?.[0]?.message?.content ?? "";
-
-        const cleaned = content
-          .trim()
-          .replace(/^```json\s*/i, "")
-          .replace(/^```\s*/, "")
-          .replace(/```$/, "")
-          .trim();
-
-        let parsed: any;
-        try {
-          parsed = JSON.parse(cleaned);
-        } catch {
-          const start = cleaned.indexOf("{");
-          const end = cleaned.lastIndexOf("}");
-          if (start >= 0 && end > start) {
-            parsed = JSON.parse(cleaned.slice(start, end + 1));
-          } else {
-            return { data: { error: "AI did not return valid JSON. Try with a clearer image." }, error: null };
-          }
-        }
-
+        const parsed = await resp.json();
         return { data: parsed, error: null };
       } catch (e: any) {
         return { data: null, error: { message: e?.message || e?.error || "Unknown error" } };
