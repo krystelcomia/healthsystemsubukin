@@ -7,16 +7,14 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { image, hint } = await req.json();
+    const body = await req.json();
+    const { image, hint, apiKey: clientApiKey } = body;
     if (!image) throw new Error("Missing image");
 
-    // Use the configured secret, or fall back to the Authorization header token
-    // so this works with the sb_publishable_ key without manual secret setup.
-    const LOVABLE_API_KEY =
-      Deno.env.get("LOVABLE_API_KEY") ||
-      (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
-
-    if (!LOVABLE_API_KEY) throw new Error("Missing LOVABLE_API_KEY – set it as a Supabase secret.");
+    // Use configured Supabase secret first; fall back to the publishable key
+    // sent from the client in the request body (safe — it is a client-side key by design).
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") || clientApiKey || "";
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not set. Either add it as a Supabase Edge Function secret or provide it via the client.");
 
     const systemPrompt = `You are an OCR + form extraction assistant for a Barangay Health Worker (BHW) system. You will be given a photo of a paper health form (Filipino / English). Extract the form's title and every visible field.
 

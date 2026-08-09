@@ -364,90 +364,38 @@ class MockFunctions {
     }
     
     if (name === "scan-form") {
-      // Route through the Vite dev-server proxy (/api/lovable-ai) to avoid CORS.
-      // Vite forwards /api/lovable-ai → https://ai.gateway.lovable.dev server-side.
-      // The sb_publishable_ key is exactly what the Lovable gateway expects as Bearer token.
+      // The scan-form edge function has verify_jwt=false in supabase/config.toml,
+      // so it accepts requests WITHOUT any Authorization header.
+      // We pass the sb_publishable_ key in the body so the edge function can use it
+      // as the Lovable AI gateway auth token (no manual Supabase secret setup needed).
       try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const lovableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const { image, hint } = options?.body || {};
 
         if (!image) return { data: { error: "Missing image" }, error: null };
-        if (!lovableKey) return { data: { error: "Missing VITE_SUPABASE_PUBLISHABLE_KEY in environment variables." }, error: null };
+        if (!supabaseUrl) {
+          return { data: { error: "Missing VITE_SUPABASE_URL in environment variables." }, error: null };
+        }
 
-        const systemPrompt = `You are an OCR + form extraction assistant for a Barangay Health Worker (BHW) system. You will be given a photo of a paper health form (Filipino / English). Extract the form's title and every visible field.
+        const edgeFunctionUrl = `${supabaseUrl}/functions/v1/scan-form`;
 
-Return STRICT JSON with this shape:
-{
-  "title": "string (short title of the form)",
-  "description": "string (one sentence describing the form)",
-  "fields": [
-    { "label": "Field label", "type": "text|number|date|textarea|checkbox", "value": "value written on the paper or empty string", "section": "section name or omit if no sections" }
-  ]
-}
-
-Rules:
-- Replicate everything from the uploaded form exactly—including the layout, field positioning, and specific text—to create the digital version.
-- Use lines instead of boxes for fields.
-- Use "date" for date fields, "number" for numeric-only fields, "checkbox" for yes/no boxes, "textarea" for long remarks, else "text".
-- Restrict input so that letters cannot be entered when only numbers are required, and vice versa, unless both are needed.
-- If a field is blank on the paper, still include it with an empty "value".
-- Group fields into sections using the "section" property when the form has labeled sections.
-- Do NOT include commentary. Output ONLY the JSON.`;
-
-        const userText = hint ? `Additional hint from BHW: ${hint}` : "Extract all fields from this form.";
-
-        // Use the Vite proxy path — same origin, no CORS.
-        const aiResp = await fetch("/api/lovable-ai/v1/chat/completions", {
+        const resp = await fetch(edgeFunctionUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${lovableKey}`,
           },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-              { role: "system", content: systemPrompt },
-              {
-                role: "user",
-                content: [
-                  { type: "text", text: userText },
-                  { type: "image_url", image_url: { url: image } },
-                ],
-              },
-            ],
-          }),
+          body: JSON.stringify({ image, hint: hint || "", apiKey: lovableKey }),
         });
 
-        if (!aiResp.ok) {
-          const errText = await aiResp.text();
-          if (aiResp.status === 429) return { data: { error: "Rate limit reached. Please try again later." }, error: null };
-          if (aiResp.status === 402) return { data: { error: "AI credits exhausted. Please add credits." }, error: null };
-          return { data: { error: `AI gateway error (${aiResp.status}): ${errText}` }, error: null };
+        if (!resp.ok) {
+          const errText = await resp.text();
+          if (resp.status === 429) return { data: { error: "Rate limit reached. Please try again later." }, error: null };
+          if (resp.status === 402) return { data: { error: "AI credits exhausted. Please add credits." }, error: null };
+          return { data: { error: `Conversion error (${resp.status}): ${errText}` }, error: null };
         }
 
-        const aiJson = await aiResp.json();
-        const content: string = aiJson?.choices?.[0]?.message?.content ?? "";
-
-        const cleaned = content
-          .trim()
-          .replace(/^```json\s*/i, "")
-          .replace(/^```\s*/, "")
-          .replace(/```$/, "")
-          .trim();
-
-        let parsed: any;
-        try {
-          parsed = JSON.parse(cleaned);
-        } catch {
-          const start = cleaned.indexOf("{");
-          const end = cleaned.lastIndexOf("}");
-          if (start >= 0 && end > start) {
-            parsed = JSON.parse(cleaned.slice(start, end + 1));
-          } else {
-            return { data: { error: "AI did not return valid JSON. Try with a clearer image." }, error: null };
-          }
-        }
-
+        const parsed = await resp.json();
         return { data: parsed, error: null };
       } catch (e: any) {
         return { data: null, error: { message: e?.message || e?.error || "Unknown error" } };
