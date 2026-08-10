@@ -24,7 +24,12 @@ import {
   HelpCircle,
   Eye,
   Settings2,
-  Edit3
+  Edit3,
+  ChevronRight,
+  ChevronLeft,
+  Check,
+  ListChecks,
+  ImageIcon
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -104,6 +109,63 @@ const saveForms = (forms: CustomForm[]) => {
   window.dispatchEvent(new Event("custom-forms-updated"));
 };
 
+/* ──────────────────────────────────────────────────────────────
+   WIZARD STEP INDICATOR
+   ────────────────────────────────────────────────────────────── */
+const STEPS = [
+  { num: 1, label: "Upload & Configure", icon: ImageIcon },
+  { num: 2, label: "Review & Edit Fields", icon: ListChecks },
+  { num: 3, label: "Preview & Deploy",    icon: Rocket },
+] as const;
+
+const StepIndicator = ({ current, onStepClick, canGoTo }: { current: number; onStepClick: (s: number) => void; canGoTo: (s: number) => boolean }) => (
+  <div className="flex items-center justify-center gap-0 w-full max-w-2xl mx-auto select-none no-print">
+    {STEPS.map((step, idx) => {
+      const done = current > step.num;
+      const active = current === step.num;
+      const reachable = canGoTo(step.num);
+      const Icon = step.icon;
+      return (
+        <React.Fragment key={step.num}>
+          {idx > 0 && (
+            <div className={`flex-1 h-0.5 transition-colors duration-300 ${done ? "bg-emerald-500" : "bg-border"}`} />
+          )}
+          <button
+            type="button"
+            disabled={!reachable}
+            onClick={() => reachable && onStepClick(step.num)}
+            className={`flex flex-col items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 ${
+              active
+                ? "scale-105"
+                : reachable
+                  ? "opacity-80 hover:opacity-100 cursor-pointer"
+                  : "opacity-40 cursor-not-allowed"
+            }`}
+          >
+            <div
+              className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300 ${
+                done
+                  ? "bg-emerald-500 border-emerald-500 text-white"
+                  : active
+                    ? "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/30"
+                    : "bg-muted border-border text-muted-foreground"
+              }`}
+            >
+              {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+            </div>
+            <span className={`text-[11px] font-semibold leading-tight text-center whitespace-nowrap ${active ? "text-primary" : done ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+              {step.label}
+            </span>
+          </button>
+        </React.Fragment>
+      );
+    })}
+  </div>
+);
+
+/* ──────────────────────────────────────────────────────────────
+   MAIN COMPONENT
+   ────────────────────────────────────────────────────────────── */
 const AddNewForm = () => {
   const navigate = useNavigate();
   const { formId } = useParams<{ formId?: string }>();
@@ -116,9 +178,11 @@ const AddNewForm = () => {
   const [draftDesc, setDraftDesc] = useState<string>("");
   const [draftFields, setDraftFields] = useState<DynField[]>([]);
   const [savedForms, setSavedForms] = useState<CustomForm[]>([]);
-  const [viewMode, setViewMode] = useState<"builder" | "replica">("replica");
   const [selectedResidentId, setSelectedResidentId] = useState<string>("");
   const [residents, setResidents] = useState<any[]>([]);
+
+  // Wizard step: 1 = Upload, 2 = Edit Fields, 3 = Preview & Deploy
+  const [currentStep, setCurrentStep] = useState<number>(1);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -137,26 +201,28 @@ const AddNewForm = () => {
         setDraftDesc(activeForm.description);
         setDraftFields(activeForm.fields || []);
         setImageData(activeForm.imagePreview || null);
+        // Jump straight to preview for existing forms
+        setCurrentStep(3);
       }
     }
   }, [formId]);
 
+  /* ── File / image handling ── */
   const handleFile = (file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
-      // Always reset previous conversion state so the new upload is freshly converted
       setImageData(result);
       setDraftTitle(customTitleInput.trim());
       setDraftDesc("");
       setDraftFields([]);
-      setViewMode("replica");
       setSelectedResidentId("");
       runScanWithImage(result);
     };
     reader.readAsDataURL(file);
   };
 
+  /* ── AI scan ── */
   const runScanWithImage = async (img: string) => {
     setScanning(true);
     try {
@@ -180,8 +246,9 @@ const AddNewForm = () => {
       setDraftDesc(String(data?.description || ""));
       if (fields.length > 0) {
         setDraftFields(fields);
-        setViewMode("replica");
-        toast.success(`Digital replica created for "${assignedTitle}"!`);
+        // Auto-advance to Step 2 after successful conversion
+        setCurrentStep(2);
+        toast.success(`Digital replica created for "${assignedTitle}"! Review the fields below.`);
       } else {
         toast.error("No fields were extracted from the uploaded form. Please try again with a clearer image.");
       }
@@ -201,6 +268,7 @@ const AddNewForm = () => {
     runScanWithImage(imageData);
   };
 
+  /* ── Field editing helpers ── */
   const updateField = (idx: number, patch: Partial<DynField>) => {
     setDraftFields((prev) => prev.map((f, i) => (i === idx ? { ...f, ...patch } : f)));
   };
@@ -222,9 +290,11 @@ const AddNewForm = () => {
     setDraftTitle("");
     setDraftDesc("");
     setDraftFields([]);
-    setViewMode("replica");
+    setSelectedResidentId("");
+    setCurrentStep(1);
   };
 
+  /* ── Deploy / delete ── */
   const handleDeployForm = () => {
     if (!draftTitle.trim()) {
       toast.error("Please assign a title to the form before deploying.");
@@ -269,6 +339,7 @@ const AddNewForm = () => {
     }
   };
 
+  /* ── Resident auto-fill ── */
   const handleSelectResident = (residentId: string) => {
     setSelectedResidentId(residentId);
     const res = residents.find(r => r.id === residentId);
@@ -296,6 +367,7 @@ const AddNewForm = () => {
     }
   };
 
+  /* ── Input restriction helpers ── */
   const isNumberOnlyField = (field: DynField): boolean => {
     if (field.type === "number") return true;
     const l = field.label.toLowerCase();
@@ -375,6 +447,7 @@ const AddNewForm = () => {
     updateField(idx, { value: val });
   };
 
+  /* ── Section header renderer ── */
   const renderSectionHeader = (field: DynField, idx: number) => {
     const prevSection = idx > 0 ? draftFields[idx - 1]?.section : undefined;
     if (field.section && field.section !== prevSection && field.section !== "Personal Details") {
@@ -462,6 +535,38 @@ const AddNewForm = () => {
     return null;
   };
 
+  /* ── Wizard navigation helpers ── */
+  const canGoToStep = (step: number): boolean => {
+    if (step === 1) return true;
+    if (step === 2) return draftFields.length > 0;
+    if (step === 3) return draftFields.length > 0;
+    return false;
+  };
+
+  const goNext = () => {
+    if (currentStep === 1) {
+      // Step 1 → 2: require fields to exist (conversion must have run)
+      if (draftFields.length === 0) {
+        toast.error("Please upload and convert a paper form first before proceeding.");
+        return;
+      }
+      setCurrentStep(2);
+    } else if (currentStep === 2) {
+      if (draftFields.length === 0) {
+        toast.error("You need at least one field to preview the form.");
+        return;
+      }
+      setCurrentStep(3);
+    }
+  };
+
+  const goBack = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
+
+  /* ════════════════════════════════════════════════════════════
+     RENDER
+     ════════════════════════════════════════════════════════════ */
   return (
     <div className="w-full space-y-6">
       <style>{`
@@ -598,7 +703,7 @@ const AddNewForm = () => {
         }
       `}</style>
 
-      {/* Header Banner */}
+      {/* ─── Header Banner ─── */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-emerald-700/40 no-print">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -613,128 +718,147 @@ const AddNewForm = () => {
         </div>
       </div>
 
-      {/* STEP 1: CAPTURE & CONVERT PAPER FORM */}
+      {/* ─── Wizard Step Indicator ─── */}
       {!formId && (
-        <Card className="border-border/50 shadow-sm no-print">
+        <StepIndicator
+          current={currentStep}
+          onStepClick={(s) => { if (canGoToStep(s)) setCurrentStep(s); }}
+          canGoTo={canGoToStep}
+        />
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+         STEP 1 — UPLOAD & CONFIGURE
+         ═══════════════════════════════════════════════════════ */}
+      {currentStep === 1 && !formId && (
+        <Card className="border-border/50 shadow-sm no-print animate-in fade-in-0 slide-in-from-right-4 duration-300">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-heading flex items-center gap-2 text-foreground">
               <ScanLine className="h-5 w-5 text-primary" />
-              Step 1 — Capture Paper Form, Assign Title & Conversion Prompt
+              Step 1 — Upload Paper Form & Configure Conversion
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
-              {/* Paper Image Dropzone */}
-              <div
-                className="relative aspect-[4/3] rounded-xl border-2 border-dashed border-primary/30 bg-muted/30 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-primary/70 hover:bg-muted/50 transition-all group"
-                onClick={() => fileRef.current?.click()}
-              >
-                {imageData ? (
-                  <img src={imageData} alt="Paper Form Preview" className="h-full w-full object-contain p-2" />
-                ) : (
-                  <div className="text-center px-4 space-y-2">
-                    <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto group-hover:scale-105 transition-transform">
-                      <Upload className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">Click to upload or take a photo of paper form</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Supports any paper form (JPG, PNG up to 8MB)</p>
-                    </div>
+          <CardContent className="space-y-5">
+            {/* Image Upload Area */}
+            <div
+              className="relative aspect-[16/7] rounded-xl border-2 border-dashed border-primary/30 bg-muted/30 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-primary/70 hover:bg-muted/50 transition-all group"
+              onClick={() => fileRef.current?.click()}
+            >
+              {imageData ? (
+                <img src={imageData} alt="Paper Form Preview" className="h-full w-full object-contain p-2" />
+              ) : (
+                <div className="text-center px-4 space-y-2">
+                  <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto group-hover:scale-105 transition-transform">
+                    <Upload className="h-6 w-6 text-primary" />
                   </div>
-                )}
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-                />
-              </div>
-
-              {/* Controls, Form Title & AI Conversion Instructions */}
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" className="flex-1 text-xs gap-1.5" onClick={() => cameraRef.current?.click()}>
-                    <Camera className="h-4 w-4 text-primary" /> Take Photo
-                  </Button>
-                  <Button type="button" variant="outline" className="flex-1 text-xs gap-1.5" onClick={() => fileRef.current?.click()}>
-                    <Upload className="h-4 w-4 text-primary" /> Choose File
-                  </Button>
-                  <input
-                    ref={cameraRef}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-                  />
-                </div>
-
-                {/* Form Title Input */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <FileText className="h-3.5 w-3.5 text-primary" /> Assign Form Title
-                  </Label>
-                  <Input
-                    type="text"
-                    value={customTitleInput}
-                    onChange={(e) => {
-                      setCustomTitleInput(e.target.value);
-                      setDraftTitle(e.target.value);
-                    }}
-                    placeholder="Enter form title..."
-                    className="text-xs h-9 bg-background font-medium"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                      <HelpCircle className="h-3.5 w-3.5 text-primary" /> Manual-to-Digital AI Conversion Prompt
-                    </Label>
-                    <span className="text-[10px] text-muted-foreground font-semibold text-emerald-600 dark:text-emerald-400">System Model Aligned</span>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Click to upload or take a photo of paper form</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Supports any paper form (JPG, PNG up to 8MB)</p>
                   </div>
-                  <Textarea
-                    value={hint}
-                    onChange={(e) => setHint(e.target.value)}
-                    placeholder="Enter instructions for AI conversion..."
-                    rows={4}
-                    className="text-xs leading-relaxed"
-                  />
-                  <p className="text-[11px] text-muted-foreground italic">
-                    Inputs will be rendered on underline lines rather than boxes; letter input is restricted when only numbers are required, and vice versa, unless both are needed. Replicates everything from the form exactly into a digital version.
-                  </p>
                 </div>
-
-                <div className="pt-1 flex flex-col gap-2">
-                  <Button type="button" onClick={runScan} disabled={scanning} className="w-full bg-primary text-primary-foreground font-bold shadow-sm">
-                    {scanning ? (
-                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Digitizing Paper Form...</>
-                    ) : (
-                      <><Sparkles className="h-4 w-4 mr-2" /> Convert to Digital Form</>
-                    )}
-                  </Button>
-                  {imageData && (
-                    <Button type="button" variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={fullReset}>
-                      <RotateCcw className="h-3.5 w-3.5 mr-1" /> Start Over
-                    </Button>
-                  )}
-                </div>
-              </div>
+              )}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+              />
             </div>
+
+            {/* Camera / File Buttons */}
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" className="flex-1 text-xs gap-1.5" onClick={() => cameraRef.current?.click()}>
+                <Camera className="h-4 w-4 text-primary" /> Take Photo
+              </Button>
+              <Button type="button" variant="outline" className="flex-1 text-xs gap-1.5" onClick={() => fileRef.current?.click()}>
+                <Upload className="h-4 w-4 text-primary" /> Choose File
+              </Button>
+              <input
+                ref={cameraRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+              />
+            </div>
+
+            {/* Form Title Input */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5 text-primary" /> Assign Form Title
+              </Label>
+              <Input
+                type="text"
+                value={customTitleInput}
+                onChange={(e) => {
+                  setCustomTitleInput(e.target.value);
+                  setDraftTitle(e.target.value);
+                }}
+                placeholder="Enter form title..."
+                className="text-xs h-9 bg-background font-medium"
+              />
+            </div>
+
+            {/* AI Conversion Prompt */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <HelpCircle className="h-3.5 w-3.5 text-primary" /> Manual-to-Digital AI Conversion Prompt
+                </Label>
+                <span className="text-[10px] text-muted-foreground font-semibold text-emerald-600 dark:text-emerald-400">System Model Aligned</span>
+              </div>
+              <Textarea
+                value={hint}
+                onChange={(e) => setHint(e.target.value)}
+                placeholder="Enter instructions for AI conversion..."
+                rows={4}
+                className="text-xs leading-relaxed"
+              />
+              <p className="text-[11px] text-muted-foreground italic">
+                Inputs will be rendered on underline lines rather than boxes; letter input is restricted when only numbers are required, and vice versa, unless both are needed. Replicates everything from the form exactly into a digital version.
+              </p>
+            </div>
+
+            {/* Convert Button & Start Over */}
+            <div className="flex flex-col gap-2 pt-1">
+              <Button type="button" onClick={runScan} disabled={scanning} className="w-full bg-primary text-primary-foreground font-bold shadow-sm">
+                {scanning ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Digitizing Paper Form...</>
+                ) : (
+                  <><Sparkles className="h-4 w-4 mr-2" /> Convert to Digital Form</>
+                )}
+              </Button>
+              {imageData && (
+                <Button type="button" variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={fullReset}>
+                  <RotateCcw className="h-3.5 w-3.5 mr-1" /> Start Over
+                </Button>
+              )}
+            </div>
+
+            {/* Next (if fields already exist from a previous conversion) */}
+            {draftFields.length > 0 && (
+              <div className="pt-2 border-t border-border/50">
+                <Button type="button" onClick={goNext} className="w-full gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm">
+                  Continue to Review Fields <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
 
-      {/* STEP 2: DIGITAL REPLICA PREVIEW / FORM WORKSPACE */}
-      {draftFields.length > 0 && (
-        <div className="space-y-6">
-          
-          {/* Form Title & Preserved Badge Header */}
+      {/* ═══════════════════════════════════════════════════════
+         STEP 2 — REVIEW & EDIT FIELDS
+         ═══════════════════════════════════════════════════════ */}
+      {currentStep === 2 && draftFields.length > 0 && (
+        <div className="space-y-4 animate-in fade-in-0 slide-in-from-right-4 duration-300">
+          {/* Title & Badge Bar */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card border border-border/60 p-3 rounded-xl shadow-xs no-print">
             <div className="flex items-center gap-3">
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-semibold px-2.5 py-0.5">
-                {draftFields.length} Preserved Element(s)
+                {draftFields.length} Field(s) Extracted
               </Badge>
               <div className="flex items-center gap-1.5 min-w-0">
                 <Input
@@ -750,236 +874,285 @@ const AddNewForm = () => {
                 <Edit3 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               </div>
             </div>
+
+            {/* Resident Selector */}
+            <div className="w-full sm:w-64">
+              <Select value={selectedResidentId} onValueChange={handleSelectResident}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Link Resident to Auto-fill" />
+                </SelectTrigger>
+                <SelectContent>
+                  {residents.map((r) => (
+                    <SelectItem key={r.id} value={r.id} className="text-xs">
+                      {r.full_name} ({r.sitio || "Subukin"})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* VIEW MODE: DIGITAL REPLICA (Matching System Health Form Style) */}
-          {viewMode === "replica" && (
-            <Card id="digital-replica-print-area" className="border border-slate-300 dark:border-slate-700 shadow-md bg-card text-card-foreground">
-              <CardContent className="p-6 md:p-8 space-y-6">
-                
-                {/* Official Barangay Printable Header (Hidden) */}
-                <div className="header-seal hidden no-print">
-                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
-                  <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" />
-                  <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
-                </div>
+          {/* Field Editor Card */}
+          <Card className="border-border/50 shadow-sm no-print">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-heading flex items-center gap-2">
+                <FileCheck2 className="h-5 w-5 text-primary" />
+                Step 2 — Review & Edit Extracted Fields
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                Review the fields extracted from your paper form below. You can rename fields, change their types, remove unwanted fields, or add new ones.
+              </p>
 
-                {/* Form Title Banner & Resident Linker */}
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-2 border-b border-border/50">
-                  <div className="flex-1 space-y-1">
-                    <Input
-                      type="text"
-                      value={draftTitle}
-                      onChange={(e) => {
-                        setDraftTitle(e.target.value);
-                        setCustomTitleInput(e.target.value);
-                      }}
-                      placeholder="Assign Form Title..."
-                      className="text-lg md:text-xl font-bold font-heading print-title-input tracking-wide border-b-2 border-slate-400 bg-transparent rounded-none px-1 h-9 focus-visible:ring-0 focus-visible:border-slate-800 text-slate-900 dark:text-slate-100 w-full"
-                    />
-                    {draftDesc && (
-                      <p className="text-xs text-slate-600 dark:text-slate-400 no-print">
-                        {draftDesc}
-                      </p>
-                    )}
-                  </div>
+              {/* Description input */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Form Description (optional)</Label>
+                <Input value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} placeholder="Brief description of this form..." className="text-xs" />
+              </div>
 
-                  {/* Resident Selector */}
-                  <div className="w-full sm:w-64 no-print">
-                    <Label className="text-xs font-semibold mb-1 block">Link Registered Resident</Label>
-                    <Select value={selectedResidentId} onValueChange={handleSelectResident}>
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue placeholder="Select Resident to Auto-fill" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {residents.map((r) => (
-                          <SelectItem key={r.id} value={r.id} className="text-xs">
-                            {r.full_name} ({r.sitio || "Subukin"})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Preserved Form Fields Grid (Clean Underline Line Inputs - Outer Boxes Removed) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
-                  {draftFields.map((field, idx) => (
-                    <React.Fragment key={idx}>
-                      {renderSectionHeader(field, idx)}
-                      <div
-                        className={`space-y-1 ${
-                          field.type === "textarea" ? "md:col-span-2 no-print" : ""
-                        }`}
-                      >
-                        <Label className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
-                          {field.label}:
-                        </Label>
-
-                        {field.type === "checkbox" ? (
-                          <div className="flex items-center gap-4 pt-1 font-medium">
-                            <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-800 dark:text-slate-200">
-                              <Checkbox
-                                checked={field.value === "true"}
-                                onCheckedChange={(v) => updateField(idx, { value: v ? "true" : "" })}
-                                className="h-3.5 w-3.5"
-                              />
-                              <span>Yes</span>
-                            </label>
-                            <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-800 dark:text-slate-200">
-                              <Checkbox
-                                checked={field.value === "false"}
-                                onCheckedChange={(v) => updateField(idx, { value: v ? "false" : "" })}
-                                className="h-3.5 w-3.5"
-                              />
-                              <span>No</span>
-                            </label>
-                          </div>
-                        ) : field.type === "textarea" ? (
-                          <Textarea
-                            value={field.value}
-                            onChange={(e) => updateField(idx, { value: e.target.value })}
-                            rows={2}
-                            placeholder="Enter details..."
-                            className="text-xs leading-relaxed border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 shadow-none w-full"
-                          />
-                        ) : (
+              {/* Fields List */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-foreground">Extracted Fields</Label>
+                {draftFields.map((f, i) => {
+                  const prevSection = i > 0 ? draftFields[i - 1]?.section : undefined;
+                  const showSection = f.section && f.section !== prevSection;
+                  return (
+                    <React.Fragment key={i}>
+                      {showSection && (
+                        <div className="pt-3 pb-1 border-b border-emerald-600/40 mt-2">
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                            {f.section}
+                          </p>
+                        </div>
+                      )}
+                      <div className="rounded-lg border border-border/60 p-3 bg-muted/20 space-y-2">
+                        <div className="flex items-center gap-2">
                           <Input
-                            type={field.type === "date" ? "date" : "text"}
-                            value={field.value}
-                            onKeyDown={(e) => handleFieldKeyDown(field, e)}
-                            onChange={(e) => handleFieldChange(idx, field, e.target.value)}
-                            placeholder={`Enter ${field.label}...`}
-                            className={lineInputClass}
+                            value={f.label}
+                            onChange={(e) => updateField(i, { label: e.target.value })}
+                            className="flex-1 h-8 text-xs font-medium bg-background"
                           />
-                        )}
+                          <select
+                            value={f.type}
+                            onChange={(e) => updateField(i, { type: e.target.value as FieldType })}
+                            className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                          >
+                            <option value="text">Short Text (Underline Line)</option>
+                            <option value="number">Numeric Only (Letters Blocked)</option>
+                            <option value="date">Date</option>
+                            <option value="textarea">Long Text / Remarks</option>
+                            <option value="checkbox">Yes / No Checkbox (Unchecked)</option>
+                          </select>
+                          <Button type="button" variant="ghost" size="icon" onClick={() => removeField(i)} className="h-8 w-8 text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </React.Fragment>
-                  ))}
+                  );
+                })}
+
+                <Button type="button" variant="outline" size="sm" onClick={addField} className="gap-1.5 text-xs">
+                  <Plus className="h-4 w-4" /> Add Field
+                </Button>
+              </div>
+
+              {/* Navigation Buttons */}
+              <div className="flex items-center justify-between gap-3 pt-4 border-t border-border/50">
+                {!formId && (
+                  <Button type="button" variant="outline" size="sm" onClick={goBack} className="gap-1.5 text-xs">
+                    <ChevronLeft className="h-4 w-4" /> Back to Upload
+                  </Button>
+                )}
+                <div className="flex-1" />
+                <Button type="button" onClick={goNext} className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-6">
+                  Preview & Deploy <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+         STEP 3 — PREVIEW & DEPLOY (DIGITAL REPLICA)
+         ═══════════════════════════════════════════════════════ */}
+      {currentStep === 3 && draftFields.length > 0 && (
+        <div className="space-y-4 animate-in fade-in-0 slide-in-from-right-4 duration-300">
+          <Card id="digital-replica-print-area" className="border border-slate-300 dark:border-slate-700 shadow-md bg-card text-card-foreground">
+            <CardContent className="p-6 md:p-8 space-y-6">
+
+              {/* Official Barangay Printable Header (Hidden) */}
+              <div className="header-seal hidden no-print">
+                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
+                <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" />
+                <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
+              </div>
+
+              {/* Form Title Banner & Resident Linker */}
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-2 border-b border-border/50">
+                <div className="flex-1 space-y-1">
+                  <Input
+                    type="text"
+                    value={draftTitle}
+                    onChange={(e) => {
+                      setDraftTitle(e.target.value);
+                      setCustomTitleInput(e.target.value);
+                    }}
+                    placeholder="Assign Form Title..."
+                    className="text-lg md:text-xl font-bold font-heading print-title-input tracking-wide border-b-2 border-slate-400 bg-transparent rounded-none px-1 h-9 focus-visible:ring-0 focus-visible:border-slate-800 text-slate-900 dark:text-slate-100 w-full"
+                  />
+                  {draftDesc && (
+                    <p className="text-xs text-slate-600 dark:text-slate-400 no-print">
+                      {draftDesc}
+                    </p>
+                  )}
                 </div>
 
-                {/* Bottom Signature & Information Bar */}
-                <div className="pt-4 border-t border-slate-300 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
-                  <div className="text-xs text-slate-600 dark:text-slate-400 space-y-0.5 no-print">
-                    <p className="font-bold text-slate-900 dark:text-slate-100">Barangay Subukin Health Center Services</p>
-                    <p className="italic text-[11px]">Inputs modeled on lines with official header seal in printable format.</p>
-                  </div>
+                {/* Resident Selector */}
+                <div className="w-full sm:w-64 no-print">
+                  <Label className="text-xs font-semibold mb-1 block">Link Registered Resident</Label>
+                  <Select value={selectedResidentId} onValueChange={handleSelectResident}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Select Resident to Auto-fill" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {residents.map((r) => (
+                        <SelectItem key={r.id} value={r.id} className="text-xs">
+                          {r.full_name} ({r.sitio || "Subukin"})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-                  <div className="flex flex-wrap items-center gap-2 no-print w-full md:w-auto justify-end">
+              {/* Preserved Form Fields Grid (Clean Underline Line Inputs) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
+                {draftFields.map((field, idx) => (
+                  <React.Fragment key={idx}>
+                    {renderSectionHeader(field, idx)}
+                    <div
+                      className={`space-y-1 ${
+                        field.type === "textarea" ? "md:col-span-2 no-print" : ""
+                      }`}
+                    >
+                      <Label className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
+                        {field.label}:
+                      </Label>
 
+                      {field.type === "checkbox" ? (
+                        <div className="flex items-center gap-4 pt-1 font-medium">
+                          <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-800 dark:text-slate-200">
+                            <Checkbox
+                              checked={field.value === "true"}
+                              onCheckedChange={(v) => updateField(idx, { value: v ? "true" : "" })}
+                              className="h-3.5 w-3.5"
+                            />
+                            <span>Yes</span>
+                          </label>
+                          <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-800 dark:text-slate-200">
+                            <Checkbox
+                              checked={field.value === "false"}
+                              onCheckedChange={(v) => updateField(idx, { value: v ? "false" : "" })}
+                              className="h-3.5 w-3.5"
+                            />
+                            <span>No</span>
+                          </label>
+                        </div>
+                      ) : field.type === "textarea" ? (
+                        <Textarea
+                          value={field.value}
+                          onChange={(e) => updateField(idx, { value: e.target.value })}
+                          rows={2}
+                          placeholder="Enter details..."
+                          className="text-xs leading-relaxed border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 shadow-none w-full"
+                        />
+                      ) : (
+                        <Input
+                          type={field.type === "date" ? "date" : "text"}
+                          value={field.value}
+                          onKeyDown={(e) => handleFieldKeyDown(field, e)}
+                          onChange={(e) => handleFieldChange(idx, field, e.target.value)}
+                          placeholder={`Enter ${field.label}...`}
+                          className={lineInputClass}
+                        />
+                      )}
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+
+              {/* Bottom Signature & Action Bar */}
+              <div className="pt-4 border-t border-slate-300 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="text-xs text-slate-600 dark:text-slate-400 space-y-0.5 no-print">
+                  <p className="font-bold text-slate-900 dark:text-slate-100">Barangay Subukin Health Center Services</p>
+                  <p className="italic text-[11px]">Inputs modeled on lines with official header seal in printable format.</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 no-print w-full md:w-auto justify-end">
+
+                  {!formId && (
                     <Button
                       type="button"
                       size="sm"
-                      onClick={() => setViewMode("builder")}
+                      onClick={() => setCurrentStep(2)}
                       className="gap-1.5 text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
                     >
                       <Settings2 className="h-4 w-4" /> Edit Fields
                     </Button>
+                  )}
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={resetDraft}
-                      className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
-                    >
-                      <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset Form
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.print()}
-                      className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
-                    >
-                      <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print Form
-                    </Button>
-
-                    <Button
-                      type="button"
-                      onClick={handleDeployForm}
-                      size="sm"
-                      className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm px-5"
-                    >
-                      <Rocket className="h-4 w-4" /> Deploy Form
-                    </Button>
-                  </div>
-                </div>
-
-              </CardContent>
-            </Card>
-          )}
-
-          {/* VIEW MODE: BUILDER / FIELD EDITOR */}
-          {viewMode === "builder" && (
-            <Card className="border-border/50 shadow-sm no-print">
-              <CardHeader>
-                <CardTitle className="text-base font-heading flex items-center gap-2">
-                  <FileCheck2 className="h-5 w-5 text-primary" /> Edit Digital Form Fields & Properties
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">Form Title</Label>
-                    <Input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} className="text-xs" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">Description</Label>
-                    <Input value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} className="text-xs" />
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-xs font-bold text-foreground">Preserved Fields List</Label>
-                  {draftFields.map((f, i) => (
-                    <div key={i} className="rounded-lg border border-border/60 p-3 bg-muted/20 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Input
-                          value={f.label}
-                          onChange={(e) => updateField(i, { label: e.target.value })}
-                          className="flex-1 h-8 text-xs font-medium bg-background"
-                        />
-                        <select
-                          value={f.type}
-                          onChange={(e) => updateField(i, { type: e.target.value as FieldType })}
-                          className="h-8 rounded-md border border-input bg-background px-2 text-xs"
-                        >
-                          <option value="text">Short Text (Underline Line)</option>
-                          <option value="number">Numeric Only (Letters Blocked)</option>
-                          <option value="date">Date</option>
-                          <option value="textarea">Long Text / Remarks</option>
-                          <option value="checkbox">Yes / No Checkbox (Unchecked)</option>
-                        </select>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeField(i)} className="h-8 w-8 text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-
-                  <Button type="button" variant="outline" size="sm" onClick={addField} className="gap-1.5 text-xs">
-                    <Plus className="h-4 w-4" /> Add Field
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={resetDraft}
+                    className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset Form
                   </Button>
-                </div>
 
-                <div className="flex gap-3 pt-3 border-t">
-                  <Button type="button" onClick={handleDeployForm} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs gap-1.5">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.print()}
+                    className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                  >
+                    <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print Form
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={handleDeployForm}
+                    size="sm"
+                    className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm px-5"
+                  >
                     <Rocket className="h-4 w-4" /> Deploy Form
                   </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={() => setViewMode("replica")} className="text-xs">
-                    Back to Replica Preview
-                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </div>
 
+            </CardContent>
+          </Card>
+
+          {/* Back to Edit button below the card (for non-formId flows) */}
+          {!formId && (
+            <div className="flex items-center gap-3 no-print">
+              <Button type="button" variant="outline" size="sm" onClick={goBack} className="gap-1.5 text-xs">
+                <ChevronLeft className="h-4 w-4" /> Back to Edit Fields
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={fullReset} className="gap-1.5 text-xs text-muted-foreground">
+                <RotateCcw className="h-3.5 w-3.5" /> Start Over
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* SAVED & DEPLOYED CUSTOM FORMS LIST */}
+      {/* ─── DEPLOYED CUSTOM FORMS LIST ─── */}
       <Card className="border-border/50 shadow-sm no-print">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-base font-heading flex items-center gap-2">
