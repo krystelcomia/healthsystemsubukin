@@ -24,13 +24,6 @@ import AdminResidents from "./pages/AdminResidents";
 import AdminWorkers from "./pages/AdminWorkers";
 import AdminHealthRecords from "./pages/AdminHealthRecords";
 import AdminSettings from "./pages/AdminSettings";
-import AdminFormConsultation from "./pages/AdminFormConsultation";
-import AdminFormFamilyData from "./pages/AdminFormFamilyData";
-import AdminFormPhilpenHealth from "./pages/AdminFormPhilpenHealth";
-import AdminFormDenguePrevention from "./pages/AdminFormDenguePrevention";
-import AdminFormMaternalCare from "./pages/AdminFormMaternalCare";
-import AdminFormChildHealth from "./pages/AdminFormChildHealth";
-import AdminFormFamilyPlanning from "./pages/AdminFormFamilyPlanning";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import About from "./pages/About";
@@ -85,6 +78,8 @@ const App = () => (
                 <Route path="/admin/forms/maternal-care" element={<ProtectedRoute><Layout><MaternalCareForm /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/child-health" element={<ProtectedRoute><Layout><ChildHealthForm /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/family-planning" element={<ProtectedRoute><Layout><FamilyPlanningForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/custom/:formId" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/add-new" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/view" element={<ProtectedRoute><Layout><AdminHealthRecords /></Layout></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

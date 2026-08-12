@@ -115,6 +115,7 @@ export function AppSidebar() {
     { title: t("nav.maternalCare"), url: "/admin/forms/maternal-care", icon: HeartPulse },
     { title: t("nav.childHealth"), url: "/admin/forms/child-health", icon: Baby },
     { title: t("nav.familyPlanning"), url: "/admin/forms/family-planning", icon: Syringe },
+    ...customAdminItems,
     { title: "View Forms", url: "/admin/forms/view", icon: FileText },
   ];
 
