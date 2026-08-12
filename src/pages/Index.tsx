@@ -223,21 +223,21 @@ const Index = () => {
   const CHART_COLORS = currentStyle.chartColors;
 
   const quickForms = [
-    { title: t("nav.consultation"), href: "/forms/consultation", icon: Stethoscope, color: "from-emerald-500/20 to-emerald-600/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:border-emerald-500/50", desc: "Log illness, vitals & diagnosis" },
-    { title: t("nav.familyData"), href: "/forms/family-data", icon: ClipboardList, color: "from-sky-500/20 to-sky-600/10 text-sky-600 dark:text-sky-400 border-sky-500/20 hover:border-sky-500/50", desc: "Household profiles & members" },
-    { title: t("nav.philpenHealth"), href: "/forms/philpen-health", icon: Activity, color: "from-rose-500/20 to-rose-600/10 text-rose-600 dark:text-rose-400 border-rose-500/20 hover:border-rose-500/50", desc: "NCD risk screening & BP" },
-    { title: t("nav.childHealth"), href: "/forms/child-health", icon: Baby, color: "from-amber-500/20 to-amber-600/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:border-amber-500/50", desc: "Sick child, Vit A & SIA list" },
-    { title: t("nav.maternalCare"), href: "/forms/maternal-care", icon: HeartPulse, color: "from-pink-500/20 to-pink-600/10 text-pink-600 dark:text-pink-400 border-pink-500/20 hover:border-pink-500/50", desc: "Prenatal & pregnant records" },
-    { title: t("nav.denguePrevention"), href: "/forms/dengue-prevention", icon: Bug, color: "from-teal-500/20 to-teal-600/10 text-teal-600 dark:text-teal-400 border-teal-500/20 hover:border-teal-500/50", desc: "Household larvae inspection" },
-    { title: t("nav.familyPlanning"), href: "/forms/family-planning", icon: Syringe, color: "from-indigo-500/20 to-indigo-600/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 hover:border-indigo-500/50", desc: "Contraceptive method tracking" },
-    { title: t("nav.residents"), href: "/residents", icon: Users, color: "from-purple-500/20 to-purple-600/10 text-purple-600 dark:text-purple-400 border-purple-500/20 hover:border-purple-500/50", desc: "Browse resident database" },
+    { title: t("nav.consultation"), href: "/forms/consultation", icon: Stethoscope, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Log illness, vitals & diagnosis" },
+    { title: t("nav.familyData"), href: "/forms/family-data", icon: ClipboardList, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Household profiles & members" },
+    { title: t("nav.philpenHealth"), href: "/forms/philpen-health", icon: Activity, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "NCD risk screening & BP" },
+    { title: t("nav.childHealth"), href: "/forms/child-health", icon: Baby, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Sick child, Vit A & SIA list" },
+    { title: t("nav.maternalCare"), href: "/forms/maternal-care", icon: HeartPulse, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Prenatal & pregnant records" },
+    { title: t("nav.denguePrevention"), href: "/forms/dengue-prevention", icon: Bug, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Household larvae inspection" },
+    { title: t("nav.familyPlanning"), href: "/forms/family-planning", icon: Syringe, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Contraceptive method tracking" },
+    { title: t("nav.residents"), href: "/residents", icon: Users, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Browse resident database" },
   ];
 
   const statCards = [
-    { label: t("dashboard.totalResidents"), value: stats.totalResidents, icon: Users, desc: t("dashboard.registeredResidents"), color: "from-sky-500/10 via-sky-500/5 to-transparent text-sky-600 dark:text-sky-400 border-sky-500/30", badgeColor: "bg-sky-500/10 text-sky-600" },
-    { label: t("dashboard.consultations"), value: stats.consultations, icon: Stethoscope, desc: t("dashboard.totalConsultations"), color: "from-emerald-500/10 via-emerald-500/5 to-transparent text-emerald-600 dark:text-emerald-400 border-emerald-500/30", badgeColor: "bg-emerald-500/10 text-emerald-600" },
-    { label: t("dashboard.familyRecords"), value: stats.familyRecords, icon: ClipboardList, desc: t("dashboard.familiesRegistered"), color: "from-purple-500/10 via-purple-500/5 to-transparent text-purple-600 dark:text-purple-400 border-purple-500/30", badgeColor: "bg-purple-500/10 text-purple-600" },
-    { label: t("dashboard.children"), value: stats.childVaccinations, icon: Baby, desc: t("dashboard.registeredChildren"), color: "from-amber-500/10 via-amber-500/5 to-transparent text-amber-600 dark:text-amber-400 border-amber-500/30", badgeColor: "bg-amber-500/10 text-amber-600" },
+    { label: t("dashboard.totalResidents"), value: stats.totalResidents, icon: Users, desc: t("dashboard.registeredResidents"), color: "from-primary/10 via-primary/5 to-transparent text-primary border-primary/30", badgeColor: "bg-primary/10 text-primary" },
+    { label: t("dashboard.consultations"), value: stats.consultations, icon: Stethoscope, desc: t("dashboard.totalConsultations"), color: "from-primary/10 via-primary/5 to-transparent text-primary border-primary/30", badgeColor: "bg-primary/10 text-primary" },
+    { label: t("dashboard.familyRecords"), value: stats.familyRecords, icon: ClipboardList, desc: t("dashboard.familiesRegistered"), color: "from-primary/10 via-primary/5 to-transparent text-primary border-primary/30", badgeColor: "bg-primary/10 text-primary" },
+    { label: t("dashboard.children"), value: stats.childVaccinations, icon: Baby, desc: t("dashboard.registeredChildren"), color: "from-primary/10 via-primary/5 to-transparent text-primary border-primary/30", badgeColor: "bg-primary/10 text-primary" },
   ];
 
   return (

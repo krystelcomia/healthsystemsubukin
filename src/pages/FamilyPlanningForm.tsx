@@ -576,15 +576,15 @@ const FamilyPlanningForm = () => {
       `}</style>
 
       {/* Dynamic Theme Banner */}
-      <div className="no-print bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-card border border-emerald-500/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-xs">
+          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
             <Heart className="h-6 w-6" />
           </div>
           <div>
             <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight flex items-center gap-2">
               {t("fp.title") || "Family Planning Client Assessment Record"}
-              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5">
                 DOH FP FORM 1
               </Badge>
             </h2>
@@ -597,11 +597,11 @@ const FamilyPlanningForm = () => {
         <div className="flex items-center gap-3 self-stretch md:self-auto justify-end flex-wrap">
           <div className="bg-card/80 border border-border/60 rounded-xl px-4 py-2 text-center shrink-0 shadow-2xs">
             <span className="text-[10px] font-semibold uppercase text-muted-foreground block">Registered Clients</span>
-            <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">{savedRecords.length}</span>
+            <span className="text-base font-extrabold text-primary">{savedRecords.length}</span>
           </div>
           <div className="bg-card/80 border border-border/60 rounded-xl px-4 py-2 text-center shrink-0 shadow-2xs">
             <span className="text-[10px] font-semibold uppercase text-muted-foreground block">Sections Included</span>
-            <span className="text-base font-extrabold text-teal-600 dark:text-teal-400">Side A & Side B</span>
+            <span className="text-base font-extrabold text-primary">Side A & Side B</span>
           </div>
         </div>
       </div>

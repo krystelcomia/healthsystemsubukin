@@ -318,7 +318,7 @@ const ResidentRecords = () => {
           </div>
 
           {/* Resident Header Profile Card */}
-          <Card className="border-border/60 shadow-sm bg-gradient-to-r from-sky-500/10 via-teal-500/5 to-transparent no-print">
+          <Card className="border-border/60 shadow-sm bg-gradient-to-r from-primary/10 via-primary/5 to-transparent no-print">
             <CardContent className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="h-14 w-14 rounded-2xl bg-primary/15 text-primary font-bold text-lg flex items-center justify-center shadow-xs border border-primary/20 shrink-0">
