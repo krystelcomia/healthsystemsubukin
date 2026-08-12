@@ -78,15 +78,14 @@ const App = () => (
                 <Route path="/admin/about" element={<ProtectedRoute><Layout><About /></Layout></ProtectedRoute>} />
                 <Route path="/admin/calendar" element={<ProtectedRoute><Layout><CalendarPage /></Layout></ProtectedRoute>} />
                 <Route path="/admin/contact" element={<ProtectedRoute><Layout><Contact /></Layout></ProtectedRoute>} />
-                <Route path="/admin/forms/family-data" element={<ProtectedRoute><Layout><AdminFormFamilyData /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/family-data" element={<ProtectedRoute><Layout><FamilyDataForm /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/consultation" element={<ProtectedRoute><Layout><AdminFormConsultation /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/philpen-health" element={<ProtectedRoute><Layout><AdminFormPhilpenHealth /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/dengue-prevention" element={<ProtectedRoute><Layout><AdminFormDenguePrevention /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/maternal-care" element={<ProtectedRoute><Layout><AdminFormMaternalCare /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/child-health" element={<ProtectedRoute><Layout><AdminFormChildHealth /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/family-planning" element={<ProtectedRoute><Layout><AdminFormFamilyPlanning /></Layout></ProtectedRoute>} />
-                <Route path="/admin/forms/custom/:formId" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
-                <Route path="/admin/forms/add-new" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/view" element={<ProtectedRoute><Layout><AdminHealthRecords /></Layout></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AuthProvider>

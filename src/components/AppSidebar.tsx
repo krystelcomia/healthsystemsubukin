@@ -115,8 +115,7 @@ export function AppSidebar() {
     { title: t("nav.maternalCare"), url: "/admin/forms/maternal-care", icon: HeartPulse },
     { title: t("nav.childHealth"), url: "/admin/forms/child-health", icon: Baby },
     { title: t("nav.familyPlanning"), url: "/admin/forms/family-planning", icon: Syringe },
-    ...customAdminItems,
-    { title: "Add New Form", url: "/admin/forms/add-new", icon: Plus },
+    { title: "View Forms", url: "/admin/forms/view", icon: FileText },
   ];
 
   const mainItems = isAdmin ? adminMainItems : bhwMainItems;

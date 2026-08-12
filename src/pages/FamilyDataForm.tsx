@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
 import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 import { logActivity } from "@/lib/activityLogger";
@@ -62,6 +63,8 @@ export interface FamilyRecord {
 
 const FamilyDataForm = () => {
   const { t } = useSettings();
+  const { userRole } = useAuth();
+  const isAdmin = userRole === "supervisor";
   const [records, setRecords] = useState<FamilyRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -614,14 +617,16 @@ const FamilyDataForm = () => {
       <div className="flex flex-col md:flex-row items-center justify-end gap-4 bg-card border border-border/60 p-4 rounded-xl shadow-xs">
 
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <Button
-            onClick={handleOpenCreateModal}
-            size="sm"
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-medium shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            {t("familyData.createNewFile")}
-          </Button>
+          {!isAdmin && (
+            <Button
+              onClick={handleOpenCreateModal}
+              size="sm"
+              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-medium shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              {t("familyData.createNewFile")}
+            </Button>
+          )}
 
           <div className="flex items-center border border-border rounded-lg p-0.5 bg-muted/40">
             <Button
@@ -927,15 +932,17 @@ const FamilyDataForm = () => {
                 </div>
 
                 <div className="flex items-center gap-2 no-print self-end md:self-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingFileDetails(!isEditingFileDetails)}
-                    className="gap-1 text-xs"
-                  >
-                    <Edit className="h-3.5 w-3.5" />
-                    {isEditingFileDetails ? "Done Editing" : "Edit File Headers"}
-                  </Button>
+                  {!isAdmin && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditingFileDetails(!isEditingFileDetails)}
+                      className="gap-1 text-xs"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                      {isEditingFileDetails ? "Done Editing" : "Edit File Headers"}
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
@@ -1049,14 +1056,16 @@ const FamilyDataForm = () => {
                     </h3>
                   </div>
 
-                  <Button
-                    size="sm"
-                    onClick={() => setAddMemberDialogOpen(true)}
-                    className="gap-1.5 text-xs no-print bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  >
-                    <UserPlus className="h-3.5 w-3.5" />
-                    Add Family Member
-                  </Button>
+                  {!isAdmin && (
+                    <Button
+                      size="sm"
+                      onClick={() => setAddMemberDialogOpen(true)}
+                      className="gap-1.5 text-xs no-print bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                      Add Family Member
+                    </Button>
+                  )}
                 </div>
 
                 <div className="border border-border/80 rounded-xl overflow-hidden shadow-xs">
@@ -1068,7 +1077,7 @@ const FamilyDataForm = () => {
                         <th className="p-3 font-semibold text-center">Birthday</th>
                         <th className="p-3 font-semibold text-center">Age</th>
                         <th className="p-3 font-semibold text-center">Gender</th>
-                        <th className="p-3 font-semibold text-center no-print">Action</th>
+                        {!isAdmin && <th className="p-3 font-semibold text-center no-print">Action</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -1086,16 +1095,18 @@ const FamilyDataForm = () => {
                             <td className="p-3 text-center">{m.birthday || "—"}</td>
                             <td className="p-3 text-center">{m.age || "—"}</td>
                             <td className="p-3 text-center">{m.gender}</td>
-                            <td className="p-3 text-center no-print">
-                              <Button
-                                onClick={() => handleRemoveMember(m.id, m.full_name)}
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                              >
-                                <Trash className="h-3.5 w-3.5" />
-                              </Button>
-                            </td>
+                            {!isAdmin && (
+                              <td className="p-3 text-center no-print">
+                                <Button
+                                  onClick={() => handleRemoveMember(m.id, m.full_name)}
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash className="h-3.5 w-3.5" />
+                                </Button>
+                              </td>
+                            )}
                           </tr>
                         ))
                       )}
@@ -1115,16 +1126,17 @@ const FamilyDataForm = () => {
               </div>
 
               {/* Dialog Footer Actions */}
-              <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border/50 no-print">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDeleteFile(selectedFile.id, `${editFamNum} - ${editFather}`)}
-                  className="text-destructive hover:bg-destructive/10 border-destructive/20 text-xs gap-1.5 w-full sm:w-auto"
-                >
-                  <Trash2 className="h-3.5 w-3.5" /> Delete File
-                </Button>
+              <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-bor                 {!isAdmin && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteFile(selectedFile.id, `${editFamNum} - ${editFather}`)}
+                    className="text-destructive hover:bg-destructive/10 border-destructive/20 text-xs gap-1.5 w-full sm:w-auto"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Delete File
+                  </Button>
+                )}
 
                 <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                   <Button
@@ -1135,15 +1147,17 @@ const FamilyDataForm = () => {
                   >
                     Close
                   </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleSaveFileChanges}
-                    className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    <Save className="h-3.5 w-3.5" /> Save File Changes
-                  </Button>
-                </div>
+                  {!isAdmin && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleSaveFileChanges}
+                      className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      <Save className="h-3.5 w-3.5" /> Save File Changes
+                    </Button>
+                  )}
+                </div>            </div>
               </DialogFooter>
             </div>
           )}
