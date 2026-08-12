@@ -358,13 +358,20 @@ const PhilPenHealthForm = () => {
         <CardContent className="p-6 md:p-8 space-y-6">
           
           {/* Official Barangay Printable Header */}
-          <div 
-            className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
-            style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-          >
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          <div className="print-only header-seal flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center">
+            <div className="flex items-center justify-center gap-6 md:gap-8">
+              <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+              <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+              <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+            </div>
+            <div className="mt-3 text-center">
+              <h2 className="text-base font-extrabold uppercase tracking-wider text-slate-900">
+                BARANGAY HEALTH SYSTEM — PHILPEN RISK ASSESSMENT FORM
+              </h2>
+              <p className="text-xs text-slate-600 italic">
+                Philippine Package of Essential NCD Interventions (PhilPEN) Risk Assessment Record
+              </p>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -735,6 +742,18 @@ const PhilPenHealthForm = () => {
 
                 </tbody>
               </table>
+            </div>
+
+            {/* Printable Official Footer Signatures */}
+            <div className="print-only pt-8 mt-6 border-t border-slate-300 flex justify-between text-xs text-slate-800">
+              <div>
+                Certified Correct: ___________________________<br />
+                <span className="text-[10px] text-slate-600">Attending Barangay Health Worker</span>
+              </div>
+              <div>
+                Approved By: ___________________________<br />
+                <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
+              </div>
             </div>
 
             {/* Bottom Form Actions Row - Hidden in Print */}

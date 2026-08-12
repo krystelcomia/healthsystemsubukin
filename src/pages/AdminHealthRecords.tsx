@@ -387,6 +387,135 @@ const AdminHealthRecords = () => {
       return;
     }
 
+    if (form.id === "philpen_health" || form.id === "philpen") {
+      const html = `
+        <div style="text-align:center;margin-top:10px;margin-bottom:18px;">
+          <h2 style="font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#000000;margin:0;">
+            BARANGAY HEALTH SYSTEM &mdash; PHILPEN RISK ASSESSMENT FORM
+          </h2>
+          <p style="font-size:11px;color:#555555;font-style:italic;margin-top:2px;">
+            Philippine Package of Essential NCD Interventions (PhilPEN) Risk Assessment Record
+          </p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;border-bottom:1px solid #cbd5e1;padding-bottom:12px;">
+          <div style="grid-column:span 8;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:90px;">Name:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:90px;">Address/Sitio:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:90px;">Age:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:90px;">Birthdate:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:90px;">Date:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
+            </div>
+          </div>
+
+          <div style="grid-column:span 4;display:flex;flex-direction:column;gap:8px;border-left:1px solid #cbd5e1;padding-left:16px;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:40px;">BP:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:40px;">Ht:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:40px;">Wt:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:40px;">BMI:</span>
+              <div style="border-bottom:1px dashed #000;flex:1;min-height:20px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <table style="width:100%;border-collapse:collapse;margin-top:12px;margin-bottom:20px;font-size:11px;">
+          <thead>
+            <tr style="background:#f1f5f9;border-bottom:2px solid #000;">
+              <th style="border:1px solid #000;padding:6px 8px;text-align:left;width:55%;">Description/Question</th>
+              <th style="border:1px solid #000;padding:6px 8px;text-align:center;width:10%;">Yes</th>
+              <th style="border:1px solid #000;padding:6px 8px;text-align:center;width:10%;">No</th>
+              <th style="border:1px solid #000;padding:6px 8px;text-align:left;width:25%;">Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border:1px solid #000;padding:6px 8px;font-weight:600;">1. Naninigarilyo?</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:6px;">Ilang stick kada araw: ________</td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:6px 8px;font-weight:600;">2. Manginginom?</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:6px;"></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:6px 8px;font-weight:600;">3. Tumataas ba ang BP?</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:6px;font-size:10px;">
+                &bull; If yes, ano BP mo: _______<br/>
+                &bull; Ano gamot iniinom: _______<br/>
+                &bull; Naninikip ba dibdib mo: _______
+              </td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="border:1px solid #000;padding:6px 8px;font-weight:700;">4. May sintomas ba ng diabetes?</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:6px;"></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:5px 8px 5px 20px;">&bull; Palakain</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:5px;"></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:5px 8px 5px 20px;">&bull; Palaging gutom</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:5px;"></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:5px 8px 5px 20px;">&bull; Madalas umihi sa madaling araw?</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:5px;"></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:5px 8px 5px 20px;">&bull; Laging uhaw</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;"></td>
+              <td style="border:1px solid #000;padding:5px;"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;color:#000000;">
+          <div>Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
+          <div>Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
+        </div>
+      `;
+      triggerInSystemPrint(`Blank Form — ${form.title}`, html, orientation);
+      return;
+    }
+
     const html = `
       <div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin:16px 0;letter-spacing:1px;">${form.title}</div>
       <p style="text-align:center;font-style:italic;margin-bottom:20px;color:#666;">Official Barangay Health Assessment & Registration Document</p>
@@ -656,6 +785,135 @@ const AdminHealthRecords = () => {
         </div>
       `;
       triggerInSystemPrint(`Filled Record — ${selectedRecord.family_number || "Family Data"}`, html, orientation);
+      return;
+    }
+
+    if (selectedForm.id === "philpen_health" || selectedForm.id === "philpen") {
+      const html = `
+        <div style="text-align:center;margin-top:10px;margin-bottom:18px;">
+          <h2 style="font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#000000;margin:0;">
+            BARANGAY HEALTH SYSTEM &mdash; PHILPEN RISK ASSESSMENT FORM
+          </h2>
+          <p style="font-size:11px;color:#555555;font-style:italic;margin-top:2px;">
+            Philippine Package of Essential NCD Interventions (PhilPEN) Risk Assessment Record
+          </p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;border-bottom:1px solid #cbd5e1;padding-bottom:12px;">
+          <div style="grid-column:span 8;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:90px;">Name:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${resName}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:90px;">Address/Sitio:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.address || selectedRecord.sitio || ""}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:90px;">Age:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.age || ""}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:90px;">Birthdate:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.birthdate || ""}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:90px;">Date:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.record_date || (selectedRecord.created_at ? new Date(selectedRecord.created_at).toLocaleDateString() : "")}</div>
+            </div>
+          </div>
+
+          <div style="grid-column:span 4;display:flex;flex-direction:column;gap:8px;border-left:1px solid #cbd5e1;padding-left:16px;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:40px;">BP:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.bp || ""}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:40px;">Ht:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.height || ""}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:40px;">Wt:</span>
+              <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.weight || ""}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <span style="font-weight:700;width:40px;">BMI:</span>
+              <div style="border-bottom:1px dashed #000;flex:1;min-height:20px;font-weight:700;">${selectedRecord.bmi || ""}</div>
+            </div>
+          </div>
+        </div>
+
+        <table style="width:100%;border-collapse:collapse;margin-top:12px;margin-bottom:20px;font-size:11px;">
+          <thead>
+            <tr style="background:#f1f5f9;border-bottom:2px solid #000;">
+              <th style="border:1px solid #000;padding:6px 8px;text-align:left;width:55%;">Description/Question</th>
+              <th style="border:1px solid #000;padding:6px 8px;text-align:center;width:10%;">Yes</th>
+              <th style="border:1px solid #000;padding:6px 8px;text-align:center;width:10%;">No</th>
+              <th style="border:1px solid #000;padding:6px 8px;text-align:left;width:25%;">Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border:1px solid #000;padding:6px 8px;font-weight:600;">1. Naninigarilyo?</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;">${selectedRecord.smokes ? "✓" : ""}</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;">${selectedRecord.smokes_no ? "✓" : (!selectedRecord.smokes ? "✓" : "")}</td>
+              <td style="border:1px solid #000;padding:6px;">${selectedRecord.smokes_remarks ? `Ilang stick kada araw: ${selectedRecord.smokes_remarks}` : ""}</td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:6px 8px;font-weight:600;">2. Manginginom?</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;">${selectedRecord.drinks_alcohol ? "✓" : ""}</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;">${selectedRecord.drinks_alcohol_no ? "✓" : (!selectedRecord.drinks_alcohol ? "✓" : "")}</td>
+              <td style="border:1px solid #000;padding:6px;">${selectedRecord.drinks_remarks || ""}</td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:6px 8px;font-weight:600;">3. Tumataas ba ang BP?</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;">${selectedRecord.high_bp ? "✓" : ""}</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;">${selectedRecord.high_bp_no ? "✓" : (!selectedRecord.high_bp ? "✓" : "")}</td>
+              <td style="border:1px solid #000;padding:6px;font-size:10px;">
+                ${selectedRecord.bp_remarks_bp ? `&bull; If yes, ano BP mo: ${selectedRecord.bp_remarks_bp}<br/>` : ""}
+                ${selectedRecord.bp_remarks_meds ? `&bull; Ano gamot iniinom: ${selectedRecord.bp_remarks_meds}<br/>` : ""}
+                ${selectedRecord.bp_remarks_chest ? `&bull; Naninikip ba dibdib mo: ${selectedRecord.bp_remarks_chest}` : ""}
+              </td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="border:1px solid #000;padding:6px 8px;font-weight:700;">4. May sintomas ba ng diabetes?</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;">${selectedRecord.diabetes ? "✓" : ""}</td>
+              <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;">${selectedRecord.diabetes_no ? "✓" : (!selectedRecord.diabetes ? "✓" : "")}</td>
+              <td style="border:1px solid #000;padding:6px;">${selectedRecord.diabetes_remarks || ""}</td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:5px 8px 5px 20px;">&bull; Palakain</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;font-weight:bold;">${selectedRecord.diabetes_palakain ? "✓" : ""}</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;font-weight:bold;">${selectedRecord.diabetes_palakain_no ? "✓" : (!selectedRecord.diabetes_palakain ? "✓" : "")}</td>
+              <td style="border:1px solid #000;padding:5px;"></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:5px 8px 5px 20px;">&bull; Palaging gutom</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;font-weight:bold;">${selectedRecord.diabetes_palaging_gutom ? "✓" : ""}</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;font-weight:bold;">${selectedRecord.diabetes_palaging_gutom_no ? "✓" : (!selectedRecord.diabetes_palaging_gutom ? "✓" : "")}</td>
+              <td style="border:1px solid #000;padding:5px;"></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:5px 8px 5px 20px;">&bull; Madalas umihi sa madaling araw?</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;font-weight:bold;">${selectedRecord.diabetes_madalas_umihi ? "✓" : ""}</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;font-weight:bold;">${selectedRecord.diabetes_madalas_umihi_no ? "✓" : (!selectedRecord.diabetes_madalas_umihi ? "✓" : "")}</td>
+              <td style="border:1px solid #000;padding:5px;"></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #000;padding:5px 8px 5px 20px;">&bull; Laging uhaw</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;font-weight:bold;">${selectedRecord.diabetes_laging_uhaw ? "✓" : ""}</td>
+              <td style="border:1px solid #000;padding:5px;text-align:center;font-weight:bold;">${selectedRecord.diabetes_laging_uhaw_no ? "✓" : (!selectedRecord.diabetes_laging_uhaw ? "✓" : "")}</td>
+              <td style="border:1px solid #000;padding:5px;"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;color:#000000;">
+          <div>Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
+          <div>Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
+        </div>
+      `;
+      triggerInSystemPrint(`Filled Record — ${resName}`, html, orientation);
       return;
     }
 
@@ -1047,6 +1305,121 @@ const AdminHealthRecords = () => {
                               </tr>
                             ));
                           })()}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              ) : selectedForm.id === "philpen_health" || selectedForm.id === "philpen" ? (
+                <div className="space-y-4 text-xs">
+                  <Card className="border-border/60 bg-card p-4 space-y-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div>
+                        <span className="text-muted-foreground uppercase font-bold text-[10px] block">Resident Name</span>
+                        <strong className="text-foreground text-sm font-bold">{selectedRecord.residents?.full_name || selectedRecord.patient_name || selectedRecord.first_name || "Unlinked Resident"}</strong>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground uppercase font-bold text-[10px] block">Address / Sitio</span>
+                        <strong className="text-foreground text-sm font-semibold">{selectedRecord.address || selectedRecord.sitio || "Subukin"}</strong>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground uppercase font-bold text-[10px] block">Age / Birthdate</span>
+                        <strong className="text-foreground text-sm font-semibold">{selectedRecord.age || "—"} yrs ({selectedRecord.birthdate || "—"})</strong>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground uppercase font-bold text-[10px] block">Record Date</span>
+                        <strong className="text-foreground text-sm font-mono">{selectedRecord.record_date || (selectedRecord.created_at ? new Date(selectedRecord.created_at).toLocaleDateString() : "—")}</strong>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 pt-2 border-t border-border/40 text-center">
+                      <div className="bg-muted/30 p-2 rounded-lg">
+                        <span className="text-[10px] text-muted-foreground block font-bold">BP</span>
+                        <span className="font-mono font-extrabold text-foreground">{selectedRecord.bp || "—"}</span>
+                      </div>
+                      <div className="bg-muted/30 p-2 rounded-lg">
+                        <span className="text-[10px] text-muted-foreground block font-bold">HEIGHT</span>
+                        <span className="font-mono font-extrabold text-foreground">{selectedRecord.height ? `${selectedRecord.height} cm` : "—"}</span>
+                      </div>
+                      <div className="bg-muted/30 p-2 rounded-lg">
+                        <span className="text-[10px] text-muted-foreground block font-bold">WEIGHT</span>
+                        <span className="font-mono font-extrabold text-foreground">{selectedRecord.weight ? `${selectedRecord.weight} kg` : "—"}</span>
+                      </div>
+                      <div className="bg-primary/10 border border-primary/20 p-2 rounded-lg">
+                        <span className="text-[10px] text-primary block font-bold">BMI</span>
+                        <span className="font-mono font-extrabold text-primary">{selectedRecord.bmi || "—"}</span>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground">
+                      Risk Assessment Checklist &amp; Remarks
+                    </h4>
+                    <div className="border border-border/60 rounded-xl overflow-hidden shadow-xs">
+                      <table className="w-full text-xs text-left">
+                        <thead>
+                          <tr className="bg-muted/40 border-b border-border/50">
+                            <th className="p-2.5 font-semibold w-[55%]">Description / Question</th>
+                            <th className="p-2.5 font-semibold text-center w-[12%]">Yes</th>
+                            <th className="p-2.5 font-semibold text-center w-[12%]">No</th>
+                            <th className="p-2.5 font-semibold w-[21%]">Remarks</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b border-border/30">
+                            <td className="p-2.5 font-medium">1. Naninigarilyo?</td>
+                            <td className="p-2.5 text-center font-bold text-primary">{selectedRecord.smokes ? "✓" : ""}</td>
+                            <td className="p-2.5 text-center font-bold text-muted-foreground">{selectedRecord.smokes_no ? "✓" : (!selectedRecord.smokes ? "✓" : "")}</td>
+                            <td className="p-2.5">{selectedRecord.smokes_remarks ? `Sticks: ${selectedRecord.smokes_remarks}` : "—"}</td>
+                          </tr>
+                          <tr className="border-b border-border/30">
+                            <td className="p-2.5 font-medium">2. Manginginom?</td>
+                            <td className="p-2.5 text-center font-bold text-primary">{selectedRecord.drinks_alcohol ? "✓" : ""}</td>
+                            <td className="p-2.5 text-center font-bold text-muted-foreground">{selectedRecord.drinks_alcohol_no ? "✓" : (!selectedRecord.drinks_alcohol ? "✓" : "")}</td>
+                            <td className="p-2.5">{selectedRecord.drinks_remarks || "—"}</td>
+                          </tr>
+                          <tr className="border-b border-border/30">
+                            <td className="p-2.5 font-medium">3. Tumataas ba ang BP?</td>
+                            <td className="p-2.5 text-center font-bold text-primary">{selectedRecord.high_bp ? "✓" : ""}</td>
+                            <td className="p-2.5 text-center font-bold text-muted-foreground">{selectedRecord.high_bp_no ? "✓" : (!selectedRecord.high_bp ? "✓" : "")}</td>
+                            <td className="p-2.5 text-[11px]">
+                              {selectedRecord.bp_remarks_bp && <div>• BP: {selectedRecord.bp_remarks_bp}</div>}
+                              {selectedRecord.bp_remarks_meds && <div>• Meds: {selectedRecord.bp_remarks_meds}</div>}
+                              {selectedRecord.bp_remarks_chest && <div>• Chest: {selectedRecord.bp_remarks_chest}</div>}
+                              {!selectedRecord.bp_remarks_bp && !selectedRecord.bp_remarks_meds && !selectedRecord.bp_remarks_chest && "—"}
+                            </td>
+                          </tr>
+                          <tr className="border-b border-border/30 bg-muted/20 font-semibold">
+                            <td className="p-2.5">4. May sintomas ba ng diabetes?</td>
+                            <td className="p-2.5 text-center font-bold text-primary">{selectedRecord.diabetes ? "✓" : ""}</td>
+                            <td className="p-2.5 text-center font-bold text-muted-foreground">{selectedRecord.diabetes_no ? "✓" : (!selectedRecord.diabetes ? "✓" : "")}</td>
+                            <td className="p-2.5">{selectedRecord.diabetes_remarks || "—"}</td>
+                          </tr>
+                          <tr className="border-b border-border/20 text-muted-foreground">
+                            <td className="p-2 pl-6">&bull; Palakain</td>
+                            <td className="p-2 text-center font-bold text-primary">{selectedRecord.diabetes_palakain ? "✓" : ""}</td>
+                            <td className="p-2 text-center font-bold">{selectedRecord.diabetes_palakain_no ? "✓" : (!selectedRecord.diabetes_palakain ? "✓" : "")}</td>
+                            <td className="p-2"></td>
+                          </tr>
+                          <tr className="border-b border-border/20 text-muted-foreground">
+                            <td className="p-2 pl-6">&bull; Palaging gutom</td>
+                            <td className="p-2 text-center font-bold text-primary">{selectedRecord.diabetes_palaging_gutom ? "✓" : ""}</td>
+                            <td className="p-2 text-center font-bold">{selectedRecord.diabetes_palaging_gutom_no ? "✓" : (!selectedRecord.diabetes_palaging_gutom ? "✓" : "")}</td>
+                            <td className="p-2"></td>
+                          </tr>
+                          <tr className="border-b border-border/20 text-muted-foreground">
+                            <td className="p-2 pl-6">&bull; Madalas umihi sa madaling araw?</td>
+                            <td className="p-2 text-center font-bold text-primary">{selectedRecord.diabetes_madalas_umihi ? "✓" : ""}</td>
+                            <td className="p-2 text-center font-bold">{selectedRecord.diabetes_madalas_umihi_no ? "✓" : (!selectedRecord.diabetes_madalas_umihi ? "✓" : "")}</td>
+                            <td className="p-2"></td>
+                          </tr>
+                          <tr className="text-muted-foreground">
+                            <td className="p-2 pl-6">&bull; Laging uhaw</td>
+                            <td className="p-2 text-center font-bold text-primary">{selectedRecord.diabetes_laging_uhaw ? "✓" : ""}</td>
+                            <td className="p-2 text-center font-bold">{selectedRecord.diabetes_laging_uhaw_no ? "✓" : (!selectedRecord.diabetes_laging_uhaw ? "✓" : "")}</td>
+                            <td className="p-2"></td>
+                          </tr>
                         </tbody>
                       </table>
                     </div>
