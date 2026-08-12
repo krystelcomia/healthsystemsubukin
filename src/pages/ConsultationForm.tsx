@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Stethoscope, Printer, RefreshCw, UserCheck, Activity, FileText, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
-import { ensureResidentExists, getFamilyOnlyResidents } from "@/lib/residentLinker";
+import { ensureResidentExists, getFamilyOnlyResidents, calculateAge } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
