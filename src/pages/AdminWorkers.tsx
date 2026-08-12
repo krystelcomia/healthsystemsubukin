@@ -13,6 +13,10 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 
+import sanjuanLogo from "@/assets/sanjuan_logo.png";
+import barangayLogo from "@/assets/barangay-logo.png";
+import headerTextImg from "@/assets/header_text.png";
+
 interface BHWWorker {
   id: string; name: string; age: number; address: string; gmail: string; number: string; is_online: boolean; last_seen: string | null; user_id: string | null; created_at: string; assigned_sitio?: string;
 }
@@ -76,19 +80,7 @@ const AdminWorkers = () => {
   };
 
   const handlePrint = () => {
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(`<!DOCTYPE html><html><head><title>${t("workers.title")}</title>
-      <style>* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #1a1a1a; font-size: 13px; }
-        .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #0d9488; padding-bottom: 16px; } .header h1 { font-size: 20px; color: #0d9488; }
-        table { width: 100%; border-collapse: collapse; margin: 12px 0; } th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: left; font-size: 12px; } th { background: transparent; color: #000; font-weight: 600; }
-        .print-date { text-align: right; font-size: 10px; color: #999; margin-top: 20px; }</style></head><body>
-      <div class="header"><h1>Barangay Health System</h1><p>${t("workers.title")}</p></div>
-      <table><thead><tr><th>#</th><th>${t("workers.name")}</th><th>Assigned Sitio</th><th>${t("workers.gmail")}</th><th>${t("workers.contact")}</th><th>${t("admin.residents.status")}</th></tr></thead><tbody>`);
-    workers.forEach((w, i) => { win.document.write(`<tr><td>${i + 1}</td><td>${w.name}</td><td>${w.assigned_sitio || getAssignedSitio(w.name) || "—"}</td><td>${w.gmail}</td><td>${w.number}</td><td>${w.is_online ? t("admin.dashboard.online") : t("admin.dashboard.offline")}</td></tr>`); });
-    win.document.write(`</tbody></table><p style="margin-top:12px;font-size:12px;color:#666;">${t("common.total")}: ${workers.length}</p>`);
-    win.document.write(`<p class="print-date">${new Date().toLocaleString()}</p></body></html>`);
-    win.document.close(); win.print();
+    window.print();
   };
 
   const formatLastSeen = (lastSeen: string | null) => {
@@ -98,12 +90,37 @@ const AdminWorkers = () => {
 
   return (
     <div className="w-full space-y-6">
-      <div>
+      <style>{`
+        @media print {
+          body * { visibility: hidden; }
+          #admin-workers-print-area, #admin-workers-print-area * { visibility: visible; }
+          #admin-workers-print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100% !important;
+            background: white !important;
+            padding: 20px !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            color: black !important;
+          }
+          .no-print { display: none !important; }
+          .print-only { display: block !important; }
+          .print-only.header-seal { display: flex !important; }
+          .header-seal img { height: 75px !important; mix-blend-mode: multiply !important; }
+          #admin-workers-print-area table td, #admin-workers-print-area table th { padding: 6px 10px !important; font-size: 11px !important; color: #000 !important; }
+          @page { size: A4 portrait; margin: 6mm; }
+        }
+      `}</style>
+
+      <div className="no-print">
         <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2"><Users className="h-6 w-6 text-primary" />{t("workers.title")}</h1>
         <p className="text-muted-foreground mt-1">{t("workers.desc")}</p>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between no-print">
         <p className="text-sm text-muted-foreground">{workers.length} {t("workers.registered")}</p>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> {t("common.print")}</Button>
@@ -111,35 +128,88 @@ const AdminWorkers = () => {
         </div>
       </div>
 
-      <div className="space-y-3">
-        {loading ? (<p className="text-center text-muted-foreground py-8">{t("workers.loadingWorkers")}</p>
-        ) : workers.length === 0 ? (<p className="text-center text-muted-foreground py-8">{t("workers.noWorkers")}</p>
-        ) : workers.map((w) => (
-          <Card key={w.id} className="border-border/50 shadow-sm">
-            <CardContent className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-4 flex-1">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center relative">
-                  <span className="text-sm font-semibold text-primary">{w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
-                  <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card ${w.is_online ? "bg-green-500" : "bg-muted-foreground/40"}`} />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-foreground">{w.name}</p>
-                    <Badge variant={w.is_online ? "default" : "secondary"} className="text-xs">
-                      {w.is_online ? <><UserCheck className="h-3 w-3 mr-1" />{t("admin.dashboard.online")}</> : <><UserX className="h-3 w-3 mr-1" />{t("admin.dashboard.offline")}</>}
-                    </Badge>
+      <div id="admin-workers-print-area" className="space-y-6">
+        {/* Printable Official Header Seal */}
+        <div 
+          className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
+          style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
+        >
+          <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "75px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+        </div>
+
+        <div className="print-only flex justify-between items-center mb-4" style={{ display: "none" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: "bold" }}>
+            BARANGAY HEALTH WORKERS (BHW) REGISTRY DIRECTORY
+          </h2>
+          <span style={{ fontSize: "12px", color: "#666" }}>
+            Total Registered: {workers.length}
+          </span>
+        </div>
+
+        {/* Printable Table */}
+        <div className="print-only" style={{ display: "none" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+            <thead>
+              <tr style={{ background: "#f1f5f9", borderBottom: "2px solid #000" }}>
+                <th style={{ border: "1px solid #cbd5e1", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold" }}>#</th>
+                <th style={{ border: "1px solid #cbd5e1", padding: "8px 10px", textAlign: "left", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold" }}>Worker Name</th>
+                <th style={{ border: "1px solid #cbd5e1", padding: "8px 10px", textAlign: "left", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold" }}>Assigned Sitio</th>
+                <th style={{ border: "1px solid #cbd5e1", padding: "8px 10px", textAlign: "left", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold" }}>Email Address</th>
+                <th style={{ border: "1px solid #cbd5e1", padding: "8px 10px", textAlign: "left", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold" }}>Contact Number</th>
+                <th style={{ border: "1px solid #cbd5e1", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold" }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {workers.map((w, i) => (
+                <tr key={w.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                  <td style={{ border: "1px solid #cbd5e1", padding: "8px 10px", textAlign: "center" }}>{i + 1}</td>
+                  <td style={{ border: "1px solid #cbd5e1", padding: "8px 10px", fontWeight: "bold" }}>{w.name}</td>
+                  <td style={{ border: "1px solid #cbd5e1", padding: "8px 10px" }}>{w.assigned_sitio || getAssignedSitio(w.name) || "—"}</td>
+                  <td style={{ border: "1px solid #cbd5e1", padding: "8px 10px" }}>{w.gmail || "—"}</td>
+                  <td style={{ border: "1px solid #cbd5e1", padding: "8px 10px" }}>{w.number || "—"}</td>
+                  <td style={{ border: "1px solid #cbd5e1", padding: "8px 10px", textAlign: "center" }}>{w.is_online ? t("admin.dashboard.online") : t("admin.dashboard.offline")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ marginTop: "16px", textAlign: "right", fontSize: "10px", color: "#64748b" }}>
+            Report Generated: {new Date().toLocaleString()}
+          </div>
+        </div>
+
+        {/* Screen Cards List */}
+        <div className="space-y-3 no-print">
+          {loading ? (<p className="text-center text-muted-foreground py-8">{t("workers.loadingWorkers")}</p>
+          ) : workers.length === 0 ? (<p className="text-center text-muted-foreground py-8">{t("workers.noWorkers")}</p>
+          ) : workers.map((w) => (
+            <Card key={w.id} className="border-border/50 shadow-sm">
+              <CardContent className="flex items-center justify-between py-4">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center relative">
+                    <span className="text-sm font-semibold text-primary">{w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
+                    <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card ${w.is_online ? "bg-green-500" : "bg-muted-foreground/40"}`} />
                   </div>
-                  <p className="text-sm text-muted-foreground">Assigned Sitio: <strong className="text-foreground">{w.assigned_sitio || getAssignedSitio(w.name) || "—"}</strong> · {w.gmail} · {w.number}</p>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-foreground">{w.name}</p>
+                      <Badge variant={w.is_online ? "default" : "secondary"} className="text-xs">
+                        {w.is_online ? <><UserCheck className="h-3 w-3 mr-1" />{t("admin.dashboard.online")}</> : <><UserX className="h-3 w-3 mr-1" />{t("admin.dashboard.offline")}</>}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Assigned Sitio: <strong className="text-foreground">{w.assigned_sitio || getAssignedSitio(w.name) || "—"}</strong> · {w.gmail} · {w.number}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setViewWorker(w); setViewDialogOpen(true); }}><Eye className="h-4 w-4 text-muted-foreground" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditWorker(w); setEditDialogOpen(true); }}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirmId(w.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setViewWorker(w); setViewDialogOpen(true); }}><Eye className="h-4 w-4 text-muted-foreground" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditWorker(w); setEditDialogOpen(true); }}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirmId(w.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       {/* Add Worker Dialog */}
