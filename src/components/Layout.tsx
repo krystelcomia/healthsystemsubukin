@@ -323,12 +323,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <TooltipProvider delayDuration={100}>
                 <nav className="flex items-center gap-2">
                   {headerLinks.map(({ label, to, Icon }) => {
+                    const isAdminMode = userRole === "supervisor";
+                    const resolvedTo = isAdminMode ? (to === "/" ? "/admin" : `/admin${to}`) : to;
                     const isCalendar = label === "Calendar";
                     return (
                       <Tooltip key={label}>
                         <TooltipTrigger asChild>
                           <NavLink
-                            to={to}
+                            to={resolvedTo}
                             end
                             onClick={isCalendar ? markAllAsSeen : undefined}
                             className="flex items-center justify-center px-3 py-1.5 rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"

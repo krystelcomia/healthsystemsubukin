@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Users, Printer, Eye } from "lucide-react";
+import { Users, Printer, Eye, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -140,6 +140,24 @@ const AdminResidents = () => {
 
   const filtered = selectedSitio === "all" ? residents : residents.filter(r => r.sitio === selectedSitio);
 
+  // Group filtered records by sitio
+  const groupedBySitio: Record<string, Resident[]> = {};
+  filtered.forEach(r => {
+    const sitio = r.sitio || "Unassigned";
+    if (!groupedBySitio[sitio]) {
+      groupedBySitio[sitio] = [];
+    }
+    groupedBySitio[sitio].push(r);
+  });
+
+  // Sort sitio names alphabetically
+  const sortedSitioNames = Object.keys(groupedBySitio).sort((a, b) => a.localeCompare(b));
+
+  // Sort resident records within each sitio alphabetically by full_name
+  sortedSitioNames.forEach(sitio => {
+    groupedBySitio[sitio].sort((a, b) => a.full_name.localeCompare(b.full_name));
+  });
+
   const handlePrint = () => {
     window.print();
   };
@@ -196,7 +214,7 @@ const AdminResidents = () => {
         <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> {t("common.print")}</Button>
       </div>
 
-      <div id="admin-residents-print-area">
+      <div id="admin-residents-print-area" className="space-y-6">
         {/* Printable Official Header Seal */}
         <div 
           className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
@@ -213,65 +231,88 @@ const AdminResidents = () => {
           </h2>
         </div>
 
-      <Card className="border-border/50">
-        <CardContent className="p-0">
-          <div className="overflow-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="p-3 text-left font-medium text-muted-foreground">#</th>
-                  <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.fullName")}</th>
-                  <th className="p-3 text-left font-medium text-muted-foreground">Family #</th>
-                  <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.gender")}</th>
-                  <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.age")}</th>
-                  <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.birthday")}</th>
-                  <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.sitio")}</th>
-                  <th className="p-3 text-center font-medium text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (<tr><td colSpan={8} className="p-6 text-center text-muted-foreground">{t("common.loading")}</td></tr>
-                ) : filtered.length === 0 ? (<tr><td colSpan={8} className="p-6 text-center text-muted-foreground">{t("residents.noResidents")}</td></tr>
-                ) : filtered.map((r, i) => (
-                  <tr key={r.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                    <td className="p-3 text-muted-foreground">{i + 1}</td>
-                    <td className="p-3 font-medium text-foreground">
-                      <button 
-                        onClick={() => handleOpenResidentRecords(r)}
-                        className="hover:underline hover:text-primary text-left font-semibold flex items-center gap-1.5"
-                        title="Click to view associated health records"
-                      >
-                        {r.full_name}
-                      </button>
-                    </td>
-                    <td className="p-3 font-mono text-xs">{r.family_number ? <Badge variant="outline" className="font-mono text-[11px] bg-primary/5 text-primary border-primary/20">{r.family_number}</Badge> : "—"}</td>
-                    <td className="p-3 text-foreground">{r.gender}</td>
-                    <td className="p-3 text-foreground">{r.age}</td>
-                    <td className="p-3 text-foreground">{r.birthday || "—"}</td>
-                    <td className="p-3 text-foreground">{r.sitio || "—"}</td>
-                    <td className="p-3 text-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 text-xs gap-1 hover:bg-primary/10 hover:text-primary"
-                        onClick={() => handleOpenResidentRecords(r)}
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        View Health Records
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-      <div className="print-only flex justify-between items-center mt-4">
-        <p style={{ fontSize: 12, color: "#4b5563" }}>{t("common.total")}: {filtered.length}</p>
-        <p className="print-date" style={{ fontSize: 10, color: "#6b7280" }}>{new Date().toLocaleString()}</p>
+        {loading ? (
+          <Card className="border-border/50 p-6 text-center text-muted-foreground">{t("common.loading")}</Card>
+        ) : filtered.length === 0 ? (
+          <Card className="border-border/50 p-6 text-center text-muted-foreground">{t("residents.noResidents")}</Card>
+        ) : (
+          sortedSitioNames.map(sitioName => {
+            const residentsInSitio = groupedBySitio[sitioName];
+            return (
+              <Card key={sitioName} className="border-border/50 shadow-sm overflow-hidden">
+                <CardHeader className="bg-muted/40 border-b border-border/40 py-3.5 px-4 flex flex-row items-center justify-between">
+                  <CardTitle className="text-sm font-heading font-bold text-foreground flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    Sitio {sitioName}
+                  </CardTitle>
+                  <Badge variant="secondary" className="text-[11px] font-semibold">
+                    {residentsInSitio.length} resident{residentsInSitio.length !== 1 ? "s" : ""}
+                  </Badge>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border bg-muted/20">
+                          <th className="p-3 text-left font-medium text-muted-foreground w-12">#</th>
+                          <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.fullName")}</th>
+                          <th className="p-3 text-left font-medium text-muted-foreground">Family #</th>
+                          <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.gender")}</th>
+                          <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.age")}</th>
+                          <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.birthday")}</th>
+                          <th className="p-3 text-center font-medium text-muted-foreground w-40">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {residentsInSitio.map((r, i) => (
+                          <tr key={r.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                            <td className="p-3 text-muted-foreground font-mono text-xs">{i + 1}</td>
+                            <td className="p-3 font-medium text-foreground">
+                              <button 
+                                onClick={() => handleOpenResidentRecords(r)}
+                                className="hover:underline hover:text-primary text-left font-semibold flex items-center gap-1.5"
+                                title="Click to view associated health records"
+                              >
+                                {r.full_name}
+                              </button>
+                            </td>
+                            <td className="p-3 font-mono text-xs">
+                              {r.family_number ? (
+                                <Badge variant="outline" className="font-mono text-[11px] bg-primary/5 text-primary border-primary/20">
+                                  {r.family_number}
+                                </Badge>
+                              ) : "—"}
+                            </td>
+                            <td className="p-3 text-foreground">{r.gender}</td>
+                            <td className="p-3 text-foreground">{r.age}</td>
+                            <td className="p-3 text-foreground">{r.birthday || "—"}</td>
+                            <td className="p-3 text-center">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 text-xs gap-1 hover:bg-primary/10 hover:text-primary"
+                                onClick={() => handleOpenResidentRecords(r)}
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                                View Health Records
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
+
+        <div className="print-only flex justify-between items-center mt-4">
+          <p style={{ fontSize: 12, color: "#4b5563" }}>{t("common.total")}: {filtered.length}</p>
+          <p className="print-date" style={{ fontSize: 10, color: "#6b7280" }}>{new Date().toLocaleString()}</p>
+        </div>
       </div>
-    </div>
 
     <p className="text-sm text-muted-foreground no-print">{t("common.showing")} {filtered.length} {t("common.of")} {residents.length}</p>
 
