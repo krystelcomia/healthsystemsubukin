@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -169,9 +168,6 @@ const StepIndicator = ({ current, onStepClick, canGoTo }: { current: number; onS
    ────────────────────────────────────────────────────────────── */
 const AddNewForm = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { userRole } = useAuth();
-  const isAdmin = userRole === "supervisor" && location.pathname.startsWith("/admin");
   const { formId } = useParams<{ formId?: string }>();
 
   const [imageData, setImageData] = useState<string | null>(null);
@@ -1097,7 +1093,7 @@ const AddNewForm = () => {
 
                 <div className="flex flex-wrap items-center gap-2 no-print w-full md:w-auto justify-end">
 
-                  {!isAdmin && !formId && (
+                  {!formId && (
                     <Button
                       type="button"
                       size="sm"
@@ -1108,17 +1104,15 @@ const AddNewForm = () => {
                     </Button>
                   )}
 
-                  {!isAdmin && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={resetDraft}
-                      className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
-                    >
-                      <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset Form
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={resetDraft}
+                    className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset Form
+                  </Button>
 
                   <Button
                     type="button"
@@ -1130,16 +1124,14 @@ const AddNewForm = () => {
                     <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print Form
                   </Button>
 
-                  {!isAdmin && (
-                    <Button
-                      type="button"
-                      onClick={handleDeployForm}
-                      size="sm"
-                      className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm px-5"
-                    >
-                      <Rocket className="h-4 w-4" /> Deploy Form
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    onClick={handleDeployForm}
+                    size="sm"
+                    className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm px-5"
+                  >
+                    <Rocket className="h-4 w-4" /> Deploy Form
+                  </Button>
                 </div>
               </div>
 
@@ -1195,15 +1187,13 @@ const AddNewForm = () => {
                         variant="outline"
                         size="sm"
                         className="h-8 text-xs gap-1 border-primary/30 text-primary"
-                        onClick={() => navigate(isAdmin ? `/admin/forms/custom/${f.id}` : `/forms/custom/${f.id}`)}
+                        onClick={() => navigate(`/forms/custom/${f.id}`)}
                       >
                         <Eye className="h-3.5 w-3.5" /> Open
                       </Button>
-                      {!isAdmin && (
-                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteSaved(f.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteSaved(f.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>

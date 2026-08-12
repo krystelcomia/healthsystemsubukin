@@ -13,8 +13,6 @@ import { Heart, Plus, Pencil, Trash2, Printer, RefreshCw, Save, Search, Eye, Ste
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useLocation } from "react-router-dom";
 import { logActivity } from "@/lib/activityLogger";
 import { getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
@@ -324,9 +322,6 @@ const sanitizeDraftState = (parsed: any): FPFullFormState => {
 
 const FamilyPlanningForm = () => {
   const { t } = useSettings();
-  const location = useLocation();
-  const { userRole } = useAuth();
-  const isAdmin = userRole === "supervisor" && location.pathname.startsWith("/admin");
   const [fpState, setFpState] = useState<FPFullFormState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_FP_DRAFT);
@@ -1505,13 +1500,11 @@ const FamilyPlanningForm = () => {
             <p className="text-xs text-slate-600 dark:text-slate-400 font-medium italic">
               Please review all entries in Side A & Side B before saving or printing.
             </p>
-            {!isAdmin && (
-              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-                <Button type="button" size="sm" onClick={handleSaveFPRecord} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground shrink-0 whitespace-nowrap font-bold px-5">
-                  <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save FP Record"}
-                </Button>
-              </div>
-            )}
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+              <Button type="button" size="sm" onClick={handleSaveFPRecord} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground shrink-0 whitespace-nowrap font-bold px-5">
+                <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save FP Record"}
+              </Button>
+            </div>
           </div>
 
         </div>
@@ -1579,36 +1572,32 @@ const FamilyPlanningForm = () => {
                                   <Eye className="h-3.5 w-3.5 text-primary" />
                                 </Button>
                               )}
-                              {!isAdmin && (
-                                <>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => {
-                                      if (parsed) {
-                                        setFpState(parsed);
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        toast.info(`Loaded ${clientName}'s record into form.`);
-                                      } else {
-                                        toast.warning("Standard legacy record loaded.");
-                                      }
-                                    }}
-                                    title="Edit Record"
-                                    className="h-7 w-7"
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setDeleteConfirmId(rec.id)}
-                                    title="Delete Record"
-                                    className="h-7 w-7 text-destructive"
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </>
-                              )}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  if (parsed) {
+                                    setFpState(parsed);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    toast.info(`Loaded ${clientName}'s record into form.`);
+                                  } else {
+                                    toast.warning("Standard legacy record loaded.");
+                                  }
+                                }}
+                                title="Edit Record"
+                                className="h-7 w-7"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeleteConfirmId(rec.id)}
+                                title="Delete Record"
+                                className="h-7 w-7 text-destructive"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>

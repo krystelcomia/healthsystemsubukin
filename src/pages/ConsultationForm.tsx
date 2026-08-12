@@ -9,8 +9,6 @@ import { toast } from "sonner";
 import { Stethoscope, Printer, RefreshCw, UserCheck, Activity, FileText, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useLocation } from "react-router-dom";
 import { ensureResidentExists, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
@@ -41,9 +39,6 @@ const sanitizeDateString = (val: string) => val.replace(/[^0-9-]/g, "");
 
 const ConsultationForm = () => {
   const { t } = useSettings();
-  const location = useLocation();
-  const { userRole } = useAuth();
-  const isAdmin = userRole === "supervisor" && location.pathname.startsWith("/admin");
   const [residents, setResidents] = useState<{ id: string; full_name: string; sitio?: string; age?: number; birthday?: string }[]>([]);
   const [form, setForm] = useState({
     resident_id: "", birthdate: "", age: "", sitio: "", date: "",
@@ -341,27 +336,23 @@ const ConsultationForm = () => {
 
             {/* Form Actions */}
             <div className="pt-6 border-t border-border/40 flex flex-wrap items-center justify-end gap-3 no-print">
-              {!isAdmin && (
-                <>
-                  <Button 
-                    type="submit" 
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all duration-200 gap-2 px-6"
-                  >
-                    <CheckCircle2 className="h-4 w-4" />
-                    {t("consultation.saveConsultation")}
-                  </Button>
+              <Button 
+                type="submit" 
+                className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all duration-200 gap-2 px-6"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                {t("consultation.saveConsultation")}
+              </Button>
 
-                  <Button 
-                    type="button" 
-                    onClick={handleReset}
-                    variant="outline"
-                    className="border-destructive/30 text-destructive hover:bg-destructive/10 font-medium gap-2 px-4"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Reset
-                  </Button>
-                </>
-              )}
+              <Button 
+                type="button" 
+                onClick={handleReset}
+                variant="outline"
+                className="border-destructive/30 text-destructive hover:bg-destructive/10 font-medium gap-2 px-4"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Reset
+              </Button>
               
               <Button 
                 type="button" 
