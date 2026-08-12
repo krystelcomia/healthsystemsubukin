@@ -184,7 +184,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
-        <NavLink to="/profile" className="flex items-center gap-3 rounded-md p-1 -m-1 transition-colors hover:bg-sidebar-accent" activeClassName="">
+        <NavLink to={isAdmin ? "/admin/profile" : "/profile"} className="flex items-center gap-3 rounded-md p-1 -m-1 transition-colors hover:bg-sidebar-accent" activeClassName="">
           <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center">
             <span className="text-xs font-semibold text-sidebar-accent-foreground">
               {isAdmin ? "SV" : (userRole === "bns" ? "BN" : "BH")}
