@@ -219,6 +219,15 @@ const AdminHealthRecords = () => {
 
     if (form.id === "consultation") {
       const html = `
+        <div style="text-align:center;margin-top:10px;margin-bottom:18px;">
+          <h2 style="font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#000000;margin:0;">
+            BARANGAY HEALTH SYSTEM &mdash; CONSULTATION RECORD FORM
+          </h2>
+          <p style="font-size:11px;color:#555555;font-style:italic;margin-top:2px;">
+            Official Barangay Health Assessment &amp; Clinical Registration Document
+          </p>
+        </div>
+
         <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
           <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           PATIENT IDENTIFICATION &amp; SCHEDULE
@@ -294,6 +303,11 @@ const AdminHealthRecords = () => {
             <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Consultation Cause / Complaint</div>
             <div style="border-bottom:1.5px solid #000;min-height:80px;"></div>
           </div>
+        </div>
+
+        <div style="margin-top:48px;display:flex;justify-content:space-between;font-size:11px;color:#000000;">
+          <div>Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
+          <div>Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
         </div>
       `;
       triggerInSystemPrint(`Blank Form — ${form.title}`, html, orientation);
@@ -467,6 +481,15 @@ const AdminHealthRecords = () => {
 
     if (selectedForm.id === "consultation") {
       const html = `
+        <div style="text-align:center;margin-top:10px;margin-bottom:18px;">
+          <h2 style="font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#000000;margin:0;">
+            BARANGAY HEALTH SYSTEM &mdash; CONSULTATION RECORD FORM
+          </h2>
+          <p style="font-size:11px;color:#555555;font-style:italic;margin-top:2px;">
+            Official Barangay Health Assessment &amp; Clinical Registration Document
+          </p>
+        </div>
+
         <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
           <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           PATIENT IDENTIFICATION &amp; SCHEDULE
@@ -542,6 +565,11 @@ const AdminHealthRecords = () => {
             <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Consultation Cause / Complaint</div>
             <div style="border-bottom:1.5px solid #000;min-height:80px;font-size:12px;font-weight:500;white-space:pre-wrap;">${selectedRecord.consultation_cause || ""}</div>
           </div>
+        </div>
+
+        <div style="margin-top:48px;display:flex;justify-content:space-between;font-size:11px;color:#000000;">
+          <div>Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
+          <div>Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
         </div>
       `;
       triggerInSystemPrint(`Filled Record — ${resName}`, html, orientation);
