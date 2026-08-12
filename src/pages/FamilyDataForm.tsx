@@ -1126,7 +1126,8 @@ const FamilyDataForm = () => {
               </div>
 
               {/* Dialog Footer Actions */}
-              <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-bor                 {!isAdmin && (
+              <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border/50 no-print">
+                {!isAdmin && (
                   <Button
                     type="button"
                     variant="outline"
@@ -1157,7 +1158,7 @@ const FamilyDataForm = () => {
                       <Save className="h-3.5 w-3.5" /> Save File Changes
                     </Button>
                   )}
-                </div>            </div>
+                </div>
               </DialogFooter>
             </div>
           )}
