@@ -25,12 +25,11 @@ import {
   FileText,
   Check
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "react-router-dom";
 import { ensureResidentExists, calculateAge, getFamilyOnlyResidents } from "@/lib/residentLinker";
-import { logActivity } from "@/lib/activityLogger";
-import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -120,6 +119,9 @@ const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:b
 
 const MaternalCareForm = () => {
   const { t } = useSettings();
+  const location = useLocation();
+  const { userRole } = useAuth();
+  const isAdmin = userRole === "supervisor" && location.pathname.startsWith("/admin");
   const [residents, setResidents] = useState<any[]>([]);
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
   const [savedRecords, setSavedRecords] = useState<MaternalCareRecord[]>([]);
@@ -1135,16 +1137,18 @@ const MaternalCareForm = () => {
             </div>
 
             {/* Submit Action Buttons */}
-            <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
-              {editRecordId && (
-                <Button type="button" variant="outline" onClick={handleResetForm} className="text-xs">
-                  Cancel Edit
+            {!isAdmin && (
+              <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
+                {editRecordId && (
+                  <Button type="button" variant="outline" onClick={handleResetForm} className="text-xs">
+                    Cancel Edit
+                  </Button>
+                )}
+                <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Save className="h-4 w-4" /> {saving ? "Saving..." : editRecordId ? "Update Record" : "Save Record"}
                 </Button>
-              )}
-              <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
-                <Save className="h-4 w-4" /> {saving ? "Saving..." : editRecordId ? "Update Record" : "Save Record"}
-              </Button>
-            </div>
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>

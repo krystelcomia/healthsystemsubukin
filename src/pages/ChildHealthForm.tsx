@@ -27,9 +27,10 @@ import {
   AlertCircle,
   FileText
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "react-router-dom";
 import { ensureResidentExists, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
@@ -334,6 +335,9 @@ const initialSickForm: SickChildFormFull = {
 
 const ChildHealthForm = () => {
   const { t } = useSettings();
+  const location = useLocation();
+  const { userRole } = useAuth();
+  const isAdmin = userRole === "supervisor" && location.pathname.startsWith("/admin");
   const [activeTab, setActiveTab] = useState("sick-children");
   const [residents, setResidents] = useState<any[]>([]);
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
@@ -2179,11 +2183,13 @@ const ChildHealthForm = () => {
                 </div>
 
                 {/* Form Action Buttons */}
-                <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
-                  <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
-                    <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Sick Child Record"}
-                  </Button>
-                </div>
+                {!isAdmin && (
+                  <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
+                    <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
+                      <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Sick Child Record"}
+                    </Button>
+                  </div>
+                )}
 
                 {renderHistoryCard("sick-children")}
               </form>
@@ -2354,11 +2360,13 @@ const ChildHealthForm = () => {
                 </table>
               </div>
 
-              <div className="flex items-center justify-end no-print pt-2 border-t">
-                <Button type="button" onClick={handleSaveVitAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Vitamin A Master List"}
-                </Button>
-              </div>
+              {!isAdmin && (
+                <div className="flex items-center justify-end no-print pt-2 border-t">
+                  <Button type="button" onClick={handleSaveVitAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Vitamin A Master List"}
+                  </Button>
+                </div>
+              )}
 
               {renderHistoryCard("vitamin-a")}
             </TabsContent>
@@ -2494,11 +2502,13 @@ const ChildHealthForm = () => {
                 </table>
               </div>
 
-              <div className="flex items-center justify-end no-print pt-2 border-t">
-                <Button type="button" onClick={handleSaveSIAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save SIA Master List"}
-                </Button>
-              </div>
+              {!isAdmin && (
+                <div className="flex items-center justify-end no-print pt-2 border-t">
+                  <Button type="button" onClick={handleSaveSIAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save SIA Master List"}
+                  </Button>
+                </div>
+              )}
 
               {renderHistoryCard("sia-masterlist")}
             </TabsContent>

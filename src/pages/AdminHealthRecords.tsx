@@ -195,238 +195,154 @@ const AdminHealthRecords = () => {
     setSingleRecordModalOpen(true);
   };
 
+  const [printContent, setPrintContent] = useState<{ title: string; html: string; orientation: string } | null>(null);
+
   const getFormPrintOrientation = (formId: string) => {
     if (formId === "child_health") {
-      return { size: "legal landscape", margin: "5mm" };
+      return "legal landscape";
     }
     if (formId === "family_planning") {
-      return { size: "legal portrait", margin: "6mm" };
+      return "legal portrait";
     }
-    if (formId === "dengue_prevention" || formId === "maternal_care") {
-      return { size: "A4 portrait", margin: "4mm" };
-    }
-    return { size: "A4 portrait", margin: "5mm" };
+    return "A4 portrait";
+  };
+
+  const triggerInSystemPrint = (title: string, html: string, orientation: string) => {
+    setPrintContent({ title, html, orientation });
+    setTimeout(() => {
+      window.print();
+    }, 150);
   };
 
   const handlePrintBlankForm = (form: FormMeta) => {
-    const win = window.open("", "_blank");
-    if (!win) return;
-
-    const { size, margin } = getFormPrintOrientation(form.id);
-
-    win.document.write(`<!DOCTYPE html><html><head><title>Blank Form — ${form.title}</title>
-      <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',Arial,sans-serif; padding:25px; color:#111; font-size:12px; }
-        .header-seal { display:flex; align-items:center; justify-content:center; gap:24px; border-bottom:4px double #000; padding-bottom:14px; margin-bottom:20px; text-align:center; }
-        .header-seal img { height:75px; width:auto; object-fit:contain; mix-blend-mode:multiply; }
-        .form-title { font-size:18px; font-weight:bold; text-align:center; margin:16px 0; text-transform:uppercase; letter-spacing:1px; }
-        .grid-section { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-        .field-group { border:1px solid #ccc; padding:10px; border-radius:4px; }
-        .field-label { font-size:10px; font-weight:bold; text-transform:uppercase; color:#555; margin-bottom:4px; }
-        .line-fill { border-bottom:1px solid #000; min-height:20px; display:block; margin-top:2px; }
-        table { width:100%; border-collapse:collapse; margin-top:16px; }
-        th, td { border:1px solid #000; padding:8px; text-align:left; font-size:11px; }
-        th { background:#f3f4f6; font-weight:bold; text-transform:uppercase; }
-        .footer { margin-top:40px; display:flex; justify-content:space-between; font-size:11px; }
-        @page { size: ${size}; margin: ${margin}; }
-      </style>
-    </head><body>
-      <div class="header-seal">
-        <img src="${sanjuanLogo}" alt="San Juan Seal" />
-        <img src="${headerTextImg}" alt="Header Text" />
-        <img src="${barangayLogo}" alt="Barangay Subukin Logo" />
-      </div>
-      <div class="form-title">${form.title}</div>
+    const orientation = getFormPrintOrientation(form.id);
+    const html = `
+      <div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin:16px 0;letter-spacing:1px;">${form.title}</div>
       <p style="text-align:center;font-style:italic;margin-bottom:20px;color:#666;">Official Barangay Health Assessment & Registration Document</p>
       
-      <div class="grid-section">
-        <div class="field-group">
-          <div class="field-label">Resident / Patient Full Name</div>
-          <div class="line-fill"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div style="border:1px solid #ccc;padding:10px;border-radius:4px;">
+          <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#555;margin-bottom:4px;">Resident / Patient Full Name</div>
+          <div style="border-bottom:1px solid #000;min-height:20px;display:block;margin-top:2px;"></div>
         </div>
-        <div class="field-group">
-          <div class="field-label">Date of Filing</div>
-          <div class="line-fill"></div>
-        </div>
-      </div>
-
-      <div class="grid-section">
-        <div class="field-group">
-          <div class="field-label">Sitio / Address</div>
-          <div class="line-fill"></div>
-        </div>
-        <div class="field-group">
-          <div class="field-label">Attending Health Worker / Midwife</div>
-          <div class="line-fill"></div>
+        <div style="border:1px solid #ccc;padding:10px;border-radius:4px;">
+          <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#555;margin-bottom:4px;">Date of Filing</div>
+          <div style="border-bottom:1px solid #000;min-height:20px;display:block;margin-top:2px;"></div>
         </div>
       </div>
 
-      <table>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div style="border:1px solid #ccc;padding:10px;border-radius:4px;">
+          <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#555;margin-bottom:4px;">Sitio / Address</div>
+          <div style="border-bottom:1px solid #000;min-height:20px;display:block;margin-top:2px;"></div>
+        </div>
+        <div style="border:1px solid #ccc;padding:10px;border-radius:4px;">
+          <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#555;margin-bottom:4px;">Attending Health Worker / Midwife</div>
+          <div style="border-bottom:1px solid #000;min-height:20px;display:block;margin-top:2px;"></div>
+        </div>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;margin-top:16px;">
         <thead>
           <tr>
-            <th style="width:40px;">#</th>
-            ${form.columns.map(c => `<th>${c.replace(/_/g, " ")}</th>`).join("")}
+            <th style="width:40px;border:1px solid #000;padding:8px;text-align:left;background:#f3f4f6;">#</th>
+            ${form.columns.map(c => `<th style="border:1px solid #000;padding:8px;text-align:left;background:#f3f4f6;text-transform:uppercase;">${c.replace(/_/g, " ")}</th>`).join("")}
           </tr>
         </thead>
         <tbody>
           ${[1, 2, 3, 4, 5, 6, 7, 8].map(i => `
             <tr>
-              <td>${i}</td>
-              ${form.columns.map(() => `<td></td>`).join("")}
+              <td style="border:1px solid #000;padding:8px;">${i}</td>
+              ${form.columns.map(() => `<td style="border:1px solid #000;padding:8px;"></td>`).join("")}
             </tr>
           `).join("")}
         </tbody>
       </table>
 
-      <div style="margin-top:24px;" class="field-group">
-        <div class="field-label">Remarks / Diagnostic Notes</div>
-        <div class="line-fill" style="min-height:60px;"></div>
+      <div style="margin-top:24px;border:1px solid #ccc;padding:10px;border-radius:4px;">
+        <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#555;margin-bottom:4px;">Remarks / Diagnostic Notes</div>
+        <div style="border-bottom:1px solid #000;min-height:60px;display:block;margin-top:2px;"></div>
       </div>
 
-      <div class="footer">
+      <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;">
         <div>Certified Correct: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Health Worker</span></div>
         <div>Approved By: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Midwife / Supervisor</span></div>
       </div>
-    </body></html>`);
-    win.document.close();
-    win.print();
+    `;
+    triggerInSystemPrint(`Blank Form — ${form.title}`, html, orientation);
   };
 
   const handlePrintRecordsLedger = () => {
     if (!selectedForm) return;
-    const win = window.open("", "_blank");
-    if (!win) return;
-
-    const { size, margin } = getFormPrintOrientation(selectedForm.id);
+    const orientation = getFormPrintOrientation(selectedForm.id);
     const cols = selectedForm.columns;
 
-    win.document.write(`<!DOCTYPE html><html><head><title>${selectedForm.title} Records</title>
-      <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',Arial,sans-serif; padding:25px; color:#1a1a1a; font-size:12px; }
-        .header-seal { display:flex; align-items:center; justify-content:center; gap:24px; border-bottom:4px double #000; padding-bottom:14px; margin-bottom:20px; text-align:center; }
-        .header-seal img { height:75px; width:auto; object-fit:contain; mix-blend-mode:multiply; }
-        .report-title { text-align:center; font-size:18px; font-weight:bold; text-transform:uppercase; margin-bottom:16px; color:#111; }
-        table { width:100%; border-collapse:collapse; margin-top:12px; }
-        th, td { border:1px solid #d1d5db; padding:6px 10px; text-align:left; font-size:11px; }
-        th { background:#f5f3ff; color:#4f46e5; font-weight:600; text-transform:capitalize; }
-        .footer { text-align:right; font-size:10px; color:#6b7280; margin-top:20px; }
-        @page { size: ${size}; margin: ${margin}; }
-      </style>
-    </head><body>
-      <div class="header-seal">
-        <img src="${sanjuanLogo}" alt="San Juan Seal" />
-        <img src="${headerTextImg}" alt="Header Text" />
-        <img src="${barangayLogo}" alt="Barangay Subukin Logo" />
-      </div>
-      <div class="report-title">${selectedForm.title} &mdash; Submissions Archive</div>
-      <table>
+    const html = `
+      <div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin-bottom:16px;">${selectedForm.title} &mdash; Submissions Archive</div>
+      <table style="width:100%;border-collapse:collapse;margin-top:12px;">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Resident Name</th>
-            ${cols.map(c => `<th>${c.replace(/_/g, " ")}</th>`).join("")}
+            <th style="border:1px solid #000;padding:6px 10px;text-align:left;background:#f5f3ff;">#</th>
+            <th style="border:1px solid #000;padding:6px 10px;text-align:left;background:#f5f3ff;">Resident Name</th>
+            ${cols.map(c => `<th style="border:1px solid #000;padding:6px 10px;text-align:left;background:#f5f3ff;text-transform:capitalize;">${c.replace(/_/g, " ")}</th>`).join("")}
           </tr>
         </thead>
         <tbody>
           ${filteredFormRecords.map((r, i) => {
             const name = r.residents?.full_name || r.patient_name || (r.first_name ? `${r.first_name} ${r.surname || ""}` : "—");
             return `<tr>
-              <td>${i + 1}</td>
-              <td>${name}</td>
-              ${cols.map(c => `<td>${r[c] === true ? t("common.yes") : r[c] === false ? t("common.no") : r[c] || "—"}</td>`).join("")}
+              <td style="border:1px solid #000;padding:6px 10px;">${i + 1}</td>
+              <td style="border:1px solid #000;padding:6px 10px;font-weight:bold;">${name}</td>
+              ${cols.map(c => `<td style="border:1px solid #000;padding:6px 10px;">${r[c] === true ? t("common.yes") : r[c] === false ? t("common.no") : r[c] || "—"}</td>`).join("")}
             </tr>`;
           }).join("")}
         </tbody>
       </table>
-      <div class="footer">Report Generated: ${new Date().toLocaleString()} &bull; Total Entries: ${filteredFormRecords.length}</div>
-    </body></html>`);
-    win.document.close();
-    win.print();
+      <div style="text-align:right;font-size:10px;color:#6b7280;margin-top:20px;">Report Generated: ${new Date().toLocaleString()} &bull; Total Entries: ${filteredFormRecords.length}</div>
+    `;
+    triggerInSystemPrint(`${selectedForm.title} Records`, html, orientation);
   };
 
   const handlePrintSingleFilledRecord = () => {
     if (!selectedRecord || !selectedForm) return;
-    const win = window.open("", "_blank");
-    if (!win) return;
-
-    const { size, margin } = getFormPrintOrientation(selectedForm.id);
+    const orientation = getFormPrintOrientation(selectedForm.id);
     const resName = selectedRecord.residents?.full_name || selectedRecord.patient_name || (selectedRecord.first_name ? `${selectedRecord.first_name} ${selectedRecord.surname || ""}` : "Unlinked Resident");
 
-    win.document.write(`<!DOCTYPE html><html><head><title>Filled Record — ${resName}</title>
-      <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',Arial,sans-serif; padding:25px; color:#111; font-size:12px; }
-        .header-seal { display:flex; align-items:center; justify-content:center; gap:24px; border-bottom:4px double #000; padding-bottom:14px; margin-bottom:20px; text-align:center; }
-        .header-seal img { height:75px; width:auto; object-fit:contain; mix-blend-mode:multiply; }
-        .title { font-size:18px; font-weight:bold; text-align:center; margin:14px 0; text-transform:uppercase; }
-        .card { border:1px solid #999; padding:14px; margin-bottom:14px; border-radius:4px; }
-        .label { font-size:10px; font-weight:bold; text-transform:uppercase; color:#666; }
-        .val { font-size:13px; font-weight:bold; margin-top:2px; color:#000; }
-        .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-        @page { size: ${size}; margin: ${margin}; }
-      </style>
-    </head><body>
-      <div class="header-seal">
-        <img src="${sanjuanLogo}" alt="San Juan Seal" />
-        <img src="${headerTextImg}" alt="Header Text" />
-        <img src="${barangayLogo}" alt="Barangay Subukin Logo" />
-      </div>
-      <div class="title">${selectedForm.title} Entry Sheet</div>
+    const html = `
+      <div style="font-size:18px;font-weight:bold;text-align:center;margin:14px 0;text-transform:uppercase;">${selectedForm.title} Entry Sheet</div>
       
-      <div class="card">
-        <div class="label">Patient / Resident Name</div>
-        <div class="val">${resName}</div>
+      <div style="border:1px solid #999;padding:14px;margin-bottom:14px;border-radius:4px;">
+        <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#666;">Patient / Resident Name</div>
+        <div style="font-size:14px;font-weight:bold;margin-top:2px;">${resName}</div>
       </div>
 
-      <div class="grid">
-        <div class="card">
-          <div class="label">Submission Date</div>
-          <div class="val">${selectedRecord.created_at ? new Date(selectedRecord.created_at).toLocaleDateString() : "—"}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div style="border:1px solid #999;padding:10px;border-radius:4px;">
+          <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#666;">Submission Date</div>
+          <div style="font-size:12px;font-weight:bold;margin-top:2px;">${selectedRecord.created_at ? new Date(selectedRecord.created_at).toLocaleDateString() : "—"}</div>
         </div>
-        <div class="card">
-          <div class="label">Sitio / Location</div>
-          <div class="val">${selectedRecord.sitio || "Subukin"}</div>
-        </div>
-      </div>
-      <div class="title">${selectedForm.title} Entry Sheet</div>
-      
-      <div class="card">
-        <div class="label">Patient / Resident Name</div>
-        <div class="val">${resName}</div>
-      </div>
-
-      <div class="grid">
-        <div class="card">
-          <div class="label">Submission Date</div>
-          <div class="val">${selectedRecord.created_at ? new Date(selectedRecord.created_at).toLocaleDateString() : "—"}</div>
-        </div>
-        <div class="card">
-          <div class="label">Sitio / Location</div>
-          <div class="val">${selectedRecord.sitio || "Subukin"}</div>
+        <div style="border:1px solid #999;padding:10px;border-radius:4px;">
+          <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#666;">Sitio / Location</div>
+          <div style="font-size:12px;font-weight:bold;margin-top:2px;">${selectedRecord.sitio || "Subukin"}</div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="label">Detailed Record Values</div>
-        <div style="margin-top:8px;">
-          ${selectedForm.columns.map(c => `
-            <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;">
-              <span style="text-transform:capitalize;color:#555;">${c.replace(/_/g, " ")}:</span>
-              <strong>${selectedRecord[c] === true ? "Yes" : selectedRecord[c] === false ? "No" : selectedRecord[c] || "—"}</strong>
-            </div>
-          `).join("")}
-        </div>
+      <div style="border:1px solid #999;padding:14px;border-radius:4px;">
+        <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#666;margin-bottom:8px;">Recorded Attributes</div>
+        ${selectedForm.columns.map(c => `
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;">
+            <span style="text-transform:capitalize;color:#555;">${c.replace(/_/g, " ")}:</span>
+            <strong>${selectedRecord[c] === true ? "Yes" : selectedRecord[c] === false ? "No" : selectedRecord[c] || "—"}</strong>
+          </div>
+        `).join("")}
       </div>
 
       <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;">
         <div>Health Worker Inspector: ____________________</div>
         <div>Barangay Supervisor: ____________________</div>
       </div>
-    </body></html>`);
-    win.document.close();
-    win.print();
+    `;
+    triggerInSystemPrint(`Filled Record — ${resName}`, html, orientation);
   };
 
   const filteredForms = BASE_FORM_GALLERY.filter(
@@ -740,6 +656,35 @@ const AdminHealthRecords = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Hidden In-System Print Container */}
+      {printContent && (
+        <div id="admin-in-system-print" className="hidden print:block text-black bg-white p-6">
+          <div className="flex items-center justify-center gap-6 border-b-[4px] border-double border-slate-900 pb-3 mb-4 text-center header-seal">
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 object-contain mix-blend-multiply" />
+            <img src={headerTextImg} alt="Header Text" className="h-16 object-contain mix-blend-multiply" />
+            <img src={barangayLogo} alt="Subukin Logo" className="h-16 object-contain mix-blend-multiply" />
+          </div>
+          <div dangerouslySetInnerHTML={{ __html: printContent.html }} />
+          <style>{`
+            @media print {
+              body * { visibility: hidden !important; }
+              #admin-in-system-print, #admin-in-system-print * { visibility: visible !important; }
+              #admin-in-system-print {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+                margin: 0 !important;
+              }
+              @page { size: ${printContent.orientation}; margin: 5mm; }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   );
 };
