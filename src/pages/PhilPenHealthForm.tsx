@@ -358,20 +358,10 @@ const PhilPenHealthForm = () => {
         <CardContent className="p-6 md:p-8 space-y-6">
           
           {/* Official Barangay Printable Header */}
-          <div className="print-only header-seal flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center">
-            <div className="flex items-center justify-center gap-6 md:gap-8">
-              <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
-              <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
-              <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
-            </div>
-            <div className="mt-3 text-center">
-              <h2 className="text-base font-extrabold uppercase tracking-wider text-slate-900">
-                BARANGAY HEALTH SYSTEM — PHILPEN RISK ASSESSMENT FORM
-              </h2>
-              <p className="text-xs text-slate-600 italic">
-                Philippine Package of Essential NCD Interventions (PhilPEN) Risk Assessment Record
-              </p>
-            </div>
+          <div className="print-only header-seal flex items-center justify-center gap-6 md:gap-8 border-b-2 border-slate-900 pb-3 mb-4 text-center">
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">

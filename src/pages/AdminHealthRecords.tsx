@@ -219,16 +219,7 @@ const AdminHealthRecords = () => {
 
     if (form.id === "consultation") {
       const html = `
-        <div style="text-align:center;margin-top:10px;margin-bottom:18px;">
-          <h2 style="font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#000000;margin:0;">
-            BARANGAY HEALTH SYSTEM &mdash; CONSULTATION RECORD FORM
-          </h2>
-          <p style="font-size:11px;color:#555555;font-style:italic;margin-top:2px;">
-            Official Barangay Health Assessment &amp; Clinical Registration Document
-          </p>
-        </div>
-
-        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:10px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
           <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           PATIENT IDENTIFICATION &amp; SCHEDULE
         </div>
@@ -389,54 +380,45 @@ const AdminHealthRecords = () => {
 
     if (form.id === "philpen_health" || form.id === "philpen") {
       const html = `
-        <div style="text-align:center;margin-top:10px;margin-bottom:18px;">
-          <h2 style="font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#000000;margin:0;">
-            BARANGAY HEALTH SYSTEM &mdash; PHILPEN RISK ASSESSMENT FORM
-          </h2>
-          <p style="font-size:11px;color:#555555;font-style:italic;margin-top:2px;">
-            Philippine Package of Essential NCD Interventions (PhilPEN) Risk Assessment Record
-          </p>
-        </div>
-
-        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;border-bottom:1px solid #cbd5e1;padding-bottom:12px;">
-          <div style="grid-column:span 8;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-top:8px;margin-bottom:14px;border-bottom:1.5px solid #000000;padding-bottom:12px;">
+          <div style="grid-column:span 7;display:flex;flex-direction:column;gap:8px;">
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:90px;">Name:</span>
+              <span style="font-weight:700;width:95px;">Name:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:90px;">Address/Sitio:</span>
+              <span style="font-weight:700;width:95px;">Address/Sitio:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:90px;">Age:</span>
+              <span style="font-weight:700;width:95px;">Age:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:90px;">Birthdate:</span>
+              <span style="font-weight:700;width:95px;">Birthdate:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:90px;">Date:</span>
+              <span style="font-weight:700;width:95px;">Date:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
             </div>
           </div>
 
-          <div style="grid-column:span 4;display:flex;flex-direction:column;gap:8px;border-left:1px solid #cbd5e1;padding-left:16px;">
+          <div style="grid-column:span 5;display:flex;flex-direction:column;gap:8px;border-left:1px solid #000000;padding-left:16px;">
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:40px;">BP:</span>
+              <span style="font-weight:700;width:45px;">BP:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:40px;">Ht:</span>
+              <span style="font-weight:700;width:45px;">Ht:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:40px;">Wt:</span>
+              <span style="font-weight:700;width:45px;">Wt:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;"></div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:40px;">BMI:</span>
+              <span style="font-weight:700;width:45px;">BMI:</span>
               <div style="border-bottom:1px dashed #000;flex:1;min-height:20px;"></div>
             </div>
           </div>
@@ -444,7 +426,7 @@ const AdminHealthRecords = () => {
 
         <table style="width:100%;border-collapse:collapse;margin-top:12px;margin-bottom:20px;font-size:11px;">
           <thead>
-            <tr style="background:#f1f5f9;border-bottom:2px solid #000;">
+            <tr style="background:#fdf2f4;border-bottom:2px solid #000;">
               <th style="border:1px solid #000;padding:6px 8px;text-align:left;width:55%;">Description/Question</th>
               <th style="border:1px solid #000;padding:6px 8px;text-align:center;width:10%;">Yes</th>
               <th style="border:1px solid #000;padding:6px 8px;text-align:center;width:10%;">No</th>
@@ -610,16 +592,7 @@ const AdminHealthRecords = () => {
 
     if (selectedForm.id === "consultation") {
       const html = `
-        <div style="text-align:center;margin-top:10px;margin-bottom:18px;">
-          <h2 style="font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#000000;margin:0;">
-            BARANGAY HEALTH SYSTEM &mdash; CONSULTATION RECORD FORM
-          </h2>
-          <p style="font-size:11px;color:#555555;font-style:italic;margin-top:2px;">
-            Official Barangay Health Assessment &amp; Clinical Registration Document
-          </p>
-        </div>
-
-        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:10px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
           <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           PATIENT IDENTIFICATION &amp; SCHEDULE
         </div>
@@ -790,54 +763,45 @@ const AdminHealthRecords = () => {
 
     if (selectedForm.id === "philpen_health" || selectedForm.id === "philpen") {
       const html = `
-        <div style="text-align:center;margin-top:10px;margin-bottom:18px;">
-          <h2 style="font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#000000;margin:0;">
-            BARANGAY HEALTH SYSTEM &mdash; PHILPEN RISK ASSESSMENT FORM
-          </h2>
-          <p style="font-size:11px;color:#555555;font-style:italic;margin-top:2px;">
-            Philippine Package of Essential NCD Interventions (PhilPEN) Risk Assessment Record
-          </p>
-        </div>
-
-        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;border-bottom:1px solid #cbd5e1;padding-bottom:12px;">
-          <div style="grid-column:span 8;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-top:8px;margin-bottom:14px;border-bottom:1.5px solid #000000;padding-bottom:12px;">
+          <div style="grid-column:span 7;display:flex;flex-direction:column;gap:8px;">
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:90px;">Name:</span>
+              <span style="font-weight:700;width:95px;">Name:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${resName}</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:90px;">Address/Sitio:</span>
+              <span style="font-weight:700;width:95px;">Address/Sitio:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.address || selectedRecord.sitio || ""}</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:90px;">Age:</span>
+              <span style="font-weight:700;width:95px;">Age:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.age || ""}</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:90px;">Birthdate:</span>
+              <span style="font-weight:700;width:95px;">Birthdate:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.birthdate || ""}</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:90px;">Date:</span>
+              <span style="font-weight:700;width:95px;">Date:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.record_date || (selectedRecord.created_at ? new Date(selectedRecord.created_at).toLocaleDateString() : "")}</div>
             </div>
           </div>
 
-          <div style="grid-column:span 4;display:flex;flex-direction:column;gap:8px;border-left:1px solid #cbd5e1;padding-left:16px;">
+          <div style="grid-column:span 5;display:flex;flex-direction:column;gap:8px;border-left:1px solid #000000;padding-left:16px;">
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:40px;">BP:</span>
+              <span style="font-weight:700;width:45px;">BP:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.bp || ""}</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:40px;">Ht:</span>
+              <span style="font-weight:700;width:45px;">Ht:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.height || ""}</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:40px;">Wt:</span>
+              <span style="font-weight:700;width:45px;">Wt:</span>
               <div style="border-bottom:1px solid #000;flex:1;min-height:20px;font-weight:600;">${selectedRecord.weight || ""}</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-              <span style="font-weight:700;width:40px;">BMI:</span>
+              <span style="font-weight:700;width:45px;">BMI:</span>
               <div style="border-bottom:1px dashed #000;flex:1;min-height:20px;font-weight:700;">${selectedRecord.bmi || ""}</div>
             </div>
           </div>
@@ -845,7 +809,7 @@ const AdminHealthRecords = () => {
 
         <table style="width:100%;border-collapse:collapse;margin-top:12px;margin-bottom:20px;font-size:11px;">
           <thead>
-            <tr style="background:#f1f5f9;border-bottom:2px solid #000;">
+            <tr style="background:#fdf2f4;border-bottom:2px solid #000;">
               <th style="border:1px solid #000;padding:6px 8px;text-align:left;width:55%;">Description/Question</th>
               <th style="border:1px solid #000;padding:6px 8px;text-align:center;width:10%;">Yes</th>
               <th style="border:1px solid #000;padding:6px 8px;text-align:center;width:10%;">No</th>
