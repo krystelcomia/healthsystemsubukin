@@ -31,9 +31,6 @@ interface FormConfig {
   table: string;
   title: string;
   icon: LucideIcon;
-  gradient: string;
-  badgeColor: string;
-  accentColor: string;
   columns: string[];
   nameColumn: string;
 }
@@ -43,9 +40,6 @@ const FORM_CONFIGS: Record<string, FormConfig> = {
     table: "consultations",
     title: "Consultation Records",
     icon: Stethoscope,
-    gradient: "from-emerald-600 via-teal-600 to-cyan-700",
-    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
-    accentColor: "text-emerald-600 dark:text-emerald-400",
     columns: ["consultation_date", "consultation_cause", "temperature", "pulse_rate", "weight", "height"],
     nameColumn: "consultation_cause",
   },
@@ -53,9 +47,6 @@ const FORM_CONFIGS: Record<string, FormConfig> = {
     table: "family_data",
     title: "Family Data Records",
     icon: ClipboardList,
-    gradient: "from-purple-600 via-violet-600 to-indigo-700",
-    badgeColor: "bg-purple-500/20 text-purple-300 border-purple-400/30",
-    accentColor: "text-purple-600 dark:text-purple-400",
     columns: ["family_number", "father_name", "mother_name", "num_males", "num_females", "total_members"],
     nameColumn: "father_name",
   },
@@ -63,9 +54,6 @@ const FORM_CONFIGS: Record<string, FormConfig> = {
     table: "philpen_health",
     title: "PhilPen Health Records",
     icon: Activity,
-    gradient: "from-rose-600 via-pink-600 to-fuchsia-700",
-    badgeColor: "bg-rose-500/20 text-rose-300 border-rose-400/30",
-    accentColor: "text-rose-600 dark:text-rose-400",
     columns: ["record_date", "bp", "bmi", "weight", "height", "smokes", "drinks_alcohol"],
     nameColumn: "bp",
   },
@@ -73,9 +61,6 @@ const FORM_CONFIGS: Record<string, FormConfig> = {
     table: "dengue_prevention",
     title: "Dengue Prevention Records",
     icon: Bug,
-    gradient: "from-teal-600 via-emerald-600 to-green-700",
-    badgeColor: "bg-teal-500/20 text-teal-300 border-teal-400/30",
-    accentColor: "text-teal-600 dark:text-teal-400",
     columns: ["household_name", "container_type", "has_larvae", "action_plan"],
     nameColumn: "household_name",
   },
@@ -83,9 +68,6 @@ const FORM_CONFIGS: Record<string, FormConfig> = {
     table: "maternal_care",
     title: "Maternal Care Records",
     icon: HeartPulse,
-    gradient: "from-pink-600 via-rose-600 to-red-700",
-    badgeColor: "bg-pink-500/20 text-pink-300 border-pink-400/30",
-    accentColor: "text-pink-600 dark:text-pink-400",
     columns: ["created_at"],
     nameColumn: "created_at",
   },
@@ -93,9 +75,6 @@ const FORM_CONFIGS: Record<string, FormConfig> = {
     table: "child_health",
     title: "Child Health Records",
     icon: Baby,
-    gradient: "from-sky-600 via-blue-600 to-indigo-700",
-    badgeColor: "bg-sky-500/20 text-sky-300 border-sky-400/30",
-    accentColor: "text-sky-600 dark:text-sky-400",
     columns: ["created_at"],
     nameColumn: "created_at",
   },
@@ -103,9 +82,6 @@ const FORM_CONFIGS: Record<string, FormConfig> = {
     table: "family_planning",
     title: "Family Planning Records",
     icon: Syringe,
-    gradient: "from-amber-600 via-orange-600 to-red-700",
-    badgeColor: "bg-amber-500/20 text-amber-300 border-amber-400/30",
-    accentColor: "text-amber-600 dark:text-amber-400",
     columns: ["method", "start_date", "remarks"],
     nameColumn: "method",
   },
@@ -341,13 +317,13 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
   return (
     <div className="space-y-6 w-full max-w-full">
       {/* Hero Header */}
-      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${config.gradient} p-6 md:p-8 text-white shadow-xl`}>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/95 to-sidebar-background p-6 md:p-8 text-white shadow-xl">
         <div className="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
         <div className="absolute left-1/3 bottom-0 h-48 w-48 rounded-full bg-white/5 blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-2 max-w-2xl">
-            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md ${config.badgeColor}`}>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md bg-white/10 text-white border-white/20">
               <FormIcon className="h-3.5 w-3.5" />
               Admin Summary View
             </div>
@@ -410,12 +386,12 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
           {/* Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Total Records */}
-            <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-transparent border-indigo-500/30">
+            <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   Total Records
                 </CardTitle>
-                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 shadow-xs">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-xs">
                   <Hash className="h-4 w-4" />
                 </div>
               </CardHeader>
@@ -424,19 +400,19 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                   {loading ? "..." : totalRecords.toLocaleString()}
                 </div>
                 <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1">
-                  <FileText className="h-3 w-3 text-indigo-500" />
+                  <FileText className="h-3 w-3 text-primary" />
                   All time entries in database
                 </div>
               </CardContent>
             </Card>
 
             {/* Updated This Week */}
-            <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border-emerald-500/30">
+            <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   Updated This Week
                 </CardTitle>
-                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 shadow-xs">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-xs">
                   <TrendingUp className="h-4 w-4" />
                 </div>
               </CardHeader>
@@ -445,19 +421,19 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                   {loading ? "..." : weeklyCount.toLocaleString()}
                 </div>
                 <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1">
-                  <ArrowUpRight className="h-3 w-3 text-emerald-500" />
+                  <ArrowUpRight className="h-3 w-3 text-primary" />
                   Active weekly record lifecycle
                 </div>
               </CardContent>
             </Card>
 
             {/* Latest Update */}
-            <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/30">
+            <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   Latest Update
                 </CardTitle>
-                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 shadow-xs">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-xs">
                   <CalendarDays className="h-4 w-4" />
                 </div>
               </CardHeader>
@@ -466,7 +442,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                   {loading ? "..." : latestDate ? formatDate(latestDate) : "No records"}
                 </div>
                 <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1">
-                  <Clock className="h-3 w-3 text-amber-500" />
+                  <Clock className="h-3 w-3 text-primary" />
                   {latestDate ? formatTimeAgo(latestDate) : "—"}
                 </div>
               </CardContent>
@@ -478,12 +454,12 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border/40 pb-4">
               <div>
                 <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
-                  <CalendarDays className={`h-5 w-5 ${config.accentColor}`} />
+                  <CalendarDays className="h-5 w-5 text-primary" />
                   Active Records (This Week)
                 </CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">Records collected in the current calendar week. At the end of the week, they transition to History.</p>
               </div>
-              <Badge variant="outline" className={`text-xs gap-1 font-semibold ${config.accentColor} border-current/30 bg-current/5`}>
+              <Badge variant="outline" className="text-xs gap-1 font-semibold text-primary border-primary/20 bg-primary/5">
                 <TrendingUp className="h-3 w-3" />
                 {weeklyCount} active record{weeklyCount !== 1 ? "s" : ""}
               </Badge>
@@ -543,7 +519,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border/40 pb-4">
               <div>
                 <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
-                  <RefreshCw className={`h-5 w-5 ${config.accentColor}`} />
+                  <RefreshCw className="h-5 w-5 text-primary" />
                   Recent Updates Log
                 </CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">Most recent 10 logs processed by system</p>
@@ -569,7 +545,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                         className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors group"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className={`h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 bg-primary/10 ${config.accentColor}`}>
+                          <div className="h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 bg-primary/10 text-primary">
                             <FormIcon className="h-4 w-4" />
                           </div>
                           <div className="min-w-0">
@@ -601,7 +577,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
         <div className="space-y-4">
           <Card className="border-border/60 shadow-sm bg-card p-4">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-1">
-              <History className={`h-5 w-5 ${config.accentColor}`} />
+              <History className="h-5 w-5 text-primary" />
               Historical Weekly Archives
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
@@ -626,7 +602,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                 <Card key={weekKey} className="border-border/50 shadow-xs hover:border-primary/30 transition-all">
                   <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className={`h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center ${config.accentColor}`}>
+                      <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                         <CalendarRange className="h-4 w-4" />
                       </div>
                       <div>
