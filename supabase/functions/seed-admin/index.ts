@@ -1,3 +1,4 @@
+// @ts-nocheck
 declare const Deno: any;
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -14,7 +15,7 @@ Deno.serve(async (req: Request) => {
 
     // Check if user already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find((u) => u.email === email);
+    const existingUser = existingUsers?.users?.find((u: any) => u.email === email);
 
     let userId: string;
 
@@ -51,9 +52,9 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ success: true, message: "Admin account created/updated" }),
       { headers: { "Content-Type": "application/json" } }
     );
-  } catch (error) {
+  } catch (error: any) {
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: error?.message || String(error) }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
