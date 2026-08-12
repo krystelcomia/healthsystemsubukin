@@ -18,6 +18,10 @@ import {
   Hash,
   ArrowUpRight,
   Printer,
+  ChevronDown,
+  ChevronUp,
+  History,
+  CalendarRange,
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -119,47 +123,105 @@ interface RecordRow {
   [key: string]: any;
 }
 
+interface WeeklyGroup {
+  monday: Date;
+  sunday: Date;
+  label: string;
+  records: RecordRow[];
+}
+
 const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
   const { t } = useSettings();
   const config = FORM_CONFIGS[formType];
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"current" | "history">("current");
   const [totalRecords, setTotalRecords] = useState(0);
-  const [weeklyRecords, setWeeklyRecords] = useState<RecordRow[]>([]);
+  const [currentWeekRecords, setCurrentWeekRecords] = useState<RecordRow[]>([]);
   const [recentlyUpdated, setRecentlyUpdated] = useState<RecordRow[]>([]);
   const [weeklyCount, setWeeklyCount] = useState(0);
   const [latestDate, setLatestDate] = useState<string | null>(null);
+  
+  // History tab states
+  const [historyGroups, setHistoryGroups] = useState<WeeklyGroup[]>([]);
+  const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>({});
+
+  const getMondayOfDate = (date: Date) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(d.setDate(diff));
+    monday.setHours(0, 0, 0, 0);
+    return monday;
+  };
+
+  const getSundayOfDate = (mondayDate: Date) => {
+    const sunday = new Date(mondayDate);
+    sunday.setDate(mondayDate.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    return sunday;
+  };
+
+  const formatDateShort = (date: Date) => {
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Total count
-      const { count } = await (supabase.from as any)(config.table)
-        .select("id", { count: "exact", head: true });
-      setTotalRecords(count || 0);
-
-      // Get the date 7 days ago
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      const weekAgoStr = weekAgo.toISOString();
-
-      // Weekly records (created in last 7 days)
-      const { data: weekData } = await (supabase.from as any)(config.table)
+      // 1. Fetch ALL records from the table
+      const { data, error } = await (supabase.from as any)(config.table)
         .select("*, residents(full_name)")
-        .gte("created_at", weekAgoStr)
         .order("created_at", { ascending: false });
-      setWeeklyRecords(weekData || []);
-      setWeeklyCount((weekData || []).length);
+
+      if (error) throw error;
+      const recordsList: RecordRow[] = data || [];
+      setTotalRecords(recordsList.length);
+
+      // 2. Partition into current week and history
+      const now = new Date();
+      const currentMonday = getMondayOfDate(now);
+      
+      const currentWeekList = recordsList.filter(r => new Date(r.created_at) >= currentMonday);
+      setCurrentWeekRecords(currentWeekList);
+      setWeeklyCount(currentWeekList.length);
+
+      const historicalList = recordsList.filter(r => new Date(r.created_at) < currentMonday);
+
+      // Group historical records by week
+      const groupsMap: Record<string, WeeklyGroup> = {};
+      historicalList.forEach(r => {
+        const rDate = new Date(r.created_at);
+        const mon = getMondayOfDate(rDate);
+        const monStr = mon.toISOString().split("T")[0];
+        if (!groupsMap[monStr]) {
+          const sun = getSundayOfDate(mon);
+          const label = `Week of ${formatDateShort(mon)} to ${formatDateShort(sun)}`;
+          groupsMap[monStr] = {
+            monday: mon,
+            sunday: sun,
+            label,
+            records: []
+          };
+        }
+        groupsMap[monStr].records.push(r);
+      });
+
+      const sortedGroups = Object.keys(groupsMap)
+        .sort((a, b) => b.localeCompare(a))
+        .map(key => groupsMap[key]);
+
+      setHistoryGroups(sortedGroups);
 
       // Recently updated/created records (last 10)
-      const { data: recentData } = await (supabase.from as any)(config.table)
-        .select("*, residents(full_name)")
-        .order("created_at", { ascending: false })
-        .limit(10);
-      setRecentlyUpdated(recentData || []);
+      setRecentlyUpdated(recordsList.slice(0, 10));
 
       // Latest date
-      if (recentData && recentData.length > 0) {
-        const latest = recentData[0].updated_at || recentData[0].created_at;
+      if (recordsList.length > 0) {
+        const latest = recordsList[0].updated_at || recordsList[0].created_at;
         setLatestDate(latest);
       } else {
         setLatestDate(null);
@@ -218,11 +280,11 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
     }
   };
 
-  const handlePrintWeekly = () => {
+  const handlePrintReport = (recordsToPrint: RecordRow[], reportTitle: string) => {
     const win = window.open("", "_blank");
     if (!win) return;
 
-    const rows = weeklyRecords.map((r, i) => {
+    const rows = recordsToPrint.map((r, i) => {
       const resName = r.residents?.full_name || "—";
       const date = formatDate(r.created_at);
       return `<tr>
@@ -232,7 +294,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
       </tr>`;
     }).join("");
 
-    win.document.write(`<!DOCTYPE html><html><head><title>Weekly Report - ${config.title}</title>
+    win.document.write(`<!DOCTYPE html><html><head><title>${reportTitle} - ${config.title}</title>
       <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Segoe UI',Arial,sans-serif; padding:40px; color:#1a1a1a; font-size:13px; }
@@ -252,22 +314,28 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
     </head><body>
       <div class="header">
         <h1>Barangay Subukin Health System</h1>
-        <p>Weekly Report — ${config.title}</p>
+        <p>${reportTitle} — ${config.title}</p>
         <p style="margin-top:4px;font-size:11px;color:#9ca3af;">Report generated: ${new Date().toLocaleString()}</p>
       </div>
       <div class="stats">
-        <div class="stat"><div class="val">${totalRecords}</div><div class="label">Total Records</div></div>
-        <div class="stat"><div class="val">${weeklyCount}</div><div class="label">This Week</div></div>
+        <div class="stat"><div class="val">${recordsToPrint.length}</div><div class="label">Total Records</div></div>
       </div>
-      <h3 style="font-size:14px;margin-bottom:8px;color:#374151;">Records Added This Week</h3>
+      <h3 style="font-size:14px;margin-bottom:8px;color:#374151;">Record Entries</h3>
       <table>
         <thead><tr><th>#</th><th>Resident Name</th><th>Date Created</th></tr></thead>
-        <tbody>${rows || '<tr><td colspan="3" style="text-align:center;padding:20px;color:#9ca3af;">No records this week</td></tr>'}</tbody>
+        <tbody>${rows || '<tr><td colspan="3" style="text-align:center;padding:20px;color:#9ca3af;">No records found</td></tr>'}</tbody>
       </table>
       <div class="footer">Barangay Health Worker System &mdash; Admin Report</div>
     </body></html>`);
     win.document.close();
     win.print();
+  };
+
+  const toggleWeekExpanded = (weekKey: string) => {
+    setExpandedWeeks(prev => ({
+      ...prev,
+      [weekKey]: !prev[weekKey]
+    }));
   };
 
   return (
@@ -287,7 +355,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
               {config.title}
             </h1>
             <p className="text-sm text-white/80 leading-relaxed">
-              Overview of all {config.title.toLowerCase()} — total entries, recent updates, and this week's activity report.
+              Overview of all {config.title.toLowerCase()} — print weekly reports, view active weekly records, or explore previous history.
             </p>
           </div>
 
@@ -302,204 +370,335 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             </Button>
             <Button
               size="sm"
-              onClick={handlePrintWeekly}
+              onClick={() => handlePrintReport(currentWeekRecords, "Current Week Report")}
               className="bg-white/15 hover:bg-white/25 text-white font-semibold gap-1.5 text-xs backdrop-blur-sm border border-white/20"
             >
-              <Printer className="h-3.5 w-3.5" /> Print Weekly Report
+              <Printer className="h-3.5 w-3.5" /> Print Current Week Report
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Total Records */}
-        <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-transparent border-indigo-500/30">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Total Records
-            </CardTitle>
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 shadow-xs">
-              <Hash className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl md:text-4xl font-heading font-extrabold text-foreground tracking-tight">
-              {loading ? "..." : totalRecords.toLocaleString()}
-            </div>
-            <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1">
-              <FileText className="h-3 w-3 text-indigo-500" />
-              All time entries in database
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Updated This Week */}
-        <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border-emerald-500/30">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Updated This Week
-            </CardTitle>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 shadow-xs">
-              <TrendingUp className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl md:text-4xl font-heading font-extrabold text-foreground tracking-tight">
-              {loading ? "..." : weeklyCount.toLocaleString()}
-            </div>
-            <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1">
-              <ArrowUpRight className="h-3 w-3 text-emerald-500" />
-              Records in last 7 days
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Latest Update */}
-        <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/30">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Latest Update
-            </CardTitle>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 shadow-xs">
-              <CalendarDays className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg md:text-xl font-heading font-extrabold text-foreground tracking-tight">
-              {loading ? "..." : latestDate ? formatDate(latestDate) : "No records"}
-            </div>
-            <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1">
-              <Clock className="h-3 w-3 text-amber-500" />
-              {latestDate ? formatTimeAgo(latestDate) : "—"}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Tabs */}
+      <div className="flex border-b border-border/60 gap-4 no-print">
+        <button
+          onClick={() => setActiveTab("current")}
+          className={`pb-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-1.5 ${
+            activeTab === "current"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <CalendarDays className="h-4 w-4" />
+          Active (Current Week)
+        </button>
+        <button
+          onClick={() => setActiveTab("history")}
+          className={`pb-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-1.5 ${
+            activeTab === "history"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <History className="h-4 w-4" />
+          History (Previous Weeks)
+        </button>
       </div>
 
-      {/* Weekly Report */}
-      <Card className="border-border/60 shadow-sm bg-card">
-        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border/40 pb-4">
-          <div>
-            <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
-              <CalendarDays className={`h-5 w-5 ${config.accentColor}`} />
-              Weekly Report
-            </CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Records created or updated in the last 7 days</p>
-          </div>
-          <Badge variant="outline" className={`text-xs gap-1 font-semibold ${config.accentColor} border-current/30 bg-current/5`}>
-            <TrendingUp className="h-3 w-3" />
-            {weeklyCount} record{weeklyCount !== 1 ? "s" : ""} this week
-          </Badge>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="p-3 text-left font-medium text-muted-foreground text-xs w-12">#</th>
-                  <th className="p-3 text-left font-medium text-muted-foreground text-xs">Resident</th>
-                  <th className="p-3 text-left font-medium text-muted-foreground text-xs">Date Created</th>
-                  <th className="p-3 text-left font-medium text-muted-foreground text-xs">Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={4} className="p-8 text-center text-muted-foreground text-xs">
-                      <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2 text-primary" />
-                      Loading weekly report...
-                    </td>
-                  </tr>
-                ) : weeklyRecords.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="p-8 text-center text-muted-foreground text-xs italic">
-                      No records found in the last 7 days
-                    </td>
-                  </tr>
-                ) : (
-                  weeklyRecords.map((record, i) => (
-                    <tr key={record.id} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
-                      <td className="p-3 text-muted-foreground text-xs font-mono">{i + 1}</td>
-                      <td className="p-3 font-medium text-foreground text-xs">
-                        {record.residents?.full_name || "—"}
-                      </td>
-                      <td className="p-3 text-foreground text-xs">
-                        {formatDate(record.created_at)}
-                      </td>
-                      <td className="p-3 text-muted-foreground text-xs">
-                        <span className="inline-flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {formatTimeAgo(record.created_at)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      {activeTab === "current" ? (
+        <div className="space-y-6">
+          {/* Stat Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Total Records */}
+            <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-transparent border-indigo-500/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Total Records
+                </CardTitle>
+                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 shadow-xs">
+                  <Hash className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl md:text-4xl font-heading font-extrabold text-foreground tracking-tight">
+                  {loading ? "..." : totalRecords.toLocaleString()}
+                </div>
+                <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1">
+                  <FileText className="h-3 w-3 text-indigo-500" />
+                  All time entries in database
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Recently Updated Records */}
-      <Card className="border-border/60 shadow-sm bg-card">
-        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border/40 pb-4">
-          <div>
-            <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
-              <RefreshCw className={`h-5 w-5 ${config.accentColor}`} />
-              Recently Updated Records
-            </CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Last 10 records updated or created — showing update timestamps</p>
+            {/* Updated This Week */}
+            <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border-emerald-500/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Updated This Week
+                </CardTitle>
+                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 shadow-xs">
+                  <TrendingUp className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl md:text-4xl font-heading font-extrabold text-foreground tracking-tight">
+                  {loading ? "..." : weeklyCount.toLocaleString()}
+                </div>
+                <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1">
+                  <ArrowUpRight className="h-3 w-3 text-emerald-500" />
+                  Active weekly record lifecycle
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Latest Update */}
+            <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Latest Update
+                </CardTitle>
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 shadow-xs">
+                  <CalendarDays className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg md:text-xl font-heading font-extrabold text-foreground tracking-tight">
+                  {loading ? "..." : latestDate ? formatDate(latestDate) : "No records"}
+                </div>
+                <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1">
+                  <Clock className="h-3 w-3 text-amber-500" />
+                  {latestDate ? formatTimeAgo(latestDate) : "—"}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardHeader>
-        <CardContent className="p-4">
-          <div className="space-y-3">
-            {loading ? (
-              <div className="py-8 text-center text-xs text-muted-foreground">
-                <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2 text-primary" />
-                Loading recent updates...
+
+          {/* Active Weekly Table */}
+          <Card className="border-border/60 shadow-sm bg-card">
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border/40 pb-4">
+              <div>
+                <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
+                  <CalendarDays className={`h-5 w-5 ${config.accentColor}`} />
+                  Active Records (This Week)
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">Records collected in the current calendar week. At the end of the week, they transition to History.</p>
               </div>
-            ) : recentlyUpdated.length === 0 ? (
-              <div className="py-8 text-center text-xs text-muted-foreground italic">
-                No records found
+              <Badge variant="outline" className={`text-xs gap-1 font-semibold ${config.accentColor} border-current/30 bg-current/5`}>
+                <TrendingUp className="h-3 w-3" />
+                {weeklyCount} active record{weeklyCount !== 1 ? "s" : ""}
+              </Badge>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/50">
+                      <th className="p-3 text-left font-medium text-muted-foreground text-xs w-12">#</th>
+                      <th className="p-3 text-left font-medium text-muted-foreground text-xs">Resident</th>
+                      <th className="p-3 text-left font-medium text-muted-foreground text-xs">Date Created</th>
+                      <th className="p-3 text-left font-medium text-muted-foreground text-xs">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center text-muted-foreground text-xs">
+                          <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2 text-primary" />
+                          Loading active records...
+                        </td>
+                      </tr>
+                    ) : currentWeekRecords.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center text-muted-foreground text-xs italic">
+                          No active records logged in this week yet
+                        </td>
+                      </tr>
+                    ) : (
+                      currentWeekRecords.map((record, i) => (
+                        <tr key={record.id} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
+                          <td className="p-3 text-muted-foreground text-xs font-mono">{i + 1}</td>
+                          <td className="p-3 font-medium text-foreground text-xs">
+                            {record.residents?.full_name || "—"}
+                          </td>
+                          <td className="p-3 text-foreground text-xs">
+                            {formatDate(record.created_at)}
+                          </td>
+                          <td className="p-3 text-muted-foreground text-xs">
+                            <span className="inline-flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatTimeAgo(record.created_at)}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
-            ) : (
-              recentlyUpdated.map((record) => {
-                const updateDate = record.updated_at || record.created_at;
-                return (
-                  <div
-                    key={record.id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors group"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={`h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 bg-primary/10 ${config.accentColor}`}>
-                        <FormIcon className="h-4 w-4" />
+            </CardContent>
+          </Card>
+
+          {/* Recently Updated Records */}
+          <Card className="border-border/60 shadow-sm bg-card">
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border/40 pb-4">
+              <div>
+                <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
+                  <RefreshCw className={`h-5 w-5 ${config.accentColor}`} />
+                  Recent Updates Log
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">Most recent 10 logs processed by system</p>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                {loading ? (
+                  <div className="py-8 text-center text-xs text-muted-foreground">
+                    <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2 text-primary" />
+                    Loading recent logs...
+                  </div>
+                ) : recentlyUpdated.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-muted-foreground italic">
+                    No logs found
+                  </div>
+                ) : (
+                  recentlyUpdated.map((record) => {
+                    const updateDate = record.updated_at || record.created_at;
+                    return (
+                      <div
+                        key={record.id}
+                        className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors group"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 bg-primary/10 ${config.accentColor}`}>
+                            <FormIcon className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-foreground truncate">
+                              {record.residents?.full_name || "Unlinked Record"}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                              Created: {formatDateTime(record.created_at)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0 ml-4">
+                          <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-semibold border-border/60">
+                            {formatTimeAgo(updateDate)}
+                          </Badge>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            {formatDate(updateDate)}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-foreground truncate">
-                          {record.residents?.full_name || "Unlinked Record"}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                          Created: {formatDateTime(record.created_at)}
+                    );
+                  })
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <Card className="border-border/60 shadow-sm bg-card p-4">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-1">
+              <History className={`h-5 w-5 ${config.accentColor}`} />
+              Historical Weekly Archives
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Whenever a week passes, its health worker logs are automatically archived here. You can expand any past week to inspect details or generate printed reports for reference.
+            </p>
+          </Card>
+
+          {loading ? (
+            <Card className="p-8 text-center text-xs text-muted-foreground border-border/50">
+              <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2 text-primary" />
+              Loading history archives...
+            </Card>
+          ) : historyGroups.length === 0 ? (
+            <Card className="p-8 text-center text-xs text-muted-foreground italic border-border/50">
+              No historical weekly records archived yet.
+            </Card>
+          ) : (
+            historyGroups.map((group) => {
+              const weekKey = group.monday.toISOString().split("T")[0];
+              const isExpanded = !!expandedWeeks[weekKey];
+              return (
+                <Card key={weekKey} className="border-border/50 shadow-xs hover:border-primary/30 transition-all">
+                  <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center ${config.accentColor}`}>
+                        <CalendarRange className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground">{group.label}</h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                          <FileText className="h-3.5 w-3.5" />
+                          {group.records.length} record{group.records.length !== 1 ? "s" : ""} recorded in week
                         </p>
                       </div>
                     </div>
-                    <div className="text-right shrink-0 ml-4">
-                      <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-semibold border-border/60">
-                        {formatTimeAgo(updateDate)}
-                      </Badge>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {formatDate(updateDate)}
-                      </p>
+                    <div className="flex items-center gap-2 self-end sm:self-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleWeekExpanded(weekKey)}
+                        className="text-xs h-8 gap-1"
+                      >
+                        {isExpanded ? (
+                          <>
+                            Collapse <ChevronUp className="h-3.5 w-3.5" />
+                          </>
+                        ) : (
+                          <>
+                            View Records <ChevronDown className="h-3.5 w-3.5" />
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handlePrintReport(group.records, `${group.label} Report`)}
+                        className="text-xs h-8 gap-1"
+                      >
+                        <Printer className="h-3.5 w-3.5" />
+                        Print Report
+                      </Button>
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
-        </CardContent>
-      </Card>
+
+                  {isExpanded && (
+                    <div className="border-t border-border/60">
+                      <div className="overflow-auto max-h-80">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="bg-muted/40 text-muted-foreground font-semibold border-b border-border/30">
+                              <th className="p-2.5 text-left w-12">#</th>
+                              <th className="p-2.5 text-left">Resident</th>
+                              <th className="p-2.5 text-left">Date Created</th>
+                              <th className="p-2.5 text-left">Timestamp</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {group.records.map((r, i) => (
+                              <tr key={r.id} className="border-b border-border/20 hover:bg-muted/20 transition-colors">
+                                <td className="p-2.5 text-muted-foreground font-mono">{i + 1}</td>
+                                <td className="p-2.5 font-medium text-foreground">
+                                  {r.residents?.full_name || "—"}
+                                </td>
+                                <td className="p-2.5 text-foreground">{formatDate(r.created_at)}</td>
+                                <td className="p-2.5 text-muted-foreground">{formatDateTime(r.created_at)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              );
+            })
+          )}
+        </div>
+      )}
     </div>
   );
 };

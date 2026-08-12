@@ -7,11 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Settings, Download, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useSettings } from "@/contexts/SettingsContext";
+import { useSettings, COLOR_THEMES } from "@/contexts/SettingsContext";
 
 const AdminSettings = () => {
   const [generating, setGenerating] = useState(false);
-  const { darkMode, setDarkMode, fontSize, setFontSize, fontStyle, setFontStyle, language, setLanguage, t } = useSettings();
+  const { darkMode, setDarkMode, fontSize, setFontSize, fontStyle, setFontStyle, language, setLanguage, colorTheme, setColorTheme, t } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleGenerateReport = async () => {
@@ -179,6 +179,28 @@ const AdminSettings = () => {
                 <SelectItem value="tl">{t("common.tagalog")}</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/50 shadow-sm">
+        <CardHeader><CardTitle className="text-lg font-heading">Color Palette</CardTitle></CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">Choose a color theme for the system.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {COLOR_THEMES.map((theme) => {
+              const active = colorTheme === theme.id;
+              return (
+                <button
+                  key={theme.id}
+                  onClick={() => setColorTheme(theme.id)}
+                  className={`flex items-center gap-3 rounded-lg border p-3 transition-all text-left ${active ? "border-primary ring-2 ring-primary/40 bg-primary/5" : "border-border hover:border-primary/50"}`}
+                >
+                  <span className="h-8 w-8 rounded-full border border-border shadow-sm shrink-0" style={{ background: theme.swatch }} />
+                  <span className="text-sm font-medium text-foreground">{theme.label}</span>
+                </button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
