@@ -1007,10 +1007,20 @@ const FamilyDataForm = () => {
           {selectedFile && (
             <div className="space-y-6">
               {/* Official Barangay Printable Header */}
-              <div className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6">
-                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
-                <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
-                <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+              <div className="print-only header-seal flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center">
+                <div className="flex items-center justify-center gap-6 md:gap-8">
+                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+                  <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+                  <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+                </div>
+                <div className="mt-3 text-center">
+                  <h2 className="text-base font-extrabold uppercase tracking-wider text-slate-900">
+                    BARANGAY HEALTH SYSTEM — FAMILY DATA RECORD FORM
+                  </h2>
+                  <p className="text-xs text-slate-600 italic">
+                    Official Barangay Household Census &amp; Demographics Record
+                  </p>
+                </div>
               </div>
 
               {/* Opened File Folder Banner */}
@@ -1058,12 +1068,12 @@ const FamilyDataForm = () => {
               </div>
 
               {/* Header Fields (Father, Mother, Sitio, Households) */}
-              <Card className="border-border/60 bg-muted/20">
+              <Card className="border-border/60 bg-card">
                 <CardContent className="p-4 space-y-4">
                   {isEditingFileDetails ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       <div>
-                        <Label className="text-xs">Family Number</Label>
+                        <Label className="text-xs">Family Number *</Label>
                         <Input
                           value={editFamNum}
                           onChange={(e) => setEditFamNum(e.target.value)}
@@ -1127,22 +1137,32 @@ const FamilyDataForm = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-                      <div>
-                        <span className="text-muted-foreground block text-[11px]">Father (Head):</span>
-                        <strong className="text-foreground text-sm font-semibold">{editFather || "—"}</strong>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                        <div>
+                          <span className="text-muted-foreground block text-[11px] font-semibold uppercase">Family Number *</span>
+                          <strong className="text-foreground text-sm font-mono font-semibold">{editFamNum || "—"}</strong>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[11px] font-semibold uppercase">Sitio</span>
+                          <strong className="text-foreground text-sm font-semibold">{editSitio || "Centro"}</strong>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[11px] font-semibold uppercase">Father (Head)</span>
+                          <strong className="text-foreground text-sm font-semibold">{editFather || "—"}</strong>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[11px] font-semibold uppercase">Mother</span>
+                          <strong className="text-foreground text-sm font-semibold">{editMother || "—"}</strong>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[11px]">Mother:</span>
-                        <strong className="text-foreground text-sm font-semibold">{editMother || "—"}</strong>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[11px]">Sitio:</span>
-                        <strong className="text-foreground text-sm font-semibold">{editSitio || "Centro"}</strong>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[11px]">Households:</span>
-                        <strong className="text-foreground text-sm font-semibold">{editHouseholds || 1}</strong>
+                      <div className="bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-lg text-xs space-y-0.5">
+                        <span className="text-amber-800 dark:text-amber-400 font-semibold uppercase text-[10px] block">
+                          Generated File Folder Name:
+                        </span>
+                        <span className="font-mono font-bold text-amber-900 dark:text-amber-300 text-xs md:text-sm">
+                          {`${editFamNum || "FN"} - ${editFather || "Father's Name"}`}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -1155,7 +1175,7 @@ const FamilyDataForm = () => {
                   <div>
                     <h3 className="font-heading font-bold text-base text-foreground flex items-center gap-2">
                       <Users className="h-4 w-4 text-primary" />
-                      Family Members Directory
+                      Initial Family Members
                     </h3>
                   </div>
 
@@ -1166,7 +1186,7 @@ const FamilyDataForm = () => {
                       className="gap-1.5 text-xs no-print bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     >
                       <UserPlus className="h-3.5 w-3.5" />
-                      Add Family Member
+                      Add Member Row
                     </Button>
                   )}
                 </div>
@@ -1174,11 +1194,12 @@ const FamilyDataForm = () => {
                 <div className="border border-border/80 rounded-xl overflow-hidden shadow-xs">
                   <table className="w-full text-xs md:text-sm text-left">
                     <thead>
-                      <tr className="bg-transparent border-b border-border/80">
+                      <tr className="bg-muted/40 border-b border-border/80">
+                        <th className="p-3 font-semibold text-center w-[40px]">#</th>
                         <th className="p-3 font-semibold">Full Name</th>
-                        <th className="p-3 font-semibold">Relationship / Role</th>
                         <th className="p-3 font-semibold text-center">Birthday</th>
                         <th className="p-3 font-semibold text-center">Age</th>
+                        <th className="p-3 font-semibold">Role</th>
                         <th className="p-3 font-semibold text-center">Gender</th>
                         {!isAdmin && <th className="p-3 font-semibold text-center no-print">Action</th>}
                       </tr>
@@ -1186,17 +1207,18 @@ const FamilyDataForm = () => {
                     <tbody>
                       {activeMembers.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="p-6 text-center text-muted-foreground italic">
-                            No family members added yet. Click "Add Family Member" above to record members.
+                          <td colSpan={7} className="p-6 text-center text-muted-foreground italic">
+                            No family members added yet. Click "Add Member Row" above to record members.
                           </td>
                         </tr>
                       ) : (
-                        activeMembers.map((m) => (
+                        activeMembers.map((m, idx) => (
                           <tr key={m.id} className="border-b border-border/40">
+                            <td className="p-3 text-center text-muted-foreground font-mono">{idx + 1}</td>
                             <td className="p-3 font-medium">{m.full_name}</td>
-                            <td className="p-3">{m.relationship}</td>
                             <td className="p-3 text-center">{m.birthday || "—"}</td>
                             <td className="p-3 text-center">{m.age || "—"}</td>
+                            <td className="p-3">{m.relationship}</td>
                             <td className="p-3 text-center">{m.gender}</td>
                             {!isAdmin && (
                               <td className="p-3 text-center no-print">
@@ -1223,8 +1245,20 @@ const FamilyDataForm = () => {
                     Total Males: <strong>{activeMembers.filter((m) => m.gender === "Male").length}</strong> | Total Females: <strong>{activeMembers.filter((m) => m.gender === "Female").length}</strong>
                   </span>
                   <span>
-                    Total Members: <strong className="text-foreground text-sm">{activeMembers.length}</strong>
+                    Total Household Members: <strong className="text-foreground text-sm">{activeMembers.length}</strong>
                   </span>
+                </div>
+
+                {/* Printable Official Footer Signatures */}
+                <div className="print-only pt-8 mt-8 border-t border-slate-300 flex justify-between text-xs text-slate-800">
+                  <div>
+                    Certified Correct: ___________________________<br />
+                    <span className="text-[10px] text-slate-600">Attending Barangay Health Worker</span>
+                  </div>
+                  <div>
+                    Approved By: ___________________________<br />
+                    <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
+                  </div>
                 </div>
               </div>
 

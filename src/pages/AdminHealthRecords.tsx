@@ -300,6 +300,79 @@ const AdminHealthRecords = () => {
       return;
     }
 
+    if (form.id === "family_data") {
+      const html = `
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          HOUSEHOLD &amp; LOCATION IDENTIFICATION
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Family Number *</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Sitio</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Father's Name (Household Head)</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Mother's Name</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+        </div>
+
+        <div style="background:#fffbeb;border:1px solid #fde68a;padding:8px 12px;border-radius:4px;margin-bottom:16px;">
+          <div style="font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;">Generated File Folder Name:</div>
+          <div style="font-family:monospace;font-size:12px;font-weight:700;color:#78350f;margin-top:2px;">FN - Father's Name</div>
+        </div>
+
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+          INITIAL FAMILY MEMBERS
+        </div>
+
+        <table style="width:100%;border-collapse:collapse;margin-top:12px;margin-bottom:20px;font-size:11px;">
+          <thead>
+            <tr style="background:#f3f4f6;border-bottom:2px solid #000;">
+              <th style="border:1px solid #000;padding:6px;text-align:center;width:30px;">#</th>
+              <th style="border:1px solid #000;padding:6px;text-align:left;">Full Name</th>
+              <th style="border:1px solid #000;padding:6px;text-align:center;">Birthday</th>
+              <th style="border:1px solid #000;padding:6px;text-align:center;width:50px;">Age</th>
+              <th style="border:1px solid #000;padding:6px;text-align:left;">Role</th>
+              <th style="border:1px solid #000;padding:6px;text-align:center;">Gender</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${[1, 2, 3, 4, 5, 6].map(i => `
+              <tr>
+                <td style="border:1px solid #000;padding:8px;text-align:center;">${i}</td>
+                <td style="border:1px solid #000;padding:8px;"></td>
+                <td style="border:1px solid #000;padding:8px;"></td>
+                <td style="border:1px solid #000;padding:8px;"></td>
+                <td style="border:1px solid #000;padding:8px;"></td>
+                <td style="border:1px solid #000;padding:8px;"></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;">
+          <div>Certified Correct: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Health Worker</span></div>
+          <div>Approved By: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Midwife / Supervisor</span></div>
+        </div>
+      `;
+      triggerInSystemPrint(`Blank Form — ${form.title}`, html, orientation);
+      return;
+    }
+
     const html = `
       <div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin:16px 0;letter-spacing:1px;">${form.title}</div>
       <p style="text-align:center;font-style:italic;margin-bottom:20px;color:#666;">Official Barangay Health Assessment & Registration Document</p>
@@ -472,6 +545,89 @@ const AdminHealthRecords = () => {
         </div>
       `;
       triggerInSystemPrint(`Filled Record — ${resName}`, html, orientation);
+      return;
+    }
+
+    if (selectedForm.id === "family_data") {
+      const membersList = Array.isArray(selectedRecord.members_detail)
+        ? selectedRecord.members_detail
+        : typeof selectedRecord.members_detail === "string"
+        ? (JSON.parse(selectedRecord.members_detail || "[]") as any[])
+        : [];
+
+      const html = `
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          HOUSEHOLD &amp; LOCATION IDENTIFICATION
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Family Number *</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.family_number || "—"}</div>
+          </div>
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Sitio</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.sitio || "—"}</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Father's Name (Household Head)</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.father_name || "—"}</div>
+          </div>
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Mother's Name</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.mother_name || "—"}</div>
+          </div>
+        </div>
+
+        <div style="background:#fffbeb;border:1px solid #fde68a;padding:8px 12px;border-radius:4px;margin-bottom:16px;">
+          <div style="font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;">Generated File Folder Name:</div>
+          <div style="font-family:monospace;font-size:12px;font-weight:700;color:#78350f;margin-top:2px;">${selectedRecord.family_number || "FN"} - ${selectedRecord.father_name || "Father's Name"}</div>
+        </div>
+
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+          INITIAL FAMILY MEMBERS
+        </div>
+
+        <table style="width:100%;border-collapse:collapse;margin-top:12px;margin-bottom:20px;font-size:11px;">
+          <thead>
+            <tr style="background:#f3f4f6;border-bottom:2px solid #000;">
+              <th style="border:1px solid #000;padding:6px;text-align:center;width:30px;">#</th>
+              <th style="border:1px solid #000;padding:6px;text-align:left;">Full Name</th>
+              <th style="border:1px solid #000;padding:6px;text-align:center;">Birthday</th>
+              <th style="border:1px solid #000;padding:6px;text-align:center;width:50px;">Age</th>
+              <th style="border:1px solid #000;padding:6px;text-align:left;">Role</th>
+              <th style="border:1px solid #000;padding:6px;text-align:center;">Gender</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${membersList.length === 0 ? `
+              <tr>
+                <td colspan="6" style="border:1px solid #000;padding:12px;text-align:center;color:#666;font-style:italic;">No family members listed</td>
+              </tr>
+            ` : membersList.map((m: any, i: number) => `
+              <tr>
+                <td style="border:1px solid #000;padding:6px;text-align:center;">${i + 1}</td>
+                <td style="border:1px solid #000;padding:6px;font-weight:bold;">${m.full_name || "—"}</td>
+                <td style="border:1px solid #000;padding:6px;text-align:center;">${m.birthday || "—"}</td>
+                <td style="border:1px solid #000;padding:6px;text-align:center;">${m.age || "—"}</td>
+                <td style="border:1px solid #000;padding:6px;">${m.relationship || "—"}</td>
+                <td style="border:1px solid #000;padding:6px;text-align:center;">${m.gender || "—"}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;">
+          <div>Certified Correct: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Health Worker</span></div>
+          <div>Approved By: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Midwife / Supervisor</span></div>
+        </div>
+      `;
+      triggerInSystemPrint(`Filled Record — ${selectedRecord.family_number || "Family Data"}`, html, orientation);
       return;
     }
 
@@ -788,37 +944,121 @@ const AdminHealthRecords = () => {
                 </Button>
               </DialogHeader>
 
-              <Card className="border-border/60 bg-muted/20 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Patient Name</span>
-                  <span className="text-sm font-bold text-foreground">
-                    {selectedRecord.residents?.full_name || selectedRecord.patient_name || selectedRecord.first_name || "Unlinked Resident"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/40 pt-2">
-                  <span>Record Date / Timestamp</span>
-                  <span className="font-mono text-foreground">
-                    {selectedRecord.created_at ? new Date(selectedRecord.created_at).toLocaleString() : "—"}
-                  </span>
-                </div>
-              </Card>
-
-              {/* Data attributes list */}
-              <div className="space-y-2 border border-border/60 rounded-xl p-4 bg-card">
-                <h4 className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground mb-3">
-                  Recorded Attributes
-                </h4>
-                <div className="space-y-2 divide-y divide-border/30">
-                  {selectedForm.columns.map((col) => (
-                    <div key={col} className="flex items-center justify-between text-xs pt-2">
-                      <span className="capitalize text-muted-foreground font-medium">{col.replace(/_/g, " ")}:</span>
-                      <strong className="text-foreground">
-                        {selectedRecord[col] === true ? "Yes" : selectedRecord[col] === false ? "No" : selectedRecord[col] || "—"}
-                      </strong>
+              {selectedForm.id === "family_data" ? (
+                <div className="space-y-4 text-xs">
+                  <Card className="border-border/60 bg-card p-4 space-y-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div>
+                        <span className="text-muted-foreground uppercase font-bold text-[10px] block">Family Number *</span>
+                        <strong className="text-foreground text-sm font-mono font-bold">{selectedRecord.family_number || "—"}</strong>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground uppercase font-bold text-[10px] block">Sitio</span>
+                        <strong className="text-foreground text-sm font-semibold">{selectedRecord.sitio || "Subukin"}</strong>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground uppercase font-bold text-[10px] block">Father (Head)</span>
+                        <strong className="text-foreground text-sm font-semibold">{selectedRecord.father_name || "—"}</strong>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground uppercase font-bold text-[10px] block">Mother</span>
+                        <strong className="text-foreground text-sm font-semibold">{selectedRecord.mother_name || "—"}</strong>
+                      </div>
                     </div>
-                  ))}
+
+                    <div className="bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-lg text-xs space-y-0.5 mt-2">
+                      <span className="text-amber-800 dark:text-amber-400 font-semibold uppercase text-[10px] block">
+                        Generated File Folder Name:
+                      </span>
+                      <span className="font-mono font-bold text-amber-900 dark:text-amber-300 text-xs md:text-sm">
+                        {`${selectedRecord.family_number || "FN"} - ${selectedRecord.father_name || "Father's Name"}`}
+                      </span>
+                    </div>
+                  </Card>
+
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground">
+                      Initial Family Members
+                    </h4>
+                    <div className="border border-border/60 rounded-xl overflow-hidden shadow-xs">
+                      <table className="w-full text-xs text-left">
+                        <thead>
+                          <tr className="bg-muted/40 border-b border-border/50">
+                            <th className="p-2.5 text-center w-8">#</th>
+                            <th className="p-2.5 font-semibold">Full Name</th>
+                            <th className="p-2.5 font-semibold text-center">Birthday</th>
+                            <th className="p-2.5 font-semibold text-center w-12">Age</th>
+                            <th className="p-2.5 font-semibold">Role</th>
+                            <th className="p-2.5 font-semibold text-center">Gender</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            const mems = Array.isArray(selectedRecord.members_detail)
+                              ? selectedRecord.members_detail
+                              : typeof selectedRecord.members_detail === "string"
+                              ? (JSON.parse(selectedRecord.members_detail || "[]") as any[])
+                              : [];
+                            if (mems.length === 0) {
+                              return (
+                                <tr>
+                                  <td colSpan={6} className="p-4 text-center text-muted-foreground italic">
+                                    No family members listed
+                                  </td>
+                                </tr>
+                              );
+                            }
+                            return mems.map((m: any, idx: number) => (
+                              <tr key={idx} className="border-b border-border/30">
+                                <td className="p-2.5 text-center text-muted-foreground font-mono">{idx + 1}</td>
+                                <td className="p-2.5 font-bold text-foreground">{m.full_name || "—"}</td>
+                                <td className="p-2.5 text-center">{m.birthday || "—"}</td>
+                                <td className="p-2.5 text-center">{m.age || "—"}</td>
+                                <td className="p-2.5">{m.relationship || "—"}</td>
+                                <td className="p-2.5 text-center">{m.gender || "—"}</td>
+                              </tr>
+                            ));
+                          })()}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <Card className="border-border/60 bg-muted/20 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Patient Name</span>
+                      <span className="text-sm font-bold text-foreground">
+                        {selectedRecord.residents?.full_name || selectedRecord.patient_name || selectedRecord.first_name || "Unlinked Resident"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/40 pt-2">
+                      <span>Record Date / Timestamp</span>
+                      <span className="font-mono text-foreground">
+                        {selectedRecord.created_at ? new Date(selectedRecord.created_at).toLocaleString() : "—"}
+                      </span>
+                    </div>
+                  </Card>
+
+                  {/* Data attributes list */}
+                  <div className="space-y-2 border border-border/60 rounded-xl p-4 bg-card">
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground mb-3">
+                      Recorded Attributes
+                    </h4>
+                    <div className="space-y-2 divide-y divide-border/30">
+                      {selectedForm.columns.map((col) => (
+                        <div key={col} className="flex items-center justify-between text-xs pt-2">
+                          <span className="capitalize text-muted-foreground font-medium">{col.replace(/_/g, " ")}:</span>
+                          <strong className="text-foreground">
+                            {selectedRecord[col] === true ? "Yes" : selectedRecord[col] === false ? "No" : selectedRecord[col] || "—"}
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </DialogContent>
