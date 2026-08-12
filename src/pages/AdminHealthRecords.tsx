@@ -216,6 +216,90 @@ const AdminHealthRecords = () => {
 
   const handlePrintBlankForm = (form: FormMeta) => {
     const orientation = getFormPrintOrientation(form.id);
+
+    if (form.id === "consultation") {
+      const html = `
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          PATIENT IDENTIFICATION &amp; SCHEDULE
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 12;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Resident *</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Sitio</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Date</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Birthdate</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Age</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+        </div>
+
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          VITAL SIGNS &amp; PHYSICAL MEASUREMENTS
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 3;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Temp (&deg;C)</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+          <div style="grid-column:span 3;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Pulse Rate</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+          <div style="grid-column:span 3;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Resp. Rate</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+          <div style="grid-column:span 3;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Height (cm)</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 3;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Weight (kg)</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;"></div>
+          </div>
+        </div>
+
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          CLINICAL DIAGNOSIS &amp; COMPLAINT
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 12;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Consultation Cause / Complaint</div>
+            <div style="border-bottom:1.5px solid #000;min-height:80px;"></div>
+          </div>
+        </div>
+      `;
+      triggerInSystemPrint(`Blank Form — ${form.title}`, html, orientation);
+      return;
+    }
+
     const html = `
       <div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin:16px 0;letter-spacing:1px;">${form.title}</div>
       <p style="text-align:center;font-style:italic;margin-bottom:20px;color:#666;">Official Barangay Health Assessment & Registration Document</p>
@@ -307,6 +391,89 @@ const AdminHealthRecords = () => {
     if (!selectedRecord || !selectedForm) return;
     const orientation = getFormPrintOrientation(selectedForm.id);
     const resName = selectedRecord.residents?.full_name || selectedRecord.patient_name || (selectedRecord.first_name ? `${selectedRecord.first_name} ${selectedRecord.surname || ""}` : "Unlinked Resident");
+
+    if (selectedForm.id === "consultation") {
+      const html = `
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          PATIENT IDENTIFICATION &amp; SCHEDULE
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 12;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Resident *</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${resName}</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Sitio</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.sitio || ""}</div>
+          </div>
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Date</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.consultation_date || (selectedRecord.created_at ? new Date(selectedRecord.created_at).toLocaleDateString() : "")}</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Birthdate</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.birthdate || ""}</div>
+          </div>
+          <div style="grid-column:span 6;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Age</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.age || ""}</div>
+          </div>
+        </div>
+
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          VITAL SIGNS &amp; PHYSICAL MEASUREMENTS
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 3;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Temp (&deg;C)</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.temperature || ""}</div>
+          </div>
+          <div style="grid-column:span 3;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Pulse Rate</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.pulse_rate || ""}</div>
+          </div>
+          <div style="grid-column:span 3;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Resp. Rate</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.respiration_rate || ""}</div>
+          </div>
+          <div style="grid-column:span 3;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Height (cm)</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.height || ""}</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 3;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Weight (kg)</div>
+            <div style="border-bottom:1.5px solid #000;min-height:24px;font-size:12px;font-weight:600;">${selectedRecord.weight || ""}</div>
+          </div>
+        </div>
+
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          CLINICAL DIAGNOSIS &amp; COMPLAINT
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:16px;margin-bottom:14px;">
+          <div style="grid-column:span 12;">
+            <div style="font-size:10px;font-weight:700;color:#000;margin-bottom:4px;">Consultation Cause / Complaint</div>
+            <div style="border-bottom:1.5px solid #000;min-height:80px;font-size:12px;font-weight:500;white-space:pre-wrap;">${selectedRecord.consultation_cause || ""}</div>
+          </div>
+        </div>
+      `;
+      triggerInSystemPrint(`Filled Record — ${resName}`, html, orientation);
+      return;
+    }
 
     const html = `
       <div style="font-size:18px;font-weight:bold;text-align:center;margin:14px 0;text-transform:uppercase;">${selectedForm.title} Entry Sheet</div>

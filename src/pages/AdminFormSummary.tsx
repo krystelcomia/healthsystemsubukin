@@ -326,6 +326,138 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
     win.print();
   };
 
+  const handlePrintSingleFormSheet = (record?: RecordRow) => {
+    const win = window.open("", "_blank");
+    if (!win) return;
+
+    if (formType === "consultations") {
+      const resName = record?.residents?.full_name || "";
+      const sitio = record?.sitio || "";
+      const date = record?.consultation_date || (record?.created_at ? formatDate(record.created_at) : "");
+      const birthdate = record?.birthdate || "";
+      const age = record?.age ? String(record.age) : "";
+      const temp = record?.temperature || "";
+      const pulse = record?.pulse_rate || "";
+      const resp = record?.respiration_rate || "";
+      const height = record?.height || "";
+      const weight = record?.weight || "";
+      const cause = record?.consultation_cause || "";
+
+      win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Consultation Form &mdash; Barangay Subukin</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 24px 30px; color: #000000; background: #ffffff; font-size: 11px; }
+    .header-seal { display: flex; align-items: center; justify-content: center; gap: 24px; border-bottom: 2.5px solid #000000; padding-bottom: 12px; margin-bottom: 20px; text-align: center; }
+    .header-seal img { height: 68px; width: auto; object-fit: contain; mix-blend-mode: multiply; }
+    .section-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #000000; border-bottom: 1.5px solid #000000; padding-bottom: 4px; margin-top: 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+    .section-title svg { width: 14px; height: 14px; stroke: #000000; stroke-width: 2; fill: none; }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-bottom: 14px; }
+    .col-12 { grid-column: span 12; }
+    .col-6 { grid-column: span 6; }
+    .col-3 { grid-column: span 3; }
+    .field-label { font-size: 10px; font-weight: 700; color: #000000; margin-bottom: 4px; }
+    .field-line { border-bottom: 1.5px solid #000000; min-height: 24px; font-size: 12px; font-weight: 600; padding: 2px 4px; color: #000000; display: flex; align-items: center; }
+    .textarea-box { border-bottom: 1.5px solid #000000; min-height: 80px; padding: 6px 4px; font-size: 12px; font-weight: 500; white-space: pre-wrap; line-height: 1.5; color: #000000; }
+    @page { size: A4 portrait; margin: 6mm; }
+  </style>
+</head>
+<body>
+  <div class="header-seal">
+    <img src="${sanjuanLogo}" alt="San Juan Seal" />
+    <img src="${headerTextImg}" alt="Header Text" />
+    <img src="${barangayLogo}" alt="Subukin Logo" />
+  </div>
+
+  <div class="section-title">
+    <svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    PATIENT IDENTIFICATION &amp; SCHEDULE
+  </div>
+
+  <div class="grid">
+    <div class="col-12">
+      <div class="field-label">Resident *</div>
+      <div class="field-line">${resName}</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="col-6">
+      <div class="field-label">Sitio</div>
+      <div class="field-line">${sitio}</div>
+    </div>
+    <div class="col-6">
+      <div class="field-label">Date</div>
+      <div class="field-line">${date}</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="col-6">
+      <div class="field-label">Birthdate</div>
+      <div class="field-line">${birthdate}</div>
+    </div>
+    <div class="col-6">
+      <div class="field-label">Age</div>
+      <div class="field-line">${age}</div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+    VITAL SIGNS &amp; PHYSICAL MEASUREMENTS
+  </div>
+
+  <div class="grid">
+    <div class="col-3">
+      <div class="field-label">Temp (&deg;C)</div>
+      <div class="field-line">${temp}</div>
+    </div>
+    <div class="col-3">
+      <div class="field-label">Pulse Rate</div>
+      <div class="field-line">${pulse}</div>
+    </div>
+    <div class="col-3">
+      <div class="field-label">Resp. Rate</div>
+      <div class="field-line">${resp}</div>
+    </div>
+    <div class="col-3">
+      <div class="field-label">Height (cm)</div>
+      <div class="field-line">${height}</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="col-3">
+      <div class="field-label">Weight (kg)</div>
+      <div class="field-line">${weight}</div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <svg viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+    CLINICAL DIAGNOSIS &amp; COMPLAINT
+  </div>
+
+  <div class="grid">
+    <div class="col-12">
+      <div class="field-label">Consultation Cause / Complaint</div>
+      <div class="textarea-box">${cause}</div>
+    </div>
+  </div>
+</body>
+</html>`);
+    } else {
+      handlePrintReport(record ? [record] : currentWeekRecords, `${config.title} Sheet`);
+      return;
+    }
+
+    win.document.close();
+    win.print();
+  };
+
   const toggleWeekExpanded = (weekKey: string) => {
     setExpandedWeeks(prev => ({
       ...prev,
@@ -354,7 +486,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Button
               variant="ghost"
               size="sm"
@@ -363,10 +495,20 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             >
               <RefreshCw className="h-3.5 w-3.5" /> Refresh
             </Button>
+
+            <Button
+              size="sm"
+              onClick={() => handlePrintSingleFormSheet()}
+              className="bg-white/15 hover:bg-white/25 text-white font-semibold gap-1.5 text-xs backdrop-blur-sm border border-white/20"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              {formType === "consultations" ? "Print Consultation Form" : "Print Blank Sheet"}
+            </Button>
+
             <Button
               size="sm"
               onClick={() => handlePrintReport(currentWeekRecords, "Current Week Report")}
-              className="bg-white/15 hover:bg-white/25 text-white font-semibold gap-1.5 text-xs backdrop-blur-sm border border-white/20"
+              className="bg-white/25 hover:bg-white/35 text-white font-semibold gap-1.5 text-xs backdrop-blur-sm border border-white/30"
             >
               <Printer className="h-3.5 w-3.5" /> Print Current Week Report
             </Button>
@@ -492,19 +634,20 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                       <th className="p-3 text-left font-medium text-muted-foreground text-xs">Resident</th>
                       <th className="p-3 text-left font-medium text-muted-foreground text-xs">Date Created</th>
                       <th className="p-3 text-left font-medium text-muted-foreground text-xs">Time</th>
+                      <th className="p-3 text-right font-medium text-muted-foreground text-xs">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan={4} className="p-8 text-center text-muted-foreground text-xs">
+                        <td colSpan={5} className="p-8 text-center text-muted-foreground text-xs">
                           <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2 text-primary" />
                           Loading active records...
                         </td>
                       </tr>
                     ) : currentWeekRecords.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="p-8 text-center text-muted-foreground text-xs italic">
+                        <td colSpan={5} className="p-8 text-center text-muted-foreground text-xs italic">
                           No active records logged in this week yet
                         </td>
                       </tr>
@@ -523,6 +666,18 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                               <Clock className="h-3 w-3" />
                               {formatTimeAgo(record.created_at)}
                             </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handlePrintSingleFormSheet(record)}
+                              className="h-7 px-2 text-xs gap-1 border border-border/40 hover:bg-primary/10 hover:text-primary"
+                              title="Print Form Sheet"
+                            >
+                              <Printer className="h-3.5 w-3.5 text-primary" />
+                              <span className="hidden sm:inline">Print Form</span>
+                            </Button>
                           </td>
                         </tr>
                       ))
@@ -670,6 +825,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                               <th className="p-2.5 text-left">Resident</th>
                               <th className="p-2.5 text-left">Date Created</th>
                               <th className="p-2.5 text-left">Timestamp</th>
+                              <th className="p-2.5 text-right">Actions</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -681,6 +837,18 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                                 </td>
                                 <td className="p-2.5 text-foreground">{formatDate(r.created_at)}</td>
                                 <td className="p-2.5 text-muted-foreground">{formatDateTime(r.created_at)}</td>
+                                <td className="p-2.5 text-right">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handlePrintSingleFormSheet(r)}
+                                    className="h-6 px-2 text-[11px] gap-1 border border-border/40 hover:bg-primary/10 hover:text-primary"
+                                    title="Print Form"
+                                  >
+                                    <Printer className="h-3 w-3 text-primary" />
+                                    Print Form
+                                  </Button>
+                                </td>
                               </tr>
                             ))}
                           </tbody>
