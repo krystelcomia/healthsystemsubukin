@@ -26,6 +26,9 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import sanjuanLogo from "@/assets/sanjuan_logo.png";
+import barangayLogo from "@/assets/barangay-logo.png";
+import headerTextImg from "@/assets/header_text.png";
 
 interface FormConfig {
   table: string;
@@ -260,6 +263,19 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
     const win = window.open("", "_blank");
     if (!win) return;
 
+    let pageSize = "A4 portrait";
+    let pageMargin = "5mm";
+    if (formType === "child_health") {
+      pageSize = "legal landscape";
+      pageMargin = "5mm";
+    } else if (formType === "family_planning") {
+      pageSize = "legal portrait";
+      pageMargin = "6mm";
+    } else if (formType === "dengue_prevention" || formType === "maternal_care") {
+      pageSize = "A4 portrait";
+      pageMargin = "4mm";
+    }
+
     const rows = recordsToPrint.map((r, i) => {
       const resName = r.residents?.full_name || "—";
       const date = formatDate(r.created_at);
@@ -273,10 +289,10 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
     win.document.write(`<!DOCTYPE html><html><head><title>${reportTitle} - ${config.title}</title>
       <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',Arial,sans-serif; padding:40px; color:#1a1a1a; font-size:13px; }
-        .header { text-align:center; margin-bottom:28px; padding-bottom:16px; border-bottom:3px solid #6366f1; }
-        .header h1 { font-size:22px; color:#4f46e5; margin-bottom:4px; }
-        .header p { color:#6b7280; font-size:12px; }
+        body { font-family:'Segoe UI',Arial,sans-serif; padding:25px; color:#1a1a1a; font-size:13px; }
+        .header-seal { display:flex; align-items:center; justify-content:center; gap:24px; border-bottom:4px double #000; padding-bottom:14px; margin-bottom:20px; text-align:center; }
+        .header-seal img { height:75px; width:auto; object-fit:contain; mix-blend-mode:multiply; }
+        .report-title { text-align:center; font-size:18px; font-weight:bold; text-transform:uppercase; margin-bottom:16px; color:#111; }
         .stats { display:flex; gap:20px; margin-bottom:24px; justify-content:center; }
         .stat { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 24px; text-align:center; }
         .stat .val { font-size:24px; font-weight:700; color:#4f46e5; }
@@ -286,13 +302,16 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
         td { font-size:12px; }
         tr:nth-child(even) td { background:#f9fafb; }
         .footer { text-align:right; font-size:10px; color:#9ca3af; margin-top:24px; padding-top:12px; border-top:1px solid #e5e7eb; }
+        @page { size: ${pageSize}; margin: ${pageMargin}; }
       </style>
     </head><body>
-      <div class="header">
-        <h1>Barangay Subukin Health System</h1>
-        <p>${reportTitle} — ${config.title}</p>
-        <p style="margin-top:4px;font-size:11px;color:#9ca3af;">Report generated: ${new Date().toLocaleString()}</p>
+      <div class="header-seal">
+        <img src="${sanjuanLogo}" alt="San Juan Seal" />
+        <img src="${headerTextImg}" alt="Header Text" />
+        <img src="${barangayLogo}" alt="Barangay Subukin Logo" />
       </div>
+      <div class="report-title">${reportTitle} &mdash; ${config.title}</div>
+      <p style="text-align:center;font-size:11px;color:#666;margin-bottom:16px;">Generated: ${new Date().toLocaleString()}</p>
       <div class="stats">
         <div class="stat"><div class="val">${recordsToPrint.length}</div><div class="label">Total Records</div></div>
       </div>
@@ -301,7 +320,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
         <thead><tr><th>#</th><th>Resident Name</th><th>Date Created</th></tr></thead>
         <tbody>${rows || '<tr><td colspan="3" style="text-align:center;padding:20px;color:#9ca3af;">No records found</td></tr>'}</tbody>
       </table>
-      <div class="footer">Barangay Health Worker System &mdash; Admin Report</div>
+      <div class="footer">Barangay Health Worker System &mdash; Official Admin Report</div>
     </body></html>`);
     win.document.close();
     win.print();

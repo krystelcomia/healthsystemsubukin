@@ -195,17 +195,31 @@ const AdminHealthRecords = () => {
     setSingleRecordModalOpen(true);
   };
 
+  const getFormPrintOrientation = (formId: string) => {
+    if (formId === "child_health") {
+      return { size: "legal landscape", margin: "5mm" };
+    }
+    if (formId === "family_planning") {
+      return { size: "legal portrait", margin: "6mm" };
+    }
+    if (formId === "dengue_prevention" || formId === "maternal_care") {
+      return { size: "A4 portrait", margin: "4mm" };
+    }
+    return { size: "A4 portrait", margin: "5mm" };
+  };
+
   const handlePrintBlankForm = (form: FormMeta) => {
     const win = window.open("", "_blank");
     if (!win) return;
 
+    const { size, margin } = getFormPrintOrientation(form.id);
+
     win.document.write(`<!DOCTYPE html><html><head><title>Blank Form — ${form.title}</title>
       <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',Arial,sans-serif; padding:40px; color:#111; font-size:12px; }
-        .seal-container { display:flex; justify-content:space-between; align-items:center; border-bottom:3px double #000; padding-bottom:12px; margin-bottom:20px; text-align:center; }
-        .seal-container h2 { font-size:16px; text-transform:uppercase; font-weight:bold; }
-        .seal-container p { font-size:11px; color:#444; }
+        body { font-family:'Segoe UI',Arial,sans-serif; padding:25px; color:#111; font-size:12px; }
+        .header-seal { display:flex; align-items:center; justify-content:center; gap:24px; border-bottom:4px double #000; padding-bottom:14px; margin-bottom:20px; text-align:center; }
+        .header-seal img { height:75px; width:auto; object-fit:contain; mix-blend-mode:multiply; }
         .form-title { font-size:18px; font-weight:bold; text-align:center; margin:16px 0; text-transform:uppercase; letter-spacing:1px; }
         .grid-section { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
         .field-group { border:1px solid #ccc; padding:10px; border-radius:4px; }
@@ -214,15 +228,14 @@ const AdminHealthRecords = () => {
         table { width:100%; border-collapse:collapse; margin-top:16px; }
         th, td { border:1px solid #000; padding:8px; text-align:left; font-size:11px; }
         th { background:#f3f4f6; font-weight:bold; text-transform:uppercase; }
-        .footer { margin-top:40px; display:flex; justify-between:space-between; font-size:11px; }
+        .footer { margin-top:40px; display:flex; justify-content:space-between; font-size:11px; }
+        @page { size: ${size}; margin: ${margin}; }
       </style>
     </head><body>
-      <div class="seal-container">
-        <div>
-          <h2>Republic of the Philippines</h2>
-          <p>Province of Batangas &bull; Municipality of San Juan</p>
-          <p><strong>BARANGAY SUBUKIN HEALTH CENTER</strong></p>
-        </div>
+      <div class="header-seal">
+        <img src="${sanjuanLogo}" alt="San Juan Seal" />
+        <img src="${headerTextImg}" alt="Header Text" />
+        <img src="${barangayLogo}" alt="Barangay Subukin Logo" />
       </div>
       <div class="form-title">${form.title}</div>
       <p style="text-align:center;font-style:italic;margin-bottom:20px;color:#666;">Official Barangay Health Assessment & Registration Document</p>
@@ -285,23 +298,29 @@ const AdminHealthRecords = () => {
     const win = window.open("", "_blank");
     if (!win) return;
 
+    const { size, margin } = getFormPrintOrientation(selectedForm.id);
     const cols = selectedForm.columns;
+
     win.document.write(`<!DOCTYPE html><html><head><title>${selectedForm.title} Records</title>
       <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',Arial,sans-serif; padding:30px; color:#1a1a1a; font-size:12px; }
-        .header { text-align:center; margin-bottom:20px; border-bottom:2px solid #4f46e5; padding-bottom:12px; }
-        .header h1 { font-size:20px; color:#4f46e5; text-transform:uppercase; }
+        body { font-family:'Segoe UI',Arial,sans-serif; padding:25px; color:#1a1a1a; font-size:12px; }
+        .header-seal { display:flex; align-items:center; justify-content:center; gap:24px; border-bottom:4px double #000; padding-bottom:14px; margin-bottom:20px; text-align:center; }
+        .header-seal img { height:75px; width:auto; object-fit:contain; mix-blend-mode:multiply; }
+        .report-title { text-align:center; font-size:18px; font-weight:bold; text-transform:uppercase; margin-bottom:16px; color:#111; }
         table { width:100%; border-collapse:collapse; margin-top:12px; }
         th, td { border:1px solid #d1d5db; padding:6px 10px; text-align:left; font-size:11px; }
         th { background:#f5f3ff; color:#4f46e5; font-weight:600; text-transform:capitalize; }
         .footer { text-align:right; font-size:10px; color:#6b7280; margin-top:20px; }
+        @page { size: ${size}; margin: ${margin}; }
       </style>
     </head><body>
-      <div class="header">
-        <h1>Barangay Subukin Health System</h1>
-        <p>${selectedForm.title} — Official Submissions Archive</p>
+      <div class="header-seal">
+        <img src="${sanjuanLogo}" alt="San Juan Seal" />
+        <img src="${headerTextImg}" alt="Header Text" />
+        <img src="${barangayLogo}" alt="Barangay Subukin Logo" />
       </div>
+      <div class="report-title">${selectedForm.title} &mdash; Submissions Archive</div>
       <table>
         <thead>
           <tr>
@@ -332,24 +351,44 @@ const AdminHealthRecords = () => {
     const win = window.open("", "_blank");
     if (!win) return;
 
+    const { size, margin } = getFormPrintOrientation(selectedForm.id);
     const resName = selectedRecord.residents?.full_name || selectedRecord.patient_name || (selectedRecord.first_name ? `${selectedRecord.first_name} ${selectedRecord.surname || ""}` : "Unlinked Resident");
 
     win.document.write(`<!DOCTYPE html><html><head><title>Filled Record — ${resName}</title>
       <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',Arial,sans-serif; padding:40px; color:#111; font-size:12px; }
-        .header { text-align:center; border-bottom:3px double #000; padding-bottom:12px; margin-bottom:20px; }
-        .header h2 { font-size:16px; text-transform:uppercase; font-weight:bold; }
+        body { font-family:'Segoe UI',Arial,sans-serif; padding:25px; color:#111; font-size:12px; }
+        .header-seal { display:flex; align-items:center; justify-content:center; gap:24px; border-bottom:4px double #000; padding-bottom:14px; margin-bottom:20px; text-align:center; }
+        .header-seal img { height:75px; width:auto; object-fit:contain; mix-blend-mode:multiply; }
         .title { font-size:18px; font-weight:bold; text-align:center; margin:14px 0; text-transform:uppercase; }
         .card { border:1px solid #999; padding:14px; margin-bottom:14px; border-radius:4px; }
         .label { font-size:10px; font-weight:bold; text-transform:uppercase; color:#666; }
         .val { font-size:13px; font-weight:bold; margin-top:2px; color:#000; }
         .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        @page { size: ${size}; margin: ${margin}; }
       </style>
     </head><body>
-      <div class="header">
-        <h2>Barangay Subukin Health System</h2>
-        <p>Municipality of San Juan &bull; Province of Batangas</p>
+      <div class="header-seal">
+        <img src="${sanjuanLogo}" alt="San Juan Seal" />
+        <img src="${headerTextImg}" alt="Header Text" />
+        <img src="${barangayLogo}" alt="Barangay Subukin Logo" />
+      </div>
+      <div class="title">${selectedForm.title} Entry Sheet</div>
+      
+      <div class="card">
+        <div class="label">Patient / Resident Name</div>
+        <div class="val">${resName}</div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="label">Submission Date</div>
+          <div class="val">${selectedRecord.created_at ? new Date(selectedRecord.created_at).toLocaleDateString() : "—"}</div>
+        </div>
+        <div class="card">
+          <div class="label">Sitio / Location</div>
+          <div class="val">${selectedRecord.sitio || "Subukin"}</div>
+        </div>
       </div>
       <div class="title">${selectedForm.title} Entry Sheet</div>
       
