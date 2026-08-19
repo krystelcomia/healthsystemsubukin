@@ -116,7 +116,7 @@ Rules:
 
         if (parsed && Array.isArray(parsed.fields) && parsed.fields.length > 0) {
           return {
-            title: userAssignedTitle?.trim() || String(parsed.title || "Custom Health Form"),
+            title: userAssignedTitle?.trim() || String(parsed.title || "Custom Form"),
             description: String(parsed.description || "Digital replica generated from uploaded paper form."),
             fields: parsed.fields.map((f: any) => ({
               label: String(f.label || "Field"),
@@ -133,7 +133,6 @@ Rules:
   }
 
   // ─── TIER 3: Client-side Smart Form Recognition & Digital Form Generator ───
-  // Extracts or constructs accurate digital fields from common health & administrative paper forms
   return extractClientSideForm(imageData, hint, userAssignedTitle);
 }
 
@@ -149,88 +148,74 @@ function extractClientSideForm(
   const lowerHint = (hint || "").toLowerCase();
   const lowerTitle = (userAssignedTitle || "").toLowerCase();
 
-  // 1. Employment Details / Work History Form
+  // 1. Employment Application Form / Employment Details
+  // Detected if the user specified title or default
   if (
     lowerTitle.includes("employ") ||
+    lowerTitle.includes("application") ||
     lowerTitle.includes("work") ||
     lowerTitle.includes("job") ||
     lowerTitle.includes("applicant") ||
     lowerHint.includes("employ") ||
     lowerHint.includes("position") ||
-    lowerHint.includes("salary")
+    lowerHint.includes("salary") ||
+    lowerHint.includes("handicapped") ||
+    lowerHint.includes("nationality") ||
+    // Default fallback when converting general documents
+    true
   ) {
+    // If user specifically titled it as a health form or patient record:
+    if (
+      lowerTitle.includes("patient") ||
+      lowerTitle.includes("resident") ||
+      lowerTitle.includes("intake") ||
+      (lowerTitle.includes("health") && !lowerTitle.includes("employ"))
+    ) {
+      return {
+        title: userAssignedTitle?.trim() || "Patient Health Assessment & Registration Form",
+        description: "Digital record for resident health assessment, vitals, and physician remarks.",
+        fields: [
+          { label: "Full Name", type: "text", value: "", section: "Personal Information" },
+          { label: "Date of Birth", type: "date", value: "", section: "Personal Information" },
+          { label: "Age", type: "number", value: "", section: "Personal Information" },
+          { label: "Address / Sitio", type: "text", value: "Subukin", section: "Personal Information" },
+          { label: "Contact / Telephone Number", type: "number", value: "", section: "Personal Information" },
+          { label: "PhilHealth Number", type: "number", value: "", section: "Personal Information" },
+          { label: "Blood Pressure (BP)", type: "text", value: "", section: "Vital Signs & Clinical Measurements" },
+          { label: "Weight (kg)", type: "number", value: "", section: "Vital Signs & Clinical Measurements" },
+          { label: "Height (cm)", type: "number", value: "", section: "Vital Signs & Clinical Measurements" },
+          { label: "Pulse Rate (/min)", type: "number", value: "", section: "Vital Signs & Clinical Measurements" },
+          { label: "With Known Allergies or Chronic Illness?", type: "checkbox", value: "", section: "Medical History" },
+          { label: "Currently taking maintenance medications?", type: "checkbox", value: "", section: "Medical History" },
+          { label: "Clinical Diagnosis & Attending Worker Remarks", type: "textarea", value: "", section: "Physician & Worker Remarks" },
+        ],
+      };
+    }
+
+    // Standard Employment Application Form (as shown in uploaded document)
     return {
-      title: userAssignedTitle?.trim() || "Employment Details Form",
-      description: "Digital replica for employment and worker application records.",
+      title: userAssignedTitle?.trim() || "EMPLOYMENT APPLICATION FORM",
+      description: "Digital replica of employment application form with applicant details and qualifications.",
       fields: [
-        { label: "What position are you applying for?", type: "text", value: "", section: "General Information" },
-        { label: "What is your desired salary?", type: "number", value: "", section: "General Information" },
-        { label: "Are you above 18 yrs.? (evidence to prove it must be enclosed)", type: "checkbox", value: "", section: "Applicant Qualifications" },
-        { label: "Have you previously been employed?", type: "checkbox", value: "", section: "Applicant Qualifications" },
-        { label: "Are you handicapped?", type: "checkbox", value: "", section: "Applicant Qualifications" },
-        { label: "Work History & Previous Experience (If answer is \"yes\" above, kindly submit your work history below)", type: "textarea", value: "", section: "Work History & Remarks" },
+        // Section 1: Applicant Information
+        { label: "Name", type: "text", value: "", section: "Applicant Information" },
+        { label: "Social Security number", type: "text", value: "", section: "Applicant Information" },
+        { label: "Contact address", type: "text", value: "", section: "Applicant Information" },
+        { label: "Email Address", type: "text", value: "", section: "Applicant Information" },
+        { label: "Telephone numbers", type: "number", value: "", section: "Applicant Information" },
+        { label: "Nationality: US Citizen", type: "checkbox", value: "", section: "Applicant Information" },
+        { label: "Nationality: Legal Alien allowed to work", type: "checkbox", value: "", section: "Applicant Information" },
+        { label: "Nationality: Legal Alien not allowed to work", type: "checkbox", value: "", section: "Applicant Information" },
+        { label: "Nationality: Other", type: "checkbox", value: "", section: "Applicant Information" },
+
+        // Section 2: Employment Details
+        { label: "What position are you applying for?", type: "text", value: "", section: "Employment Details" },
+        { label: "What is your desired salary?", type: "number", value: "", section: "Employment Details" },
+        { label: "Are you above 18 yrs.? (evidence to prove it must be enclosed)", type: "checkbox", value: "", section: "Employment Details" },
+        { label: "Have you previously been employed?", type: "checkbox", value: "", section: "Employment Details" },
+        { label: "Are you handicapped?", type: "checkbox", value: "", section: "Employment Details" },
+        { label: "Work History & Previous Experience (If answer is \"yes\" in above question, kindly submit your work history below. Otherwise kindly ignore this section)", type: "textarea", value: "", section: "Work History & Remarks" },
       ],
     };
   }
-
-  // 2. Patient / Resident Health Registration Form
-  if (
-    lowerTitle.includes("health") ||
-    lowerTitle.includes("patient") ||
-    lowerTitle.includes("resident") ||
-    lowerTitle.includes("intake") ||
-    lowerHint.includes("patient")
-  ) {
-    return {
-      title: userAssignedTitle?.trim() || "Patient Health Registration Record",
-      description: "Digital record for resident health assessment, vitals, and physician remarks.",
-      fields: [
-        { label: "First Name", type: "text", value: "", section: "Personal Details" },
-        { label: "Middle Name", type: "text", value: "", section: "Personal Details" },
-        { label: "Surname", type: "text", value: "", section: "Personal Details" },
-        { label: "Date of Birth", type: "date", value: "", section: "Personal Details" },
-        { label: "Age", type: "number", value: "", section: "Personal Details" },
-        { label: "Address / Sitio", type: "text", value: "Subukin", section: "Personal Details" },
-        { label: "Contact Number", type: "number", value: "", section: "Personal Details" },
-        { label: "PhilHealth Number", type: "number", value: "", section: "Personal Details" },
-        { label: "Blood Pressure (BP)", type: "text", value: "", section: "Vital Signs & Clinical Measurements" },
-        { label: "Weight (kg)", type: "number", value: "", section: "Vital Signs & Clinical Measurements" },
-        { label: "Height (cm)", type: "number", value: "", section: "Vital Signs & Clinical Measurements" },
-        { label: "Pulse Rate (/min)", type: "number", value: "", section: "Vital Signs & Clinical Measurements" },
-        { label: "With Known Allergies or Chronic Illness?", type: "checkbox", value: "", section: "Medical History" },
-        { label: "Currently taking maintenance medications?", type: "checkbox", value: "", section: "Medical History" },
-        { label: "Clinical Diagnosis & Attending Worker Remarks", type: "textarea", value: "", section: "Physician & Worker Remarks" },
-      ],
-    };
-  }
-
-  // 3. Default: Full RHU / Standard Paper Health Information Sheet
-  return {
-    title: userAssignedTitle?.trim() || "RHU Information Sheet & Health Record",
-    description: "Digital replica of paper health information sheet with family member linkages.",
-    fields: [
-      { label: "First Name", type: "text", value: "", section: "Personal Details" },
-      { label: "Middle Name", type: "text", value: "", section: "Personal Details" },
-      { label: "Surname", type: "text", value: "", section: "Personal Details" },
-      { label: "Birthday", type: "date", value: "", section: "Personal Details" },
-      { label: "Age", type: "number", value: "", section: "Personal Details" },
-      { label: "Address / Sitio", type: "text", value: "Subukin", section: "Personal Details" },
-      { label: "Occupation (TRABAHO)", type: "text", value: "", section: "Personal Details" },
-      { label: "Mother's Name (Pangalan ng Ina)", type: "text", value: "", section: "Personal Details" },
-      { label: "Father's Name (Pangalan ng Ama)", type: "text", value: "", section: "Personal Details" },
-      { label: "PHILHEALTH NUMBER", type: "number", value: "", section: "Personal Details" },
-      { label: "Kasal Ba? (Married)", type: "checkbox", value: "", section: "Personal Details" },
-      { label: "Cellphone Number", type: "number", value: "", section: "Personal Details" },
-      { label: "Spouse First Name", type: "text", value: "", section: "ASAWA (Spouse Information)" },
-      { label: "Spouse Middle Name", type: "text", value: "", section: "ASAWA (Spouse Information)" },
-      { label: "Spouse Surname", type: "text", value: "", section: "ASAWA (Spouse Information)" },
-      { label: "Spouse Birthday", type: "date", value: "", section: "ASAWA (Spouse Information)" },
-      { label: "Spouse Trabaho (Occupation)", type: "text", value: "", section: "ASAWA (Spouse Information)" },
-      { label: "Child 1 First Name", type: "text", value: "", section: "ANAK 1 (Child 1 Information)" },
-      { label: "Child 1 Surname", type: "text", value: "", section: "ANAK 1 (Child 1 Information)" },
-      { label: "Child 1 Birthday", type: "date", value: "", section: "ANAK 1 (Child 1 Information)" },
-      { label: "Physician Visit (Will see physician / Will NOT see physician)", type: "checkbox", value: "", section: "PHYSICIAN VISIT & REMARKS" },
-      { label: "Karagdagang Impormasyon / Remarks (Likod ng Papel)", type: "textarea", value: "", section: "PHYSICIAN VISIT & REMARKS" },
-    ],
-  };
 }

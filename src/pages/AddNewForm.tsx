@@ -231,6 +231,7 @@ const AddNewForm = () => {
 
       const assignedTitle = customTitleInput.trim() || result.title || "Custom Health Form";
       setDraftTitle(assignedTitle);
+      setCustomTitleInput(assignedTitle);
       setDraftDesc(result.description || "Digital replica generated from uploaded paper form.");
       
       if (result.fields && result.fields.length > 0) {
@@ -439,84 +440,11 @@ const AddNewForm = () => {
   /* ── Section header renderer ── */
   const renderSectionHeader = (field: DynField, idx: number) => {
     const prevSection = idx > 0 ? draftFields[idx - 1]?.section : undefined;
-    if (field.section && field.section !== prevSection && field.section !== "Personal Details") {
+    if (field.section && field.section !== prevSection) {
       return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
+        <div className="md:col-span-2 pt-4 pb-1 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-primary font-heading">
             {field.section}
-          </p>
-        </div>
-      );
-    }
-    if (idx === 14) {
-      return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
-            ASAWA (Spouse Information)
-          </p>
-        </div>
-      );
-    }
-    if (idx === 21) {
-      return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
-            ANAK 1 (Child 1 Information)
-          </p>
-        </div>
-      );
-    }
-    if (idx === 25) {
-      return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
-            ANAK 2 (Child 2 Information)
-          </p>
-        </div>
-      );
-    }
-    if (idx === 29) {
-      return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
-            PHYSICIAN VISIT & REMARKS
-          </p>
-        </div>
-      );
-    }
-    const label = field.label;
-    if (label.startsWith("Spouse First Name") || label.startsWith("ASAWA - First Name")) {
-      return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
-            ASAWA (Spouse Information)
-          </p>
-        </div>
-      );
-    }
-    if (label.startsWith("Child 1 First Name") || label.startsWith("ANAK 1 - First Name")) {
-      return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
-            ANAK 1 (Child 1 Information)
-          </p>
-        </div>
-      );
-    }
-    if (label.startsWith("Child 2 First Name") || label.startsWith("ANAK 2 - First Name")) {
-      return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
-          <p className="text-xs font-bold uppercase tracking-wider text-primary">
-            ANAK 2 (Child 2 Information)
-          </p>
-        </div>
-      );
-    }
-    if (label.startsWith("Physician Visit") || label.startsWith("Will see physician")) {
-      return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
-            PHYSICIAN VISIT & REMARKS
           </p>
         </div>
       );
@@ -703,7 +631,7 @@ const AddNewForm = () => {
               {formId ? `Digital Health Form: ${draftTitle}` : "Manual-to-Digital Form Converter & Deployer"}
             </h2>
             <p className="text-xs md:text-sm text-muted-foreground mt-0.5 max-w-2xl">
-              Scan any paper health form (such as the RHU Information Sheet) to convert it into an accurate digital format. Assign custom titles, model layout after existing system forms, and deploy directly to Health Forms.
+              Scan any paper form to convert it into an accurate digital format. Assign custom titles, model layout after existing system forms, and deploy directly to Health Forms.
             </p>
           </div>
         </div>
