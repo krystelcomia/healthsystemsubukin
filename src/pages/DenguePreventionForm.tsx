@@ -654,7 +654,7 @@ const DenguePreventionForm = () => {
       // 4. Trigger completion notification modal & toast
       setFinalRowModalOpen(true);
       toast.success(
-        "Final row reached! All 20 entries have been saved to the history section below and the form is cleared for new inputs.",
+        "Form is full! All 20 entries have been saved to the history section below and the form has reset to blank for new entries.",
         { duration: 6000 }
       );
 
@@ -1540,7 +1540,7 @@ const DenguePreventionForm = () => {
         )}
       </div>
 
-      {/* Final Row Notification & Auto-Archive Modal */}
+      {/* Form Full Notification & Auto-Archive Modal */}
       <Dialog open={finalRowModalOpen} onOpenChange={setFinalRowModalOpen}>
         <DialogContent className="max-w-md bg-card text-card-foreground border border-border">
           <DialogHeader>
@@ -1549,21 +1549,21 @@ const DenguePreventionForm = () => {
                 <FileCheck className="h-5 w-5" />
               </div>
               <DialogTitle className="text-lg font-heading font-bold text-foreground">
-                Final Row Reached &amp; Form Saved
+                Form is Full &amp; All Entries Saved
               </DialogTitle>
             </div>
             <DialogDescription className="text-xs text-muted-foreground">
-              You have reached the final row (Row 20 of 20) of the Dengue Prevention checklist.
+              This form has reached its full capacity of 20 entries.
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-2 text-sm space-y-3">
             <p className="text-muted-foreground text-xs leading-relaxed">
-              The entire 20-row form has been automatically saved to the <strong className="text-foreground font-semibold">&ldquo;Saved Dengue Prevention Forms&rdquo;</strong> history section below.
+              All entries filled out in the form have been saved to the <strong className="text-foreground font-semibold">&ldquo;Saved Dengue Prevention Forms&rdquo;</strong> history section below so they can still be viewed and printed.
             </p>
             <div className="bg-primary/10 p-3 rounded-lg border border-primary/20 text-foreground text-xs space-y-1">
-              <p className="font-semibold text-primary">All entries have been cleared for new inputs.</p>
-              <p className="text-muted-foreground">You can view, review, and re-print the saved record anytime from the history list.</p>
+              <p className="font-semibold text-primary">The form has reset to blank for new entries.</p>
+              <p className="text-muted-foreground">You can view, review, and print this saved record anytime from the history list.</p>
             </div>
           </div>
 
