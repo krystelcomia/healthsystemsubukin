@@ -1073,45 +1073,105 @@ const DenguePreventionForm = () => {
             background: white !important;
             color: black !important;
           }
+
+          #dengue-print-area [class*="p-8"],
+          #saved-form-print-area [class*="p-8"] {
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+
+          #dengue-print-area .space-y-6 > :not([hidden]) ~ :not([hidden]),
+          #saved-form-print-area .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0 !important;
+          }
           
           table {
             border-collapse: collapse !important;
             width: 100% !important;
             border: 1.5px solid #000000 !important;
+            margin-top: 3px !important;
           }
           
-          th, td {
+          thead th {
             border: 1px solid #000000 !important;
             color: #000000 !important;
-            padding: 2px 4px !important;
-            font-size: 9.5px !important;
+            padding: 3px 4px !important;
+            font-size: 10px !important;
             line-height: 1.15 !important;
-            height: 18px !important;
-          }
-          th {
             background-color: #f1f5f9 !important;
             font-weight: 800 !important;
             text-transform: uppercase !important;
           }
+          
+          tbody tr {
+            height: 11.4mm !important;
+          }
+
+          tbody td {
+            border: 1px solid #000000 !important;
+            color: #000000 !important;
+            padding: 2px 6px !important;
+            font-size: 11px !important;
+            line-height: 1.2 !important;
+            height: 11.4mm !important;
+            vertical-align: middle !important;
+          }
+
+          tbody td .print-only,
+          tbody td span {
+            display: inline-block !important;
+            font-size: 11px !important;
+            color: #000000 !important;
+            font-weight: 600 !important;
+            line-height: 1.2 !important;
+          }
+
+          tbody td div {
+            font-size: 14px !important;
+            font-weight: bold !important;
+            color: #000000 !important;
+          }
+
           .header-border {
             border-bottom: 2.5px solid #000000 !important;
-            padding-bottom: 4px !important;
-            margin-bottom: 4px !important;
+            padding-bottom: 3px !important;
+            margin-bottom: 3px !important;
             display: flex !important;
             flex-direction: row !important;
             align-items: center !important;
             justify-content: center !important;
+            gap: 18px !important;
           }
-          .header-border img, #saved-form-print-area .header-border img {
-            height: 68px !important;
-            max-height: 68px !important;
+          .header-border img, #saved-form-print-area .header-border img, .print-only img {
+            height: 52px !important;
+            max-height: 52px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
           }
+
+          h1 {
+            font-size: 18px !important;
+            letter-spacing: 0.12em !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            color: #000000 !important;
+          }
+
+          p.font-serif {
+            font-size: 11.5px !important;
+            margin-top: 1px !important;
+            margin-bottom: 3px !important;
+            color: #333333 !important;
+          }
+
           td img {
-            height: 18px !important;
-            max-height: 18px !important;
+            height: 36px !important;
+            max-height: 38px !important;
+            width: auto !important;
+            object-fit: contain !important;
+            margin: 0 auto !important;
+            display: block !important;
           }
           .no-print {
             display: none !important;
@@ -1125,13 +1185,9 @@ const DenguePreventionForm = () => {
             align-items: center !important;
             justify-content: center !important;
           }
-          .header-border img, .print-only img {
-            height: 70px !important;
-            max-height: 70px !important;
-          }
           @page {
             size: A4 portrait;
-            margin: 4mm;
+            margin: 4mm 5mm;
           }
         }
       `}</style>
@@ -1311,7 +1367,7 @@ const DenguePreventionForm = () => {
                         <img 
                           src={rec.signature} 
                           alt="Signature" 
-                          className="h-8 object-contain mx-auto print:h-5" 
+                          className="h-8 object-contain mx-auto" 
                         />
                       ) : (
                         ""
@@ -1608,7 +1664,7 @@ const DenguePreventionForm = () => {
                               <img 
                                 src={rec.signature} 
                                 alt="Signature" 
-                                className="h-5 object-contain mx-auto print:h-5" 
+                                className="h-6 object-contain mx-auto" 
                               />
                             ) : (
                               ""
