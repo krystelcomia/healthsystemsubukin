@@ -487,10 +487,13 @@ const AddNewForm = () => {
   return (
     <div className="w-full space-y-6">
       <style>{`
+        .print-only {
+          display: none;
+        }
         @media print {
           @page {
-            size: 8.5in 13in portrait;
-            margin: 0.25in;
+            size: auto;
+            margin: 8mm 10mm;
           }
           body * {
             visibility: hidden !important;
@@ -501,94 +504,118 @@ const AddNewForm = () => {
           .no-print {
             display: none !important;
           }
-          /* Fit entire form onto 1/4 of long bond paper (4.125in x 6.375in) without header seal */
+          .print-only {
+            display: flex !important;
+          }
+          /* Fit full sheet of bond paper */
           #digital-replica-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
-            width: 4.125in !important;
-            max-width: 50% !important;
+            width: 100% !important;
+            max-width: 100% !important;
             height: auto !important;
+            min-height: 100% !important;
             background: white !important;
-            padding: 2px 4px !important;
+            padding: 10px 15px !important;
             margin: 0 !important;
             box-shadow: none !important;
-            border: 1px dashed #aaa !important;
+            border: none !important;
             color: black !important;
-            font-size: 7.5px !important;
-            line-height: 1.1 !important;
-            overflow: hidden !important;
-            transform-origin: top left !important;
+            font-size: 11px !important;
+            line-height: 1.35 !important;
+            overflow: visible !important;
           }
           html, body {
             height: 100% !important;
             overflow: visible !important;
+            background: white !important;
           }
-          /* Remove top header seal on print out as requested */
-          #digital-replica-print-area .header-seal {
-            display: none !important;
+          /* Official Barangay 3-seal header */
+          .header-seal {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 20px !important;
+            border-bottom: 4px double #000000 !important;
+            padding-bottom: 12px !important;
+            margin-bottom: 14px !important;
+            text-align: center !important;
+          }
+          .header-seal img {
+            height: 70px !important;
+            width: auto !important;
+            object-fit: contain !important;
+            mix-blend-mode: multiply !important;
           }
           #digital-replica-print-area input.print-title-input {
             border: none !important;
             border-bottom: none !important;
             box-shadow: none !important;
-            font-size: 10px !important;
+            font-size: 15px !important;
             font-weight: 800 !important;
-            text-transform: none !important;
+            text-align: center !important;
+            text-transform: uppercase !important;
             padding: 0 !important;
-            margin-bottom: 2px !important;
-            height: 16px !important;
+            margin-bottom: 8px !important;
+            height: auto !important;
+            width: 100% !important;
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
           }
-          /* Reduced font size and compact spacing for 1/4 sheet fit */
           #digital-replica-print-area label,
           #digital-replica-print-area p,
           #digital-replica-print-area span,
           #digital-replica-print-area input {
-            color: #000 !important;
-            -webkit-text-fill-color: #000 !important;
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
             opacity: 1 !important;
-            font-size: 7.5px !important;
+            font-size: 11px !important;
           }
           #digital-replica-print-area label {
             font-weight: 700 !important;
-            font-size: 7.5px !important;
-            line-height: 1 !important;
-            margin-bottom: 0px !important;
+            font-size: 11px !important;
+            line-height: 1.2 !important;
+            margin-bottom: 2px !important;
           }
           #digital-replica-print-area input {
-            height: 13px !important;
-            font-size: 7.5px !important;
-            padding: 0 1px !important;
-            border-bottom: 1px solid #000 !important;
+            height: 22px !important;
+            font-size: 11px !important;
+            padding: 1px 3px !important;
+            border-bottom: 1px solid #000000 !important;
             background: transparent !important;
             box-shadow: none !important;
           }
-          /* Hide remarks textarea space on print as it will be written on the back */
           #digital-replica-print-area textarea {
-            display: none !important;
-            height: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border: none !important;
+            display: block !important;
+            width: 100% !important;
+            min-height: 44px !important;
+            border-bottom: 1px solid #000000 !important;
+            background: transparent !important;
+            font-size: 11px !important;
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
           }
           #digital-replica-print-area .grid {
             display: grid !important;
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            column-gap: 6px !important;
-            row-gap: 2px !important;
-            padding-top: 1px !important;
+            column-gap: 20px !important;
+            row-gap: 8px !important;
+            padding-top: 2px !important;
           }
           #digital-replica-print-area .border-b-2 {
-            padding-top: 2px !important;
-            padding-bottom: 1px !important;
-            margin-bottom: 1px !important;
-            border-bottom-width: 1px !important;
+            padding-top: 8px !important;
+            padding-bottom: 2px !important;
+            margin-bottom: 4px !important;
+            border-bottom: 2px solid #000000 !important;
           }
           #digital-replica-print-area .border-b-2 p {
-            font-size: 7.5px !important;
+            font-size: 11.5px !important;
             font-weight: 800 !important;
+            text-transform: uppercase !important;
+            color: #000000 !important;
           }
-          /* Hide guide/sample placeholder text completely when printing */
+          /* Hide placeholder text when printing */
           #digital-replica-print-area ::placeholder,
           #digital-replica-print-area input::placeholder,
           #digital-replica-print-area textarea::placeholder,
@@ -902,8 +929,8 @@ const AddNewForm = () => {
           <Card id="digital-replica-print-area" className="border border-slate-300 dark:border-slate-700 shadow-md bg-card text-card-foreground">
             <CardContent className="p-6 md:p-8 space-y-6">
 
-              {/* Official Barangay Printable Header (Hidden) */}
-              <div className="header-seal hidden no-print">
+              {/* Official Barangay Printable Header */}
+              <div className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-3 mb-4 text-center">
                 <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
                 <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" />
                 <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" />
