@@ -34,7 +34,17 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getFamilyOnlyResidents } from "@/lib/residentLinker";
+import { getFamilyOnlyResidents, calculateAge } from "@/lib/residentLinker";
+import { 
+  allowOnlyNumbers, 
+  allowNumbersAndDecimal, 
+  allowNumbersAndSlash, 
+  allowOnlyLetters, 
+  sanitizeNumbers, 
+  sanitizeNumbersAndDecimal, 
+  sanitizeNumbersAndSlash, 
+  sanitizeLetters 
+} from "@/lib/inputValidation";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -318,6 +328,32 @@ const AddNewForm = () => {
   };
 
   const handleSaveRecord = () => {
+    // 1. Check if at least primary identification (resident or name) is selected / filled
+    const nameField = draftFields.find(f => {
+      const l = f.label.toLowerCase();
+      return l.includes("name") || l.includes("pangalan") || l.includes("applicant") || l.includes("patient");
+    });
+    
+    if (!selectedResidentId && nameField && !nameField.value.trim()) {
+      toast.error("Please select a resident or enter the full name before saving.");
+      return;
+    }
+
+    // 2. Check for missing required fields (excluding optional remarks/work history textarea)
+    const emptyRequiredFields = draftFields.filter(f => {
+      if (f.type === "checkbox") return false;
+      if (f.type === "textarea") return false;
+      const l = f.label.toLowerCase();
+      if (l.includes("optional") || l.includes("remarks") || l.includes("history")) return false;
+      return !f.value || !f.value.trim();
+    });
+
+    if (emptyRequiredFields.length > 0) {
+      const firstMissing = emptyRequiredFields[0];
+      toast.error(`Incomplete form: Please fill in "${firstMissing.label}" before saving.`);
+      return;
+    }
+
     const record = {
       formId: formId || "custom",
       formTitle: draftTitle,
@@ -363,9 +399,21 @@ const AddNewForm = () => {
     setSelectedResidentId(residentId);
     const res = residents.find(r => r.id === residentId);
     if (res) {
+      const calcAge = res.age ? Number(res.age) : (res.birthday ? calculateAge(res.birthday) : 0);
+      const isAdult = calcAge >= 18;
+      const isMarried = (res.civil_status || "").toLowerCase().includes("married") || (res.status || "").toLowerCase().includes("married");
+
       setDraftFields(prev => prev.map(f => {
         const lbl = f.label.toLowerCase();
-        if (lbl.includes("first name") && !lbl.includes("mother") && !lbl.includes("father") && !lbl.includes("asawa") && !lbl.includes("anak") && !lbl.includes("spouse") && !lbl.includes("child")) {
+        
+        // Exact / Generic Name (not spouse/child/mother/father)
+        if (
+          (lbl === "name" || lbl === "full name" || lbl === "pangalan" || lbl === "applicant name" || lbl === "patient name") ||
+          (lbl.includes("first name") && !lbl.includes("mother") && !lbl.includes("father") && !lbl.includes("asawa") && !lbl.includes("anak") && !lbl.includes("spouse") && !lbl.includes("child"))
+        ) {
+          if (lbl === "name" || lbl === "full name" || lbl === "applicant name" || lbl === "patient name") {
+            return { ...f, value: res.full_name || f.value };
+          }
           return { ...f, value: res.first_name || f.value };
         }
         if (lbl.includes("middle name") && !lbl.includes("mother") && !lbl.includes("father") && !lbl.includes("asawa") && !lbl.includes("anak") && !lbl.includes("spouse") && !lbl.includes("child")) {
@@ -374,11 +422,36 @@ const AddNewForm = () => {
         if ((lbl.includes("surname") || lbl.includes("last name")) && !lbl.includes("asawa") && !lbl.includes("anak") && !lbl.includes("spouse") && !lbl.includes("child")) {
           return { ...f, value: res.last_name || f.value };
         }
-        if (lbl.includes("address")) {
-          return { ...f, value: res.sitio || "Subukin" };
+        if (lbl.includes("address") || lbl.includes("tirahan")) {
+          const addr = res.sitio ? `${res.sitio}, Subukin, San Juan, Batangas` : "Subukin, San Juan, Batangas";
+          return { ...f, value: addr };
         }
-        if (lbl.includes("birth") && !lbl.includes("asawa") && !lbl.includes("anak") && !lbl.includes("spouse") && !lbl.includes("child")) {
+        if (lbl.includes("contact") || lbl.includes("phone") || lbl.includes("telephone") || lbl.includes("cellphone")) {
+          return { ...f, value: res.contact_number || res.cellphone || f.value };
+        }
+        if (lbl.includes("birth") || lbl.includes("dob")) {
           return { ...f, value: res.birthday || f.value };
+        }
+        if (lbl === "age" || lbl === "edad" || lbl.includes("age:")) {
+          return { ...f, value: calcAge > 0 ? String(calcAge) : f.value };
+        }
+        if (lbl.includes("gender") || lbl.includes("sex") || lbl.includes("kasarian")) {
+          return { ...f, value: res.gender || f.value };
+        }
+        if (lbl.includes("mother") || lbl.includes("ina")) {
+          return { ...f, value: res.mother_name || f.value };
+        }
+        if (lbl.includes("father") || lbl.includes("ama")) {
+          return { ...f, value: res.father_name || f.value };
+        }
+        if (lbl.includes("philhealth") || lbl.includes("social security") || lbl.includes("ssn")) {
+          return { ...f, value: res.philhealth_number || res.id_number || f.value };
+        }
+        if (lbl.includes("above 18") || lbl.includes("18 yrs")) {
+          return { ...f, value: isAdult ? "true" : "false" };
+        }
+        if (lbl.includes("kasal") || lbl.includes("married")) {
+          return { ...f, value: isMarried ? "true" : "false" };
         }
         return f;
       }));
@@ -394,9 +467,20 @@ const AddNewForm = () => {
       l.includes("number") ||
       l.includes("cellphone") ||
       l.includes("phone") ||
+      l.includes("telephone") ||
       l.includes("philhealth") ||
+      l.includes("social security") ||
+      l.includes("ssn") ||
+      l.includes("salary") ||
       l.includes("contact") ||
-      l.includes("zip")
+      l.includes("zip") ||
+      l.includes("age") ||
+      l.includes("edad") ||
+      l.includes("weight") ||
+      l.includes("height") ||
+      l.includes("bp") ||
+      l.includes("pulse") ||
+      l.includes("temperature")
     );
   };
 
@@ -407,13 +491,11 @@ const AddNewForm = () => {
     if (
       l.includes("address") ||
       l.includes("tirahan") ||
-      l.includes("trabaho") ||
-      l.includes("occupation") ||
+      l.includes("email") ||
       l.includes("education") ||
       l.includes("natapos") ||
-      l.includes("age") ||
-      l.includes("edad") ||
       l.includes("remark") ||
+      l.includes("history") ||
       l.includes("id") ||
       l.includes("code")
     ) {
@@ -422,6 +504,12 @@ const AddNewForm = () => {
     return (
       l.includes("name") ||
       l.includes("pangalan") ||
+      l.includes("position") ||
+      l.includes("applying for") ||
+      l.includes("occupation") ||
+      l.includes("trabaho") ||
+      l.includes("citizenship") ||
+      l.includes("nationality") ||
       l.includes("asawa") ||
       l.includes("spouse") ||
       l.includes("mother") ||
@@ -438,30 +526,33 @@ const AddNewForm = () => {
   };
 
   const handleFieldKeyDown = (field: DynField, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (
-      ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key) ||
-      (e.ctrlKey || e.metaKey)
-    ) {
-      return;
-    }
-
     if (isNumberOnlyField(field)) {
-      if (!/^[0-9.+-]$/.test(e.key)) {
-        e.preventDefault();
+      const l = field.label.toLowerCase();
+      if (l.includes("salary") || l.includes("weight") || l.includes("height")) {
+        allowNumbersAndDecimal(e);
+      } else if (l.includes("bp")) {
+        allowNumbersAndSlash(e);
+      } else {
+        allowOnlyNumbers(e);
       }
     } else if (isLetterOnlyField(field)) {
-      if (/^[0-9]$/.test(e.key)) {
-        e.preventDefault();
-      }
+      allowOnlyLetters(e);
     }
   };
 
   const handleFieldChange = (idx: number, field: DynField, rawValue: string) => {
     let val = rawValue;
     if (isNumberOnlyField(field)) {
-      val = val.replace(/[^0-9.+-]/g, "");
+      const l = field.label.toLowerCase();
+      if (l.includes("salary") || l.includes("weight") || l.includes("height")) {
+        val = sanitizeNumbersAndDecimal(val);
+      } else if (l.includes("bp")) {
+        val = sanitizeNumbersAndSlash(val);
+      } else {
+        val = sanitizeNumbers(val);
+      }
     } else if (isLetterOnlyField(field)) {
-      val = val.replace(/[0-9]/g, "");
+      val = sanitizeLetters(val);
     }
     updateField(idx, { value: val });
   };
@@ -1036,7 +1127,7 @@ const AddNewForm = () => {
                           value={field.value}
                           onChange={(e) => updateField(idx, { value: e.target.value })}
                           rows={2}
-                          placeholder="Enter details..."
+                          placeholder=""
                           className="text-xs leading-relaxed border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 shadow-none w-full"
                         />
                       ) : (
@@ -1045,7 +1136,7 @@ const AddNewForm = () => {
                           value={field.value}
                           onKeyDown={(e) => handleFieldKeyDown(field, e)}
                           onChange={(e) => handleFieldChange(idx, field, e.target.value)}
-                          placeholder={`Enter ${field.label}...`}
+                          placeholder=""
                           className={lineInputClass}
                         />
                       )}
