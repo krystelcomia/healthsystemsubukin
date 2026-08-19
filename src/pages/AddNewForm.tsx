@@ -84,6 +84,14 @@ const DEFAULT_CONVERSION_PROMPT =
 
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs w-full font-medium";
 
+const getTodayDate = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const getRHUInformationSheetFields = (): DynField[] => [
   { label: "First Name", type: "text", value: "Zyrus", section: "Personal Details" },
   { label: "Middle Name", type: "text", value: "Tañang", section: "Personal Details" },
@@ -222,7 +230,7 @@ const AddNewForm = () => {
         setDraftTitle(activeForm.title);
         setCustomTitleInput(activeForm.title);
         setDraftDesc(activeForm.description);
-        setDraftFields(activeForm.fields || []);
+        setDraftFields((activeForm.fields || []).map(f => f.type === "date" ? { ...f, value: f.value || getTodayDate() } : f));
         setImageData(activeForm.imagePreview || null);
         // Jump straight to preview for existing forms
         setCurrentStep(3);
@@ -260,7 +268,7 @@ const AddNewForm = () => {
       setDraftDesc(result.description || "Digital replica generated from uploaded paper form.");
       
       if (result.fields && result.fields.length > 0) {
-        setDraftFields(result.fields);
+        setDraftFields(result.fields.map(f => f.type === "date" ? { ...f, value: f.value || getTodayDate() } : f));
         // Auto-advance to Step 2 after successful conversion
         setCurrentStep(2);
         toast.success(`Digital replica created for "${assignedTitle}"! Review the fields below.`);
@@ -285,7 +293,16 @@ const AddNewForm = () => {
 
   /* ── Field editing helpers ── */
   const updateField = (idx: number, patch: Partial<DynField>) => {
-    setDraftFields((prev) => prev.map((f, i) => (i === idx ? { ...f, ...patch } : f)));
+    setDraftFields((prev) => prev.map((f, i) => {
+      if (i === idx) {
+        const updated = { ...f, ...patch };
+        if (updated.type === "date" && !updated.value) {
+          updated.value = getTodayDate();
+        }
+        return updated;
+      }
+      return f;
+    }));
   };
 
   const removeField = (idx: number) => setDraftFields((prev) => prev.filter((_, i) => i !== idx));
@@ -293,7 +310,7 @@ const AddNewForm = () => {
   const addField = () => setDraftFields((prev) => [...prev, { label: "New Field", type: "text", value: "" }]);
 
   const resetDraft = () => {
-    setDraftFields(prev => prev.map(f => ({ ...f, value: "" })));
+    setDraftFields(prev => prev.map(f => ({ ...f, value: f.type === "date" ? getTodayDate() : "" })));
     setSelectedResidentId("");
     toast.info("Form reset to blank.");
   };
@@ -1190,7 +1207,7 @@ const AddNewForm = () => {
                       ) : (
                         <Input
                           type={field.type === "date" ? "date" : "text"}
-                          value={field.value}
+                          value={field.type === "date" && !field.value ? getTodayDate() : field.value}
                           onKeyDown={(e) => handleFieldKeyDown(field, e)}
                           onChange={(e) => handleFieldChange(idx, field, e.target.value)}
                           placeholder=""

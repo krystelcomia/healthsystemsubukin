@@ -31,6 +31,14 @@ const sanitizeDecimalNumber = (val: string) => {
 const sanitizeDateString = (val: string) => val.replace(/[^0-9-]/g, "");
 const sanitizeBpString = (val: string) => val.replace(/[^0-9/\s]/g, "");
 
+const getTodayDate = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 interface Resident {
   id: string;
   full_name: string;
@@ -54,7 +62,7 @@ const PhilPenHealthForm = () => {
     address: "",
     age: "",
     birthdate: "",
-    currentDate: "",
+    currentDate: getTodayDate(),
     bp: "",
     height: "",
     weight: "",
@@ -144,7 +152,7 @@ const PhilPenHealthForm = () => {
       address: "",
       age: "",
       birthdate: "",
-      currentDate: "",
+      currentDate: getTodayDate(),
       bp: "",
       height: "",
       weight: "",

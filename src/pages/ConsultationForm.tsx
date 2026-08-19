@@ -43,13 +43,19 @@ const sanitizeDecimalNumber = (val: string) => {
 };
 
 // 3. Date string format digits and hyphens (YYYY-MM-DD) -> blocks all letters
-const sanitizeDateString = (val: string) => val.replace(/[^0-9-]/g, "");
+const getTodayDate = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 const ConsultationForm = () => {
   const { t } = useSettings();
   const [residents, setResidents] = useState<{ id: string; full_name: string; sitio?: string; age?: number; birthday?: string }[]>([]);
   const [form, setForm] = useState({
-    resident_id: "", birthdate: "", age: "", sitio: "", date: "",
+    resident_id: "", birthdate: "", age: "", sitio: "", date: getTodayDate(),
     temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "",
   });
 
@@ -79,7 +85,7 @@ const ConsultationForm = () => {
   };
 
   const handleReset = () => {
-    setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: "", temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
+    setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: getTodayDate(), temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,14 +113,14 @@ const ConsultationForm = () => {
 
     const { error } = await supabase.from("consultations").insert({
       resident_id: targetId, birthdate: form.birthdate || null, age: Number(form.age) || null, sitio: form.sitio,
-      consultation_date: form.date || new Date().toISOString().split("T")[0], temperature: form.temperature, pulse_rate: form.pulseRate, respiration_rate: form.respirationRate, height: form.height, weight: form.weight, consultation_cause: form.consultationCause,
+      consultation_date: form.date || getTodayDate(), temperature: form.temperature, pulse_rate: form.pulseRate, respiration_rate: form.respirationRate, height: form.height, weight: form.weight, consultation_cause: form.consultationCause,
     });
     if (error) { toast.error("Failed to save consultation"); return; }
     const selectedResident = residents.find(r => r.id === targetId);
     const resName = selectedResident ? selectedResident.full_name : targetId;
     logActivity("submit_consultation", { entity_type: "consultation", description: `Recorded a health consultation for resident: ${resName}` });
     toast.success("Consultation recorded and linked to resident records!");
-    setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: "", temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
+    setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: getTodayDate(), temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
   };
 
   return (
