@@ -699,6 +699,9 @@ const DenguePreventionForm = () => {
           .no-print {
             display: none !important;
           }
+          .cell-input {
+            display: none !important;
+          }
           .print-only {
             display: flex !important;
             flex-direction: row !important;
