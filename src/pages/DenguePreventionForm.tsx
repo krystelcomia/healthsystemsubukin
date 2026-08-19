@@ -69,6 +69,7 @@ const DenguePreventionForm = () => {
   const MAX_ROWS = 20;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const saveTimeoutsRef = useRef<Record<string, any>>({});
   const [isDrawing, setIsDrawing] = useState(false);
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
   const [activeSignRecordId, setActiveSignRecordId] = useState<string | null>(null);
@@ -203,6 +204,39 @@ const DenguePreventionForm = () => {
       }
     });
 
+    const sortedDb = [...dbRecords].sort(
+      (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+    );
+
+    // If there are unmapped older records in database beyond MAX_ROWS, group older chunks of 20 into savedForms
+    let unmappedDbRecords = sortedDb.filter((rec: any) => !archivedRecordIds.has(rec.id));
+    if (unmappedDbRecords.length > MAX_ROWS) {
+      const olderCount = unmappedDbRecords.length - MAX_ROWS;
+      const olderRecords = unmappedDbRecords.slice(0, olderCount);
+      unmappedDbRecords = unmappedDbRecords.slice(olderCount);
+
+      for (let i = 0; i < olderRecords.length; i += MAX_ROWS) {
+        const chunk = olderRecords.slice(i, i + MAX_ROWS);
+        const autoBatchId = `auto_batch_${chunk[0].id}`;
+        const batchTimestamp = chunk[0].created_at || new Date().toISOString();
+        savedBatchesMap[autoBatchId] = {
+          timestamp: batchTimestamp,
+          recordIds: chunk.map((r: any) => r.id),
+          records: chunk,
+        };
+        chunk.forEach((r: any) => {
+          recordToBatchMap.set(r.id, autoBatchId);
+          archivedRecordIds.add(r.id);
+        });
+        batchGroupsMap.set(autoBatchId, {
+          id: autoBatchId,
+          timestamp: batchTimestamp,
+          records: chunk,
+        });
+      }
+      saveBatchesToStorage(savedBatchesMap);
+    }
+
     const compiledSavedForms: SavedDengueForm[] = Array.from(batchGroupsMap.values())
       .map((b) => {
         const dateObj = new Date(b.timestamp);
@@ -226,11 +260,8 @@ const DenguePreventionForm = () => {
 
     setSavedForms(compiledSavedForms);
 
-    // Unarchived records from database (saved via "Save Progress")
-    const unarchivedDbRecords = dbRecords.filter((rec: any) => !archivedRecordIds.has(rec.id));
-
     // Active in-progress draft resolution:
-    // Retain all entered data across page navigations, reloads, and logouts
+    // Retain all entered data across page navigations, reloads, and logouts directly from DB and localStorage
     let initialRows: any[] = [];
 
     const activeDraftStr = localStorage.getItem(STORAGE_KEY_ACTIVE_DRAFT);
@@ -244,13 +275,9 @@ const DenguePreventionForm = () => {
       } catch {}
     }
 
-    if (unarchivedDbRecords.length > 0) {
-      const sortedDb = [...unarchivedDbRecords].sort(
-        (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
-      );
-
+    if (unmappedDbRecords.length > 0) {
       if (localRows.length > 0) {
-        const dbMap = new Map<string, any>(sortedDb.map((r) => [r.id, r]));
+        const dbMap = new Map<string, any>(unmappedDbRecords.map((r) => [r.id, r]));
         initialRows = localRows.slice(0, MAX_ROWS).map((localRow) => {
           if (localRow.id && dbMap.has(localRow.id)) {
             const dbRec = dbMap.get(localRow.id);
@@ -273,7 +300,7 @@ const DenguePreventionForm = () => {
           }
         });
       } else {
-        initialRows = sortedDb.slice(0, MAX_ROWS);
+        initialRows = unmappedDbRecords.slice(0, MAX_ROWS);
       }
     } else if (localRows.length > 0) {
       initialRows = localRows.slice(0, MAX_ROWS);
@@ -392,27 +419,127 @@ const DenguePreventionForm = () => {
     return newId;
   };
 
+  const autoSaveRowToDb = async (row: any) => {
+    if (!row) return;
+
+    if (isRowEmpty(row)) {
+      if (row.id && !row.id.startsWith("temp-") && !row.id.startsWith("blank-")) {
+        await supabase.from("dengue_prevention").delete().eq("id", row.id);
+        window.dispatchEvent(new Event("dengue-records-updated"));
+      }
+      return;
+    }
+
+    try {
+      const resId = await resolveResidentId(row.household_name, row.resident_id);
+
+      if (row.id && !row.id.startsWith("temp-") && !row.id.startsWith("blank-")) {
+        // Update existing database record
+        await supabase
+          .from("dengue_prevention")
+          .update({
+            resident_id: resId,
+            household_name: row.household_name || "",
+            container_type: row.container_type || "",
+            has_larvae: row.has_larvae,
+            action_plan: row.action_plan || "",
+            signature: row.signature || "",
+          })
+          .eq("id", row.id);
+      } else {
+        // Insert new record into database and save returned ID
+        const { data, error } = await supabase
+          .from("dengue_prevention")
+          .insert({
+            resident_id: resId,
+            household_name: row.household_name || "",
+            container_type: row.container_type || "",
+            has_larvae: row.has_larvae,
+            action_plan: row.action_plan || "",
+            signature: row.signature || "",
+          })
+          .select()
+          .single();
+
+        if (!error && data) {
+          setRecords((prev) => {
+            const updated = prev.map((r) => (r.id === row.id ? { ...data } : r));
+            localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(updated));
+            return updated;
+          });
+        }
+      }
+
+      window.dispatchEvent(new Event("dengue-records-updated"));
+      window.dispatchEvent(new Event("resident-records-updated"));
+    } catch (err) {
+      console.error("Dengue row auto-save error:", err);
+    }
+  };
+
+  const queueAutoSaveRow = (row: any) => {
+    if (!row || !row.id) return;
+    if (saveTimeoutsRef.current[row.id]) {
+      clearTimeout(saveTimeoutsRef.current[row.id]);
+    }
+    saveTimeoutsRef.current[row.id] = setTimeout(() => {
+      autoSaveRowToDb(row);
+      delete saveTimeoutsRef.current[row.id];
+    }, 400);
+  };
+
   const handleHouseholdNameChange = (id: string, value: string) => {
     const cleanName = value.trim();
     const matched = householdHeads.find(
       (h) => h.full_name.toLowerCase() === cleanName.toLowerCase()
     );
 
-    setRecords((prev) =>
-      prev.map((r) => {
+    setRecords((prev) => {
+      const updated = prev.map((r) => {
         if (r.id === id) {
-          return {
+          const updatedRow = {
             ...r,
             household_name: value,
             resident_id: matched?.id || (matched ? r.resident_id : null),
           };
+          queueAutoSaveRow(updatedRow);
+          return updatedRow;
         }
         return r;
-      })
-    );
+      });
+      return updated;
+    });
   };
 
-  // Signature is stored in local React state only; no DB call until explicitly saved/printed
+  const handleContainerTypeChange = (id: string, value: string) => {
+    setRecords((prev) => {
+      const updated = prev.map((r) => {
+        if (r.id === id) {
+          const updatedRow = { ...r, container_type: value };
+          queueAutoSaveRow(updatedRow);
+          return updatedRow;
+        }
+        return r;
+      });
+      return updated;
+    });
+  };
+
+  const handleActionPlanChange = (id: string, value: string) => {
+    setRecords((prev) => {
+      const updated = prev.map((r) => {
+        if (r.id === id) {
+          const updatedRow = { ...r, action_plan: value };
+          queueAutoSaveRow(updatedRow);
+          return updatedRow;
+        }
+        return r;
+      });
+      return updated;
+    });
+  };
+
+  // Signature is stored and immediately synced to database
   const saveSignature = () => {
     const canvas = canvasRef.current;
     if (!canvas || !activeSignRecordId) return;
@@ -420,20 +547,34 @@ const DenguePreventionForm = () => {
     const dataUrl = canvas.toDataURL("image/png");
     setSignatureModalOpen(false);
 
-    setRecords(prev => prev.map(r => r.id === activeSignRecordId ? { ...r, signature: dataUrl } : r));
+    setRecords((prev) => {
+      const updated = prev.map((r) =>
+        r.id === activeSignRecordId ? { ...r, signature: dataUrl } : r
+      );
+      const targetRow = updated.find((r) => r.id === activeSignRecordId);
+      if (targetRow) {
+        autoSaveRowToDb(targetRow);
+      }
+      return updated;
+    });
   };
 
-  // Toggle larvae checkmark in local React state only; no auto-save network requests
+  // Toggle larvae checkmark and immediately auto-save to database
   const handleToggleLarvae = (id: string, hasLarvae: boolean) => {
-    setRecords(prev => prev.map(r => {
-      if (r.id === id) {
-        return {
-          ...r,
-          has_larvae: r.has_larvae === hasLarvae ? null : hasLarvae
-        };
-      }
-      return r;
-    }));
+    setRecords((prev) => {
+      const updated = prev.map((r) => {
+        if (r.id === id) {
+          const updatedRow = {
+            ...r,
+            has_larvae: r.has_larvae === hasLarvae ? null : hasLarvae,
+          };
+          autoSaveRowToDb(updatedRow);
+          return updatedRow;
+        }
+        return r;
+      });
+      return updated;
+    });
   };
 
   // Save Progress button: explicitly saves current records to Supabase WITHOUT transferring to Saved Forms list
@@ -597,7 +738,6 @@ const DenguePreventionForm = () => {
   };
 
   // Print Form button: triggers window.print while retaining all entered records in the form.
-  // Entries are only transferred to "Saved Dengue Prevention Forms" once all 20 rows are completed.
   const handlePrintForm = () => {
     setLimitModalOpen(false);
     window.print();
@@ -622,18 +762,21 @@ const DenguePreventionForm = () => {
 
     delete savedBatchesMap[batchId];
     saveBatchesToStorage(savedBatchesMap);
+    setSavedForms(prev => prev.filter(f => f.id !== batchId));
+    setDeleteSavedFormConfirmId(null);
+    toast.success("Saved form deleted");
 
-    logActivity("delete_dengue", {
+    logActivity("delete_dengue_batch", {
       entity_type: "dengue_prevention",
-      description: `Deleted saved Dengue prevention form batch: ${batchId}`
+      description: `Deleted saved Dengue prevention batch`
     });
 
-    toast.success("Form deleted successfully");
-    fetchRecords();
+    await fetchRecords();
   };
 
-  const handlePrintSavedForm = (form: SavedDengueForm) => {
-    setViewingSavedForm(form);
+  // Print single saved form batch from the history modal
+  const handlePrintSavedForm = (savedForm: SavedDengueForm) => {
+    setViewingSavedForm(savedForm);
     setViewModalOpen(true);
     setTimeout(() => {
       window.print();
@@ -679,84 +822,70 @@ const DenguePreventionForm = () => {
         .print-only {
           display: none !important;
         }
+
         .cell-input {
           width: 100%;
-          height: 100%;
-          background-color: transparent;
           border: none;
+          background: transparent;
+          font-size: 0.8125rem;
+          padding: 0.25rem 0.5rem;
           outline: none;
-          padding: 6px 8px;
-          color: currentColor;
-          font-family: inherit;
-          font-size: inherit;
-          transition: background-color 0.2s;
-        }
-        .cell-input:hover {
-          background-color: hsl(var(--primary) / 0.05);
+          color: inherit;
         }
         .cell-input:focus {
-          background-color: hsl(var(--primary) / 0.1);
+          background: hsl(var(--primary) / 0.05);
         }
+
         @media print {
           body * {
             visibility: hidden !important;
           }
+          
           #dengue-print-area, #dengue-print-area *,
           #saved-form-print-area, #saved-form-print-area * {
             visibility: visible !important;
           }
-          div[data-radix-portal],
-          div[role="dialog"],
-          .fixed,
-          [data-state="open"] {
-            position: static !important;
-            transform: none !important;
-            top: auto !important;
-            left: auto !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow: visible !important;
-            max-height: none !important;
-            box-shadow: none !important;
-            border: none !important;
-            background: transparent !important;
-          }
+          
           #dengue-print-area, #saved-form-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            background: white !important;
-            padding: 0 !important;
             margin: 0 !important;
+            padding: 0 !important;
             box-shadow: none !important;
             border: none !important;
-          }
-          html, body {
-            height: 100% !important;
-            overflow: hidden !important;
-          }
-          tr {
-            height: 22px !important;
-            max-height: 22px !important;
-            page-break-inside: avoid !important;
-          }
-          td, th {
-            padding: 1px 2px !important;
-            font-size: 10.5px !important;
-            line-height: 1.1 !important;
-          }
-          h1, table, th, td {
+            background: white !important;
             color: black !important;
           }
-          table, th, td {
-            border-color: #94a3b8 !important;
+          
+          table {
+            border-collapse: collapse !important;
+            width: 100% !important;
+            border: 1.5px solid #000000 !important;
+          }
+          
+          th, td {
+            border: 1px solid #000000 !important;
+            color: #000000 !important;
+            padding: 2px 4px !important;
+            font-size: 9.5px !important;
+            line-height: 1.15 !important;
+            height: 18px !important;
+          }
+          th {
+            background-color: #f1f5f9 !important;
+            font-weight: 800 !important;
+            text-transform: uppercase !important;
           }
           .header-border {
-            border-bottom: 3px double #0f172a !important;
+            border-bottom: 2.5px solid #000000 !important;
             padding-bottom: 4px !important;
-            margin-bottom: 6px !important;
-            width: 100% !important;
+            margin-bottom: 4px !important;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
           }
           .header-border img, #saved-form-print-area .header-border img {
             height: 68px !important;
@@ -882,6 +1011,7 @@ const DenguePreventionForm = () => {
                         value={rec.household_name || ""}
                         onKeyDown={allowOnlyLetters}
                         onChange={(e) => handleHouseholdNameChange(rec.id, sanitizeLetters(e.target.value))}
+                        onBlur={() => autoSaveRowToDb(rec)}
                         className="cell-input"
                         placeholder=""
                       />
@@ -893,9 +1023,8 @@ const DenguePreventionForm = () => {
                       <input
                         type="text"
                         value={rec.container_type || ""}
-                        onChange={(e) => {
-                          setRecords(prev => prev.map(r => r.id === rec.id ? { ...r, container_type: e.target.value } : r));
-                        }}
+                        onChange={(e) => handleContainerTypeChange(rec.id, e.target.value)}
+                        onBlur={() => autoSaveRowToDb(rec)}
                         className="cell-input"
                         placeholder=""
                       />
@@ -923,9 +1052,8 @@ const DenguePreventionForm = () => {
                       <input
                         type="text"
                         value={rec.action_plan || ""}
-                        onChange={(e) => {
-                          setRecords(prev => prev.map(r => r.id === rec.id ? { ...r, action_plan: e.target.value } : r));
-                        }}
+                        onChange={(e) => handleActionPlanChange(rec.id, e.target.value)}
+                        onBlur={() => autoSaveRowToDb(rec)}
                         className="cell-input"
                         placeholder=""
                       />
@@ -1221,6 +1349,8 @@ const DenguePreventionForm = () => {
                         <th className="border border-border p-2 font-bold text-center w-[10%]" rowSpan={2}>
                           LAGDA
                         </th>
+                        <th className="border border-border p-2 font-bold text-center w-[5%] no-print" rowSpan={2}>
+                        </th>
                       </tr>
                       <tr className="bg-primary/10 text-primary font-heading">
                         <th className="border border-border p-1 text-[10px] font-bold text-center">
@@ -1321,13 +1451,13 @@ const DenguePreventionForm = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Saved Form Batch Confirmation Dialog */}
+      {/* Delete Saved Form Confirmation Dialog */}
       <AlertDialog open={!!deleteSavedFormConfirmId} onOpenChange={() => setDeleteSavedFormConfirmId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete saved dengue form?</AlertDialogTitle>
+            <AlertDialogTitle>Delete saved Dengue form batch?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this saved form batch and all its records? This action cannot be undone.
+              Are you sure you want to permanently delete this saved Dengue form and its recorded entries? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1336,12 +1466,11 @@ const DenguePreventionForm = () => {
               onClick={() => {
                 if (deleteSavedFormConfirmId) {
                   handleDeleteSavedForm(deleteSavedFormConfirmId);
-                  setDeleteSavedFormConfirmId(null);
                 }
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              Delete Batch
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
