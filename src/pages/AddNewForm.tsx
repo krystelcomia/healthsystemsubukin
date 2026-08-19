@@ -128,7 +128,7 @@ const StepIndicator = ({ current, onStepClick, canGoTo }: { current: number; onS
       return (
         <React.Fragment key={step.num}>
           {idx > 0 && (
-            <div className={`flex-1 h-0.5 transition-colors duration-300 ${done ? "bg-emerald-500" : "bg-border"}`} />
+            <div className={`flex-1 h-0.5 transition-colors duration-300 ${done ? "bg-primary" : "bg-border"}`} />
           )}
           <button
             type="button"
@@ -145,7 +145,7 @@ const StepIndicator = ({ current, onStepClick, canGoTo }: { current: number; onS
             <div
               className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300 ${
                 done
-                  ? "bg-emerald-500 border-emerald-500 text-white"
+                  ? "bg-primary border-primary text-primary-foreground"
                   : active
                     ? "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/30"
                     : "bg-muted border-border text-muted-foreground"
@@ -153,7 +153,7 @@ const StepIndicator = ({ current, onStepClick, canGoTo }: { current: number; onS
             >
               {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
             </div>
-            <span className={`text-[11px] font-semibold leading-tight text-center whitespace-nowrap ${active ? "text-primary" : done ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+            <span className={`text-[11px] font-semibold leading-tight text-center whitespace-nowrap ${active ? "text-primary" : done ? "text-primary" : "text-muted-foreground"}`}>
               {step.label}
             </span>
           </button>
@@ -452,8 +452,8 @@ const AddNewForm = () => {
     const prevSection = idx > 0 ? draftFields[idx - 1]?.section : undefined;
     if (field.section && field.section !== prevSection && field.section !== "Personal Details") {
       return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
             {field.section}
           </p>
         </div>
@@ -461,8 +461,8 @@ const AddNewForm = () => {
     }
     if (idx === 14) {
       return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
             ASAWA (Spouse Information)
           </p>
         </div>
@@ -470,8 +470,8 @@ const AddNewForm = () => {
     }
     if (idx === 21) {
       return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
             ANAK 1 (Child 1 Information)
           </p>
         </div>
@@ -479,8 +479,8 @@ const AddNewForm = () => {
     }
     if (idx === 25) {
       return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
             ANAK 2 (Child 2 Information)
           </p>
         </div>
@@ -488,8 +488,8 @@ const AddNewForm = () => {
     }
     if (idx === 29) {
       return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
             PHYSICIAN VISIT & REMARKS
           </p>
         </div>
@@ -498,8 +498,8 @@ const AddNewForm = () => {
     const label = field.label;
     if (label.startsWith("Spouse First Name") || label.startsWith("ASAWA - First Name")) {
       return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
             ASAWA (Spouse Information)
           </p>
         </div>
@@ -507,8 +507,8 @@ const AddNewForm = () => {
     }
     if (label.startsWith("Child 1 First Name") || label.startsWith("ANAK 1 - First Name")) {
       return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
             ANAK 1 (Child 1 Information)
           </p>
         </div>
@@ -516,8 +516,8 @@ const AddNewForm = () => {
     }
     if (label.startsWith("Child 2 First Name") || label.startsWith("ANAK 2 - First Name")) {
       return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
+          <p className="text-xs font-bold uppercase tracking-wider text-primary">
             ANAK 2 (Child 2 Information)
           </p>
         </div>
@@ -525,8 +525,8 @@ const AddNewForm = () => {
     }
     if (label.startsWith("Physician Visit") || label.startsWith("Will see physician")) {
       return (
-        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-emerald-700 dark:border-emerald-500 mb-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+        <div className="md:col-span-2 pt-5 pb-1.5 border-b-2 border-primary/40 dark:border-primary/50 mb-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-primary">
             PHYSICIAN VISIT & REMARKS
           </p>
         </div>
@@ -704,17 +704,19 @@ const AddNewForm = () => {
       `}</style>
 
       {/* ─── Header Banner ─── */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-emerald-700/40 no-print">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-emerald-400" />
-            <h1 className="text-xl font-bold font-heading">
-              {formId ? `Digital Health Form: ${draftTitle}` : "Manual-to-Digital Form Converter & Deployer"}
-            </h1>
+      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+            <Sparkles className="h-6 w-6" />
           </div>
-          <p className="text-xs text-emerald-200/90 max-w-2xl">
-            Scan any paper health form (such as the RHU Information Sheet) to convert it into an accurate digital format. Assign custom titles, model layout after existing system forms, and deploy directly to Health Forms.
-          </p>
+          <div>
+            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
+              {formId ? `Digital Health Form: ${draftTitle}` : "Manual-to-Digital Form Converter & Deployer"}
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5 max-w-2xl">
+              Scan any paper health form (such as the RHU Information Sheet) to convert it into an accurate digital format. Assign custom titles, model layout after existing system forms, and deploy directly to Health Forms.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -807,7 +809,7 @@ const AddNewForm = () => {
                 <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <HelpCircle className="h-3.5 w-3.5 text-primary" /> Manual-to-Digital AI Conversion Prompt
                 </Label>
-                <span className="text-[10px] text-muted-foreground font-semibold text-emerald-600 dark:text-emerald-400">System Model Aligned</span>
+                <span className="text-[10px] text-muted-foreground font-semibold text-primary">System Model Aligned</span>
               </div>
               <Textarea
                 value={hint}
@@ -840,7 +842,7 @@ const AddNewForm = () => {
             {/* Next (if fields already exist from a previous conversion) */}
             {draftFields.length > 0 && (
               <div className="pt-2 border-t border-border/50">
-                <Button type="button" onClick={goNext} className="w-full gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm">
+                <Button type="button" onClick={goNext} className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm">
                   Continue to Review Fields <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -920,8 +922,8 @@ const AddNewForm = () => {
                   return (
                     <React.Fragment key={i}>
                       {showSection && (
-                        <div className="pt-3 pb-1 border-b border-emerald-600/40 mt-2">
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                        <div className="pt-3 pb-1 border-b border-primary/40 mt-2">
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-primary">
                             {f.section}
                           </p>
                         </div>
@@ -966,7 +968,7 @@ const AddNewForm = () => {
                   </Button>
                 )}
                 <div className="flex-1" />
-                <Button type="button" onClick={goNext} className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-6">
+                <Button type="button" onClick={goNext} className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs px-6">
                   Preview & Deploy <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -1128,7 +1130,7 @@ const AddNewForm = () => {
                     type="button"
                     onClick={handleDeployForm}
                     size="sm"
-                    className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm px-5"
+                    className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm px-5"
                   >
                     <Rocket className="h-4 w-4" /> Deploy Form
                   </Button>
