@@ -16,6 +16,9 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
 import { getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
+import sanjuanLogo from "@/assets/sanjuan_logo.png";
+import barangayLogo from "@/assets/barangay-logo.png";
+import headerTextImg from "@/assets/header_text.png";
 
 // --- INTERFACES FOR FP FORM 1 ---
 export interface FPSideAData {
@@ -561,6 +564,16 @@ const FamilyPlanningForm = () => {
           .no-print {
             display: none !important;
           }
+          .print-only {
+            display: flex !important;
+          }
+          .header-seal img {
+            height: 68px !important;
+            max-height: 68px !important;
+            width: auto !important;
+            object-fit: contain !important;
+            mix-blend-mode: multiply !important;
+          }
           select {
             -webkit-appearance: none !important;
             -moz-appearance: none !important;
@@ -649,6 +662,13 @@ const FamilyPlanningForm = () => {
         {/* SECTION 1: SIDE A - Assessment Record Replica */}
         <div className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 border border-slate-300 dark:border-slate-700 rounded-md shadow-xs text-xs space-y-3 font-sans">
           
+          {/* Official Barangay Printable Header */}
+          <div className="print-only header-seal flex items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center" style={{ display: 'none' }}>
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: '68px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: '68px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: '68px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+          </div>
+
           {/* Form Title Header Banner */}
           <div className="border-b-2 border-slate-900 dark:border-slate-100 pb-2 flex items-start justify-between">
             <div>
