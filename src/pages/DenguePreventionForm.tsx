@@ -970,36 +970,65 @@ const DenguePreventionForm = () => {
   };
 
   const handleDeleteRow = async (id: string, name: string) => {
-    if (id.startsWith("temp-")) {
-      setRecords(prev => prev.map(r => r.id === id ? {
-        id: `temp-${Date.now()}`,
-        resident_id: null,
-        household_name: "",
-        container_type: "",
-        has_larvae: null,
-        action_plan: "",
-        signature: ""
-      } : r));
-      toast.success("Row cleared");
-      return;
+    // Cancel any pending auto-save timeout for this row
+    if (saveTimeoutsRef.current[id]) {
+      clearTimeout(saveTimeoutsRef.current[id]);
+      delete saveTimeoutsRef.current[id];
     }
+
+    // 1. If the row had a persistent database record, remove it from the DB
+    if (id && !id.startsWith("temp-") && !id.startsWith("blank-")) {
+      const { error } = await supabase
+        .from("dengue_prevention")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        toast.error("Failed to clear row from database");
+        return;
+      }
+    }
+
+    // 2. Clear only the data entered in this row in-place so the row structure is preserved (always maintaining 20 rows)
+    const blankRowTemplate = {
+      id: `temp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      resident_id: null,
+      household_name: "",
+      container_type: "",
+      has_larvae: null,
+      action_plan: "",
+      signature: ""
+    };
+
+    setRecords((prev) => {
+      const updated = prev.map((r) => (r.id === id ? blankRowTemplate : r));
+      // Ensure the table always contains exactly MAX_ROWS (20 rows)
+      const padded = [...updated];
+      while (padded.length < MAX_ROWS) {
+        padded.push({
+          id: `temp-${padded.length}-${Date.now()}`,
+          resident_id: null,
+          household_name: "",
+          container_type: "",
+          has_larvae: null,
+          action_plan: "",
+          signature: ""
+        });
+      }
+      const final20 = padded.slice(0, MAX_ROWS);
+      localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(final20));
+      return final20;
+    });
 
     const displayName = name?.trim() || "unnamed row";
-    const { error } = await supabase
-      .from("dengue_prevention")
-      .delete()
-      .eq("id", id);
+    logActivity("delete_dengue", {
+      entity_type: "dengue_prevention",
+      description: `Cleared Dengue prevention record row for: ${displayName}`
+    });
 
-    if (error) {
-      toast.error("Failed to delete row");
-    } else {
-      logActivity("delete_dengue", {
-        entity_type: "dengue_prevention",
-        description: `Deleted Dengue prevention record row for: ${displayName}`
-      });
-      toast.success("Row deleted successfully");
-      fetchRecords();
-    }
+    toast.success("Row data cleared successfully");
+    window.dispatchEvent(new Event("resident-records-updated"));
+    window.dispatchEvent(new Event("dengue-records-updated"));
   };
 
   return (
@@ -1295,7 +1324,7 @@ const DenguePreventionForm = () => {
                           variant="ghost" 
                           size="icon" 
                           className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          title="Delete row"
+                          title="Clear entry"
                         >
                           <Trash className="h-4.5 w-4.5" />
                         </Button>
@@ -1610,13 +1639,13 @@ const DenguePreventionForm = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Row Confirmation Dialog */}
+      {/* Clear Row Confirmation Dialog */}
       <AlertDialog open={!!deleteRowConfirm} onOpenChange={() => setDeleteRowConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete checklist row?</AlertDialogTitle>
+            <AlertDialogTitle>Clear entry data?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the entry for &ldquo;{deleteRowConfirm?.name}&rdquo;? This action cannot be undone.
+              Are you sure you want to clear the entered data for &ldquo;{deleteRowConfirm?.name}&rdquo;? The row will be reset to blank and stay on the form so it maintains a total of 20 rows.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1630,7 +1659,7 @@ const DenguePreventionForm = () => {
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              Clear Entry
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
