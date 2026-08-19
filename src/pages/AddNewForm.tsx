@@ -8,6 +8,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   Sparkles, 
   Camera, 
@@ -192,6 +202,7 @@ const AddNewForm = () => {
   const [savedForms, setSavedForms] = useState<CustomForm[]>([]);
   const [selectedResidentId, setSelectedResidentId] = useState<string>("");
   const [residents, setResidents] = useState<any[]>([]);
+  const [deleteTemplateConfirmId, setDeleteTemplateConfirmId] = useState<string | null>(null);
 
   // Wizard step: 1 = Upload, 2 = Edit Fields, 3 = Preview & Deploy
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -1348,7 +1359,14 @@ const AddNewForm = () => {
                         >
                           <Settings2 className="h-3.5 w-3.5" /> Edit
                         </Button>
-                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteSaved(f.id)}>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive"
+                          onClick={() => setDeleteTemplateConfirmId(f.id)}
+                          title="Delete Template"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -1360,6 +1378,32 @@ const AddNewForm = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Delete Form Template Confirmation Dialog */}
+      <AlertDialog open={!!deleteTemplateConfirmId} onOpenChange={() => setDeleteTemplateConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Custom Form Template?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this custom form template? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteTemplateConfirmId) {
+                  deleteSaved(deleteTemplateConfirmId);
+                  setDeleteTemplateConfirmId(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

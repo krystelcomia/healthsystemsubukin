@@ -1,7 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar } from "lucide-react";
@@ -53,6 +63,8 @@ const DenguePreventionForm = () => {
   const [savedForms, setSavedForms] = useState<SavedDengueForm[]>([]);
   const [viewingSavedForm, setViewingSavedForm] = useState<SavedDengueForm | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [deleteRowConfirm, setDeleteRowConfirm] = useState<{ id: string; name: string } | null>(null);
+  const [deleteSavedFormConfirmId, setDeleteSavedFormConfirmId] = useState<string | null>(null);
 
   const MAX_ROWS = 20;
 
@@ -938,10 +950,11 @@ const DenguePreventionForm = () => {
                     <td className="border border-border p-1 text-center no-print w-10">
                       {!isRowEmpty(rec) && (
                         <Button 
-                          onClick={() => handleDeleteRow(rec.id, rec.household_name)} 
+                          onClick={() => setDeleteRowConfirm({ id: rec.id, name: rec.household_name || "this row" })} 
                           variant="ghost" 
                           size="icon" 
                           className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          title="Delete row"
                         >
                           <Trash className="h-4.5 w-4.5" />
                         </Button>
@@ -1039,7 +1052,6 @@ const DenguePreventionForm = () => {
                         </span>
                       </div>
                     </div>
-
                     <div className="flex items-center gap-1 shrink-0 justify-end">
                       <Button
                         size="icon"
@@ -1065,7 +1077,7 @@ const DenguePreventionForm = () => {
                       <Button
                         size="icon"
                         variant="ghost"
-                        onClick={() => handleDeleteSavedForm(sf.id)}
+                        onClick={() => setDeleteSavedFormConfirmId(sf.id)}
                         className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
                         title="Delete Form"
                       >
@@ -1084,13 +1096,14 @@ const DenguePreventionForm = () => {
       <Dialog open={signatureModalOpen} onOpenChange={setSignatureModalOpen}>
         <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200">
           <DialogHeader>
-            <DialogTitle className="text-lg font-heading font-bold text-foreground">
+            <DialogTitle className="text-base font-bold text-foreground">
               Lagda ng Maybahay (Resident Signature)
             </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Pumirma sa ibaba gamit ang iyong touchscreen, mouse, o touchpad.
+            </DialogDescription>
           </DialogHeader>
-          <div className="py-2 text-sm text-slate-500">
-            Pumirma sa ibaba gamit ang iyong touchscreen, mouse, o touchpad.
-          </div>
+
           <div className="border border-slate-200 rounded-lg p-1 bg-slate-50 flex justify-center items-center">
             <canvas
               ref={canvasRef}
@@ -1103,6 +1116,7 @@ const DenguePreventionForm = () => {
               className="border border-slate-300 rounded-md w-full bg-white touch-none cursor-crosshair"
             />
           </div>
+
           <DialogFooter className="gap-2 mt-4">
             <Button type="button" variant="outline" onClick={clearCanvas}>
               Clear
@@ -1110,7 +1124,7 @@ const DenguePreventionForm = () => {
             <Button type="button" variant="ghost" onClick={() => setSignatureModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="button" onClick={saveSignature} className="bg-primary text-white">
+            <Button type="button" onClick={saveSignature} className="bg-primary text-white font-bold">
               Save Signature
             </Button>
           </DialogFooter>
@@ -1122,7 +1136,7 @@ const DenguePreventionForm = () => {
         <DialogContent className="max-w-md bg-card text-card-foreground border border-border">
           <DialogHeader>
             <DialogTitle className="text-lg font-heading font-bold text-foreground">
-              20 Rows Completed & Form Saved
+              20 Rows Completed &amp; Form Saved
             </DialogTitle>
           </DialogHeader>
           <div className="py-2 text-sm text-muted-foreground space-y-3">
@@ -1132,9 +1146,6 @@ const DenguePreventionForm = () => {
             <p className="bg-primary/10 p-3 rounded-lg border border-primary/20 text-foreground text-xs leading-relaxed">
               The filled out data has been automatically moved to <strong className="text-primary font-bold">&ldquo;Saved Dengue Prevention Forms ({savedForms.length + 1})&rdquo;</strong>, ensuring a record is retained even after printing.
             </p>
-            <p className="text-xs">
-              Acknowledging this notice will reset the form, allowing you to enter a new set of 20 items.
-            </p>
           </div>
           <DialogFooter className="gap-2 mt-4">
             <Button 
@@ -1142,7 +1153,7 @@ const DenguePreventionForm = () => {
               onClick={handleAcknowledgeCompletion} 
               className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md w-full"
             >
-              Acknowledge & Reset Form
+              Acknowledge &amp; Reset Form
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1150,11 +1161,17 @@ const DenguePreventionForm = () => {
 
       {/* View / Re-Print Saved Form Modal */}
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card text-card-foreground p-6">
+        <DialogContent className="max-w-5xl bg-white text-slate-900 border border-slate-200 max-h-[90vh] overflow-y-auto">
           <DialogHeader className="no-print">
-            <DialogTitle className="text-lg font-heading font-bold flex items-center justify-between pr-6">
-              <span>Saved Dengue Prevention Form — {viewingSavedForm?.formattedDate}</span>
+            <DialogTitle className="text-base font-bold text-foreground flex items-center justify-between">
+              <span>Saved Dengue Prevention Checklist</span>
+              <span className="text-xs font-normal text-muted-foreground">
+                {viewingSavedForm?.formattedDate}
+              </span>
             </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              View official records and print or re-print this historical batch.
+            </DialogDescription>
           </DialogHeader>
 
           {viewingSavedForm && (
@@ -1277,6 +1294,58 @@ const DenguePreventionForm = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Row Confirmation Dialog */}
+      <AlertDialog open={!!deleteRowConfirm} onOpenChange={() => setDeleteRowConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete checklist row?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the entry for &ldquo;{deleteRowConfirm?.name}&rdquo;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteRowConfirm) {
+                  handleDeleteRow(deleteRowConfirm.id, deleteRowConfirm.name);
+                  setDeleteRowConfirm(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Saved Form Batch Confirmation Dialog */}
+      <AlertDialog open={!!deleteSavedFormConfirmId} onOpenChange={() => setDeleteSavedFormConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete saved dengue form?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this saved form batch and all its records? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteSavedFormConfirmId) {
+                  handleDeleteSavedForm(deleteSavedFormConfirmId);
+                  setDeleteSavedFormConfirmId(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

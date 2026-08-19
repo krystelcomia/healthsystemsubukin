@@ -6,6 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { 
   Folder, 
@@ -104,6 +114,8 @@ const FamilyDataForm = () => {
   const [memBirthday, setMemBirthday] = useState("");
   const [memGender, setMemGender] = useState("Male");
   const [memStatus, setMemStatus] = useState("Single");
+  const [deleteFileConfirm, setDeleteFileConfirm] = useState<{ id: string; name: string } | null>(null);
+  const [removeMemberConfirm, setRemoveMemberConfirm] = useState<{ id: string; name: string } | null>(null);
 
   const isNewFamNumDuplicate = useMemo(() => {
     return records.some(
@@ -464,16 +476,13 @@ const FamilyDataForm = () => {
   };
 
   // Remove member inside opened file
-  const handleRemoveMember = (id: string, name: string) => {
-    const confirmRemove = window.confirm(`Are you sure you want to remove "${name}" from this family?`);
-    if (!confirmRemove) return;
+  const handleRemoveMember = (id: string) => {
     setActiveMembers((prev) => prev.filter((m) => m.id !== id));
+    toast.success("Member removed from family");
   };
 
   // Delete family file
   const handleDeleteFile = async (id: string, name: string) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete the family file "${name}"? This action cannot be undone.`);
-    if (!confirmDelete) return;
 
     if (id.startsWith("temp-")) {
       setRecords((prev) => prev.filter((r) => r.id !== id));
@@ -1125,10 +1134,11 @@ const FamilyDataForm = () => {
                             {!isAdmin && (
                               <td className="p-3 text-center no-print">
                                 <Button
-                                  onClick={() => handleRemoveMember(m.id, m.full_name)}
+                                  onClick={() => setRemoveMemberConfirm({ id: m.id, name: m.full_name })}
                                   variant="ghost"
                                   size="icon"
                                   className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                  title="Remove member"
                                 >
                                   <Trash className="h-3.5 w-3.5" />
                                 </Button>
@@ -1171,7 +1181,7 @@ const FamilyDataForm = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDeleteFile(selectedFile.id, `${editFamNum} - ${editFather}`)}
+                    onClick={() => setDeleteFileConfirm({ id: selectedFile.id, name: `${editFamNum} - ${editFather || editMother || "Family"}` })}
                     className="text-destructive hover:bg-destructive/10 border-destructive/20 text-xs gap-1.5 w-full sm:w-auto"
                   >
                     <Trash2 className="h-3.5 w-3.5" /> Delete File
@@ -1550,6 +1560,58 @@ const FamilyDataForm = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Family File Confirmation Dialog */}
+      <AlertDialog open={!!deleteFileConfirm} onOpenChange={() => setDeleteFileConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Family File?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the family file &ldquo;{deleteFileConfirm?.name}&rdquo;? This will permanently remove the family record and associated resident records.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteFileConfirm) {
+                  handleDeleteFile(deleteFileConfirm.id, deleteFileConfirm.name);
+                  setDeleteFileConfirm(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete File
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Remove Family Member Confirmation Dialog */}
+      <AlertDialog open={!!removeMemberConfirm} onOpenChange={() => setRemoveMemberConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Family Member?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove &ldquo;{removeMemberConfirm?.name}&rdquo; from this family record?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (removeMemberConfirm) {
+                  handleRemoveMember(removeMemberConfirm.id);
+                  setRemoveMemberConfirm(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remove Member
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -23,6 +23,16 @@ import {
   Bell,
 } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { logActivity } from "@/lib/activityLogger";
 
 interface CalendarEvent {
@@ -47,6 +57,7 @@ const CalendarPage = () => {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [notifications, setNotifications] = useState<any[]>([]);
   const [readEventIds, setReadEventIds] = useState<string[]>([]);
+  const [deleteEventConfirmId, setDeleteEventConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     // Load read notifications
@@ -851,7 +862,7 @@ const CalendarPage = () => {
                             <Button variant="ghost" size="icon" onClick={() => handleEditEvent(evt)} className="h-6 w-6 text-muted-foreground hover:text-foreground">
                               <Edit className="h-3 w-3" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteEvent(evt.id)} className="h-6 w-6 text-muted-foreground hover:text-destructive">
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteEventConfirmId(evt.id)} className="h-6 w-6 text-muted-foreground hover:text-destructive" title="Delete event">
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
@@ -875,6 +886,38 @@ const CalendarPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* Delete Event Confirmation Dialog */}
+      <AlertDialog open={!!deleteEventConfirmId} onOpenChange={() => setDeleteEventConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {language === "tl" ? "Burahin ang Event?" : "Delete Calendar Event?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {language === "tl" 
+                ? "Sigurado ka bang nais mong tanggalin ang event na ito? Hindi na ito maibabalik."
+                : "Are you sure you want to delete this calendar event? This action cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {language === "tl" ? "Kanselahin" : "Cancel"}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteEventConfirmId) {
+                  handleDeleteEvent(deleteEventConfirmId);
+                  setDeleteEventConfirmId(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {language === "tl" ? "Burahin" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -10,6 +10,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 
 const ProfilePage = () => {
@@ -22,6 +32,7 @@ const ProfilePage = () => {
   const [email, setEmail] = useState("");
   const [assignedSitio, setAssignedSitio] = useState("");
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
+  const [removePhotoConfirm, setRemovePhotoConfirm] = useState(false);
 
   useEffect(() => {
     getDatabaseSitios().then(sits => setSitioOptions(sits));
@@ -173,7 +184,7 @@ const ProfilePage = () => {
             </div>
             <div className="flex gap-2">
               {avatarUrl && (
-                <Button variant="outline" size="sm" onClick={removeAvatar}>
+                <Button variant="outline" size="sm" onClick={() => setRemovePhotoConfirm(true)}>
                   <X className="h-4 w-4 mr-1" /> Remove photo
                 </Button>
               )}
@@ -306,6 +317,30 @@ const ProfilePage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Remove Photo Confirmation Dialog */}
+      <AlertDialog open={removePhotoConfirm} onOpenChange={setRemovePhotoConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove profile picture?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove your profile photo?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                removeAvatar();
+                setRemovePhotoConfirm(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
