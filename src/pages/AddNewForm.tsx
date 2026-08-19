@@ -327,15 +327,45 @@ const AddNewForm = () => {
     navigate(`/forms/custom/${newForm.id}`);
   };
 
-  const handleSaveRecord = () => {
-    // 1. Check if at least primary identification (resident or name) is selected / filled
+  const handleSaveRecord = async () => {
+    // 1. Find resident Name or primary identifier
     const nameField = draftFields.find(f => {
       const l = f.label.toLowerCase();
-      return l.includes("name") || l.includes("pangalan") || l.includes("applicant") || l.includes("patient");
+      return (l === "name" || l === "full name" || l === "pangalan" || l === "applicant name" || l === "patient name") ||
+             (l.includes("name") && !l.includes("mother") && !l.includes("father") && !l.includes("asawa") && !l.includes("spouse") && !l.includes("child") && !l.includes("anak"));
     });
-    
-    if (!selectedResidentId && nameField && !nameField.value.trim()) {
-      toast.error("Please select a resident or enter the full name before saving.");
+
+    const birthdayField = draftFields.find(f => f.label.toLowerCase().includes("birth") || f.label.toLowerCase().includes("dob"));
+    const ageField = draftFields.find(f => f.label.toLowerCase() === "age" || f.label.toLowerCase().includes("edad"));
+    const sitioField = draftFields.find(f => f.label.toLowerCase().includes("address") || f.label.toLowerCase().includes("sitio") || f.label.toLowerCase().includes("tirahan"));
+    const genderField = draftFields.find(f => f.label.toLowerCase().includes("gender") || f.label.toLowerCase().includes("sex") || f.label.toLowerCase().includes("kasarian"));
+    const motherField = draftFields.find(f => f.label.toLowerCase().includes("mother") || f.label.toLowerCase().includes("ina"));
+    const fatherField = draftFields.find(f => f.label.toLowerCase().includes("father") || f.label.toLowerCase().includes("ama"));
+
+    let targetResidentId = selectedResidentId;
+    let targetResidentName = "";
+
+    const selectedRes = residents.find(r => r.id === selectedResidentId);
+    if (selectedRes) {
+      targetResidentName = selectedRes.full_name;
+    } else if (nameField && nameField.value.trim()) {
+      targetResidentName = nameField.value.trim();
+      targetResidentId = await ensureResidentExists({
+        fullName: targetResidentName,
+        birthday: birthdayField?.value || undefined,
+        age: ageField?.value || undefined,
+        sitio: sitioField?.value || "Subukin",
+        gender: genderField?.value || "Male",
+        motherName: motherField?.value || undefined,
+        fatherName: fatherField?.value || undefined,
+      }) || "";
+      if (targetResidentId) {
+        setSelectedResidentId(targetResidentId);
+      }
+    }
+
+    if (!targetResidentId && !targetResidentName) {
+      toast.error("Please link a resident or enter the resident's full name before saving.");
       return;
     }
 
@@ -354,24 +384,40 @@ const AddNewForm = () => {
       return;
     }
 
+    // 3. Update resident profile with demographic data entered into the form
+    if (targetResidentId) {
+      const updates: any = {};
+      if (birthdayField?.value) updates.birthday = birthdayField.value;
+      if (ageField?.value && Number(ageField.value) > 0) updates.age = Number(ageField.value);
+      if (sitioField?.value) updates.sitio = sitioField.value.split(",")[0].trim();
+      if (genderField?.value) updates.gender = genderField.value;
+      if (Object.keys(updates).length > 0) {
+        await supabase.from("residents").update(updates).eq("id", targetResidentId);
+      }
+    }
+
+    // 4. Save the form record linked to the resident
     const record = {
+      id: `rec-${Date.now()}`,
       formId: formId || "custom",
       formTitle: draftTitle,
-      residentId: selectedResidentId || undefined,
+      residentId: targetResidentId || undefined,
+      resident_id: targetResidentId || undefined,
+      resident_name: targetResidentName,
       fields: draftFields,
       savedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
     
     const existingRecords = JSON.parse(localStorage.getItem("bhw_custom_form_records") || "[]");
     existingRecords.unshift(record);
     localStorage.setItem("bhw_custom_form_records", JSON.stringify(existingRecords));
 
-    const res = residents.find(r => r.id === selectedResidentId);
-    if (res) {
-      toast.success(`Record for ${res.full_name} saved successfully!`);
-    } else {
-      toast.success("Form record saved successfully!");
-    }
+    // Dispatch system events
+    window.dispatchEvent(new Event("resident-records-updated"));
+    window.dispatchEvent(new Event("custom-form-records-updated"));
+
+    toast.success(`Form data saved under resident: ${targetResidentName}!`);
   };
 
   const handleDeleteForm = (id: string) => {

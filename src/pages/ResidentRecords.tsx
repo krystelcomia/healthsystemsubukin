@@ -63,6 +63,7 @@ interface HealthRecords {
   maternal_care: any[]; 
   child_health: any[]; 
   family_planning: any[];
+  custom_forms: any[];
 }
 
 const ResidentRecords = () => {
@@ -228,6 +229,11 @@ const ResidentRecords = () => {
       return false;
     });
 
+    const savedCustomRecords = JSON.parse(localStorage.getItem("bhw_custom_form_records") || "[]");
+    const customForms = savedCustomRecords.filter((rec: any) => 
+      rec.residentId === residentId || rec.resident_id === residentId || (cleanName && rec.resident_name && rec.resident_name.trim().toLowerCase() === cleanName)
+    );
+
     setHealthRecords({
       consultations,
       family_data: familyData,
@@ -236,6 +242,7 @@ const ResidentRecords = () => {
       maternal_care: maternalCare,
       child_health: childHealth,
       family_planning: familyPlanning,
+      custom_forms: customForms,
     });
   };
 
@@ -261,7 +268,7 @@ const ResidentRecords = () => {
   const totalChildren = residents.filter(r => r.age <= 12).length;
 
   if (selectedResident && healthRecords) {
-    const totalRecords = healthRecords.consultations.length + healthRecords.family_data.length + healthRecords.philpen_health.length + healthRecords.dengue_prevention.length + healthRecords.maternal_care.length + healthRecords.child_health.length + healthRecords.family_planning.length;
+    const totalRecords = healthRecords.consultations.length + healthRecords.family_data.length + healthRecords.philpen_health.length + healthRecords.dengue_prevention.length + healthRecords.maternal_care.length + healthRecords.child_health.length + healthRecords.family_planning.length + healthRecords.custom_forms.length;
     return (
       <div className="w-full space-y-6 max-w-full">
         <style>{`
@@ -575,6 +582,34 @@ const ResidentRecords = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {healthRecords.custom_forms && healthRecords.custom_forms.length > 0 && (
+            <div>
+              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" /> Deployed & Custom Health Forms ({healthRecords.custom_forms.length})
+              </h3>
+              <div className="space-y-3">
+                {healthRecords.custom_forms.map((cf: any, idx: number) => (
+                  <div key={cf.id || idx} className="rounded-lg border border-border/60 p-3 bg-muted/20 space-y-2">
+                    <div className="flex items-center justify-between border-b border-border/40 pb-1.5">
+                      <p className="font-bold text-xs text-foreground uppercase">{cf.formTitle || "Custom Form"}</p>
+                      <span className="text-[10px] text-muted-foreground">
+                        {cf.savedAt ? new Date(cf.savedAt).toLocaleDateString() : ""}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1 text-xs">
+                      {Array.isArray(cf.fields) && cf.fields.map((f: any, fIdx: number) => (
+                        <div key={fIdx} className="space-y-0.5">
+                          <span className="text-[10px] font-semibold text-muted-foreground block">{f.label}:</span>
+                          <span className="font-medium text-foreground">{f.value || "—"}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
