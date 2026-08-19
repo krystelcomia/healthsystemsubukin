@@ -37,6 +37,7 @@ import { getFamilyOnlyResidents } from "@/lib/residentLinker";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { convertPaperFormToDigital } from "@/lib/formConverter";
 
 type FieldType = "text" | "number" | "date" | "textarea" | "checkbox";
 
@@ -226,26 +227,14 @@ const AddNewForm = () => {
   const runScanWithImage = async (img: string) => {
     setScanning(true);
     try {
-      const { data, error } = await supabase.functions.invoke("scan-form", {
-        body: { image: img, hint: hint || DEFAULT_CONVERSION_PROMPT },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      const result = await convertPaperFormToDigital(img, hint || DEFAULT_CONVERSION_PROMPT, customTitleInput);
 
-      const fields: DynField[] = Array.isArray(data?.fields)
-        ? data.fields.map((f: any) => ({
-            label: String(f.label ?? "Untitled field"),
-            type: (["text", "number", "date", "textarea", "checkbox"].includes(f.type) ? f.type : "text") as FieldType,
-            value: f.type === "checkbox" ? "" : (f.value != null ? String(f.value) : ""),
-            section: f.section ? String(f.section) : undefined,
-          }))
-        : [];
-
-      const assignedTitle = customTitleInput.trim() || String(data?.title || "Custom Health Form");
+      const assignedTitle = customTitleInput.trim() || result.title || "Custom Health Form";
       setDraftTitle(assignedTitle);
-      setDraftDesc(String(data?.description || ""));
-      if (fields.length > 0) {
-        setDraftFields(fields);
+      setDraftDesc(result.description || "Digital replica generated from uploaded paper form.");
+      
+      if (result.fields && result.fields.length > 0) {
+        setDraftFields(result.fields);
         // Auto-advance to Step 2 after successful conversion
         setCurrentStep(2);
         toast.success(`Digital replica created for "${assignedTitle}"! Review the fields below.`);
