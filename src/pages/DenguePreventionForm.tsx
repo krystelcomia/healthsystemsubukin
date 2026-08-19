@@ -479,10 +479,15 @@ const DenguePreventionForm = () => {
     if (hasError) {
       toast.error("Some records failed to save. Please try again.");
     } else {
-      toast.success(t("dengue.saveSuccess") || "Progress saved! All data is securely stored in the system.");
+      toast.success(t("dengue.saveSuccess") || "Progress saved! All entries are securely stored in the system and linked to resident records.");
+      
+      // Dispatch system events so Resident Records and Dashboard update immediately
+      window.dispatchEvent(new Event("resident-records-updated"));
+      window.dispatchEvent(new Event("dengue-records-updated"));
+
       logActivity("update_dengue", {
         entity_type: "dengue_prevention",
-        description: "Saved all records in Dengue prevention checklist form"
+        description: `Saved ${nonEmptyRecords.length} record(s) in Dengue prevention checklist form`
       });
     }
   };
