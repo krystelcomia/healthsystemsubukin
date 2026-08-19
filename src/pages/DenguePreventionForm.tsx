@@ -1117,80 +1117,80 @@ const DenguePreventionForm = () => {
           thead th {
             border: 1px solid #000000 !important;
             color: #000000 !important;
-            padding: 2.5px 3px !important;
-            font-size: 9px !important;
-            line-height: 1.15 !important;
+            padding: 2px 3px !important;
+            font-size: 8.5px !important;
+            line-height: 1.1 !important;
             background-color: #f1f5f9 !important;
             font-weight: 800 !important;
             text-transform: uppercase !important;
           }
           
           tbody tr {
-            height: 10.4mm !important;
+            height: 9.0mm !important;
           }
 
           tbody td {
             border: 1px solid #000000 !important;
             color: #000000 !important;
-            padding: 1px 5px !important;
-            font-size: 10px !important;
-            line-height: 1.15 !important;
-            height: 10.4mm !important;
+            padding: 1px 4px !important;
+            font-size: 9.5px !important;
+            line-height: 1.1 !important;
+            height: 9.0mm !important;
             vertical-align: middle !important;
           }
 
           tbody td .print-only,
           tbody td span {
             display: inline-block !important;
-            font-size: 10px !important;
+            font-size: 9.5px !important;
             color: #000000 !important;
             font-weight: 600 !important;
-            line-height: 1.15 !important;
+            line-height: 1.1 !important;
           }
 
           tbody td div {
-            font-size: 12px !important;
+            font-size: 11px !important;
             font-weight: bold !important;
             color: #000000 !important;
           }
 
           .header-border {
-            border-bottom: 2px solid #000000 !important;
-            padding-bottom: 3px !important;
-            margin-bottom: 2px !important;
+            border-bottom: 2.25px solid #000000 !important;
+            padding-bottom: 4px !important;
+            margin-bottom: 3px !important;
             display: flex !important;
             flex-direction: row !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 20px !important;
+            gap: 28px !important;
           }
           .header-border img, #saved-form-print-area .header-border img, .print-only img {
-            height: 62px !important;
-            max-height: 62px !important;
+            height: 78px !important;
+            max-height: 80px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
           }
 
           h1 {
-            font-size: 15px !important;
-            letter-spacing: 0.08em !important;
-            margin: 1px 0 !important;
+            font-size: 16px !important;
+            letter-spacing: 0.1em !important;
+            margin: 2px 0 1px 0 !important;
             padding: 0 !important;
             color: #000000 !important;
             font-weight: 800 !important;
           }
 
           p.font-serif {
-            font-size: 10.5px !important;
+            font-size: 11px !important;
             margin-top: 1px !important;
-            margin-bottom: 2px !important;
+            margin-bottom: 3px !important;
             color: #333333 !important;
           }
 
           td img {
-            height: 28px !important;
-            max-height: 30px !important;
+            height: 24px !important;
+            max-height: 25px !important;
             width: auto !important;
             object-fit: contain !important;
             margin: 0 auto !important;
@@ -1210,7 +1210,7 @@ const DenguePreventionForm = () => {
           }
           @page {
             size: A4 portrait;
-            margin: 5mm 6mm;
+            margin: 4mm 6mm 5mm 6mm;
           }
         }
       `}</style>
@@ -1243,9 +1243,9 @@ const DenguePreventionForm = () => {
           <div 
             className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-4 text-center"
           >
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "62px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "62px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "62px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "78px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "78px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "78px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
           </div>
 
           <div className="text-center space-y-1 py-2">
@@ -1659,9 +1659,9 @@ const DenguePreventionForm = () => {
                 <div 
                   className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-4 text-center"
                 >
-                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "62px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "62px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={barangayLogo} alt="Subukin Logo" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "62px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "78px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "78px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={barangayLogo} alt="Subukin Logo" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "78px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
                 </div>
 
                 <div className="text-center space-y-1 py-2">
