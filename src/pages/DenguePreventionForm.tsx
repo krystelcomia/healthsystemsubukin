@@ -218,42 +218,53 @@ const DenguePreventionForm = () => {
     const unarchivedDbRecords = dbRecords.filter((rec: any) => !archivedRecordIds.has(rec.id));
 
     // Active in-progress draft resolution:
-    // Prioritize unarchived database records so saved data persists across logins, logouts, and system updates
+    // Retain all entered data across page navigations, reloads, and logouts
     let initialRows: any[] = [];
 
+    const activeDraftStr = localStorage.getItem(STORAGE_KEY_ACTIVE_DRAFT);
+    let localRows: any[] = [];
+    if (activeDraftStr) {
+      try {
+        const parsed = JSON.parse(activeDraftStr);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          localRows = parsed;
+        }
+      } catch {}
+    }
+
     if (unarchivedDbRecords.length > 0) {
-      // Sort unarchived records by created_at ascending
       const sortedDb = [...unarchivedDbRecords].sort(
         (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
       );
-      initialRows = sortedDb.slice(0, MAX_ROWS);
 
-      // Check if localStorage has unsaved temporary additions
-      const activeDraftStr = localStorage.getItem(STORAGE_KEY_ACTIVE_DRAFT);
-      if (activeDraftStr) {
-        try {
-          const localParsed = JSON.parse(activeDraftStr);
-          if (Array.isArray(localParsed)) {
-            const dbIds = new Set(initialRows.map(r => r.id));
-            const unsavedTemps = localParsed.filter(
-              (r: any) => !isRowEmpty(r) && r.id?.startsWith("temp-") && !dbIds.has(r.id)
-            );
-            if (unsavedTemps.length > 0) {
-              initialRows = [...initialRows, ...unsavedTemps].slice(0, MAX_ROWS);
-            }
+      if (localRows.length > 0) {
+        const dbMap = new Map<string, any>(sortedDb.map((r) => [r.id, r]));
+        initialRows = localRows.slice(0, MAX_ROWS).map((localRow) => {
+          if (localRow.id && dbMap.has(localRow.id)) {
+            const dbRec = dbMap.get(localRow.id);
+            dbMap.delete(localRow.id);
+            return {
+              ...dbRec,
+              ...localRow,
+            };
           }
-        } catch {}
-      }
-    } else {
-      const activeDraftStr = localStorage.getItem(STORAGE_KEY_ACTIVE_DRAFT);
-      if (activeDraftStr) {
-        try {
-          const parsed = JSON.parse(activeDraftStr);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            initialRows = parsed.slice(0, MAX_ROWS);
+          return localRow;
+        });
+
+        // Add any remaining unmapped db records into available empty slots or append
+        dbMap.forEach((remainingDbRec) => {
+          const emptyIdx = initialRows.findIndex((r) => isRowEmpty(r));
+          if (emptyIdx !== -1) {
+            initialRows[emptyIdx] = remainingDbRec;
+          } else if (initialRows.length < MAX_ROWS) {
+            initialRows.push(remainingDbRec);
           }
-        } catch {}
+        });
+      } else {
+        initialRows = sortedDb.slice(0, MAX_ROWS);
       }
+    } else if (localRows.length > 0) {
+      initialRows = localRows.slice(0, MAX_ROWS);
     }
 
     // Pad with blank rows up to MAX_ROWS (20)
@@ -777,7 +788,7 @@ const DenguePreventionForm = () => {
           </div>
           <div>
             <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-              Dengue Prevention — Search & Destroy 2025
+              Dengue Prevention — Search & Destroy 2026
             </h2>
             <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
               Household larvae monitoring, breeding container inspection, and action plan tracking for Barangay Subukin.
@@ -807,7 +818,7 @@ const DenguePreventionForm = () => {
               className="text-xl md:text-2xl font-bold tracking-widest text-foreground uppercase"
               style={{ fontFamily: "var(--font-heading)" }}
             >
-              SEARCH AND DESTROY 2025
+              SEARCH AND DESTROY 2026
             </h1>
             <p className="font-serif italic text-xs md:text-sm text-muted-foreground tracking-wide">
               &ldquo;Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue&rdquo;
@@ -1167,7 +1178,7 @@ const DenguePreventionForm = () => {
                     className="text-xl md:text-2xl font-bold tracking-widest text-foreground uppercase"
                     style={{ fontFamily: "var(--font-heading)" }}
                   >
-                    SEARCH AND DESTROY 2025
+                    SEARCH AND DESTROY 2026
                   </h1>
                   <p className="font-serif italic text-xs md:text-sm text-muted-foreground tracking-wide">
                     &ldquo;Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue&rdquo;
