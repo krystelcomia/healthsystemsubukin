@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getFamilyOnlyResidents, calculateAge } from "@/lib/residentLinker";
+import { getFamilyOnlyResidents, calculateAge, ensureResidentExists } from "@/lib/residentLinker";
 import { 
   allowOnlyNumbers, 
   allowNumbersAndDecimal, 
