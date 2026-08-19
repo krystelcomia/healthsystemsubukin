@@ -503,7 +503,21 @@ const ResidentRecords = () => {
                       <td style={tdStyle}>{d.container_type || "—"}</td>
                       <td style={tdStyle}>{d.has_larvae ? t("common.yes") : t("common.no")}</td>
                       <td style={tdStyle}>{d.action_plan || "—"}</td>
-                      <td style={tdStyle}>{d.signature || "—"}</td>
+                      <td style={tdStyle}>
+                        {d.signature ? (
+                          d.signature.startsWith("data:image") || d.signature.startsWith("http") ? (
+                            <img
+                              src={d.signature}
+                              alt="Signature"
+                              className="h-8 max-w-[130px] object-contain inline-block bg-white dark:bg-slate-900 border border-border/40 rounded p-0.5"
+                            />
+                          ) : (
+                            d.signature
+                          )
+                        ) : (
+                          "—"
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

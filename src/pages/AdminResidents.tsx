@@ -442,6 +442,7 @@ const AdminResidents = () => {
                         <th className="p-2 border">Container</th>
                         <th className="p-2 border">Larvae Present</th>
                         <th className="p-2 border">Action Plan</th>
+                        <th className="p-2 border">Signature</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -451,6 +452,21 @@ const AdminResidents = () => {
                           <td className="p-2 border">{d.container_type || "—"}</td>
                           <td className="p-2 border">{d.has_larvae ? "Yes" : "No"}</td>
                           <td className="p-2 border">{d.action_plan || "—"}</td>
+                          <td className="p-2 border">
+                            {d.signature ? (
+                              d.signature.startsWith("data:image") || d.signature.startsWith("http") ? (
+                                <img
+                                  src={d.signature}
+                                  alt="Signature"
+                                  className="h-7 max-w-[120px] object-contain inline-block bg-white dark:bg-slate-900 border border-border/40 rounded p-0.5"
+                                />
+                              ) : (
+                                d.signature
+                              )
+                            ) : (
+                              "—"
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
