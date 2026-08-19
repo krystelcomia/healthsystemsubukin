@@ -1472,34 +1472,6 @@ const DenguePreventionForm = () => {
         </DialogContent>
       </Dialog>
 
-      {/* 20 Rows Completion Notification Modal */}
-      <Dialog open={limitModalOpen} onOpenChange={setLimitModalOpen}>
-        <DialogContent className="max-w-md bg-card text-card-foreground border border-border">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-heading font-bold text-foreground">
-              20 Rows Completed &amp; Form Saved
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-2 text-sm text-muted-foreground space-y-3">
-            <p>
-              You have completed all 20 rows for Dengue Prevention.
-            </p>
-            <p className="bg-primary/10 p-3 rounded-lg border border-primary/20 text-foreground text-xs leading-relaxed">
-              The filled out data has been automatically moved to <strong className="text-primary font-bold">&ldquo;Saved Dengue Prevention Forms ({savedForms.length + 1})&rdquo;</strong>, ensuring a record is retained even after printing.
-            </p>
-          </div>
-          <DialogFooter className="gap-2 mt-4">
-            <Button 
-              type="button" 
-              onClick={handleAcknowledgeCompletion} 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md w-full"
-            >
-              Acknowledge &amp; Reset Form
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* View / Re-Print Saved Form Modal */}
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
         <DialogContent className="max-w-5xl bg-white text-slate-900 border border-slate-200 max-h-[90vh] overflow-y-auto">
