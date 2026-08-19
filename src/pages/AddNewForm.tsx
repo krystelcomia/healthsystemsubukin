@@ -29,7 +29,8 @@ import {
   ChevronLeft,
   Check,
   ListChecks,
-  ImageIcon
+  ImageIcon,
+  Save
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -205,6 +206,9 @@ const AddNewForm = () => {
         // Jump straight to preview for existing forms
         setCurrentStep(3);
       }
+    } else {
+      // In Add New Form section, clear upload fields so next form can be uploaded cleanly
+      fullReset();
     }
   }, [formId]);
 
@@ -294,7 +298,7 @@ const AddNewForm = () => {
     const newForm: CustomForm = {
       id: formId || `custom-${Date.now()}`,
       title: draftTitle,
-      description: draftDesc || "Deployed custom health form",
+      description: draftDesc || "Official digital record for Barangay Subukin health registry.",
       fields: draftFields,
       imagePreview: imageData || undefined,
       createdAt: new Date().toISOString(),
@@ -305,8 +309,33 @@ const AddNewForm = () => {
 
     saveForms(updated);
     setSavedForms(updated);
-    toast.success(`Form "${draftTitle}" deployed successfully! Available in navigation.`);
-    navigate(`/form/${newForm.id}`);
+    
+    // Clear upload and draft state for fresh upload
+    fullReset();
+
+    toast.success(`Form "${newForm.title}" deployed successfully! Added to health forms.`);
+    navigate(`/forms/custom/${newForm.id}`);
+  };
+
+  const handleSaveRecord = () => {
+    const record = {
+      formId: formId || "custom",
+      formTitle: draftTitle,
+      residentId: selectedResidentId || undefined,
+      fields: draftFields,
+      savedAt: new Date().toISOString(),
+    };
+    
+    const existingRecords = JSON.parse(localStorage.getItem("bhw_custom_form_records") || "[]");
+    existingRecords.unshift(record);
+    localStorage.setItem("bhw_custom_form_records", JSON.stringify(existingRecords));
+
+    const res = residents.find(r => r.id === selectedResidentId);
+    if (res) {
+      toast.success(`Record for ${res.full_name} saved successfully!`);
+    } else {
+      toast.success("Form record saved successfully!");
+    }
   };
 
   const handleDeleteForm = (id: string) => {
@@ -315,7 +344,7 @@ const AddNewForm = () => {
     setSavedForms(updated);
     toast.success("Form deleted.");
     if (formId === id) {
-      navigate("/add-new-form");
+      navigate("/forms/add-new");
     }
   };
 
@@ -651,14 +680,16 @@ const AddNewForm = () => {
       <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-            <Sparkles className="h-6 w-6" />
+            {formId ? <FileText className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
           </div>
           <div>
             <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-              {formId ? `Digital Health Form: ${draftTitle}` : "Manual-to-Digital Form Converter & Deployer"}
+              {formId ? draftTitle : "Manual-to-Digital Form Converter & Deployer"}
             </h2>
             <p className="text-xs md:text-sm text-muted-foreground mt-0.5 max-w-2xl">
-              Scan any paper form to convert it into an accurate digital format. Assign custom titles, model layout after existing system forms, and deploy directly to Health Forms.
+              {formId
+                ? (draftDesc || "Official digital record for Barangay Subukin health registry.")
+                : "Scan any paper form to convert it into an accurate digital format. Assign custom titles, model layout after existing system forms, and deploy directly to Health Forms."}
             </p>
           </div>
         </div>
@@ -937,20 +968,13 @@ const AddNewForm = () => {
               </div>
 
               {/* Form Title Banner & Resident Linker */}
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-2 border-b border-border/50">
-                <div className="flex-1 space-y-1">
-                  <Input
-                    type="text"
-                    value={draftTitle}
-                    onChange={(e) => {
-                      setDraftTitle(e.target.value);
-                      setCustomTitleInput(e.target.value);
-                    }}
-                    placeholder="Assign Form Title..."
-                    className="text-lg md:text-xl font-bold font-heading print-title-input tracking-wide border-b-2 border-slate-400 bg-transparent rounded-none px-1 h-9 focus-visible:ring-0 focus-visible:border-slate-800 text-slate-900 dark:text-slate-100 w-full"
-                  />
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-3 border-b border-border/50">
+                <div className="flex-1">
+                  <h1 className="text-base md:text-lg font-bold font-heading uppercase text-foreground tracking-wide print-title-heading">
+                    {draftTitle || "Health Form Record"}
+                  </h1>
                   {draftDesc && (
-                    <p className="text-xs text-slate-600 dark:text-slate-400 no-print">
+                    <p className="text-xs text-muted-foreground no-print mt-0.5">
                       {draftDesc}
                     </p>
                   )}
@@ -1038,46 +1062,78 @@ const AddNewForm = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 no-print w-full md:w-auto justify-end">
+                  {formId ? (
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={resetDraft}
+                        className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset
+                      </Button>
 
-                  {!formId && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => setCurrentStep(2)}
-                      className="gap-1.5 text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
-                    >
-                      <Settings2 className="h-4 w-4" /> Edit Fields
-                    </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.print()}
+                        className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      >
+                        <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print Form
+                      </Button>
+
+                      <Button
+                        type="button"
+                        onClick={handleSaveRecord}
+                        size="sm"
+                        className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm px-6"
+                      >
+                        <Save className="h-4 w-4" /> Save
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setCurrentStep(2)}
+                        className="gap-1.5 text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      >
+                        <Settings2 className="h-4 w-4" /> Edit Fields
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={resetDraft}
+                        className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset Form
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.print()}
+                        className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      >
+                        <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print Form
+                      </Button>
+
+                      <Button
+                        type="button"
+                        onClick={handleDeployForm}
+                        size="sm"
+                        className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm px-5"
+                      >
+                        <Rocket className="h-4 w-4" /> Deploy Form
+                      </Button>
+                    </>
                   )}
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={resetDraft}
-                    className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset Form
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.print()}
-                    className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
-                  >
-                    <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print Form
-                  </Button>
-
-                  <Button
-                    type="button"
-                    onClick={handleDeployForm}
-                    size="sm"
-                    className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm px-5"
-                  >
-                    <Rocket className="h-4 w-4" /> Deploy Form
-                  </Button>
                 </div>
               </div>
 
@@ -1098,56 +1154,75 @@ const AddNewForm = () => {
         </div>
       )}
 
-      {/* ─── DEPLOYED CUSTOM FORMS LIST ─── */}
-      <Card className="border-border/50 shadow-sm no-print">
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-base font-heading flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" /> Deployed Custom Health Forms
-          </CardTitle>
-          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
-            {savedForms.length} Active Form(s)
-          </Badge>
-        </CardHeader>
-        <CardContent>
-          {savedForms.length === 0 ? (
-            <p className="text-xs text-muted-foreground italic">
-              No deployed custom forms yet. Scan or convert a paper form above to deploy your first digital health form.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {savedForms.map((f) => (
-                <div key={f.id} className="rounded-xl border border-border/60 p-4 bg-card hover:border-primary/40 transition-colors space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-semibold text-sm text-foreground truncate">{f.title}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">
-                        {f.description || `${f.fields.length} preserved element(s)`}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground/70 mt-1">
-                        Deployed: {new Date(f.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-8 text-xs gap-1 border-primary/30 text-primary"
-                        onClick={() => navigate(`/forms/custom/${f.id}`)}
-                      >
-                        <Eye className="h-3.5 w-3.5" /> Open
-                      </Button>
-                      <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteSaved(f.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+      {/* ─── DEPLOYED CUSTOM FORMS LIST (Only shown on Add New Form wizard, NOT on deployed forms) ─── */}
+      {!formId && (
+        <Card className="border-border/50 shadow-sm no-print">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-base font-heading flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" /> Deployed Custom Health Forms
+            </CardTitle>
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
+              {savedForms.length} Active Form(s)
+            </Badge>
+          </CardHeader>
+          <CardContent>
+            {savedForms.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic">
+                No deployed custom forms yet. Scan or convert a paper form above to deploy your first digital health form.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {savedForms.map((f) => (
+                  <div key={f.id} className="rounded-xl border border-border/60 p-4 bg-card hover:border-primary/40 transition-colors space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm text-foreground truncate">{f.title}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {f.description || `${f.fields.length} preserved element(s)`}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/70 mt-1">
+                          Deployed: {new Date(f.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs gap-1 border-primary/30 text-primary"
+                          onClick={() => navigate(`/forms/custom/${f.id}`)}
+                        >
+                          <Eye className="h-3.5 w-3.5" /> Open
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs gap-1 text-muted-foreground"
+                          onClick={() => {
+                            setDraftTitle(f.title);
+                            setCustomTitleInput(f.title);
+                            setDraftDesc(f.description);
+                            setDraftFields(f.fields);
+                            setImageData(f.imagePreview || null);
+                            setCurrentStep(2);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                        >
+                          <Settings2 className="h-3.5 w-3.5" /> Edit
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteSaved(f.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
