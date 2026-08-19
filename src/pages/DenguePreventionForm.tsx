@@ -58,7 +58,6 @@ const DenguePreventionForm = () => {
   const [householdHeads, setHouseholdHeads] = useState<HouseholdHeadOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [limitModalOpen, setLimitModalOpen] = useState(false);
 
   const [savedForms, setSavedForms] = useState<SavedDengueForm[]>([]);
   const [viewingSavedForm, setViewingSavedForm] = useState<SavedDengueForm | null>(null);
@@ -468,6 +467,126 @@ const DenguePreventionForm = () => {
     }
   };
 
+  const isCompletingRef = useRef(false);
+
+  const isRowComplete = (row: any) => {
+    if (!row) return false;
+    return Boolean(
+      row.household_name?.trim() &&
+      row.container_type?.trim() &&
+      row.has_larvae !== null &&
+      row.has_larvae !== undefined &&
+      row.action_plan?.trim() &&
+      row.signature?.trim()
+    );
+  };
+
+  // Automatically archives completed form, saves to history, notifies user, and resets active form
+  const archiveAndResetForm = async (completedRows: any[]) => {
+    if (isCompletingRef.current) return;
+    isCompletingRef.current = true;
+
+    // Cancel pending debounce timeouts so they don't overwrite
+    Object.values(saveTimeoutsRef.current).forEach((tId) => clearTimeout(tId));
+    saveTimeoutsRef.current = {};
+
+    setSaving(true);
+    const batchId = `batch_${Date.now()}`;
+    const batchTimestamp = new Date().toISOString();
+
+    try {
+      // 1. Ensure all rows are saved to database with proper IDs
+      const savedDbRecords = await Promise.all(
+        completedRows.slice(0, MAX_ROWS).map(async (record) => {
+          const resId = await resolveResidentId(record.household_name, record.resident_id);
+
+          if (record.id && !record.id.startsWith("temp-") && !record.id.startsWith("blank-")) {
+            const { data, error } = await supabase
+              .from("dengue_prevention")
+              .update({
+                resident_id: resId,
+                household_name: record.household_name || "",
+                container_type: record.container_type || "",
+                has_larvae: record.has_larvae,
+                action_plan: record.action_plan || "",
+                signature: record.signature || "",
+              })
+              .eq("id", record.id)
+              .select()
+              .single();
+
+            if (!error && data) return data;
+            return record;
+          } else {
+            const { data, error } = await supabase
+              .from("dengue_prevention")
+              .insert({
+                resident_id: resId,
+                household_name: record.household_name || "",
+                container_type: record.container_type || "",
+                has_larvae: record.has_larvae,
+                action_plan: record.action_plan || "",
+                signature: record.signature || "",
+                created_at: batchTimestamp,
+              })
+              .select()
+              .single();
+
+            if (!error && data) return data;
+            return record;
+          }
+        })
+      );
+
+      // 2. Add to saved batches map in storage
+      const savedBatchesMap = getSavedBatchesFromStorage();
+      savedBatchesMap[batchId] = {
+        timestamp: batchTimestamp,
+        recordIds: savedDbRecords.map((r) => r.id),
+        records: savedDbRecords,
+      };
+      saveBatchesToStorage(savedBatchesMap);
+
+      // 3. Clear active draft & reset to blank rows for new 20 items
+      localStorage.removeItem(STORAGE_KEY_ACTIVE_DRAFT);
+      const newBlankRows = createBlankRows(MAX_ROWS);
+      setRecords(newBlankRows);
+      localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(newBlankRows));
+
+      // 4. Trigger completion toast notification
+      toast.success(
+        "Form complete! The filled form has been saved to the history section below and reset for new entries.",
+        { duration: 6000 }
+      );
+
+      logActivity("create_dengue_batch", {
+        entity_type: "dengue_prevention",
+        description: `Completed Dengue prevention checklist form (20 rows) and saved to history`,
+      });
+
+      window.dispatchEvent(new Event("resident-records-updated"));
+      window.dispatchEvent(new Event("dengue-records-updated"));
+
+      await fetchRecords();
+    } catch (err) {
+      console.error("Completion error:", err);
+      toast.error("Failed to save completed form to history.");
+    } finally {
+      setSaving(false);
+      setTimeout(() => {
+        isCompletingRef.current = false;
+      }, 1000);
+    }
+  };
+
+  const checkFormCompletion = (updatedRows: any[]) => {
+    if (loading || isCompletingRef.current) return;
+    const completedCount = updatedRows.slice(0, MAX_ROWS).filter(isRowComplete).length;
+    if (completedCount >= MAX_ROWS) {
+      archiveAndResetForm(updatedRows);
+    }
+  };
+
   const queueAutoSaveRow = (row: any) => {
     if (!row || !row.id) return;
     if (saveTimeoutsRef.current[row.id]) {
@@ -498,6 +617,7 @@ const DenguePreventionForm = () => {
         }
         return r;
       });
+      checkFormCompletion(updated);
       return updated;
     });
   };
@@ -512,6 +632,7 @@ const DenguePreventionForm = () => {
         }
         return r;
       });
+      checkFormCompletion(updated);
       return updated;
     });
   };
@@ -526,6 +647,7 @@ const DenguePreventionForm = () => {
         }
         return r;
       });
+      checkFormCompletion(updated);
       return updated;
     });
   };
@@ -546,6 +668,7 @@ const DenguePreventionForm = () => {
       if (targetRow) {
         autoSaveRowToDb(targetRow);
       }
+      checkFormCompletion(updated);
       return updated;
     });
   };
@@ -564,13 +687,14 @@ const DenguePreventionForm = () => {
         }
         return r;
       });
+      checkFormCompletion(updated);
       return updated;
     });
   };
 
   // Save Progress button: smoothly saves current records to DB while keeping the view directly on the form
   const handleSaveAll = async () => {
-    const nonEmptyRecords = records.filter(r => !isRowEmpty(r));
+    const nonEmptyRecords = records.filter((r) => !isRowEmpty(r));
     if (nonEmptyRecords.length === 0) {
       toast.error(t("dengue.noRecordsToSave") || "No records to save.");
       return;
@@ -597,7 +721,7 @@ const DenguePreventionForm = () => {
                 container_type: record.container_type || "",
                 has_larvae: record.has_larvae,
                 action_plan: record.action_plan || "",
-                signature: record.signature || ""
+                signature: record.signature || "",
               })
               .eq("id", record.id)
               .select()
@@ -614,7 +738,7 @@ const DenguePreventionForm = () => {
                 container_type: record.container_type || "",
                 has_larvae: record.has_larvae,
                 action_plan: record.action_plan || "",
-                signature: record.signature || ""
+                signature: record.signature || "",
               })
               .select()
               .single();
@@ -635,8 +759,10 @@ const DenguePreventionForm = () => {
 
       logActivity("update_dengue", {
         entity_type: "dengue_prevention",
-        description: `Saved ${nonEmptyRecords.length} record(s) in Dengue prevention checklist form`
+        description: `Saved ${nonEmptyRecords.length} record(s) in Dengue prevention checklist form`,
       });
+
+      checkFormCompletion(updatedRecords);
     } catch (err) {
       console.error("Failed to save progress:", err);
       toast.error("Some records failed to save. Please try again.");
@@ -645,90 +771,8 @@ const DenguePreventionForm = () => {
     }
   };
 
-  // Triggered when 20 rows are completed: saves to DB, archives batch into Saved Forms, and resets active draft
-  const handleAcknowledgeCompletion = async () => {
-    setLimitModalOpen(false);
-
-    const nonEmptyRecords = records.filter((r) => !isRowEmpty(r));
-    if (nonEmptyRecords.length === 0) return;
-
-    setSaving(true);
-    const batchId = `batch_${Date.now()}`;
-    const batchTimestamp = new Date().toISOString();
-    const savedDbRecords: any[] = [];
-
-    let hasError = false;
-
-    for (const record of records) {
-      if (isRowEmpty(record)) continue;
-      const resId = await resolveResidentId(record.household_name, record.resident_id);
-
-      if (record.id.startsWith("temp-")) {
-        const { data, error } = await supabase
-          .from("dengue_prevention")
-          .insert({
-            resident_id: resId,
-            household_name: record.household_name,
-            container_type: record.container_type,
-            has_larvae: record.has_larvae,
-            action_plan: record.action_plan,
-            signature: record.signature,
-            created_at: batchTimestamp
-          })
-          .select()
-          .single();
-
-        if (error) {
-          hasError = true;
-        } else if (data) {
-          savedDbRecords.push(data);
-        }
-      } else {
-        const { data, error } = await supabase
-          .from("dengue_prevention")
-          .update({
-            resident_id: resId,
-            household_name: record.household_name,
-            container_type: record.container_type,
-            has_larvae: record.has_larvae,
-            action_plan: record.action_plan,
-            signature: record.signature
-          })
-          .eq("id", record.id)
-          .select()
-          .single();
-
-        if (error) {
-          hasError = true;
-        } else if (data) {
-          savedDbRecords.push(data);
-        }
-      }
-    }
-
-    setSaving(false);
-
-    if (!hasError) {
-      const savedBatchesMap = getSavedBatchesFromStorage();
-      savedBatchesMap[batchId] = {
-        timestamp: batchTimestamp,
-        recordIds: savedDbRecords.map((r) => r.id),
-        records: savedDbRecords
-      };
-      saveBatchesToStorage(savedBatchesMap);
-
-      // Clear active draft & reset to blank rows for new 20 items
-      localStorage.removeItem(STORAGE_KEY_ACTIVE_DRAFT);
-      setRecords(createBlankRows(MAX_ROWS));
-
-      toast.success(`Data moved to Saved Dengue Prevention Forms (${savedForms.length + 1}). Form reset for new entries.`);
-      await fetchRecords();
-    }
-  };
-
   // Print Form button: triggers window.print while retaining all entered records in the form.
   const handlePrintForm = () => {
-    setLimitModalOpen(false);
     window.print();
   };
 
