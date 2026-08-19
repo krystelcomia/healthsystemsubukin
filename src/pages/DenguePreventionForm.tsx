@@ -162,14 +162,19 @@ const DenguePreventionForm = () => {
     const savedBatchesMap = getSavedBatchesFromStorage();
 
     const recordToBatchMap = new Map<string, string>();
+    const archivedRecordIds = new Set<string>();
+
     Object.entries(savedBatchesMap).forEach(([batchId, batch]) => {
-      batch.recordIds.forEach((recId) => {
+      (batch.recordIds || []).forEach((recId) => {
         recordToBatchMap.set(recId, batchId);
+        archivedRecordIds.add(recId);
+      });
+      (batch.records || []).forEach((r) => {
+        if (r.id) archivedRecordIds.add(r.id);
       });
     });
 
     const batchGroupsMap = new Map<string, { id: string; timestamp: string; records: any[] }>();
-    const unassignedRecords: any[] = [];
 
     dbRecords.forEach((rec: any) => {
       const assignedBatchId = recordToBatchMap.get(rec.id);
@@ -209,34 +214,64 @@ const DenguePreventionForm = () => {
 
     setSavedForms(compiledSavedForms);
 
-    // Load active working draft from localStorage if available
-    const activeDraftStr = localStorage.getItem(STORAGE_KEY_ACTIVE_DRAFT);
-    if (activeDraftStr) {
-      try {
-        const parsed = JSON.parse(activeDraftStr);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const padded = parsed.slice(0, MAX_ROWS);
-          for (let i = padded.length; i < MAX_ROWS; i++) {
-            padded.push({
-              id: `temp-${i}-${Date.now()}`,
-              resident_id: null,
-              household_name: "",
-              container_type: "",
-              has_larvae: null,
-              action_plan: "",
-              signature: ""
-            });
+    // Unarchived records from database (saved via "Save Progress")
+    const unarchivedDbRecords = dbRecords.filter((rec: any) => !archivedRecordIds.has(rec.id));
+
+    // Active in-progress draft resolution:
+    // Prioritize unarchived database records so saved data persists across logins, logouts, and system updates
+    let initialRows: any[] = [];
+
+    if (unarchivedDbRecords.length > 0) {
+      // Sort unarchived records by created_at ascending
+      const sortedDb = [...unarchivedDbRecords].sort(
+        (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+      );
+      initialRows = sortedDb.slice(0, MAX_ROWS);
+
+      // Check if localStorage has unsaved temporary additions
+      const activeDraftStr = localStorage.getItem(STORAGE_KEY_ACTIVE_DRAFT);
+      if (activeDraftStr) {
+        try {
+          const localParsed = JSON.parse(activeDraftStr);
+          if (Array.isArray(localParsed)) {
+            const dbIds = new Set(initialRows.map(r => r.id));
+            const unsavedTemps = localParsed.filter(
+              (r: any) => !isRowEmpty(r) && r.id?.startsWith("temp-") && !dbIds.has(r.id)
+            );
+            if (unsavedTemps.length > 0) {
+              initialRows = [...initialRows, ...unsavedTemps].slice(0, MAX_ROWS);
+            }
           }
-          setRecords(padded);
-        } else {
-          setRecords(createBlankRows(MAX_ROWS));
-        }
-      } catch {
-        setRecords(createBlankRows(MAX_ROWS));
+        } catch {}
       }
     } else {
-      setRecords(createBlankRows(MAX_ROWS));
+      const activeDraftStr = localStorage.getItem(STORAGE_KEY_ACTIVE_DRAFT);
+      if (activeDraftStr) {
+        try {
+          const parsed = JSON.parse(activeDraftStr);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            initialRows = parsed.slice(0, MAX_ROWS);
+          }
+        } catch {}
+      }
     }
+
+    // Pad with blank rows up to MAX_ROWS (20)
+    const padded = [...initialRows];
+    for (let i = padded.length; i < MAX_ROWS; i++) {
+      padded.push({
+        id: `temp-${i}-${Date.now()}`,
+        resident_id: null,
+        household_name: "",
+        container_type: "",
+        has_larvae: null,
+        action_plan: "",
+        signature: ""
+      });
+    }
+
+    setRecords(padded);
+    localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(padded));
 
     setLoading(false);
   };
@@ -388,12 +423,14 @@ const DenguePreventionForm = () => {
 
     setSaving(true);
     let hasError = false;
+    const updatedRecords = [...records];
 
-    for (const record of records) {
+    for (let i = 0; i < updatedRecords.length; i++) {
+      const record = updatedRecords[i];
       if (isRowEmpty(record)) continue;
       const resId = await resolveResidentId(record.household_name, record.resident_id);
 
-      if (record.id.startsWith("temp-")) {
+      if (record.id.startsWith("temp-") || record.id.startsWith("blank-")) {
         const { data, error } = await supabase
           .from("dengue_prevention")
           .insert({
@@ -410,10 +447,10 @@ const DenguePreventionForm = () => {
         if (error) {
           hasError = true;
         } else if (data) {
-          setRecords(prev => prev.map(r => r.id === record.id ? data : r));
+          updatedRecords[i] = data;
         }
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("dengue_prevention")
           .update({
             resident_id: resId,
@@ -423,19 +460,26 @@ const DenguePreventionForm = () => {
             action_plan: record.action_plan,
             signature: record.signature
           })
-          .eq("id", record.id);
+          .eq("id", record.id)
+          .select()
+          .single();
 
         if (error) {
           hasError = true;
+        } else if (data) {
+          updatedRecords[i] = data;
         }
       }
     }
+
+    setRecords(updatedRecords);
+    localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(updatedRecords));
 
     setSaving(false);
     if (hasError) {
       toast.error("Some records failed to save. Please try again.");
     } else {
-      toast.success(t("dengue.saveSuccess"));
+      toast.success(t("dengue.saveSuccess") || "Progress saved! All data is securely stored in the system.");
       logActivity("update_dengue", {
         entity_type: "dengue_prevention",
         description: "Saved all records in Dengue prevention checklist form"
