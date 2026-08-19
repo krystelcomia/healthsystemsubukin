@@ -915,9 +915,6 @@ const FamilyDataForm = () => {
                   <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
                 </div>
                 <div className="mt-3 text-center">
-                  <h2 className="text-base font-extrabold uppercase tracking-wider text-slate-900">
-                    BARANGAY HEALTH SYSTEM — FAMILY DATA RECORD FORM
-                  </h2>
                   <p className="text-xs text-slate-600 italic">
                     Official Barangay Household Census &amp; Demographics Record
                   </p>
