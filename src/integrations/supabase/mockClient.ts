@@ -591,9 +591,7 @@ export function seedMockDatabase() {
   if (!db['consultations']) db['consultations'] = [];
   if (!db['family_data']) db['family_data'] = [];
   if (!db['philpen_health']) db['philpen_health'] = [];
-  db['dengue_prevention'] = [];
-  localStorage.removeItem("bhw_dengue_saved_batches");
-  localStorage.removeItem("bhw_dengue_active_draft");
+  if (!db['dengue_prevention']) db['dengue_prevention'] = [];
 
   if (!db['user_sessions']) db['user_sessions'] = [];
   if (!db['user_activity_logs']) db['user_activity_logs'] = [];
