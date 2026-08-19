@@ -112,15 +112,6 @@ const DenguePreventionForm = () => {
     }
   }, [records]);
 
-  // Check if all 20 rows are completed to notify user and offer archiving
-  useEffect(() => {
-    if (loading) return;
-    const filledCount = records.filter(r => !isRowEmpty(r)).length;
-    if (filledCount >= MAX_ROWS && !limitModalOpen) {
-      setLimitModalOpen(true);
-    }
-  }, [records, loading]);
-
   const fetchHouseholdHeads = async () => {
     try {
       const [famRes, resRes] = await Promise.all([
@@ -577,7 +568,7 @@ const DenguePreventionForm = () => {
     });
   };
 
-  // Save Progress button: explicitly saves current records to Supabase WITHOUT transferring to Saved Forms list
+  // Save Progress button: smoothly saves current records to DB while keeping the view directly on the form
   const handleSaveAll = async () => {
     const nonEmptyRecords = records.filter(r => !isRowEmpty(r));
     if (nonEmptyRecords.length === 0) {
@@ -586,66 +577,59 @@ const DenguePreventionForm = () => {
     }
 
     setSaving(true);
-    let hasError = false;
-    const updatedRecords = [...records];
 
-    for (let i = 0; i < updatedRecords.length; i++) {
-      const record = updatedRecords[i];
-      if (isRowEmpty(record)) continue;
-      const resId = await resolveResidentId(record.household_name, record.resident_id);
+    // Cancel pending debounce timeouts so they don't conflict
+    Object.values(saveTimeoutsRef.current).forEach((tId) => clearTimeout(tId));
+    saveTimeoutsRef.current = {};
 
-      if (record.id.startsWith("temp-") || record.id.startsWith("blank-")) {
-        const { data, error } = await supabase
-          .from("dengue_prevention")
-          .insert({
-            resident_id: resId,
-            household_name: record.household_name,
-            container_type: record.container_type,
-            has_larvae: record.has_larvae,
-            action_plan: record.action_plan,
-            signature: record.signature
-          })
-          .select()
-          .single();
+    try {
+      const updatedRecords = await Promise.all(
+        records.map(async (record) => {
+          if (isRowEmpty(record)) return record;
+          const resId = await resolveResidentId(record.household_name, record.resident_id);
 
-        if (error) {
-          hasError = true;
-        } else if (data) {
-          updatedRecords[i] = data;
-        }
-      } else {
-        const { data, error } = await supabase
-          .from("dengue_prevention")
-          .update({
-            resident_id: resId,
-            household_name: record.household_name,
-            container_type: record.container_type,
-            has_larvae: record.has_larvae,
-            action_plan: record.action_plan,
-            signature: record.signature
-          })
-          .eq("id", record.id)
-          .select()
-          .single();
+          if (record.id && !record.id.startsWith("temp-") && !record.id.startsWith("blank-")) {
+            const { data, error } = await supabase
+              .from("dengue_prevention")
+              .update({
+                resident_id: resId,
+                household_name: record.household_name || "",
+                container_type: record.container_type || "",
+                has_larvae: record.has_larvae,
+                action_plan: record.action_plan || "",
+                signature: record.signature || ""
+              })
+              .eq("id", record.id)
+              .select()
+              .single();
 
-        if (error) {
-          hasError = true;
-        } else if (data) {
-          updatedRecords[i] = data;
-        }
-      }
-    }
+            if (!error && data) return { ...record, ...data };
+            return record;
+          } else {
+            const { data, error } = await supabase
+              .from("dengue_prevention")
+              .insert({
+                resident_id: resId,
+                household_name: record.household_name || "",
+                container_type: record.container_type || "",
+                has_larvae: record.has_larvae,
+                action_plan: record.action_plan || "",
+                signature: record.signature || ""
+              })
+              .select()
+              .single();
 
-    setRecords(updatedRecords);
-    localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(updatedRecords));
+            if (!error && data) return { ...record, ...data };
+            return record;
+          }
+        })
+      );
 
-    setSaving(false);
-    if (hasError) {
-      toast.error("Some records failed to save. Please try again.");
-    } else {
-      toast.success(t("dengue.saveSuccess") || "Progress saved! All entries are securely stored in the system and linked to resident records.");
-      
-      // Dispatch system events so Resident Records and Dashboard update immediately
+      setRecords(updatedRecords);
+      localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(updatedRecords));
+
+      toast.success(t("dengue.saveSuccess") || "Progress saved! All entries remain on the form.");
+
       window.dispatchEvent(new Event("resident-records-updated"));
       window.dispatchEvent(new Event("dengue-records-updated"));
 
@@ -653,6 +637,11 @@ const DenguePreventionForm = () => {
         entity_type: "dengue_prevention",
         description: `Saved ${nonEmptyRecords.length} record(s) in Dengue prevention checklist form`
       });
+    } catch (err) {
+      console.error("Failed to save progress:", err);
+      toast.error("Some records failed to save. Please try again.");
+    } finally {
+      setSaving(false);
     }
   };
 
