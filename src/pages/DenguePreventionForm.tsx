@@ -12,6 +12,7 @@ import { ensureResidentExists } from "@/lib/residentLinker";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { allowOnlyLetters, sanitizeLetters } from "@/lib/inputValidation";
 
 interface HouseholdHeadOption {
   id: string | null;
@@ -807,7 +808,8 @@ const DenguePreventionForm = () => {
                         list="household-heads-list"
                         type="text"
                         value={rec.household_name || ""}
-                        onChange={(e) => handleHouseholdNameChange(rec.id, e.target.value)}
+                        onKeyDown={allowOnlyLetters}
+                        onChange={(e) => handleHouseholdNameChange(rec.id, sanitizeLetters(e.target.value))}
                         className="cell-input"
                         placeholder=""
                       />

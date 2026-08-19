@@ -19,6 +19,16 @@ import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import {
+  allowOnlyNumbers,
+  allowNumbersAndDecimal,
+  allowNumbersAndSlash,
+  allowOnlyLetters,
+  sanitizeNumbers,
+  sanitizeNumbersAndDecimal,
+  sanitizeNumbersAndSlash,
+  sanitizeLetters,
+} from "@/lib/inputValidation";
 
 // --- INTERFACES FOR FP FORM 1 ---
 export interface FPSideAData {
@@ -684,11 +694,11 @@ const FamilyPlanningForm = () => {
               <div className="font-extrabold text-slate-800 dark:text-slate-200">FP FORM 1</div>
               <div className="flex items-center gap-1">
                 <span className="font-bold">FP NO / CLIENT ID:</span>
-                <input type="text" value={fpState.sideA.fp_no} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, fp_no: e.target.value } }))} className="w-24 border-b border-slate-400 bg-transparent text-center text-xs font-semibold outline-none" />
+                <input type="text" value={fpState.sideA.fp_no} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, fp_no: sanitizeNumbers(e.target.value) } }))} className="w-24 border-b border-slate-400 bg-transparent text-center text-xs font-semibold outline-none" />
               </div>
               <div className="flex items-center gap-1">
                 <span className="font-bold">PHILHEALTH NO:</span>
-                <input type="text" value={fpState.sideA.philhealth_no} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, philhealth_no: e.target.value } }))} className="w-24 border-b border-slate-400 bg-transparent text-center text-xs font-semibold outline-none" />
+                <input type="text" value={fpState.sideA.philhealth_no} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, philhealth_no: sanitizeNumbers(e.target.value) } }))} className="w-24 border-b border-slate-400 bg-transparent text-center text-xs font-semibold outline-none" />
               </div>
               <div className="flex items-center justify-end gap-2 text-[10px]">
                 <span className="font-bold">NHTS?</span>
@@ -709,15 +719,15 @@ const FamilyPlanningForm = () => {
               <div className="md:col-span-1 font-bold text-slate-800 dark:text-slate-200">NAME OF CLIENT:</div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Last Name</span>
-                <Input type="text" value={fpState.sideA.client_last_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_last_name: e.target.value } }))} className={lineInputClass} />
+                <Input type="text" value={fpState.sideA.client_last_name} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_last_name: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Given Name</span>
-                <Input type="text" value={fpState.sideA.client_given_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_given_name: e.target.value } }))} className={lineInputClass} />
+                <Input type="text" value={fpState.sideA.client_given_name} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_given_name: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
               </div>
               <div className="w-16">
                 <span className="text-[10px] text-slate-500 block">MI</span>
-                <Input type="text" value={fpState.sideA.client_mi} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_mi: e.target.value } }))} className={lineInputClass} />
+                <Input type="text" value={fpState.sideA.client_mi} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_mi: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Date of Birth</span>
@@ -726,11 +736,11 @@ const FamilyPlanningForm = () => {
               <div className="grid grid-cols-2 gap-1">
                 <div>
                   <span className="text-[10px] text-slate-500 block">Age</span>
-                  <Input type="text" value={fpState.sideA.client_age} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_age: e.target.value } }))} className={lineInputClass} />
+                  <Input type="text" value={fpState.sideA.client_age} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_age: sanitizeNumbers(e.target.value) } }))} className={lineInputClass} />
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-500 block">Occupation</span>
-                  <Input type="text" value={fpState.sideA.client_occupation} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_occupation: e.target.value } }))} className={lineInputClass} />
+                  <Input type="text" value={fpState.sideA.client_occupation} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, client_occupation: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
                 </div>
               </div>
             </div>
@@ -740,7 +750,7 @@ const FamilyPlanningForm = () => {
               <div className="md:col-span-1 font-bold text-slate-800 dark:text-slate-200">ADDRESS:</div>
               <div className="w-16">
                 <span className="text-[10px] text-slate-500 block">No.</span>
-                <Input type="text" value={fpState.sideA.address_no} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_no: e.target.value } }))} className={lineInputClass} />
+                <Input type="text" value={fpState.sideA.address_no} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_no: sanitizeNumbers(e.target.value) } }))} className={lineInputClass} />
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Street / Sitio</span>
@@ -748,28 +758,28 @@ const FamilyPlanningForm = () => {
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Barangay</span>
-                <Input type="text" value={fpState.sideA.address_barangay} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_barangay: e.target.value } }))} className={lineInputClass} />
+                <Input type="text" value={fpState.sideA.address_barangay} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_barangay: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Municipality/City</span>
-                <Input type="text" value={fpState.sideA.address_municipality} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_municipality: e.target.value } }))} className={lineInputClass} />
+                <Input type="text" value={fpState.sideA.address_municipality} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_municipality: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Province</span>
-                <Input type="text" value={fpState.sideA.address_province} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_province: e.target.value } }))} className={lineInputClass} />
+                <Input type="text" value={fpState.sideA.address_province} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, address_province: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Contact Number</span>
-                <Input type="text" value={fpState.sideA.contact_number} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, contact_number: e.target.value } }))} className={lineInputClass} />
+                <Input type="text" value={fpState.sideA.contact_number} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, contact_number: sanitizeNumbers(e.target.value) } }))} className={lineInputClass} />
               </div>
               <div className="grid grid-cols-2 gap-1">
                 <div>
                   <span className="text-[10px] text-slate-500 block">Civil Status</span>
-                  <Input type="text" value={fpState.sideA.civil_status} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, civil_status: e.target.value } }))} className={lineInputClass} />
+                  <Input type="text" value={fpState.sideA.civil_status} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, civil_status: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-500 block">Religion</span>
-                  <Input type="text" value={fpState.sideA.religion} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, religion: e.target.value } }))} className={lineInputClass} />
+                  <Input type="text" value={fpState.sideA.religion} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, religion: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
                 </div>
               </div>
             </div>
@@ -779,15 +789,15 @@ const FamilyPlanningForm = () => {
               <div className="md:col-span-1 font-bold text-slate-800 dark:text-slate-200">NAME OF SPOUSE:</div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Last Name</span>
-                <Input type="text" value={fpState.sideA.spouse_last_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_last_name: e.target.value } }))} className={lineInputClass} />
+                <Input type="text" value={fpState.sideA.spouse_last_name} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_last_name: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Given Name</span>
-                <Input type="text" value={fpState.sideA.spouse_given_name} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_given_name: e.target.value } }))} className={lineInputClass} />
+                <Input type="text" value={fpState.sideA.spouse_given_name} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_given_name: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
               </div>
               <div className="w-16">
                 <span className="text-[10px] text-slate-500 block">MI</span>
-                <Input type="text" value={fpState.sideA.spouse_mi} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_mi: e.target.value } }))} className={lineInputClass} />
+                <Input type="text" value={fpState.sideA.spouse_mi} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_mi: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Date of Birth</span>
@@ -796,11 +806,11 @@ const FamilyPlanningForm = () => {
               <div className="grid grid-cols-2 gap-1">
                 <div>
                   <span className="text-[10px] text-slate-500 block">Age</span>
-                  <Input type="text" value={fpState.sideA.spouse_age} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_age: e.target.value } }))} className={lineInputClass} />
+                  <Input type="text" value={fpState.sideA.spouse_age} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_age: sanitizeNumbers(e.target.value) } }))} className={lineInputClass} />
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-500 block">Occupation</span>
-                  <Input type="text" value={fpState.sideA.spouse_occupation} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_occupation: e.target.value } }))} className={lineInputClass} />
+                  <Input type="text" value={fpState.sideA.spouse_occupation} onKeyDown={allowOnlyLetters} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, spouse_occupation: sanitizeLetters(e.target.value) } }))} className={lineInputClass} />
                 </div>
               </div>
             </div>
@@ -809,7 +819,7 @@ const FamilyPlanningForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center border-t border-slate-300 dark:border-slate-700 pt-2 text-[11px]">
               <div className="flex items-center gap-2">
                 <span className="font-bold">NO. OF LIVING CHILDREN:</span>
-                <Input type="text" value={fpState.sideA.no_living_children} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, no_living_children: e.target.value } }))} className="w-16 h-6 border-b border-t-0 border-x-0 rounded-none text-center" />
+                <Input type="text" value={fpState.sideA.no_living_children} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, no_living_children: sanitizeNumbers(e.target.value) } }))} className="w-16 h-6 border-b border-t-0 border-x-0 rounded-none text-center" />
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-bold">PLAN TO HAVE MORE CHILDREN?</span>
@@ -823,7 +833,7 @@ const FamilyPlanningForm = () => {
               <div className="flex items-center gap-2">
                 <span className="font-bold">AVERAGE MONTHLY INCOME:</span>
                 <span className="font-semibold">₱</span>
-                <Input type="text" value={fpState.sideA.average_monthly_income} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, average_monthly_income: e.target.value } }))} className="w-28 h-6 border-b border-t-0 border-x-0 rounded-none text-center" />
+                <Input type="text" value={fpState.sideA.average_monthly_income} onKeyDown={allowNumbersAndDecimal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, average_monthly_income: sanitizeNumbersAndDecimal(e.target.value) } }))} className="w-28 h-6 border-b border-t-0 border-x-0 rounded-none text-center" />
               </div>
             </div>
           </div>
@@ -1006,28 +1016,28 @@ const FamilyPlanningForm = () => {
                     <div className="flex items-center gap-1">
                       <span>Number of pregnancies:</span>
                       <span className="font-bold">G</span>
-                      <Input type="text" value={fpState.sideA.obstetrical_history.g_pregnancies} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, g_pregnancies: e.target.value } } }))} className="w-8 h-5 border-b text-center p-0" />
+                      <Input type="text" value={fpState.sideA.obstetrical_history.g_pregnancies} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, g_pregnancies: sanitizeNumbers(e.target.value) } } }))} className="w-8 h-5 border-b text-center p-0" />
                       <span className="font-bold">P</span>
-                      <Input type="text" value={fpState.sideA.obstetrical_history.p_pregnancies} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, p_pregnancies: e.target.value } } }))} className="w-8 h-5 border-b text-center p-0" />
+                      <Input type="text" value={fpState.sideA.obstetrical_history.p_pregnancies} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, p_pregnancies: sanitizeNumbers(e.target.value) } } }))} className="w-8 h-5 border-b text-center p-0" />
                     </div>
                     <div className="flex items-center gap-1">
                       <span>Full term:</span>
-                      <Input type="text" value={fpState.sideA.obstetrical_history.full_term} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, full_term: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
+                      <Input type="text" value={fpState.sideA.obstetrical_history.full_term} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, full_term: sanitizeNumbers(e.target.value) } } }))} className="w-10 h-5 border-b text-center p-0" />
                     </div>
                     <div className="flex items-center gap-1">
                       <span>Premature:</span>
-                      <Input type="text" value={fpState.sideA.obstetrical_history.premature} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, premature: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
+                      <Input type="text" value={fpState.sideA.obstetrical_history.premature} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, premature: sanitizeNumbers(e.target.value) } } }))} className="w-10 h-5 border-b text-center p-0" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div className="flex items-center gap-1">
                       <span>Abortion:</span>
-                      <Input type="text" value={fpState.sideA.obstetrical_history.abortion} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, abortion: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
+                      <Input type="text" value={fpState.sideA.obstetrical_history.abortion} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, abortion: sanitizeNumbers(e.target.value) } } }))} className="w-10 h-5 border-b text-center p-0" />
                     </div>
                     <div className="flex items-center gap-1">
                       <span>Living children:</span>
-                      <Input type="text" value={fpState.sideA.obstetrical_history.living_children} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, living_children: e.target.value } } }))} className="w-10 h-5 border-b text-center p-0" />
+                      <Input type="text" value={fpState.sideA.obstetrical_history.living_children} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, obstetrical_history: { ...p.sideA.obstetrical_history, living_children: sanitizeNumbers(e.target.value) } } }))} className="w-10 h-5 border-b text-center p-0" />
                     </div>
                   </div>
 
@@ -1210,22 +1220,22 @@ const FamilyPlanningForm = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] bg-slate-100 dark:bg-slate-900 p-1.5 rounded-xs">
                   <div className="flex items-center gap-1">
                     <span>Weight:</span>
-                    <Input type="text" value={fpState.sideA.physical_exam.weight_kg} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, weight_kg: e.target.value } } }))} className="w-12 h-5 border-b p-0 text-center" />
+                    <Input type="text" value={fpState.sideA.physical_exam.weight_kg} onKeyDown={allowNumbersAndDecimal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, weight_kg: sanitizeNumbersAndDecimal(e.target.value) } } }))} className="w-12 h-5 border-b p-0 text-center" />
                     <span>kg</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span>Height:</span>
-                    <Input type="text" value={fpState.sideA.physical_exam.height_m} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, height_m: e.target.value } } }))} className="w-12 h-5 border-b p-0 text-center" />
+                    <Input type="text" value={fpState.sideA.physical_exam.height_m} onKeyDown={allowNumbersAndDecimal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, height_m: sanitizeNumbersAndDecimal(e.target.value) } } }))} className="w-12 h-5 border-b p-0 text-center" />
                     <span>m</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span>BP:</span>
-                    <Input type="text" value={fpState.sideA.physical_exam.bp} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, bp: e.target.value } } }))} className="w-16 h-5 border-b p-0 text-center" />
+                    <Input type="text" value={fpState.sideA.physical_exam.bp} onKeyDown={allowNumbersAndSlash} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, bp: sanitizeNumbersAndSlash(e.target.value) } } }))} className="w-16 h-5 border-b p-0 text-center" />
                     <span>mmHg</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span>Pulse:</span>
-                    <Input type="text" value={fpState.sideA.physical_exam.pulse_rate} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pulse_rate: e.target.value } } }))} className="w-12 h-5 border-b p-0 text-center" />
+                    <Input type="text" value={fpState.sideA.physical_exam.pulse_rate} onKeyDown={allowOnlyNumbers} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, pulse_rate: sanitizeNumbers(e.target.value) } } }))} className="w-12 h-5 border-b p-0 text-center" />
                     <span>/min</span>
                   </div>
                 </div>
@@ -1322,7 +1332,7 @@ const FamilyPlanningForm = () => {
 
                   <div className="flex items-center gap-2">
                     <span>uterine depth:</span>
-                    <Input type="text" value={fpState.sideA.physical_exam.uterine_depth_cm} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, uterine_depth_cm: e.target.value } } }))} className="w-16 h-5 border-b p-0 text-center" />
+                    <Input type="text" value={fpState.sideA.physical_exam.uterine_depth_cm} onKeyDown={allowNumbersAndDecimal} onChange={e => setFpState(p => ({ ...p, sideA: { ...p.sideA, physical_exam: { ...p.sideA.physical_exam, uterine_depth_cm: sanitizeNumbersAndDecimal(e.target.value) } } }))} className="w-16 h-5 border-b p-0 text-center" />
                     <span>cm</span>
                   </div>
                 </div>

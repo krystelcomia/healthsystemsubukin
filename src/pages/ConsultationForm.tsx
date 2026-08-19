@@ -15,6 +15,14 @@ import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import barangayLogo from "@/assets/barangay-logo.png";
+import {
+  allowOnlyNumbers,
+  allowNumbersAndDecimal,
+  allowOnlyLetters,
+  sanitizeNumbers,
+  sanitizeNumbersAndDecimal,
+  sanitizeLetters,
+} from "@/lib/inputValidation";
 
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary dark:focus-visible:border-primary shadow-none h-9 transition-colors placeholder:text-muted-foreground/50";
 const lineSelectClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus:ring-0 focus:border-primary dark:focus:border-primary shadow-none h-9 transition-colors";
@@ -269,7 +277,7 @@ const ConsultationForm = () => {
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.age")}</Label>
-                  <Input className={lineInputClass} type="text" inputMode="numeric" value={form.age} onChange={(e) => handleChange("age", sanitizeDigitsOnly(e.target.value))} placeholder="Age" />
+                  <Input className={lineInputClass} type="text" inputMode="numeric" value={form.age} onKeyDown={allowOnlyNumbers} onChange={(e) => handleChange("age", sanitizeDigitsOnly(e.target.value))} placeholder="Age" />
                 </div>
               </div>
             </div>
@@ -286,26 +294,26 @@ const ConsultationForm = () => {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.temp")}</Label>
-                  <Input className={lineInputClass} type="text" inputMode="decimal" value={form.temperature} onChange={(e) => handleChange("temperature", sanitizeDecimalNumber(e.target.value))} placeholder="36.5 °C" />
+                  <Input className={lineInputClass} type="text" inputMode="decimal" value={form.temperature} onKeyDown={allowNumbersAndDecimal} onChange={(e) => handleChange("temperature", sanitizeDecimalNumber(e.target.value))} placeholder="36.5 °C" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.pulseRate")}</Label>
-                  <Input className={lineInputClass} type="text" inputMode="numeric" value={form.pulseRate} onChange={(e) => handleChange("pulseRate", sanitizeDigitsOnly(e.target.value))} placeholder="bpm" />
+                  <Input className={lineInputClass} type="text" inputMode="numeric" value={form.pulseRate} onKeyDown={allowOnlyNumbers} onChange={(e) => handleChange("pulseRate", sanitizeDigitsOnly(e.target.value))} placeholder="bpm" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.respRate")}</Label>
-                  <Input className={lineInputClass} type="text" inputMode="numeric" value={form.respirationRate} onChange={(e) => handleChange("respirationRate", sanitizeDigitsOnly(e.target.value))} placeholder="bpm" />
+                  <Input className={lineInputClass} type="text" inputMode="numeric" value={form.respirationRate} onKeyDown={allowOnlyNumbers} onChange={(e) => handleChange("respirationRate", sanitizeDigitsOnly(e.target.value))} placeholder="bpm" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.height")}</Label>
-                  <Input className={lineInputClass} type="text" inputMode="decimal" value={form.height} onChange={(e) => handleChange("height", sanitizeDecimalNumber(e.target.value))} placeholder="cm" />
+                  <Input className={lineInputClass} type="text" inputMode="decimal" value={form.height} onKeyDown={allowNumbersAndDecimal} onChange={(e) => handleChange("height", sanitizeDecimalNumber(e.target.value))} placeholder="cm" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">{t("consultation.weight")}</Label>
-                  <Input className={lineInputClass} type="text" inputMode="decimal" value={form.weight} onChange={(e) => handleChange("weight", sanitizeDecimalNumber(e.target.value))} placeholder="kg" />
+                  <Input className={lineInputClass} type="text" inputMode="decimal" value={form.weight} onKeyDown={allowNumbersAndDecimal} onChange={(e) => handleChange("weight", sanitizeDecimalNumber(e.target.value))} placeholder="kg" />
                 </div>
               </div>
             </div>

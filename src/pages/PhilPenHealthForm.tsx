@@ -14,6 +14,11 @@ import { SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import barangayLogo from "@/assets/barangay-logo.png";
+import {
+  allowOnlyNumbers,
+  allowNumbersAndDecimal,
+  allowNumbersAndSlash,
+} from "@/lib/inputValidation";
 
 // Input sanitizers
 const sanitizeDigitsOnly = (val: string) => val.replace(/[^0-9]/g, "");
@@ -408,6 +413,7 @@ const PhilPenHealthForm = () => {
                     type="text"
                     inputMode="numeric"
                     value={form.age}
+                    onKeyDown={allowOnlyNumbers}
                     onChange={(e) => handleFieldChange("age", sanitizeDigitsOnly(e.target.value))}
                     className="print-input flex-1 font-medium"
                     placeholder=""
@@ -452,6 +458,7 @@ const PhilPenHealthForm = () => {
                   <input 
                     type="text"
                     value={form.bp}
+                    onKeyDown={allowNumbersAndSlash}
                     onChange={(e) => handleFieldChange("bp", sanitizeBpString(e.target.value))}
                     className="print-input flex-1 text-center font-medium"
                     placeholder="120/80"
@@ -464,6 +471,7 @@ const PhilPenHealthForm = () => {
                     type="text"
                     inputMode="decimal"
                     value={form.height}
+                    onKeyDown={allowNumbersAndDecimal}
                     onChange={(e) => handleFieldChange("height", sanitizeDecimalNumber(e.target.value))}
                     className="print-input flex-1 text-center font-medium"
                     placeholder="cm"
@@ -476,6 +484,7 @@ const PhilPenHealthForm = () => {
                     type="text"
                     inputMode="decimal"
                     value={form.weight}
+                    onKeyDown={allowNumbersAndDecimal}
                     onChange={(e) => handleFieldChange("weight", sanitizeDecimalNumber(e.target.value))}
                     className="print-input flex-1 text-center font-medium"
                     placeholder="kg"

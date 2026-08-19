@@ -37,6 +37,7 @@ import { logActivity } from "@/lib/activityLogger";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 
 export interface FamilyMember {
   id: string;
@@ -992,8 +993,9 @@ const FamilyDataForm = () => {
                         <Label className="text-xs">Father's Name (Household Head)</Label>
                         <Input
                           value={editFather}
+                          onKeyDown={allowOnlyLetters}
                           onChange={(e) => {
-                            const val = e.target.value.replace(/[^\p{L}\s.,]/gu, "");
+                            const val = sanitizeLetters(e.target.value);
                             setEditFather(val);
                           }}
                           className="h-8 text-xs"
@@ -1003,8 +1005,9 @@ const FamilyDataForm = () => {
                         <Label className="text-xs">Mother's Name</Label>
                         <Input
                           value={editMother}
+                          onKeyDown={allowOnlyLetters}
                           onChange={(e) => {
-                            const val = e.target.value.replace(/[^\p{L}\s.,]/gu, "");
+                            const val = sanitizeLetters(e.target.value);
                             setEditMother(val);
                           }}
                           className="h-8 text-xs"
@@ -1028,7 +1031,8 @@ const FamilyDataForm = () => {
                         <Input
                           type="number"
                           value={editHouseholds}
-                          onChange={(e) => setEditHouseholds(e.target.value)}
+                          onKeyDown={allowOnlyNumbers}
+                          onChange={(e) => setEditHouseholds(sanitizeNumbers(e.target.value))}
                           className="h-8 text-xs"
                           min="1"
                         />
@@ -1243,8 +1247,9 @@ const FamilyDataForm = () => {
                 <Label className="text-xs font-semibold">Father's Name (Household Head)</Label>
                 <Input
                   value={newFather}
+                  onKeyDown={allowOnlyLetters}
                   onChange={(e) => {
-                    const val = e.target.value.replace(/[^\p{L}\s.,]/gu, "");
+                    const val = sanitizeLetters(e.target.value);
                     setNewFather(val);
                     setNewMembers(prev => prev.map(m => m.relationship === "Father" ? { ...m, full_name: val } : m));
                   }}
@@ -1255,8 +1260,9 @@ const FamilyDataForm = () => {
                 <Label className="text-xs font-semibold">Mother's Name</Label>
                 <Input
                   value={newMother}
+                  onKeyDown={allowOnlyLetters}
                   onChange={(e) => {
-                    const val = e.target.value.replace(/[^\p{L}\s.,]/gu, "");
+                    const val = sanitizeLetters(e.target.value);
                     setNewMother(val);
                     setNewMembers(prev => prev.map(m => m.relationship === "Mother" ? { ...m, full_name: val } : m));
                   }}
@@ -1311,8 +1317,9 @@ const FamilyDataForm = () => {
                           <Input
                             placeholder="Full Name"
                             value={mem.full_name}
+                            onKeyDown={allowOnlyLetters}
                             onChange={(e) => {
-                              const val = e.target.value;
+                              const val = sanitizeLetters(e.target.value);
                               setNewMembers((prev) =>
                                 prev.map((m) => (m.id === mem.id ? { ...m, full_name: val } : m))
                               );
@@ -1345,8 +1352,9 @@ const FamilyDataForm = () => {
                             type="number"
                             placeholder="Age"
                             value={mem.age || ""}
+                            onKeyDown={allowOnlyNumbers}
                             onChange={(e) => {
-                              const val = e.target.value;
+                              const val = sanitizeNumbers(e.target.value);
                               setNewMembers((prev) =>
                                 prev.map((m) => (m.id === mem.id ? { ...m, age: val } : m))
                               );
@@ -1443,7 +1451,8 @@ const FamilyDataForm = () => {
               <Label className="text-xs">Full Name *</Label>
               <Input
                 value={memName}
-                onChange={(e) => setMemName(e.target.value)}
+                onKeyDown={allowOnlyLetters}
+                onChange={(e) => setMemName(sanitizeLetters(e.target.value))}
                 placeholder="e.g. Juan dela Cruz Jr."
                 className="h-8 text-xs mt-1"
               />
@@ -1506,7 +1515,8 @@ const FamilyDataForm = () => {
                 <Input
                   type="number"
                   value={memAge}
-                  onChange={(e) => setMemAge(e.target.value)}
+                  onKeyDown={allowOnlyNumbers}
+                  onChange={(e) => setMemAge(sanitizeNumbers(e.target.value))}
                   placeholder="e.g. 12"
                   className="h-8 text-xs mt-1 w-full"
                   min="0"

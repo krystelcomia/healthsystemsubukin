@@ -16,6 +16,7 @@ import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitio
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 
 interface BHWWorker {
   id: string; name: string; age: number; address: string; gmail: string; number: string; is_online: boolean; last_seen: string | null; user_id: string | null; created_at: string; assigned_sitio?: string;
@@ -217,10 +218,10 @@ const AdminWorkers = () => {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>{t("workers.addNewWorker")}</DialogTitle><DialogDescription>{t("workers.addNewWorkerDesc")}</DialogDescription></DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-1"><Label>{t("workers.name")} *</Label><Input value={newWorker.name} onChange={e => setNewWorker({ ...newWorker, name: e.target.value })} placeholder={t("workers.name")} /></div>
+            <div className="space-y-1"><Label>{t("workers.name")} *</Label><Input value={newWorker.name} onKeyDown={allowOnlyLetters} onChange={e => setNewWorker({ ...newWorker, name: sanitizeLetters(e.target.value) })} placeholder={t("workers.name")} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1"><Label>{t("workers.age")}</Label><Input type="number" value={newWorker.age} onChange={e => setNewWorker({ ...newWorker, age: e.target.value })} /></div>
-              <div className="space-y-1"><Label>{t("workers.contact")}</Label><Input value={newWorker.number} onChange={e => setNewWorker({ ...newWorker, number: e.target.value })} placeholder="09xxxxxxxxx" /></div>
+              <div className="space-y-1"><Label>{t("workers.age")}</Label><Input type="number" value={newWorker.age} onKeyDown={allowOnlyNumbers} onChange={e => setNewWorker({ ...newWorker, age: sanitizeNumbers(e.target.value) })} /></div>
+              <div className="space-y-1"><Label>{t("workers.contact")}</Label><Input value={newWorker.number} onKeyDown={allowOnlyNumbers} onChange={e => setNewWorker({ ...newWorker, number: sanitizeNumbers(e.target.value) })} placeholder="09xxxxxxxxx" /></div>
             </div>
             <div className="space-y-1"><Label>{t("workers.gmail")} *</Label><Input type="email" value={newWorker.gmail} onChange={e => setNewWorker({ ...newWorker, gmail: e.target.value })} placeholder="worker@gmail.com" /></div>
             <div className="space-y-1"><Label>{t("workers.username")} *</Label><Input value={newWorker.username} onChange={e => setNewWorker({ ...newWorker, username: e.target.value })} placeholder="worker_username" /></div>
@@ -268,10 +269,10 @@ const AdminWorkers = () => {
           <DialogHeader><DialogTitle>{t("workers.editWorker")}</DialogTitle><DialogDescription>{t("workers.editWorkerDesc")}</DialogDescription></DialogHeader>
           {editWorker && (
             <div className="space-y-3">
-              <div className="space-y-1"><Label>{t("workers.name")} *</Label><Input value={editWorker.name} onChange={e => setEditWorker({ ...editWorker, name: e.target.value })} /></div>
+              <div className="space-y-1"><Label>{t("workers.name")} *</Label><Input value={editWorker.name} onKeyDown={allowOnlyLetters} onChange={e => setEditWorker({ ...editWorker, name: sanitizeLetters(e.target.value) })} /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1"><Label>{t("workers.age")}</Label><Input type="number" value={editWorker.age} onChange={e => setEditWorker({ ...editWorker, age: Number(e.target.value) })} /></div>
-                <div className="space-y-1"><Label>{t("workers.contact")}</Label><Input value={editWorker.number} onChange={e => setEditWorker({ ...editWorker, number: e.target.value })} /></div>
+                <div className="space-y-1"><Label>{t("workers.age")}</Label><Input type="number" value={editWorker.age} onKeyDown={allowOnlyNumbers} onChange={e => setEditWorker({ ...editWorker, age: Number(sanitizeNumbers(String(e.target.value))) })} /></div>
+                <div className="space-y-1"><Label>{t("workers.contact")}</Label><Input value={editWorker.number} onKeyDown={allowOnlyNumbers} onChange={e => setEditWorker({ ...editWorker, number: sanitizeNumbers(e.target.value) })} /></div>
               </div>
               <div className="space-y-1"><Label>{t("workers.gmail")}</Label><Input type="email" value={editWorker.gmail} onChange={e => setEditWorker({ ...editWorker, gmail: e.target.value })} /></div>
               <div className="space-y-1">

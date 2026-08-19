@@ -41,6 +41,7 @@ import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 
 interface Resident {
   id: string; 
@@ -594,7 +595,7 @@ const ResidentRecords = () => {
             <DialogHeader><DialogTitle>{t("residents.editResident")}</DialogTitle><DialogDescription>{t("residents.editResidentDesc")}</DialogDescription></DialogHeader>
             {editResident && (
               <div className="space-y-3">
-                <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={editResident.full_name} onChange={(e) => setEditResident({ ...editResident, full_name: e.target.value })} /></div>
+                <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={editResident.full_name} onKeyDown={allowOnlyLetters} onChange={(e) => setEditResident({ ...editResident, full_name: sanitizeLetters(e.target.value) })} /></div>
                 <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={editResident.birthday || ""} onChange={(e) => {
                   const bday = e.target.value;
                   const computed = calculateAge(bday);
@@ -602,7 +603,7 @@ const ResidentRecords = () => {
                 }} /></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={editResident.gender} onValueChange={(v) => setEditResident({ ...editResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
-                  <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={editResident.age} onChange={(e) => setEditResident({ ...editResident, age: Number(e.target.value) })} /></div>
+                  <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={editResident.age} onKeyDown={allowOnlyNumbers} onChange={(e) => setEditResident({ ...editResident, age: Number(sanitizeNumbers(e.target.value)) })} /></div>
                 </div>
                 <div className="space-y-1"><Label>{t("residents.civilStatus")}</Label><Select value={editResident.status} onValueChange={(v) => setEditResident({ ...editResident, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">{t("residents.single")}</SelectItem><SelectItem value="Married">{t("residents.married")}</SelectItem><SelectItem value="Widowed">{t("residents.widowed")}</SelectItem><SelectItem value="Separated">{t("residents.separated")}</SelectItem></SelectContent></Select></div>
                 <div className="space-y-1">

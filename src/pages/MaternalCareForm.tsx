@@ -34,6 +34,7 @@ import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 
 export const RISK_FACTORS_COLUMN_1 = [
   "Abnormal presentation",
@@ -744,7 +745,8 @@ const MaternalCareForm = () => {
                   <Input 
                     type="text" 
                     value={form.patient_last_name} 
-                    onChange={e => handleFormChange("patient_last_name", e.target.value)} 
+                    onKeyDown={allowOnlyLetters}
+                    onChange={e => handleFormChange("patient_last_name", sanitizeLetters(e.target.value))} 
                     placeholder="Apelyido" 
                     className={lineInputClass}
                     required
@@ -756,7 +758,8 @@ const MaternalCareForm = () => {
                   <Input 
                     type="text" 
                     value={form.patient_first_name} 
-                    onChange={e => handleFormChange("patient_first_name", e.target.value)} 
+                    onKeyDown={allowOnlyLetters}
+                    onChange={e => handleFormChange("patient_first_name", sanitizeLetters(e.target.value))} 
                     placeholder="Pangalan" 
                     className={lineInputClass}
                     required
@@ -768,7 +771,8 @@ const MaternalCareForm = () => {
                   <Input 
                     type="text" 
                     value={form.patient_middle_name} 
-                    onChange={e => handleFormChange("patient_middle_name", e.target.value)} 
+                    onKeyDown={allowOnlyLetters}
+                    onChange={e => handleFormChange("patient_middle_name", sanitizeLetters(e.target.value))} 
                     placeholder="Gitnang Apelyido" 
                     className={lineInputClass}
                   />
@@ -779,7 +783,8 @@ const MaternalCareForm = () => {
                   <Input 
                     type="number" 
                     value={form.age} 
-                    onChange={e => handleFormChange("age", e.target.value)} 
+                    onKeyDown={allowOnlyNumbers}
+                    onChange={e => handleFormChange("age", sanitizeNumbers(e.target.value))} 
                     placeholder="Edad" 
                     className={lineInputClass}
                   />

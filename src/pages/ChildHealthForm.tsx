@@ -36,6 +36,14 @@ import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import {
+  allowOnlyLetters,
+  allowOnlyNumbers,
+  allowNumbersAndDecimal,
+  sanitizeLetters,
+  sanitizeNumbers,
+  sanitizeNumbersAndDecimal,
+} from "@/lib/inputValidation";
 
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs";
 
@@ -1227,15 +1235,15 @@ const ChildHealthForm = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">First Name:</Label>
-                      <Input type="text" value={sickForm.first_name} onChange={e => setSickForm(p => ({ ...p, first_name: e.target.value }))} placeholder="First Name" className={lineInputClass} />
+                      <Input type="text" value={sickForm.first_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, first_name: sanitizeLetters(e.target.value) }))} placeholder="First Name" className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Middle Name:</Label>
-                      <Input type="text" value={sickForm.middle_name} onChange={e => setSickForm(p => ({ ...p, middle_name: e.target.value }))} placeholder="Middle Name" className={lineInputClass} />
+                      <Input type="text" value={sickForm.middle_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, middle_name: sanitizeLetters(e.target.value) }))} placeholder="Middle Name" className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Surname:</Label>
-                      <Input type="text" value={sickForm.surname} onChange={e => setSickForm(p => ({ ...p, surname: e.target.value }))} placeholder="Surname" className={lineInputClass} />
+                      <Input type="text" value={sickForm.surname} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, surname: sanitizeLetters(e.target.value) }))} placeholder="Surname" className={lineInputClass} />
                     </div>
                   </div>
 
@@ -1247,7 +1255,7 @@ const ChildHealthForm = () => {
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Edad at Kasarian:</Label>
                       <div className="flex gap-1 items-center">
-                        <Input type="text" value={sickForm.age_months} onChange={e => setSickForm(p => ({ ...p, age_months: e.target.value }))} placeholder="Edad (mos)" className={lineInputClass} />
+                        <Input type="text" value={sickForm.age_months} onKeyDown={allowOnlyNumbers} onChange={e => setSickForm(p => ({ ...p, age_months: sanitizeNumbers(e.target.value) }))} placeholder="Edad (mos)" className={lineInputClass} />
                         <Select value={sickForm.sex} onValueChange={v => setSickForm(p => ({ ...p, sex: v }))}>
                           <SelectTrigger className="h-7 text-xs w-16 px-1">
                             <SelectValue placeholder="M/F" />
@@ -1274,45 +1282,45 @@ const ChildHealthForm = () => {
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">PHILHEALTH NUMBER:</Label>
-                      <Input type="text" value={sickForm.philhealth_number} onChange={e => setSickForm(p => ({ ...p, philhealth_number: e.target.value }))} placeholder="PhilHealth #" className={lineInputClass} />
+                      <Input type="text" value={sickForm.philhealth_number} onKeyDown={allowOnlyNumbers} onChange={e => setSickForm(p => ({ ...p, philhealth_number: sanitizeNumbers(e.target.value) }))} placeholder="PhilHealth #" className={lineInputClass} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Pangalan ng Ina:</Label>
-                      <Input type="text" value={sickForm.mother_name} onChange={e => setSickForm(p => ({ ...p, mother_name: e.target.value }))} placeholder="Pangalan ng Ina" className={lineInputClass} />
+                      <Input type="text" value={sickForm.mother_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, mother_name: sanitizeLetters(e.target.value) }))} placeholder="Pangalan ng Ina" className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Pangalan ng Ama:</Label>
-                      <Input type="text" value={sickForm.father_name} onChange={e => setSickForm(p => ({ ...p, father_name: e.target.value }))} placeholder="Pangalan ng Ama" className={lineInputClass} />
+                      <Input type="text" value={sickForm.father_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, father_name: sanitizeLetters(e.target.value) }))} placeholder="Pangalan ng Ama" className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Contact Number:</Label>
-                      <Input type="text" value={sickForm.contact_number} onChange={e => setSickForm(p => ({ ...p, contact_number: e.target.value }))} placeholder="Contact #" className={lineInputClass} />
+                      <Input type="text" value={sickForm.contact_number} onKeyDown={allowOnlyNumbers} onChange={e => setSickForm(p => ({ ...p, contact_number: sanitizeNumbers(e.target.value) }))} placeholder="Contact #" className={lineInputClass} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-1">
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Timbang (kg):</Label>
-                      <Input type="text" value={sickForm.weight_kg} onChange={e => setSickForm(p => ({ ...p, weight_kg: e.target.value }))} placeholder="kg" className={lineInputClass} />
+                      <Input type="text" value={sickForm.weight_kg} onKeyDown={allowNumbersAndDecimal} onChange={e => setSickForm(p => ({ ...p, weight_kg: sanitizeNumbersAndDecimal(e.target.value) }))} placeholder="kg" className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Taas (cm):</Label>
-                      <Input type="text" value={sickForm.height_cm} onChange={e => setSickForm(p => ({ ...p, height_cm: e.target.value }))} placeholder="cm" className={lineInputClass} />
+                      <Input type="text" value={sickForm.height_cm} onKeyDown={allowNumbersAndDecimal} onChange={e => setSickForm(p => ({ ...p, height_cm: sanitizeNumbersAndDecimal(e.target.value) }))} placeholder="cm" className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Temp (°C):</Label>
-                      <Input type="text" value={sickForm.temp_c} onChange={e => setSickForm(p => ({ ...p, temp_c: e.target.value }))} placeholder="°C" className={lineInputClass} />
+                      <Input type="text" value={sickForm.temp_c} onKeyDown={allowNumbersAndDecimal} onChange={e => setSickForm(p => ({ ...p, temp_c: sanitizeNumbersAndDecimal(e.target.value) }))} placeholder="°C" className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Pulse Rate (/min):</Label>
-                      <Input type="text" value={sickForm.pulse_rate} onChange={e => setSickForm(p => ({ ...p, pulse_rate: e.target.value }))} placeholder="/min" className={lineInputClass} />
+                      <Input type="text" value={sickForm.pulse_rate} onKeyDown={allowOnlyNumbers} onChange={e => setSickForm(p => ({ ...p, pulse_rate: sanitizeNumbers(e.target.value) }))} placeholder="/min" className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Respiratory Rate (/min):</Label>
-                      <Input type="text" value={sickForm.respiratory_rate} onChange={e => setSickForm(p => ({ ...p, respiratory_rate: e.target.value }))} placeholder="/min" className={lineInputClass} />
+                      <Input type="text" value={sickForm.respiratory_rate} onKeyDown={allowOnlyNumbers} onChange={e => setSickForm(p => ({ ...p, respiratory_rate: sanitizeNumbers(e.target.value) }))} placeholder="/min" className={lineInputClass} />
                     </div>
                   </div>
 
