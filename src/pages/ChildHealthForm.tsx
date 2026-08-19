@@ -1121,7 +1121,7 @@ const ChildHealthForm = () => {
         <CardContent className="p-4 md:p-6 space-y-5 overflow-visible">
           
           {/* Official Seals Header - Printing Only */}
-          <div className="print-only flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-3 header-border" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "32px" }}>
+          <div className="print-only flex items-center justify-center gap-8 md:gap-12 border-b-[4px] border-double border-slate-900 pb-3 header-border">
             <img src={sanjuanLogo} alt="San Juan Seal" className="h-24 md:h-28 object-contain shrink-0 mix-blend-multiply" style={{ height: "105px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
             <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-24 md:h-28 object-contain shrink-0 mix-blend-multiply" style={{ height: "105px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
             <img src={barangayLogo} alt="Subukin Logo" className="h-24 md:h-28 object-contain shrink-0 mix-blend-multiply" style={{ height: "105px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />

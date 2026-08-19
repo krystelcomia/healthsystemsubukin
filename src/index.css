@@ -136,6 +136,11 @@
   background: rgba(156, 163, 175, 0.7);
 }
 
+/* Hide print-only elements on screen; each form's @media print overrides this */
+.print-only {
+  display: none !important;
+}
+
 @media print {
   @page {
     size: portrait;

@@ -743,7 +743,6 @@ const DenguePreventionForm = () => {
           {/* Official Header Layout - Visible ONLY when printing */}
           <div 
             className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-4 text-center"
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "3px double #000", paddingBottom: "12px", marginBottom: "16px", textAlign: "center" }}
           >
             <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
             <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
@@ -1103,7 +1102,6 @@ const DenguePreventionForm = () => {
                 {/* Official Header Layout - Visible ONLY when printing */}
                 <div 
                   className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-4 text-center"
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "3px double #000", paddingBottom: "12px", marginBottom: "16px", textAlign: "center" }}
                 >
                   <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
                   <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
