@@ -706,12 +706,10 @@ const DenguePreventionForm = () => {
   const checkFormCompletion = (updatedRows: any[]) => {
     if (loading || isCompletingRef.current) return;
     const activeRows = updatedRows.slice(0, MAX_ROWS);
-    const lastRow = activeRows[MAX_ROWS - 1];
-    const isLastRowEntered = Boolean(lastRow && (lastRow.household_name?.trim() || !isRowEmpty(lastRow)));
+    
+    // Trigger auto-completion only when all 20 rows of the form are filled out
     const filledCount = activeRows.filter((r) => !isRowEmpty(r)).length;
-
-    // Trigger completion if all 20 rows have data OR if the 20th (last) row has been entered and filled
-    if (filledCount >= MAX_ROWS || (isLastRowEntered && filledCount >= 10)) {
+    if (filledCount >= MAX_ROWS) {
       archiveAndResetForm(activeRows);
     }
   };
@@ -1084,6 +1082,7 @@ const DenguePreventionForm = () => {
             visibility: visible !important;
           }
           
+          /* Force full page positioning for both active form and history print modal */
           #dengue-print-area, #saved-form-print-area {
             position: absolute !important;
             left: 0 !important;
@@ -1095,6 +1094,33 @@ const DenguePreventionForm = () => {
             border: none !important;
             background: white !important;
             color: black !important;
+          }
+
+          /* Radix dialog container override for printing history modal */
+          [role="dialog"],
+          div[role="dialog"],
+          [data-state="open"][role="dialog"] {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            transform: none !important;
+            max-height: none !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: white !important;
+          }
+
+          [data-radix-portal] {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
           }
 
           #dengue-print-area [class*="p-8"],
@@ -1659,9 +1685,9 @@ const DenguePreventionForm = () => {
                 <div 
                   className="print-only header-border flex items-center justify-center gap-6 md:gap-10 border-b-[3px] border-double border-slate-900 pb-3 mb-4 text-center"
                 >
-                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "68px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "52px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "52px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={barangayLogo} alt="Subukin Logo" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "52px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
                 </div>
 
                 <div className="text-center space-y-1 py-2">
@@ -1735,12 +1761,12 @@ const DenguePreventionForm = () => {
                               {rec.action_plan || ""}
                             </span>
                           </td>
-                          <td className="border border-border p-1 text-center w-[10%] h-7">
+                          <td className="border border-border p-1 text-center w-[10%]">
                             {rec.signature ? (
                               <img 
                                 src={rec.signature} 
                                 alt="Signature" 
-                                className="h-6 object-contain mx-auto" 
+                                className="h-8 object-contain mx-auto" 
                               />
                             ) : (
                               ""
