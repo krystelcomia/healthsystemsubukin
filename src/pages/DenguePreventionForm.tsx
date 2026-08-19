@@ -261,15 +261,11 @@ const DenguePreventionForm = () => {
       (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
     );
 
-    // If there are unmapped older records in database beyond MAX_ROWS, group older chunks of 20 into savedForms
+    // Group ALL unmapped database records into savedForms history batches so historical entries are saved and never leak into active blank form
     let unmappedDbRecords = sortedDb.filter((rec: any) => !archivedRecordIds.has(rec.id));
-    if (unmappedDbRecords.length > MAX_ROWS) {
-      const olderCount = unmappedDbRecords.length - MAX_ROWS;
-      const olderRecords = unmappedDbRecords.slice(0, olderCount);
-      unmappedDbRecords = unmappedDbRecords.slice(olderCount);
-
-      for (let i = 0; i < olderRecords.length; i += MAX_ROWS) {
-        const chunk = olderRecords.slice(i, i + MAX_ROWS);
+    if (unmappedDbRecords.length > 0) {
+      for (let i = 0; i < unmappedDbRecords.length; i += MAX_ROWS) {
+        const chunk = unmappedDbRecords.slice(i, i + MAX_ROWS);
         const autoBatchId = `auto_batch_${chunk[0].id}`;
         const batchTimestamp = chunk[0].created_at || new Date().toISOString();
         savedBatchesMap[autoBatchId] = {
@@ -328,54 +324,31 @@ const DenguePreventionForm = () => {
     setSavedForms(compiledSavedForms);
 
     // Active in-progress draft resolution:
-    // Retain all entered data across page navigations, reloads, and logouts directly from DB and localStorage
+    // Only restore active draft if user has currently entered unsubmitted input.
+    // If the form was saved or reset, it remains 100% BLANK (20 blank rows) until new inputs are entered.
     let initialRows: any[] = [];
 
     const activeDraftStr = localStorage.getItem(STORAGE_KEY_ACTIVE_DRAFT);
-    let localRows: any[] = [];
     if (activeDraftStr) {
       try {
         const parsed = JSON.parse(activeDraftStr);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          localRows = parsed;
+          const hasAnyData = parsed.some((r: any) => !isRowEmpty(r));
+          if (hasAnyData) {
+            initialRows = parsed.slice(0, MAX_ROWS);
+          }
         }
       } catch {}
     }
 
-    if (unmappedDbRecords.length > 0) {
-      if (localRows.length > 0) {
-        const dbMap = new Map<string, any>(unmappedDbRecords.map((r) => [r.id, r]));
-        initialRows = localRows.slice(0, MAX_ROWS).map((localRow) => {
-          if (localRow.id && dbMap.has(localRow.id)) {
-            const dbRec = dbMap.get(localRow.id);
-            dbMap.delete(localRow.id);
-            return {
-              ...dbRec,
-              ...localRow,
-            };
-          }
-          return localRow;
-        });
-
-        // Add any remaining unmapped db records into available empty slots or append
-        dbMap.forEach((remainingDbRec) => {
-          const emptyIdx = initialRows.findIndex((r) => isRowEmpty(r));
-          if (emptyIdx !== -1) {
-            initialRows[emptyIdx] = remainingDbRec;
-          } else if (initialRows.length < MAX_ROWS) {
-            initialRows.push(remainingDbRec);
-          }
-        });
-      } else {
-        initialRows = unmappedDbRecords.slice(0, MAX_ROWS);
-      }
-    } else if (localRows.length > 0) {
-      initialRows = localRows.slice(0, MAX_ROWS);
+    // Start with fresh 20 blank rows if no unsaved active input exists
+    if (initialRows.length === 0) {
+      initialRows = createBlankRows(MAX_ROWS);
     }
 
-    // Auto-populate resident signatures if already known from prior entries
+    // Auto-populate resident signatures only for active rows that have a household name entered
     initialRows = initialRows.map((r) => {
-      if (!r.signature && r.household_name) {
+      if (r.household_name?.trim() && !r.signature) {
         const cleanName = (r.household_name || "").trim();
         const matched = householdHeads.find(
           (h) => normalizeResidentName(h.full_name) === normalizeResidentName(cleanName)
