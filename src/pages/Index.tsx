@@ -22,6 +22,7 @@ import {
   Search,
   FileText,
   UserCheck,
+  Plus,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -38,6 +39,7 @@ const Index = () => {
     dengueAudits: 0,
     philpenScreenings: 0,
   });
+  const [customForms, setCustomForms] = useState<{ id: string; title: string; description?: string }[]>([]);
   const [recentActivity, setRecentActivity] = useState<
     { name: string; action: string; time: string; type: string }[]
   >([]);
@@ -48,6 +50,28 @@ const Index = () => {
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Load deployed custom forms from storage
+  useEffect(() => {
+    const loadCustom = () => {
+      try {
+        const stored = localStorage.getItem("bhw_custom_forms");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            setCustomForms(parsed);
+          }
+        }
+      } catch (e) {}
+    };
+    loadCustom();
+    window.addEventListener("storage", loadCustom);
+    window.addEventListener("custom-forms-updated", loadCustom);
+    return () => {
+      window.removeEventListener("storage", loadCustom);
+      window.removeEventListener("custom-forms-updated", loadCustom);
+    };
   }, []);
 
   const THEME_STYLES: Record<string, {
@@ -120,7 +144,7 @@ const Index = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const familyNamesSet = await syncFamilyDataToResidents();
+      await syncFamilyDataToResidents();
 
       const [residents, consultations, families, dengue, philpen] = await Promise.all([
         supabase.from("residents").select("*"),
@@ -130,13 +154,11 @@ const Index = () => {
         supabase.from("philpen_health").select("id", { count: "exact", head: true }),
       ]);
 
-      const validResidents = (residents.data || []).filter((r: any) =>
-        r.full_name && familyNamesSet.has(r.full_name.trim().toLowerCase())
-      );
-      const childrenList = validResidents.filter((r: any) => (Number(r.age) || 0) <= 12);
+      const allResidents = (residents.data || []).filter((r: any) => r.full_name && r.full_name.trim());
+      const childrenList = allResidents.filter((r: any) => (Number(r.age) || 0) <= 12);
 
       setStats({
-        totalResidents: validResidents.length,
+        totalResidents: allResidents.length,
         consultations: consultations.count || 0,
         familyRecords: families.count || 0,
         childVaccinations: childrenList.length,
@@ -166,22 +188,126 @@ const Index = () => {
       });
       setChartData(monthlyData);
 
-      // Fetch recent activity
-      const { data: recentConsultations } = await supabase
-        .from("consultations")
-        .select("consultation_date, consultation_cause, created_at, residents(full_name)")
-        .order("created_at", { ascending: false })
-        .limit(5);
+      // Fetch comprehensive recent activity across all health forms and registry
+      const [
+        recentConsultations,
+        recentDengue,
+        recentPhilpen,
+        recentMaternal,
+        recentChild,
+        recentFamilyPlanning,
+        recentFamilies,
+        recentResidents
+      ] = await Promise.all([
+        supabase.from("consultations").select("consultation_date, consultation_cause, created_at, residents(full_name)").order("created_at", { ascending: false }).limit(6),
+        supabase.from("dengue_prevention").select("household_name, container_type, has_larvae, created_at").order("created_at", { ascending: false }).limit(6),
+        supabase.from("philpen_health").select("full_name, bp, record_date, created_at").order("created_at", { ascending: false }).limit(6),
+        supabase.from("maternal_care" as any).select("patient_name, patient_last_name, patient_first_name, checkup_date, created_at").order("created_at", { ascending: false }).limit(6),
+        supabase.from("child_health" as any).select("child_name, first_name, surname, checkup_date, created_at").order("created_at", { ascending: false }).limit(6),
+        supabase.from("family_planning").select("method, start_date, created_at").order("created_at", { ascending: false }).limit(6),
+        supabase.from("family_data").select("family_number, father_name, mother_name, created_at").order("created_at", { ascending: false }).limit(6),
+        supabase.from("residents").select("full_name, sitio, created_at").order("created_at", { ascending: false }).limit(6),
+      ]);
 
-      if (recentConsultations) {
-        const activities = recentConsultations.map((c: any) => ({
+      const rawCustomRecords = JSON.parse(localStorage.getItem("bhw_custom_form_records") || "[]");
+
+      const allEvents: { name: string; action: string; time: string; timestamp: number; type: string }[] = [];
+
+      (recentConsultations.data || []).forEach((c: any) => {
+        allEvents.push({
           name: c.residents?.full_name || "Resident",
-          action: c.consultation_cause || "Consultation recorded",
-          time: formatTimeAgo(new Date(c.created_at)),
+          action: c.consultation_cause ? `Consultation: ${c.consultation_cause}` : "Consultation recorded",
+          time: formatTimeAgo(new Date(c.created_at || c.consultation_date)),
+          timestamp: new Date(c.created_at || c.consultation_date).getTime(),
           type: "Consultation",
-        }));
-        setRecentActivity(activities);
-      }
+        });
+      });
+
+      (recentDengue.data || []).forEach((d: any) => {
+        allEvents.push({
+          name: d.household_name || "Household",
+          action: d.has_larvae ? "Dengue Larvae Detected (Action taken)" : "Dengue inspection cleared",
+          time: formatTimeAgo(new Date(d.created_at)),
+          timestamp: new Date(d.created_at).getTime(),
+          type: "Dengue",
+        });
+      });
+
+      (recentPhilpen.data || []).forEach((p: any) => {
+        allEvents.push({
+          name: p.full_name || "Resident",
+          action: p.bp ? `PhilPen NCD checkup (BP: ${p.bp})` : "PhilPen risk screening completed",
+          time: formatTimeAgo(new Date(p.created_at || p.record_date)),
+          timestamp: new Date(p.created_at || p.record_date).getTime(),
+          type: "PhilPen",
+        });
+      });
+
+      ((recentMaternal.data as any[]) || []).forEach((m: any) => {
+        const name = m.patient_name || `${m.patient_first_name || ""} ${m.patient_last_name || ""}`.trim() || "Patient";
+        allEvents.push({
+          name,
+          action: "Maternal & prenatal checkup recorded",
+          time: formatTimeAgo(new Date(m.created_at || m.checkup_date)),
+          timestamp: new Date(m.created_at || m.checkup_date).getTime(),
+          type: "Maternal",
+        });
+      });
+
+      ((recentChild.data as any[]) || []).forEach((ch: any) => {
+        const name = ch.child_name || `${ch.first_name || ""} ${ch.surname || ""}`.trim() || "Child";
+        allEvents.push({
+          name,
+          action: "Child health & immunization check",
+          time: formatTimeAgo(new Date(ch.created_at || ch.checkup_date)),
+          timestamp: new Date(ch.created_at || ch.checkup_date).getTime(),
+          type: "Child Health",
+        });
+      });
+
+      (recentFamilyPlanning.data || []).forEach((fp: any) => {
+        allEvents.push({
+          name: "Family Planning Client",
+          action: fp.method ? `Method: ${fp.method}` : "Family planning visit recorded",
+          time: formatTimeAgo(new Date(fp.created_at || fp.start_date)),
+          timestamp: new Date(fp.created_at || fp.start_date).getTime(),
+          type: "Family Planning",
+        });
+      });
+
+      (recentFamilies.data || []).forEach((f: any) => {
+        const name = f.father_name || f.mother_name || `Family #${f.family_number || ""}`;
+        allEvents.push({
+          name,
+          action: "Household census profile registered",
+          time: formatTimeAgo(new Date(f.created_at)),
+          timestamp: new Date(f.created_at).getTime(),
+          type: "Family Data",
+        });
+      });
+
+      (recentResidents.data || []).forEach((r: any) => {
+        allEvents.push({
+          name: r.full_name,
+          action: `Registered in resident registry (${r.sitio || "Subukin"})`,
+          time: formatTimeAgo(new Date(r.created_at)),
+          timestamp: new Date(r.created_at).getTime(),
+          type: "Resident",
+        });
+      });
+
+      (rawCustomRecords || []).forEach((cf: any) => {
+        allEvents.push({
+          name: cf.resident_name || "Resident",
+          action: `${cf.formTitle || "Custom Form"} record submitted`,
+          time: formatTimeAgo(new Date(cf.savedAt || cf.created_at)),
+          timestamp: new Date(cf.savedAt || cf.created_at).getTime(),
+          type: "Custom Form",
+        });
+      });
+
+      allEvents.sort((a, b) => b.timestamp - a.timestamp);
+      setRecentActivity(allEvents.slice(0, 6));
 
       setLoading(false);
     };
@@ -230,7 +356,7 @@ const Index = () => {
 
   const CHART_COLORS = currentStyle.chartColors;
 
-  const quickForms = [
+  const standardForms = [
     { title: t("nav.consultation"), href: "/forms/consultation", icon: Stethoscope, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Log illness, vitals & diagnosis" },
     { title: t("nav.familyData"), href: "/forms/family-data", icon: ClipboardList, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Household profiles & members" },
     { title: t("nav.philpenHealth"), href: "/forms/philpen-health", icon: Activity, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "NCD risk screening & BP" },
@@ -238,7 +364,29 @@ const Index = () => {
     { title: t("nav.maternalCare"), href: "/forms/maternal-care", icon: HeartPulse, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Prenatal & pregnant records" },
     { title: t("nav.denguePrevention"), href: "/forms/dengue-prevention", icon: Bug, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Household larvae inspection" },
     { title: t("nav.familyPlanning"), href: "/forms/family-planning", icon: Syringe, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Contraceptive method tracking" },
-    { title: t("nav.residents"), href: "/residents", icon: Users, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Browse resident database" },
+    { title: t("nav.residentRecords"), href: "/residents", icon: Users, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Master resident directory & health records" },
+  ];
+
+  const deployedCustomLaunchpadItems = customForms.map((cf) => ({
+    title: cf.title,
+    href: `/forms/custom/${cf.id}`,
+    icon: FileText,
+    color: "from-primary/25 via-primary/15 to-primary/5 text-primary border-primary/30 hover:border-primary/60 shadow-xs",
+    desc: cf.description || "Deployed official health form",
+    badge: "Custom Form",
+  }));
+
+  const allLaunchpadItems = [
+    ...standardForms,
+    ...deployedCustomLaunchpadItems,
+    {
+      title: "Add New Form",
+      href: "/forms/add-new",
+      icon: Plus,
+      color: "from-muted/40 to-muted/10 text-muted-foreground border-dashed border-border/80 hover:border-primary/50 hover:text-primary",
+      desc: "Scan and deploy new digital health forms",
+      badge: "Deploy",
+    },
   ];
 
   const statCards = [
@@ -340,15 +488,15 @@ const Index = () => {
               </p>
             </div>
             <Badge variant="secondary" className="text-xs gap-1 font-semibold bg-primary/10 text-primary border-primary/20">
-              <CheckCircle2 className="h-3 w-3" /> 8 Services
+              <CheckCircle2 className="h-3 w-3" /> {standardForms.length + customForms.length} Active Services
             </Badge>
           </CardHeader>
 
           <CardContent className="p-4 md:p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {quickForms.map((item) => (
+              {allLaunchpadItems.map((item) => (
                 <Link
-                  key={item.title}
+                  key={item.title + item.href}
                   to={item.href}
                   className={`group relative p-3.5 rounded-xl border bg-gradient-to-r ${item.color} transition-all duration-200 hover:shadow-md flex items-start gap-3`}
                 >
@@ -358,9 +506,16 @@ const Index = () => {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1">
-                      <h4 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                        {item.title}
-                      </h4>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <h4 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                          {item.title}
+                        </h4>
+                        {"badge" in item && item.badge && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 border-primary/30 text-primary shrink-0">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </div>
                       <ArrowUpRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-primary shrink-0" />
                     </div>
                     <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5 font-normal">
@@ -380,7 +535,7 @@ const Index = () => {
               <Clock className="h-5 w-5 text-sky-600" />
               {t("dashboard.recentActivity")}
             </CardTitle>
-            <p className="text-xs text-muted-foreground">Latest recorded consultation events</p>
+            <p className="text-xs text-muted-foreground">Real-time health center events & records</p>
           </CardHeader>
           <CardContent className="p-4 flex-1">
             <div className="space-y-3">
@@ -400,8 +555,8 @@ const Index = () => {
                     key={i} 
                     className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors"
                   >
-                    <div className="h-8 w-8 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                      {item.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                    <div className="h-8 w-8 rounded-full bg-primary/15 text-primary font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                      {item.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() || "RC"}
                     </div>
 
                     <div className="flex-1 min-w-0">
