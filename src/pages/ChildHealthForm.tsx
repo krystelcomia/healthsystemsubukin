@@ -1246,7 +1246,7 @@ const ChildHealthForm = () => {
             background: transparent !important;
           }
           @page {
-            size: legal landscape;
+            size: landscape;
             margin: 4mm 5mm;
           }
         }
