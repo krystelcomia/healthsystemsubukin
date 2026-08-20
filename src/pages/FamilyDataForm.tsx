@@ -628,6 +628,23 @@ const FamilyDataForm = () => {
         }
       `}</style>
 
+      {/* Dynamic Theme Banner */}
+      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+            <Users className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
+              Family Data & Demographics Directory
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Household census registry, family folder files, and resident demographics database for Barangay Subukin.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Control Toolbar */}
       <div className="flex flex-col md:flex-row items-center justify-end gap-4 bg-card border border-border/60 p-4 rounded-xl shadow-xs">
         <div className="flex items-center gap-2 w-full md:w-auto">
