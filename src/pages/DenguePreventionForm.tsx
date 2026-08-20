@@ -741,19 +741,64 @@ const DenguePreventionForm = () => {
         })
       );
 
-      setRecords(updatedRecords);
-      localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(updatedRecords));
+      // Check if the form is fully populated (all rows have data)
+      const savedNonEmpty = updatedRecords.filter((r) => !isRowEmpty(r));
+      const isFormComplete = savedNonEmpty.length >= MAX_ROWS;
 
-      toast.success(t("dengue.saveSuccess") || "Progress saved! All entries remain on the form.");
+      if (isFormComplete) {
+        // Archive the completed form as a saved batch in history
+        const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        const batchTimestamp = new Date().toISOString();
+        const savedBatchesMap = getSavedBatchesFromStorage();
+
+        savedBatchesMap[batchId] = {
+          timestamp: batchTimestamp,
+          recordIds: savedNonEmpty.map((r) => r.id).filter(Boolean),
+          records: savedNonEmpty,
+        };
+        saveBatchesToStorage(savedBatchesMap);
+
+        // Add to the saved forms list in state
+        const dateObj = new Date(batchTimestamp);
+        const formattedDate = dateObj.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        setSavedForms((prev) => [
+          {
+            id: batchId,
+            timestamp: batchTimestamp,
+            formattedDate,
+            records: savedNonEmpty,
+          },
+          ...prev,
+        ]);
+
+        // Reset the active form to blank rows for the next batch
+        const blankRows = createBlankRows(MAX_ROWS);
+        setRecords(blankRows);
+        localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(blankRows));
+
+        toast.success("Form complete! All entries saved to history. The form has been reset for a new batch.");
+      } else {
+        // Partial save — keep entries on the form
+        setRecords(updatedRecords);
+        localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(updatedRecords));
+        toast.success(t("dengue.saveSuccess") || "Progress saved! All entries remain on the form.");
+      }
 
       window.dispatchEvent(new Event("resident-records-updated"));
       window.dispatchEvent(new Event("dengue-records-updated"));
 
       logActivity("update_dengue", {
         entity_type: "dengue_prevention",
-        description: `Saved ${nonEmptyRecords.length} record(s) in Dengue prevention checklist form`,
+        description: isFormComplete
+          ? `Completed and archived ${savedNonEmpty.length} record(s) in Dengue prevention checklist form`
+          : `Saved ${nonEmptyRecords.length} record(s) in Dengue prevention checklist form`,
       });
-
 
     } catch (err) {
       console.error("Failed to save progress:", err);
