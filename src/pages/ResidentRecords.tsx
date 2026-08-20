@@ -817,6 +817,7 @@ const ResidentRecords = () => {
             <tr>
               <th style={thStyle}>#</th>
               <th style={thStyle}>{t("residents.fullName")}</th>
+              <th style={thStyle}>Family #</th>
               <th style={thStyle}>{t("residents.gender")}</th>
               <th style={thStyle}>{t("residents.age")}</th>
               <th style={thStyle}>{t("residents.birthday")}</th>
@@ -828,6 +829,7 @@ const ResidentRecords = () => {
               <tr key={r.id}>
                 <td style={tdStyle}>{i + 1}</td>
                 <td style={tdStyle}>{r.full_name}</td>
+                <td style={tdStyle}>{r.family_number || "—"}</td>
                 <td style={tdStyle}>{r.gender}</td>
                 <td style={tdStyle}>{r.age}</td>
                 <td style={tdStyle}>{r.birthday || "—"}</td>
