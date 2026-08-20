@@ -1154,7 +1154,7 @@ const ChildHealthForm = () => {
                     <RefreshCw className="h-3.5 w-3.5" /> Reset Form
                   </Button>
                   <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
-                    <Printer className="h-3.5 w-3.5" /> Print Form
+                    <Printer className="h-3.5 w-3.5" /> Print
                   </Button>
                 </div>
               </div>
@@ -2922,7 +2922,7 @@ const ChildHealthForm = () => {
             <span className="text-[10px] text-slate-500 font-medium">Official Health Summary — Barangay Subukin</span>
             <div className="flex gap-2">
               <Button type="button" variant="outline" size="sm" onClick={handlePrintSummary} className="gap-1 text-xs">
-                <Printer className="h-3.5 w-3.5" /> Print Summary
+                <Printer className="h-3.5 w-3.5" /> Print
               </Button>
               <Button type="button" variant="secondary" size="sm" onClick={() => setViewRecordModalOpen(false)}>
                 Close

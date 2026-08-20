@@ -1330,7 +1330,7 @@ const DenguePreventionForm = () => {
               variant="outline"
               className="gap-1.5 border-primary/20 text-primary hover:bg-primary/10 font-medium shadow-xs"
             >
-              <Printer className="h-4 w-4" /> Print Form
+              <Printer className="h-4 w-4" /> Print
             </Button>
           </div>
         </CardContent>
@@ -1606,7 +1606,7 @@ const DenguePreventionForm = () => {
               }}
               className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold gap-1.5"
             >
-              <Printer className="h-4 w-4" /> Print / Re-Print
+              <Printer className="h-4 w-4" /> Print
             </Button>
           </DialogFooter>
         </DialogContent>

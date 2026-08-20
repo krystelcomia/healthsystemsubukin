@@ -369,7 +369,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
               onClick={() => handlePrintReport(currentWeekRecords, "Current Week Report")}
               className="bg-white/25 hover:bg-white/35 text-white font-semibold gap-1.5 text-xs backdrop-blur-sm border border-white/30"
             >
-              <Printer className="h-3.5 w-3.5" /> Print Current Week Report
+              <Printer className="h-3.5 w-3.5" /> Print
             </Button>
           </div>
         </div>
@@ -656,7 +656,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                         className="text-xs h-8 gap-1"
                       >
                         <Printer className="h-3.5 w-3.5" />
-                        Print Report
+                        Print
                       </Button>
                     </div>
                   </div>

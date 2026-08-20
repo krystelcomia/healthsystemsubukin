@@ -659,7 +659,7 @@ const FamilyPlanningForm = () => {
               </Button>
 
               <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs border-primary/20 text-primary hover:bg-primary/10 shrink-0 whitespace-nowrap">
-                <Printer className="h-4 w-4" /> Print Form
+                <Printer className="h-4 w-4" /> Print
               </Button>
             </div>
           </div>

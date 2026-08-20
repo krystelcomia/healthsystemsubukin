@@ -699,7 +699,7 @@ const MaternalCareForm = () => {
                 <RefreshCw className="h-3.5 w-3.5" /> Reset
               </Button>
               <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
-                <Printer className="h-3.5 w-3.5" /> Print Form
+                <Printer className="h-3.5 w-3.5" /> Print
               </Button>
             </div>
           </div>

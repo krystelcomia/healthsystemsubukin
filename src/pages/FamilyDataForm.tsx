@@ -993,7 +993,7 @@ const FamilyDataForm = () => {
                     onClick={handlePrintIndividualFile}
                     className="gap-1 text-xs"
                   >
-                    <Printer className="h-3.5 w-3.5" /> Print File
+                    <Printer className="h-3.5 w-3.5" /> Print
                   </Button>
                 </div>
               </div>

@@ -1088,7 +1088,7 @@ const AdminHealthRecords = () => {
                 </div>
 
                 <Button size="sm" variant="outline" onClick={handlePrintRecordsLedger} className="gap-1.5 text-xs shrink-0">
-                  <Printer className="h-3.5 w-3.5" /> Print Records Ledger
+                  <Printer className="h-3.5 w-3.5" /> Print
                 </Button>
               </DialogHeader>
 
@@ -1190,7 +1190,7 @@ const AdminHealthRecords = () => {
                 </div>
 
                 <Button size="sm" onClick={handlePrintSingleFilledRecord} className="gap-1.5 text-xs">
-                  <Printer className="h-3.5 w-3.5" /> Print Sheet
+                  <Printer className="h-3.5 w-3.5" /> Print
                 </Button>
               </DialogHeader>
 

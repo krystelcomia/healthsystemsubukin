@@ -324,7 +324,7 @@ const ResidentRecords = () => {
           </Button>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs border-primary/20 text-primary hover:bg-primary/10">
-              <Printer className="h-3.5 w-3.5" /> {t("residents.printRecord")}
+              <Printer className="h-3.5 w-3.5" /> Print
             </Button>
           </div>
         </div>
@@ -774,7 +774,7 @@ const ResidentRecords = () => {
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
           <Button variant="outline" size="sm" onClick={handlePrint} className="h-9 gap-1.5 text-xs border-border/70 hover:bg-muted">
             <Printer className="h-3.5 w-3.5" />
-            Print List
+            Print
           </Button>
 
           <div className="flex items-center p-1 rounded-lg bg-muted border border-border/50 shrink-0">

@@ -387,7 +387,7 @@ const ConsultationForm = () => {
                 className="border-primary/30 text-primary hover:bg-primary/10 font-semibold gap-2 px-5"
               >
                 <Printer className="h-4 w-4" /> 
-                Print Form
+                Print
               </Button>
             </div>
           </form>

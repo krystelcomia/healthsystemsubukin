@@ -794,7 +794,7 @@ const PhilPenHealthForm = () => {
                 variant="outline"
               >
                 <Printer className="h-4 w-4" />
-                Print Form
+                Print
               </Button>
             </div>
 
