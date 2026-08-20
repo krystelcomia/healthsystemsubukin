@@ -945,14 +945,15 @@ const DenguePreventionForm = () => {
             visibility: visible !important;
           }
           
-          /* Force full page positioning for both active form and history print modal */
+          /* Full page positioning with clean spacing around all table and page edges */
           #dengue-print-area, #saved-form-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
+            box-sizing: border-box !important;
             margin: 0 !important;
-            padding: 0 !important;
+            padding: 16px 20px !important;
             box-shadow: none !important;
             border: none !important;
             background: white !important;
@@ -997,44 +998,84 @@ const DenguePreventionForm = () => {
             margin-top: 0 !important;
           }
           
+          /* Official Printable Header Seal */
+          .header-seal, .header-border {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 24px !important;
+            border-bottom: 4px double #000000 !important;
+            padding-bottom: 16px !important;
+            margin-bottom: 16px !important;
+            text-align: center !important;
+          }
+          .header-seal img, .header-border img, .print-only img {
+            height: 80px !important;
+            max-height: 80px !important;
+            width: auto !important;
+            object-fit: contain !important;
+            mix-blend-mode: multiply !important;
+          }
+
+          h1 {
+            font-size: 15px !important;
+            letter-spacing: 0.08em !important;
+            margin: 2px 0 1px 0 !important;
+            padding: 0 !important;
+            color: #000000 !important;
+            font-weight: 800 !important;
+            text-align: center !important;
+          }
+
+          p.font-serif {
+            font-size: 10.5px !important;
+            margin-top: 1px !important;
+            margin-bottom: 8px !important;
+            color: #333333 !important;
+            text-align: center !important;
+          }
+
+          /* Clean Table with full borders and balanced row heights */
           table {
             border-collapse: collapse !important;
             width: 100% !important;
-            border: 1.25px solid #000000 !important;
+            border: 1.5px solid #000000 !important;
             margin-top: 2px !important;
           }
           
           thead th {
             border: 1px solid #000000 !important;
             color: #000000 !important;
-            padding: 2px 3px !important;
-            font-size: 8.5px !important;
-            line-height: 1.1 !important;
+            padding: 3px 4px !important;
+            font-size: 9px !important;
+            line-height: 1.15 !important;
             background-color: #f1f5f9 !important;
             font-weight: 800 !important;
             text-transform: uppercase !important;
+            text-align: center !important;
           }
           
           tbody tr {
-            height: 9.0mm !important;
+            height: 7.8mm !important;
           }
 
           tbody td {
             border: 1px solid #000000 !important;
             color: #000000 !important;
             padding: 1px 4px !important;
-            font-size: 9.5px !important;
+            font-size: 9px !important;
             line-height: 1.1 !important;
-            height: 9.0mm !important;
+            height: 7.8mm !important;
             vertical-align: middle !important;
           }
 
           tbody td .print-only,
           tbody td span {
             display: inline-block !important;
-            font-size: 9.5px !important;
+            font-size: 9px !important;
             color: #000000 !important;
-            font-weight: 600 !important;
+            font-weight: 500 !important;
             line-height: 1.1 !important;
           }
 
@@ -1044,43 +1085,9 @@ const DenguePreventionForm = () => {
             color: #000000 !important;
           }
 
-          .header-border {
-            border-bottom: 2.25px solid #000000 !important;
-            padding-bottom: 4px !important;
-            margin-bottom: 3px !important;
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            justify-content: center !important;
-            gap: 28px !important;
-          }
-          .header-border img, #saved-form-print-area .header-border img, .print-only img {
-            height: 78px !important;
-            max-height: 80px !important;
-            width: auto !important;
-            object-fit: contain !important;
-            mix-blend-mode: multiply !important;
-          }
-
-          h1 {
-            font-size: 16px !important;
-            letter-spacing: 0.1em !important;
-            margin: 2px 0 1px 0 !important;
-            padding: 0 !important;
-            color: #000000 !important;
-            font-weight: 800 !important;
-          }
-
-          p.font-serif {
-            font-size: 11px !important;
-            margin-top: 1px !important;
-            margin-bottom: 3px !important;
-            color: #333333 !important;
-          }
-
           td img {
-            height: 24px !important;
-            max-height: 25px !important;
+            height: 22px !important;
+            max-height: 24px !important;
             width: auto !important;
             object-fit: contain !important;
             margin: 0 auto !important;
@@ -1100,7 +1107,7 @@ const DenguePreventionForm = () => {
           }
           @page {
             size: A4 portrait;
-            margin: 4mm 6mm 5mm 6mm;
+            margin: 5mm;
           }
         }
       `}</style>
