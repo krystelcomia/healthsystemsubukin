@@ -260,6 +260,22 @@ const ResidentRecords = () => {
                           (r.family_number || "").toLowerCase().includes(search.toLowerCase());
     const matchesSitio = sitioFilter === "all" || r.sitio === sitioFilter;
     return matchesSearch && matchesSitio;
+  }).sort((a, b) => {
+    // Sort by family number first (numerically), then alphabetically by name within each group
+    const famA = (a.family_number || "").trim();
+    const famB = (b.family_number || "").trim();
+    const numA = parseInt(famA.replace(/\D/g, ""), 10);
+    const numB = parseInt(famB.replace(/\D/g, ""), 10);
+    const hasA = famA !== "" && !isNaN(numA);
+    const hasB = famB !== "" && !isNaN(numB);
+
+    // Residents without family numbers go to the end
+    if (hasA && !hasB) return -1;
+    if (!hasA && hasB) return 1;
+    if (hasA && hasB && numA !== numB) return numA - numB;
+
+    // Within the same family number (or both without), sort alphabetically by name
+    return (a.full_name || "").localeCompare(b.full_name || "");
   });
 
   // Demographics stats
