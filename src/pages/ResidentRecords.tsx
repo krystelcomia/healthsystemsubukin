@@ -741,13 +741,6 @@ const ResidentRecords = () => {
             </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2 shrink-0 self-stretch md:self-auto justify-end">
-          <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 border-primary/20 text-primary hover:bg-primary/10 font-medium shadow-xs">
-            <Printer className="h-4 w-4" />
-            Print List
-          </Button>
-        </div>
       </div>
 
       {/* Clean Search & Sitio Filters Bar */}
@@ -778,25 +771,32 @@ const ResidentRecords = () => {
           </Select>
         </div>
 
-        <div className="flex items-center p-1 rounded-lg bg-muted border border-border/50 shrink-0 self-end sm:self-auto">
-          <Button
-            variant={viewMode === "grid" ? "secondary" : "ghost"}
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => setViewMode("grid")}
-            title="Grid View"
-          >
-            <LayoutGrid className="h-3.5 w-3.5" />
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+          <Button variant="outline" size="sm" onClick={handlePrint} className="h-9 gap-1.5 text-xs border-border/70 hover:bg-muted">
+            <Printer className="h-3.5 w-3.5" />
+            Print List
           </Button>
-          <Button
-            variant={viewMode === "list" ? "secondary" : "ghost"}
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => setViewMode("list")}
-            title="List View"
-          >
-            <ListIcon className="h-3.5 w-3.5" />
-          </Button>
+
+          <div className="flex items-center p-1 rounded-lg bg-muted border border-border/50 shrink-0">
+            <Button
+              variant={viewMode === "grid" ? "secondary" : "ghost"}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setViewMode("grid")}
+              title="Grid View"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setViewMode("list")}
+              title="List View"
+            >
+              <ListIcon className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
       </div>
 
