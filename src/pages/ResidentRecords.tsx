@@ -721,23 +721,30 @@ const ResidentRecords = () => {
         }
       `}</style>
 
-      {/* Clean Page Title & Action Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 no-print border-b border-border/40 pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-heading font-extrabold text-foreground">Resident Records</h1>
-            <Badge variant="secondary" className="text-xs font-semibold bg-primary/10 text-primary border-primary/20">
-              {residents.length} Registered
-            </Badge>
+      {/* Dynamic Theme Banner */}
+      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+            <Users className="h-6 w-6" />
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Barangay Subukin population health registry and medical records database.
-          </p>
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
+                Resident Records
+              </h2>
+              <Badge variant="secondary" className="text-xs font-semibold bg-primary/10 text-primary border-primary/20">
+                {residents.length} Registered
+              </Badge>
+            </div>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Barangay Subukin population health registry and medical records database.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs">
-            <Printer className="h-3.5 w-3.5" />
+        <div className="flex items-center gap-2 shrink-0 self-stretch md:self-auto justify-end">
+          <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 border-primary/20 text-primary hover:bg-primary/10 font-medium shadow-xs">
+            <Printer className="h-4 w-4" />
             Print List
           </Button>
         </div>
