@@ -1004,12 +1004,15 @@ const ChildHealthForm = () => {
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
+            box-sizing: border-box !important;
             background: white !important;
-            padding: 0 !important;
+            padding: 4px 6px !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
+            color: black !important;
           }
+
           #summary-print-area {
             position: absolute !important;
             left: 0 !important;
@@ -1023,9 +1026,11 @@ const ChildHealthForm = () => {
             overflow: visible !important;
             z-index: 99999 !important;
           }
+
           html, body {
-            height: 100% !important;
+            height: auto !important;
             overflow: visible !important;
+            background: white !important;
           }
           .no-print {
             display: none !important;
@@ -1033,6 +1038,127 @@ const ChildHealthForm = () => {
           .print-only {
             display: flex !important;
           }
+
+          /* Official Printable Header Seal */
+          .header-seal {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 24px !important;
+            border-bottom: 4px double #000000 !important;
+            padding-bottom: 12px !important;
+            margin-bottom: 12px !important;
+            text-align: center !important;
+          }
+          .header-seal img, .print-only img {
+            height: 80px !important;
+            max-height: 80px !important;
+            width: auto !important;
+            object-fit: contain !important;
+            mix-blend-mode: multiply !important;
+          }
+
+          /* Scaled Font Sizes and Compact Padding for Portrait Orientation */
+          #child-print-area form {
+            font-size: 8.5px !important;
+            line-height: 1.15 !important;
+          }
+
+          #child-print-area .border {
+            border-color: #cbd5e1 !important;
+          }
+
+          #child-print-area .p-3,
+          #child-print-area .p-4,
+          #child-print-area .p-5,
+          #child-print-area .p-6,
+          #child-print-area .p-2\.5 {
+            padding: 3px 5px !important;
+          }
+
+          #child-print-area .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 4px !important;
+          }
+          #child-print-area .space-y-5 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 3.5px !important;
+          }
+          #child-print-area .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 3px !important;
+          }
+          #child-print-area .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 2px !important;
+          }
+          #child-print-area .space-y-2\.5 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1.5px !important;
+          }
+          #child-print-area .space-y-2 > :not([hidden]) ~ :not([hidden]),
+          #child-print-area .space-y-1\.5 > :not([hidden]) ~ :not([hidden]),
+          #child-print-area .space-y-1 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1px !important;
+          }
+
+          #child-print-area label,
+          #child-print-area span,
+          #child-print-area p,
+          #child-print-area div {
+            font-size: 8.5px !important;
+            line-height: 1.15 !important;
+            color: #000000 !important;
+          }
+
+          #child-print-area h1 {
+            font-size: 11px !important;
+            font-weight: 800 !important;
+            margin: 0 !important;
+            padding: 1px 0 !important;
+            color: #000000 !important;
+          }
+
+          #child-print-area .text-xs,
+          #child-print-area .text-\[11px\],
+          #child-print-area .text-\[10px\],
+          #child-print-area .text-\[9px\] {
+            font-size: 8.5px !important;
+            line-height: 1.15 !important;
+          }
+
+          #child-print-area .bg-slate-800 {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+            padding: 1.5px 4px !important;
+            font-size: 8.5px !important;
+          }
+          #child-print-area .bg-slate-800 * {
+            color: #ffffff !important;
+          }
+
+          #child-print-area input[type="text"],
+          #child-print-area input[type="number"],
+          #child-print-area input[type="date"] {
+            height: 15px !important;
+            min-height: 15px !important;
+            font-size: 8.5px !important;
+            padding: 0 2px !important;
+            line-height: 15px !important;
+            color: #000000 !important;
+          }
+
+          #child-print-area input[type="radio"],
+          #child-print-area input[type="checkbox"] {
+            width: 10px !important;
+            height: 10px !important;
+            margin: 0 2px 0 0 !important;
+            vertical-align: middle !important;
+          }
+
+          /* Prevent awkward page break splitting inside clinical cards */
+          #child-print-area .border.rounded-md,
+          #child-print-area .border.rounded {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+
           ::placeholder,
           ::-webkit-input-placeholder,
           ::-moz-placeholder,
@@ -1070,11 +1196,8 @@ const ChildHealthForm = () => {
           }
           th, td {
             min-width: 0 !important;
-            padding: 3px 5px !important;
-            font-size: 11px !important;
-          }
-          .header-seal img {
-            height: 75px !important;
+            padding: 2px 4px !important;
+            font-size: 8.5px !important;
           }
           select {
             -webkit-appearance: none !important;
@@ -1083,8 +1206,8 @@ const ChildHealthForm = () => {
             background: transparent !important;
           }
           @page {
-            size: legal landscape;
-            margin: 5mm;
+            size: A4 portrait;
+            margin: 4mm 5mm;
           }
         }
       `}</style>
