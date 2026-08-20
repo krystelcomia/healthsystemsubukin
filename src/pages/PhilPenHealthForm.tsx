@@ -388,10 +388,10 @@ const PhilPenHealthForm = () => {
               {/* Left Side Group */}
               <div className="md:col-span-8 space-y-3.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0 text-xs">Name:</span>
+                  <span className="text-foreground shrink-0 text-sm font-bold">Name:</span>
                   <div className="flex-1 no-print">
                     <Select value={form.resident_id} onValueChange={handleResidentChange}>
-                      <SelectTrigger className="h-8 border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 shadow-none focus:ring-0 focus:border-primary text-xs transition-colors">
+                      <SelectTrigger className="h-8 border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 shadow-none focus:ring-0 focus:border-primary text-sm font-normal transition-colors">
                         <SelectValue placeholder="Select a resident..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -402,37 +402,37 @@ const PhilPenHealthForm = () => {
                     </Select>
                   </div>
                   {/* Print representation of name select */}
-                  <span className="hidden print:inline border-b border-slate-400 flex-1 px-1 text-xs min-h-6">
+                  <span className="hidden print:inline border-b border-slate-400 flex-1 px-1 text-sm font-normal min-h-6">
                     {residents.find(r => r.id === form.resident_id)?.full_name || ""}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0 text-xs">Address/Sitio:</span>
+                  <span className="text-foreground shrink-0 text-sm font-bold">Address/Sitio:</span>
                   <input 
                     type="text"
                     value={form.address}
                     onChange={(e) => handleFieldChange("address", e.target.value)}
-                    className="print-input flex-1 text-xs"
+                    className="print-input flex-1 text-sm font-normal"
                     placeholder=""
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0 text-xs">Age:</span>
+                  <span className="text-foreground shrink-0 text-sm font-bold">Age:</span>
                   <input 
                     type="text"
                     inputMode="numeric"
                     value={form.age}
                     onKeyDown={allowOnlyNumbers}
                     onChange={(e) => handleFieldChange("age", sanitizeDigitsOnly(e.target.value))}
-                    className="print-input flex-1 text-xs"
+                    className="print-input flex-1 text-sm font-normal"
                     placeholder=""
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0 text-xs">Birthdate:</span>
+                  <span className="text-foreground shrink-0 text-sm font-bold">Birthdate:</span>
                   <input 
                     type="text"
                     value={form.birthdate}
@@ -441,22 +441,22 @@ const PhilPenHealthForm = () => {
                       const computed = calculateAge(bday);
                       setForm(prev => ({ ...prev, birthdate: bday, age: computed > 0 ? String(computed) : prev.age }));
                     }}
-                    className="print-input flex-1 text-xs"
+                    className="print-input flex-1 text-sm font-normal"
                     placeholder="YYYY-MM-DD"
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0 text-xs">Date:</span>
+                  <span className="text-foreground shrink-0 text-sm font-bold">Date:</span>
                   <div className="flex-1 no-print">
                     <input 
                       type="date"
                       value={form.currentDate}
                       onChange={(e) => handleFieldChange("currentDate", e.target.value)}
-                      className="print-input flex-1 text-xs"
+                      className="print-input flex-1 text-sm font-normal"
                     />
                   </div>
-                  <span className="hidden print:inline border-b border-slate-400 flex-1 px-1 text-xs min-h-6">
+                  <span className="hidden print:inline border-b border-slate-400 flex-1 px-1 text-sm font-normal min-h-6">
                     {form.currentDate || ""}
                   </span>
                 </div>
@@ -465,46 +465,46 @@ const PhilPenHealthForm = () => {
               {/* Right Side Group */}
               <div className="md:col-span-4 space-y-3.5 md:border-l md:border-border/60 md:pl-6">
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0 text-xs">BP:</span>
+                  <span className="text-foreground shrink-0 text-sm font-bold">BP:</span>
                   <input 
                     type="text"
                     value={form.bp}
                     onKeyDown={allowNumbersAndSlash}
                     onChange={(e) => handleFieldChange("bp", sanitizeBpString(e.target.value))}
-                    className="print-input flex-1 text-center text-xs"
+                    className="print-input flex-1 text-center text-sm font-normal"
                     placeholder="120/80"
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0 text-xs">Ht:</span>
+                  <span className="text-foreground shrink-0 text-sm font-bold">Ht:</span>
                   <input 
                     type="text"
                     inputMode="decimal"
                     value={form.height}
                     onKeyDown={allowNumbersAndDecimal}
                     onChange={(e) => handleFieldChange("height", sanitizeDecimalNumber(e.target.value))}
-                    className="print-input flex-1 text-center text-xs"
+                    className="print-input flex-1 text-center text-sm font-normal"
                     placeholder="cm"
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0 text-xs">Wt:</span>
+                  <span className="text-foreground shrink-0 text-sm font-bold">Wt:</span>
                   <input 
                     type="text"
                     inputMode="decimal"
                     value={form.weight}
                     onKeyDown={allowNumbersAndDecimal}
                     onChange={(e) => handleFieldChange("weight", sanitizeDecimalNumber(e.target.value))}
-                    className="print-input flex-1 text-center text-xs"
+                    className="print-input flex-1 text-center text-sm font-normal"
                     placeholder="kg"
                   />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0 text-xs">BMI:</span>
-                  <div className="flex-1 font-mono text-xs text-center text-primary border-b border-dashed border-border/80 min-h-[28px] flex items-center justify-center">
+                  <span className="text-foreground shrink-0 text-sm font-bold">BMI:</span>
+                  <div className="flex-1 font-mono text-sm font-normal text-center text-primary border-b border-dashed border-border/80 min-h-[28px] flex items-center justify-center">
                     {bmi || "—"}
                   </div>
                 </div>
