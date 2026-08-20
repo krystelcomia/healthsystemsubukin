@@ -336,7 +336,7 @@ const PhilPenHealthForm = () => {
             display: none !important;
           }
           .print-only { display: flex !important; }
-          .header-seal img { height: 75px !important; mix-blend-mode: multiply !important; }
+          .header-seal img { height: 80px !important; mix-blend-mode: multiply !important; }
           #philpen-print-area table td, #philpen-print-area table th { padding: 3px 5px !important; font-size: 11px !important; }
           @page {
             size: A4 portrait;
@@ -371,10 +371,13 @@ const PhilPenHealthForm = () => {
         <CardContent className="p-6 md:p-8 space-y-6">
           
           {/* Official Barangay Printable Header */}
-          <div className="print-only header-seal flex items-center justify-center gap-6 md:gap-8 border-b-2 border-slate-900 pb-3 mb-4 text-center">
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
-            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
-            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" />
+          <div 
+            className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6 text-center"
+            style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
+          >
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
