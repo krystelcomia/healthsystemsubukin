@@ -367,7 +367,7 @@ const ConsultationForm = () => {
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all duration-200 gap-2 px-6"
               >
                 <CheckCircle2 className="h-4 w-4" />
-                {t("consultation.saveConsultation")}
+                Save Record
               </Button>
 
               <Button 
