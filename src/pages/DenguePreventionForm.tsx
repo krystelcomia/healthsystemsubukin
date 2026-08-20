@@ -123,8 +123,7 @@ const DenguePreventionForm = () => {
   const [savedForms, setSavedForms] = useState<SavedDengueForm[]>([]);
   const [viewingSavedForm, setViewingSavedForm] = useState<SavedDengueForm | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [finalRowModalOpen, setFinalRowModalOpen] = useState(false);
-  const [lastArchivedBatch, setLastArchivedBatch] = useState<SavedDengueForm | null>(null);
+
   const [deleteRowConfirm, setDeleteRowConfirm] = useState<{ id: string; name: string } | null>(null);
   const [deleteSavedFormConfirmId, setDeleteSavedFormConfirmId] = useState<string | null>(null);
 
@@ -257,34 +256,11 @@ const DenguePreventionForm = () => {
       }
     });
 
+    // Collect unmapped DB records (not assigned to any saved batch) — these stay in the active form
     const sortedDb = [...dbRecords].sort(
       (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
     );
-
-    // Group ALL unmapped database records into savedForms history batches so historical entries are saved and never leak into active blank form
-    let unmappedDbRecords = sortedDb.filter((rec: any) => !archivedRecordIds.has(rec.id));
-    if (unmappedDbRecords.length > 0) {
-      for (let i = 0; i < unmappedDbRecords.length; i += MAX_ROWS) {
-        const chunk = unmappedDbRecords.slice(i, i + MAX_ROWS);
-        const autoBatchId = `auto_batch_${chunk[0].id}`;
-        const batchTimestamp = chunk[0].created_at || new Date().toISOString();
-        savedBatchesMap[autoBatchId] = {
-          timestamp: batchTimestamp,
-          recordIds: chunk.map((r: any) => r.id),
-          records: chunk,
-        };
-        chunk.forEach((r: any) => {
-          recordToBatchMap.set(r.id, autoBatchId);
-          archivedRecordIds.add(r.id);
-        });
-        batchGroupsMap.set(autoBatchId, {
-          id: autoBatchId,
-          timestamp: batchTimestamp,
-          records: chunk,
-        });
-      }
-      saveBatchesToStorage(savedBatchesMap);
-    }
+    const unmappedDbRecords = sortedDb.filter((rec: any) => !archivedRecordIds.has(rec.id));
 
     // Collect and cache all existing resident signatures from database and historical batches
     dbRecords.forEach((rec: any) => {
@@ -323,9 +299,10 @@ const DenguePreventionForm = () => {
 
     setSavedForms(compiledSavedForms);
 
-    // Active in-progress draft resolution:
-    // Only restore active draft if user has currently entered unsubmitted input.
-    // If the form was saved or reset, it remains 100% BLANK (20 blank rows) until new inputs are entered.
+    // Active form resolution:
+    // 1. First try restoring from active draft in localStorage
+    // 2. If no draft, load unmapped DB records into the active form so filled-out data persists
+    // 3. Only start with blank rows if both are empty
     let initialRows: any[] = [];
 
     const activeDraftStr = localStorage.getItem(STORAGE_KEY_ACTIVE_DRAFT);
@@ -341,7 +318,12 @@ const DenguePreventionForm = () => {
       } catch {}
     }
 
-    // Start with fresh 20 blank rows if no unsaved active input exists
+    // If no active draft, load unmapped DB records so the form keeps its data
+    if (initialRows.length === 0 && unmappedDbRecords.length > 0) {
+      initialRows = unmappedDbRecords.slice(0, MAX_ROWS);
+    }
+
+    // Only start with fresh blank rows if there is truly no data
     if (initialRows.length === 0) {
       initialRows = createBlankRows(MAX_ROWS);
     }
@@ -548,144 +530,7 @@ const DenguePreventionForm = () => {
     }
   };
 
-  const isCompletingRef = useRef(false);
 
-  const isRowComplete = (row: any) => {
-    if (!row) return false;
-    return Boolean(
-      row.household_name?.trim() ||
-      row.container_type?.trim() ||
-      row.action_plan?.trim() ||
-      row.signature?.trim() ||
-      (row.has_larvae !== null && row.has_larvae !== undefined)
-    );
-  };
-
-  // Automatically archives completed form upon reaching/completing the final row, saves to history, notifies user, and resets active form
-  const archiveAndResetForm = async (completedRows: any[]) => {
-    if (isCompletingRef.current) return;
-    isCompletingRef.current = true;
-
-    // Cancel pending debounce timeouts so they don't overwrite
-    Object.values(saveTimeoutsRef.current).forEach((tId) => clearTimeout(tId));
-    saveTimeoutsRef.current = {};
-
-    setSaving(true);
-    const batchId = `batch_${Date.now()}`;
-    const batchTimestamp = new Date().toISOString();
-
-    try {
-      // 1. Ensure all rows are saved to database with proper IDs
-      const savedDbRecords = await Promise.all(
-        completedRows.slice(0, MAX_ROWS).map(async (record) => {
-          const resId = await resolveResidentId(record.household_name, record.resident_id);
-
-          if (record.id && !record.id.startsWith("temp-") && !record.id.startsWith("blank-")) {
-            const { data, error } = await supabase
-              .from("dengue_prevention")
-              .update({
-                resident_id: resId,
-                household_name: record.household_name || "",
-                container_type: record.container_type || "",
-                has_larvae: record.has_larvae,
-                action_plan: record.action_plan || "",
-                signature: record.signature || "",
-              })
-              .eq("id", record.id)
-              .select()
-              .single();
-
-            if (!error && data) return data;
-            return record;
-          } else {
-            const { data, error } = await supabase
-              .from("dengue_prevention")
-              .insert({
-                resident_id: resId,
-                household_name: record.household_name || "",
-                container_type: record.container_type || "",
-                has_larvae: record.has_larvae,
-                action_plan: record.action_plan || "",
-                signature: record.signature || "",
-                created_at: batchTimestamp,
-              })
-              .select()
-              .single();
-
-            if (!error && data) return data;
-            return record;
-          }
-        })
-      );
-
-      // 2. Add to saved batches map in storage & update state immediately
-      const dateObj = new Date(batchTimestamp);
-      const formattedDate = dateObj.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-
-      const newSavedBatch: SavedDengueForm = {
-        id: batchId,
-        timestamp: batchTimestamp,
-        formattedDate,
-        records: savedDbRecords,
-      };
-
-      const savedBatchesMap = getSavedBatchesFromStorage();
-      savedBatchesMap[batchId] = {
-        timestamp: batchTimestamp,
-        recordIds: savedDbRecords.map((r) => r.id),
-        records: savedDbRecords,
-      };
-      saveBatchesToStorage(savedBatchesMap);
-      setSavedForms((prev) => [newSavedBatch, ...prev.filter((f) => f.id !== batchId)]);
-      setLastArchivedBatch(newSavedBatch);
-
-      // 3. Clear active draft & reset to 20 fresh blank rows for new entries
-      localStorage.removeItem(STORAGE_KEY_ACTIVE_DRAFT);
-      const newBlankRows = createBlankRows(MAX_ROWS);
-      setRecords(newBlankRows);
-      localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(newBlankRows));
-
-      // 4. Trigger completion notification modal & toast
-      setFinalRowModalOpen(true);
-      toast.success(
-        "Form is full! All 20 entries have been saved to the history section below and the form has reset to blank for new entries.",
-        { duration: 6000 }
-      );
-
-      logActivity("create_dengue_batch", {
-        entity_type: "dengue_prevention",
-        description: `Completed Dengue prevention checklist form (20 rows) and saved to history`,
-      });
-
-      window.dispatchEvent(new Event("resident-records-updated"));
-      window.dispatchEvent(new Event("dengue-records-updated"));
-    } catch (err) {
-      console.error("Completion error:", err);
-      toast.error("Failed to save completed form to history.");
-    } finally {
-      setSaving(false);
-      setTimeout(() => {
-        isCompletingRef.current = false;
-      }, 1000);
-    }
-  };
-
-  const checkFormCompletion = (updatedRows: any[]) => {
-    if (loading || isCompletingRef.current) return;
-    const activeRows = updatedRows.slice(0, MAX_ROWS);
-    
-    // Trigger auto-completion only when all 20 rows of the form are filled out
-    const filledCount = activeRows.filter((r) => !isRowEmpty(r)).length;
-    if (filledCount >= MAX_ROWS) {
-      archiveAndResetForm(activeRows);
-    }
-  };
 
   const queueAutoSaveRow = (row: any) => {
     if (!row || !row.id) return;
@@ -725,7 +570,7 @@ const DenguePreventionForm = () => {
         }
         return r;
       });
-      checkFormCompletion(updated);
+
       return updated;
     });
   };
@@ -740,7 +585,7 @@ const DenguePreventionForm = () => {
         }
         return r;
       });
-      checkFormCompletion(updated);
+
       return updated;
     });
   };
@@ -755,7 +600,7 @@ const DenguePreventionForm = () => {
         }
         return r;
       });
-      checkFormCompletion(updated);
+
       return updated;
     });
   };
@@ -815,7 +660,7 @@ const DenguePreventionForm = () => {
       if (updatedTargetRow) {
         autoSaveRowToDb(updatedTargetRow);
       }
-      checkFormCompletion(updated);
+
       return updated;
     });
   };
@@ -834,7 +679,7 @@ const DenguePreventionForm = () => {
         }
         return r;
       });
-      checkFormCompletion(updated);
+
       return updated;
     });
   };
@@ -909,7 +754,7 @@ const DenguePreventionForm = () => {
         description: `Saved ${nonEmptyRecords.length} record(s) in Dengue prevention checklist form`,
       });
 
-      checkFormCompletion(updatedRecords);
+
     } catch (err) {
       console.error("Failed to save progress:", err);
       toast.error("Some records failed to save. Please try again.");
@@ -1541,58 +1386,7 @@ const DenguePreventionForm = () => {
         )}
       </div>
 
-      {/* Form Full Notification & Auto-Archive Modal */}
-      <Dialog open={finalRowModalOpen} onOpenChange={setFinalRowModalOpen}>
-        <DialogContent className="max-w-md bg-card text-card-foreground border border-border">
-          <DialogHeader>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="h-9 w-9 rounded-full bg-primary/15 text-primary flex items-center justify-center">
-                <FileCheck className="h-5 w-5" />
-              </div>
-              <DialogTitle className="text-lg font-heading font-bold text-foreground">
-                Form is Full &amp; All Entries Saved
-              </DialogTitle>
-            </div>
-            <DialogDescription className="text-xs text-muted-foreground">
-              This form has reached its full capacity of 20 entries.
-            </DialogDescription>
-          </DialogHeader>
 
-          <div className="py-2 text-sm space-y-3">
-            <p className="text-muted-foreground text-xs leading-relaxed">
-              All entries filled out in the form have been saved to the <strong className="text-foreground font-semibold">&ldquo;Saved Dengue Prevention Forms&rdquo;</strong> history section below so they can still be viewed and printed.
-            </p>
-            <div className="bg-primary/10 p-3 rounded-lg border border-primary/20 text-foreground text-xs space-y-1">
-              <p className="font-semibold text-primary">The form has reset to blank for new entries.</p>
-              <p className="text-muted-foreground">You can view, review, and print this saved record anytime from the history list.</p>
-            </div>
-          </div>
-
-          <DialogFooter className="gap-2 mt-4 flex-col sm:flex-row">
-            {lastArchivedBatch && (
-              <Button 
-                type="button" 
-                variant="outline"
-                onClick={() => {
-                  setFinalRowModalOpen(false);
-                  setViewingSavedForm(lastArchivedBatch);
-                  setViewModalOpen(true);
-                }} 
-                className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-medium"
-              >
-                <Eye className="h-4 w-4" /> View &amp; Print Saved Form
-              </Button>
-            )}
-            <Button 
-              type="button" 
-              onClick={() => setFinalRowModalOpen(false)} 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md"
-            >
-              Start New Entries
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Signature Modal */}
       <Dialog open={signatureModalOpen} onOpenChange={setSignatureModalOpen}>
