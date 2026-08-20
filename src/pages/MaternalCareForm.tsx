@@ -713,9 +713,9 @@ const MaternalCareForm = () => {
                   <UserCheck className="h-4 w-4" /> Patient General Information
                 </h3>
                 <div className="flex items-center gap-2 no-print w-full md:w-72">
-                  <Label className="text-xs shrink-0 font-medium">Select Resident:</Label>
+                  <Label className="text-xs shrink-0 font-medium text-foreground">Select Resident:</Label>
                   <Select value={form.resident_id} onValueChange={handleSelectResident}>
-                    <SelectTrigger className="h-8 text-xs bg-background">
+                    <SelectTrigger className="h-8 text-xs bg-background text-foreground">
                       <SelectValue placeholder="Pumili ng residente..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -733,7 +733,7 @@ const MaternalCareForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
                 
                 <div className="md:col-span-1 space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">Family Number (FN)</Label>
+                  <Label className="text-xs font-semibold text-foreground">Family Number (FN)</Label>
                   <Input 
                     type="text" 
                     value={form.family_number} 
@@ -744,7 +744,7 @@ const MaternalCareForm = () => {
                 </div>
 
                 <div className="md:col-span-1 space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">Patient's Last Name *</Label>
+                  <Label className="text-xs font-semibold text-foreground">Patient's Last Name *</Label>
                   <Input 
                     type="text" 
                     value={form.patient_last_name} 
@@ -757,7 +757,7 @@ const MaternalCareForm = () => {
                 </div>
 
                 <div className="md:col-span-1 space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">First Name *</Label>
+                  <Label className="text-xs font-semibold text-foreground">First Name *</Label>
                   <Input 
                     type="text" 
                     value={form.patient_first_name} 
@@ -770,7 +770,7 @@ const MaternalCareForm = () => {
                 </div>
 
                 <div className="md:col-span-1 space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">Middle Initial / Name</Label>
+                  <Label className="text-xs font-semibold text-foreground">Middle Initial / Name</Label>
                   <Input 
                     type="text" 
                     value={form.patient_middle_name} 
@@ -782,7 +782,7 @@ const MaternalCareForm = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">Age</Label>
+                  <Label className="text-xs font-semibold text-foreground">Age</Label>
                   <Input 
                     type="number" 
                     value={form.age} 
@@ -794,9 +794,9 @@ const MaternalCareForm = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">Sitio / Address</Label>
+                  <Label className="text-xs font-semibold text-foreground">Sitio / Address</Label>
                   <Select value={form.sitio} onValueChange={v => handleFormChange("sitio", v)}>
-                    <SelectTrigger className="h-8 text-xs bg-background">
+                    <SelectTrigger className="h-8 text-xs bg-background text-foreground">
                       <SelectValue placeholder="Sitio" />
                     </SelectTrigger>
                     <SelectContent>
@@ -808,7 +808,7 @@ const MaternalCareForm = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">EDC (Expected Date of Confinement)</Label>
+                  <Label className="text-xs font-semibold text-foreground">EDC (Expected Date of Confinement)</Label>
                   <Input 
                     type="date" 
                     value={form.edc} 
@@ -818,7 +818,7 @@ const MaternalCareForm = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">LMP (Last Menstrual Period)</Label>
+                  <Label className="text-xs font-semibold text-foreground">LMP (Last Menstrual Period)</Label>
                   <Input 
                     type="date" 
                     value={form.lmp} 
@@ -828,7 +828,7 @@ const MaternalCareForm = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">Obstetric Score (G / P)</Label>
+                  <Label className="text-xs font-semibold text-foreground">Obstetric Score (G / P)</Label>
                   <Input 
                     type="text" 
                     value={form.obstetric_score} 
@@ -839,7 +839,7 @@ const MaternalCareForm = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">FPAL Score (F - P - A - L)</Label>
+                  <Label className="text-xs font-semibold text-foreground">FPAL Score (F - P - A - L)</Label>
                   <Input 
                     type="text" 
                     value={form.fpal} 
@@ -850,7 +850,7 @@ const MaternalCareForm = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">Patient Height (cm)</Label>
+                  <Label className="text-xs font-semibold text-foreground">Patient Height (cm)</Label>
                   <Input 
                     type="text" 
                     value={form.patient_height} 
@@ -861,9 +861,9 @@ const MaternalCareForm = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-muted-foreground">Blood Type</Label>
+                  <Label className="text-xs font-semibold text-foreground">Blood Type</Label>
                   <Select value={form.blood_type} onValueChange={v => handleFormChange("blood_type", v)}>
-                    <SelectTrigger className={`h-8 text-xs bg-background ${form.blood_type === "Unspecified" ? "print:text-transparent" : ""}`}>
+                    <SelectTrigger className={`h-8 text-xs bg-background text-foreground ${form.blood_type === "Unspecified" ? "print:text-transparent" : ""}`}>
                       <SelectValue placeholder="Blood Type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -878,23 +878,23 @@ const MaternalCareForm = () => {
               {/* Trimester Milestone Dates */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs pt-2 border-t border-border/40">
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-medium text-muted-foreground">End of 1st Trim:</Label>
+                  <Label className="text-[11px] font-semibold text-foreground">End of 1st Trim:</Label>
                   <Input type="text" value={form.end_1st_trim} onChange={e => handleFormChange("end_1st_trim", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-medium text-muted-foreground">End of 2nd Trim:</Label>
+                  <Label className="text-[11px] font-semibold text-foreground">End of 2nd Trim:</Label>
                   <Input type="text" value={form.end_2nd_trim} onChange={e => handleFormChange("end_2nd_trim", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-medium text-muted-foreground">End of 3rd Trim:</Label>
+                  <Label className="text-[11px] font-semibold text-foreground">End of 3rd Trim:</Label>
                   <Input type="text" value={form.end_3rd_trim} onChange={e => handleFormChange("end_3rd_trim", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-medium text-muted-foreground">End of Postpartum:</Label>
+                  <Label className="text-[11px] font-semibold text-foreground">End of Postpartum:</Label>
                   <Input type="text" value={form.end_postpartum} onChange={e => handleFormChange("end_postpartum", e.target.value)} placeholder="Petsa / Tala" className={lineInputClass} />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-medium text-muted-foreground">Period:</Label>
+                  <Label className="text-[11px] font-semibold text-foreground">Period:</Label>
                   <Input type="text" value={form.period} onChange={e => handleFormChange("period", e.target.value)} placeholder="Period" className={lineInputClass} />
                 </div>
               </div>
@@ -921,20 +921,20 @@ const MaternalCareForm = () => {
                     return (
                       <div 
                         key={factor} 
-                        className="flex items-start space-x-2.5 cursor-pointer hover:text-foreground transition-colors group select-none py-0.5" 
+                        className="flex items-start space-x-2.5 cursor-pointer hover:text-primary transition-colors group select-none py-0.5" 
                         onClick={() => toggleRiskFactor(factor)}
                       >
                         <div 
                           className={cn(
                             "mt-0.5 h-4 w-4 shrink-0 rounded-full border border-slate-400 dark:border-slate-500 flex items-center justify-center transition-all",
                             isSelected 
-                              ? "bg-rose-600 border-rose-600 text-white font-bold shadow-xs" 
-                              : "bg-background group-hover:border-rose-500"
+                               ? "bg-rose-600 border-rose-600 text-white font-bold shadow-xs" 
+                               : "bg-background group-hover:border-rose-500"
                           )}
                         >
                           {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
                         </div>
-                        <span className={cn("text-xs leading-tight cursor-pointer font-medium select-none", isSelected ? "text-foreground font-semibold" : "text-muted-foreground")}>
+                        <span className={cn("text-xs leading-tight cursor-pointer select-none text-foreground", isSelected ? "font-bold" : "font-normal")}>
                           {factor}
                         </span>
                       </div>
@@ -949,20 +949,20 @@ const MaternalCareForm = () => {
                     return (
                       <div 
                         key={factor} 
-                        className="flex items-start space-x-2.5 cursor-pointer hover:text-foreground transition-colors group select-none py-0.5" 
+                        className="flex items-start space-x-2.5 cursor-pointer hover:text-primary transition-colors group select-none py-0.5" 
                         onClick={() => toggleRiskFactor(factor)}
                       >
                         <div 
                           className={cn(
                             "mt-0.5 h-4 w-4 shrink-0 rounded-full border border-slate-400 dark:border-slate-500 flex items-center justify-center transition-all",
                             isSelected 
-                              ? "bg-rose-600 border-rose-600 text-white font-bold shadow-xs" 
-                              : "bg-background group-hover:border-rose-500"
+                               ? "bg-rose-600 border-rose-600 text-white font-bold shadow-xs" 
+                               : "bg-background group-hover:border-rose-500"
                           )}
                         >
                           {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
                         </div>
-                        <span className={cn("text-xs leading-tight cursor-pointer font-medium select-none", isSelected ? "text-foreground font-semibold" : "text-muted-foreground")}>
+                        <span className={cn("text-xs leading-tight cursor-pointer select-none text-foreground", isSelected ? "font-bold" : "font-normal")}>
                           {factor}
                         </span>
                       </div>
@@ -977,20 +977,20 @@ const MaternalCareForm = () => {
                     return (
                       <div 
                         key={factor} 
-                        className="flex items-start space-x-2.5 cursor-pointer hover:text-foreground transition-colors group select-none py-0.5" 
+                        className="flex items-start space-x-2.5 cursor-pointer hover:text-primary transition-colors group select-none py-0.5" 
                         onClick={() => toggleRiskFactor(factor)}
                       >
                         <div 
                           className={cn(
                             "mt-0.5 h-4 w-4 shrink-0 rounded-full border border-slate-400 dark:border-slate-500 flex items-center justify-center transition-all",
                             isSelected 
-                              ? "bg-rose-600 border-rose-600 text-white font-bold shadow-xs" 
-                              : "bg-background group-hover:border-rose-500"
+                               ? "bg-rose-600 border-rose-600 text-white font-bold shadow-xs" 
+                               : "bg-background group-hover:border-rose-500"
                           )}
                         >
                           {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
                         </div>
-                        <span className={cn("text-xs leading-tight cursor-pointer font-medium select-none", isSelected ? "text-foreground font-semibold" : "text-muted-foreground")}>
+                        <span className={cn("text-xs leading-tight cursor-pointer select-none text-foreground", isSelected ? "font-bold" : "font-normal")}>
                           {factor}
                         </span>
                       </div>
@@ -1039,7 +1039,7 @@ const MaternalCareForm = () => {
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                         <div className="space-y-1">
-                          <Label className="text-[11px] font-medium text-muted-foreground">Prenatal Visit Date</Label>
+                          <Label className="text-[11px] font-semibold text-foreground">Prenatal Visit Date</Label>
                           <Input 
                             type="date" 
                             value={visit.visit_date} 
@@ -1049,7 +1049,7 @@ const MaternalCareForm = () => {
                         </div>
 
                         <div className="space-y-1">
-                          <Label className="text-[11px] font-medium text-muted-foreground">Prenatal Visit #</Label>
+                          <Label className="text-[11px] font-semibold text-foreground">Prenatal Visit #</Label>
                           <Input 
                             type="text" 
                             value={visit.visit_number} 
@@ -1060,7 +1060,7 @@ const MaternalCareForm = () => {
                         </div>
 
                         <div className="space-y-1">
-                          <Label className="text-[11px] font-medium text-muted-foreground">AOG (Age of Gestation)</Label>
+                          <Label className="text-[11px] font-semibold text-foreground">AOG (Age of Gestation)</Label>
                           <Input 
                             type="text" 
                             value={visit.aog} 
@@ -1071,7 +1071,7 @@ const MaternalCareForm = () => {
                         </div>
 
                         <div className="space-y-1">
-                          <Label className="text-[11px] font-medium text-muted-foreground">Blood Pressure (BP)</Label>
+                          <Label className="text-[11px] font-semibold text-foreground">Blood Pressure (BP)</Label>
                           <Input 
                             type="text" 
                             value={visit.blood_pressure} 
@@ -1082,7 +1082,7 @@ const MaternalCareForm = () => {
                         </div>
 
                         <div className="space-y-1">
-                          <Label className="text-[11px] font-medium text-muted-foreground">Weight (kg)</Label>
+                          <Label className="text-[11px] font-semibold text-foreground">Weight (kg)</Label>
                           <Input 
                             type="text" 
                             value={visit.weight} 
@@ -1093,7 +1093,7 @@ const MaternalCareForm = () => {
                         </div>
 
                         <div className="space-y-1">
-                          <Label className="text-[11px] font-medium text-muted-foreground">Fundic Height (cm)</Label>
+                          <Label className="text-[11px] font-semibold text-foreground">Fundic Height (cm)</Label>
                           <Input 
                             type="text" 
                             value={visit.fundic_height} 
@@ -1104,7 +1104,7 @@ const MaternalCareForm = () => {
                         </div>
 
                         <div className="space-y-1">
-                          <Label className="text-[11px] font-medium text-muted-foreground">FHR (Fetal Heart Rate)</Label>
+                          <Label className="text-[11px] font-semibold text-foreground">FHR (Fetal Heart Rate)</Label>
                           <Input 
                             type="text" 
                             value={visit.fhr} 
@@ -1115,7 +1115,7 @@ const MaternalCareForm = () => {
                         </div>
 
                         <div className="space-y-1">
-                          <Label className="text-[11px] font-medium text-muted-foreground">Presentation</Label>
+                          <Label className="text-[11px] font-semibold text-foreground">Presentation</Label>
                           <Input 
                             type="text" 
                             value={visit.presentation} 
@@ -1126,7 +1126,7 @@ const MaternalCareForm = () => {
                         </div>
 
                         <div className="col-span-2 md:col-span-4 space-y-1">
-                          <Label className="text-[11px] font-medium text-muted-foreground">Notes / Remarks</Label>
+                          <Label className="text-[11px] font-semibold text-foreground">Notes / Remarks</Label>
                           <Input 
                             type="text" 
                             value={visit.notes} 
