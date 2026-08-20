@@ -836,7 +836,7 @@ const FamilyDataForm = () => {
               </div>
               <div className="flex items-center gap-2 no-print">
                 <Button onClick={handlePrintIndividualFile} size="sm" variant="outline" className="gap-1.5">
-                  <Printer className="h-4 w-4" /> Print Ledger
+                  <Printer className="h-4 w-4" /> Print
                 </Button>
               </div>
             </div>
