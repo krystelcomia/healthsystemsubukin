@@ -448,12 +448,12 @@ const PhilPenHealthForm = () => {
 
                 <div className="flex items-center gap-2">
                   <span className="text-foreground shrink-0 text-sm font-bold">Date:</span>
-                  <div className="flex-1 no-print">
+                  <div className="flex-1 no-print border-b border-border/80 dark:border-slate-600 flex items-center">
                     <input 
                       type="date"
                       value={form.currentDate}
                       onChange={(e) => handleFieldChange("currentDate", e.target.value)}
-                      className="print-input flex-1 text-sm font-normal"
+                      className="w-36 bg-transparent border-0 outline-none p-1 text-sm font-normal cursor-pointer"
                     />
                   </div>
                   <span className="hidden print:inline border-b border-slate-400 flex-1 px-1 text-sm font-normal min-h-6">
