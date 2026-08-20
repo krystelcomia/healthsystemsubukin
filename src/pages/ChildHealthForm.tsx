@@ -1006,7 +1006,7 @@ const ChildHealthForm = () => {
             width: 100% !important;
             box-sizing: border-box !important;
             background: white !important;
-            padding: 4px 6px !important;
+            padding: 4px 8px !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
@@ -1059,7 +1059,59 @@ const ChildHealthForm = () => {
             mix-blend-mode: multiply !important;
           }
 
-          /* Scaled Font Sizes and Compact Padding for Portrait Orientation */
+          /* Landscape Table Styles - Wide Masterlists fit cleanly across full sheet width */
+          table {
+            min-width: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: auto !important;
+            border-collapse: collapse !important;
+            border: 1.5px solid #000000 !important;
+          }
+
+          thead th {
+            border: 1px solid #000000 !important;
+            color: #000000 !important;
+            padding: 2px 2px !important;
+            font-size: 8px !important;
+            line-height: 1.15 !important;
+            background-color: #f1f5f9 !important;
+            font-weight: 800 !important;
+            text-align: center !important;
+          }
+
+          tbody tr {
+            height: 6mm !important;
+          }
+
+          tbody td {
+            border: 1px solid #000000 !important;
+            color: #000000 !important;
+            padding: 1px 2px !important;
+            font-size: 8.5px !important;
+            line-height: 1.1 !important;
+            height: 6mm !important;
+            vertical-align: middle !important;
+            text-align: center !important;
+          }
+
+          tbody td input {
+            border: none !important;
+            font-size: 8.5px !important;
+            text-align: inherit !important;
+            color: #000000 !important;
+            width: 100% !important;
+            background: transparent !important;
+            padding: 0 !important;
+            height: auto !important;
+          }
+
+          tbody td span {
+            color: #000000 !important;
+            font-size: 8.5px !important;
+          }
+
+          /* Form & Assessment Container Styles */
           #child-print-area form {
             font-size: 8.5px !important;
             line-height: 1.15 !important;
@@ -1108,7 +1160,7 @@ const ChildHealthForm = () => {
           }
 
           #child-print-area h1 {
-            font-size: 11px !important;
+            font-size: 11.5px !important;
             font-weight: 800 !important;
             margin: 0 !important;
             padding: 1px 0 !important;
@@ -1152,7 +1204,6 @@ const ChildHealthForm = () => {
             vertical-align: middle !important;
           }
 
-          /* Prevent awkward page break splitting inside clinical cards */
           #child-print-area .border.rounded-md,
           #child-print-area .border.rounded {
             break-inside: avoid !important;
@@ -1188,17 +1239,6 @@ const ChildHealthForm = () => {
             border: none !important;
             box-shadow: none !important;
           }
-          table {
-            min-width: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            table-layout: auto !important;
-          }
-          th, td {
-            min-width: 0 !important;
-            padding: 2px 4px !important;
-            font-size: 8.5px !important;
-          }
           select {
             -webkit-appearance: none !important;
             -moz-appearance: none !important;
@@ -1206,7 +1246,7 @@ const ChildHealthForm = () => {
             background: transparent !important;
           }
           @page {
-            size: A4 portrait;
+            size: legal landscape;
             margin: 4mm 5mm;
           }
         }
