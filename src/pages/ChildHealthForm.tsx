@@ -1006,7 +1006,7 @@ const ChildHealthForm = () => {
             width: 100% !important;
             box-sizing: border-box !important;
             background: white !important;
-            padding: 4px 8px !important;
+            padding: 2px 4px !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
@@ -1020,7 +1020,7 @@ const ChildHealthForm = () => {
             width: 100% !important;
             background: white !important;
             color: black !important;
-            padding: 10px !important;
+            padding: 8px !important;
             margin: 0 !important;
             max-height: none !important;
             overflow: visible !important;
@@ -1047,8 +1047,8 @@ const ChildHealthForm = () => {
             justify-content: center !important;
             gap: 24px !important;
             border-bottom: 4px double #000000 !important;
-            padding-bottom: 12px !important;
-            margin-bottom: 12px !important;
+            padding-bottom: 10px !important;
+            margin-bottom: 10px !important;
             text-align: center !important;
           }
           .header-seal img, .print-only img {
@@ -1057,6 +1057,111 @@ const ChildHealthForm = () => {
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
+          }
+
+          /* Scaled Font Sizes and Compact Padding for Sick Children Portrait Form */
+          #child-print-area form {
+            font-size: 7.8px !important;
+            line-height: 1.15 !important;
+          }
+
+          #child-print-area .border {
+            border-color: #cbd5e1 !important;
+          }
+
+          #child-print-area .p-3,
+          #child-print-area .p-4,
+          #child-print-area .p-5,
+          #child-print-area .p-6,
+          #child-print-area .p-2\.5 {
+            padding: 2px 4px !important;
+          }
+
+          #child-print-area .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 3px !important;
+          }
+          #child-print-area .space-y-5 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 2.5px !important;
+          }
+          #child-print-area .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 2px !important;
+          }
+          #child-print-area .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1.5px !important;
+          }
+          #child-print-area .space-y-2\.5 > :not([hidden]) ~ :not([hidden]),
+          #child-print-area .space-y-2 > :not([hidden]) ~ :not([hidden]),
+          #child-print-area .space-y-1\.5 > :not([hidden]) ~ :not([hidden]),
+          #child-print-area .space-y-1 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1px !important;
+          }
+
+          #child-print-area label,
+          #child-print-area span,
+          #child-print-area p,
+          #child-print-area div {
+            font-size: 7.8px !important;
+            line-height: 1.15 !important;
+            color: #000000 !important;
+          }
+
+          #child-print-area h1 {
+            font-size: 10.5px !important;
+            font-weight: 800 !important;
+            margin: 0 !important;
+            padding: 1px 0 !important;
+            color: #000000 !important;
+          }
+
+          #child-print-area .text-xs,
+          #child-print-area .text-\[11px\],
+          #child-print-area .text-\[10px\],
+          #child-print-area .text-\[9px\] {
+            font-size: 7.8px !important;
+            line-height: 1.15 !important;
+          }
+
+          #child-print-area .bg-slate-800 {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+            padding: 1px 3px !important;
+            font-size: 7.8px !important;
+          }
+          #child-print-area .bg-slate-800 * {
+            color: #ffffff !important;
+          }
+
+          #child-print-area input[type="text"],
+          #child-print-area input[type="number"],
+          #child-print-area input[type="date"] {
+            height: 13px !important;
+            min-height: 13px !important;
+            font-size: 7.8px !important;
+            padding: 0 1px !important;
+            line-height: 13px !important;
+            color: #000000 !important;
+          }
+
+          #child-print-area textarea {
+            font-size: 7.8px !important;
+            line-height: 1.15 !important;
+            height: 32px !important;
+            min-height: 32px !important;
+            padding: 1px 2px !important;
+          }
+
+          #child-print-area input[type="radio"],
+          #child-print-area input[type="checkbox"] {
+            width: 9px !important;
+            height: 9px !important;
+            margin: 0 1.5px 0 0 !important;
+            vertical-align: middle !important;
+          }
+
+          #child-print-area .border.rounded-md,
+          #child-print-area .border.rounded {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
           }
 
           /* Landscape Table Styles - Wide Masterlists fit cleanly across full sheet width */
@@ -1111,105 +1216,6 @@ const ChildHealthForm = () => {
             font-size: 8.5px !important;
           }
 
-          /* Form & Assessment Container Styles */
-          #child-print-area form {
-            font-size: 8.5px !important;
-            line-height: 1.15 !important;
-          }
-
-          #child-print-area .border {
-            border-color: #cbd5e1 !important;
-          }
-
-          #child-print-area .p-3,
-          #child-print-area .p-4,
-          #child-print-area .p-5,
-          #child-print-area .p-6,
-          #child-print-area .p-2\.5 {
-            padding: 3px 5px !important;
-          }
-
-          #child-print-area .space-y-6 > :not([hidden]) ~ :not([hidden]) {
-            margin-top: 4px !important;
-          }
-          #child-print-area .space-y-5 > :not([hidden]) ~ :not([hidden]) {
-            margin-top: 3.5px !important;
-          }
-          #child-print-area .space-y-4 > :not([hidden]) ~ :not([hidden]) {
-            margin-top: 3px !important;
-          }
-          #child-print-area .space-y-3 > :not([hidden]) ~ :not([hidden]) {
-            margin-top: 2px !important;
-          }
-          #child-print-area .space-y-2\.5 > :not([hidden]) ~ :not([hidden]) {
-            margin-top: 1.5px !important;
-          }
-          #child-print-area .space-y-2 > :not([hidden]) ~ :not([hidden]),
-          #child-print-area .space-y-1\.5 > :not([hidden]) ~ :not([hidden]),
-          #child-print-area .space-y-1 > :not([hidden]) ~ :not([hidden]) {
-            margin-top: 1px !important;
-          }
-
-          #child-print-area label,
-          #child-print-area span,
-          #child-print-area p,
-          #child-print-area div {
-            font-size: 8.5px !important;
-            line-height: 1.15 !important;
-            color: #000000 !important;
-          }
-
-          #child-print-area h1 {
-            font-size: 11.5px !important;
-            font-weight: 800 !important;
-            margin: 0 !important;
-            padding: 1px 0 !important;
-            color: #000000 !important;
-          }
-
-          #child-print-area .text-xs,
-          #child-print-area .text-\[11px\],
-          #child-print-area .text-\[10px\],
-          #child-print-area .text-\[9px\] {
-            font-size: 8.5px !important;
-            line-height: 1.15 !important;
-          }
-
-          #child-print-area .bg-slate-800 {
-            background-color: #1e293b !important;
-            color: #ffffff !important;
-            padding: 1.5px 4px !important;
-            font-size: 8.5px !important;
-          }
-          #child-print-area .bg-slate-800 * {
-            color: #ffffff !important;
-          }
-
-          #child-print-area input[type="text"],
-          #child-print-area input[type="number"],
-          #child-print-area input[type="date"] {
-            height: 15px !important;
-            min-height: 15px !important;
-            font-size: 8.5px !important;
-            padding: 0 2px !important;
-            line-height: 15px !important;
-            color: #000000 !important;
-          }
-
-          #child-print-area input[type="radio"],
-          #child-print-area input[type="checkbox"] {
-            width: 10px !important;
-            height: 10px !important;
-            margin: 0 2px 0 0 !important;
-            vertical-align: middle !important;
-          }
-
-          #child-print-area .border.rounded-md,
-          #child-print-area .border.rounded {
-            break-inside: avoid !important;
-            page-break-inside: avoid !important;
-          }
-
           ::placeholder,
           ::-webkit-input-placeholder,
           ::-moz-placeholder,
@@ -1246,7 +1252,7 @@ const ChildHealthForm = () => {
             background: transparent !important;
           }
           @page {
-            size: landscape;
+            size: ${activeTab === "sick-children" ? "portrait" : "landscape"};
             margin: 4mm 5mm;
           }
         }
