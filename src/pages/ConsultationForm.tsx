@@ -242,7 +242,7 @@ const ConsultationForm = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-foreground">{t("consultation.resident")} *</Label>
+                  <Label className="text-xs font-semibold text-foreground">Name</Label>
                   <div className="no-print">
                     <Select value={form.resident_id} onValueChange={handleSelectResident}>
                       <SelectTrigger className={lineSelectClass}>
