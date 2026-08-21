@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Activity, Save, Printer, RefreshCw, HeartPulse, CheckCircle2 } from "lucide-react";
+import { Activity, Save, Printer, RefreshCw, HeartPulse, CheckCircle2, Search, Eye, Pencil, History, Calendar, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
@@ -53,9 +56,48 @@ const PhilPenHealthForm = () => {
   const [residents, setResidents] = useState<Resident[]>([]);
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
 
+  // History state
+  const [historyRecords, setHistoryRecords] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historySearch, setHistorySearch] = useState("");
+  const [selectedRecordForView, setSelectedRecordForView] = useState<any | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+
+  const fetchHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from("philpen_health")
+        .select("*, residents(full_name)")
+        .order("created_at", { ascending: false });
+      if (!error && data) {
+        setHistoryRecords(data);
+      }
+    } catch (err) {
+      console.error("Error fetching PhilPen history:", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
   useEffect(() => {
     getDatabaseSitios().then(sits => setSitioOptions(sits));
+    getFamilyOnlyResidents().then((data) => setResidents(data || []));
+    fetchHistory();
   }, []);
+
+  const filteredHistory = useMemo(() => {
+    if (!historySearch.trim()) return historyRecords;
+    const q = historySearch.toLowerCase().trim();
+    return historyRecords.filter((rec) => {
+      const name = (rec.residents?.full_name || "").toLowerCase();
+      const date = (rec.record_date || rec.date_of_assessment || "").toLowerCase();
+      const addr = (rec.address_sitio || rec.address || "").toLowerCase();
+      const bp = (rec.bp || "").toLowerCase();
+      return name.includes(q) || date.includes(q) || addr.includes(q) || bp.includes(q);
+    });
+  }, [historyRecords, historySearch]);
+
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     resident_id: "",
@@ -232,11 +274,20 @@ const PhilPenHealthForm = () => {
       });
       toast.success("Health check checklist saved successfully!");
       handleReset();
+      fetchHistory();
     }
   };
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handlePrintModal = () => {
+    document.body.classList.add("printing-modal");
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove("printing-modal");
+    }, 1000);
   };
 
   return (
@@ -295,14 +346,16 @@ const PhilPenHealthForm = () => {
           body * {
             visibility: hidden !important;
           }
-          #philpen-print-area, #philpen-print-area *:not(.no-print):not(.no-print *) {
+          body:not(.printing-modal) #philpen-print-area,
+          body:not(.printing-modal) #philpen-print-area *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
           }
-          #philpen-print-area .no-print, #philpen-print-area .no-print * {
+          body:not(.printing-modal) #philpen-print-area .no-print,
+          body:not(.printing-modal) #philpen-print-area .no-print * {
             display: none !important;
             visibility: hidden !important;
           }
-          #philpen-print-area {
+          body:not(.printing-modal) #philpen-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
@@ -314,9 +367,37 @@ const PhilPenHealthForm = () => {
             box-shadow: none !important;
             border: none !important;
           }
-          #philpen-print-area * {
+          body:not(.printing-modal) #philpen-print-area * {
             color: #000000 !important;
             border-color: #000000 !important;
+          }
+          body.printing-modal #philpen-modal-printable,
+          body.printing-modal #philpen-modal-printable *:not(.no-print):not(.no-print *) {
+            visibility: visible !important;
+            color: #000000 !important;
+          }
+          body.printing-modal [role="dialog"],
+          body.printing-modal [data-radix-portal] {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            transform: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: none !important;
+            background: white !important;
+          }
+          body.printing-modal #philpen-modal-printable {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            color: black !important;
+            padding: 15px !important;
+            margin: 0 !important;
           }
           ::placeholder, .print-input::placeholder {
             color: transparent !important;
@@ -801,6 +882,348 @@ const PhilPenHealthForm = () => {
           </form>
         </CardContent>
       </Card>
+
+      {/* SAVED PHILPEN HEALTH RECORDS HISTORY */}
+      <div className="no-print pt-2">
+        <Card className="border-border/50 shadow-sm">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 gap-3">
+            <div className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle className="text-base font-bold font-heading">
+                  PhilPen Health Checklist History
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  View, load, or re-print completed community health risk assessments.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Badge variant="secondary" className="bg-primary/10 text-primary font-bold shrink-0">
+                {filteredHistory.length} Record(s)
+              </Badge>
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search resident, date, BP..."
+                  value={historySearch}
+                  onChange={(e) => setHistorySearch(e.target.value)}
+                  className="pl-9 h-9 text-xs"
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loadingHistory ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">Loading history records...</div>
+            ) : filteredHistory.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground italic">
+                {historySearch ? "No PhilPen records match your search." : "No PhilPen records recorded yet."}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-28">Date</TableHead>
+                      <TableHead>Resident Name</TableHead>
+                      <TableHead>Address / Sitio</TableHead>
+                      <TableHead>BP / BMI</TableHead>
+                      <TableHead>Risk Factors (Smoking, Alcohol, High BP, Diabetes)</TableHead>
+                      <TableHead className="w-32 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredHistory.map((rec) => {
+                      const resName = rec.residents?.full_name || "—";
+                      const riskBadges = [];
+                      if (rec.smokes) riskBadges.push("Smoker");
+                      if (rec.drinks_alcohol) riskBadges.push("Alcohol");
+                      if (rec.high_blood_pressure) riskBadges.push("High BP");
+                      if (rec.diabetes_symptoms) riskBadges.push("Diabetes");
+
+                      return (
+                        <TableRow key={rec.id} className="hover:bg-muted/40 transition-colors">
+                          <TableCell className="text-xs font-semibold text-primary whitespace-nowrap">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3 text-muted-foreground" />
+                              {rec.record_date || (rec.created_at ? new Date(rec.created_at).toLocaleDateString() : "—")}
+                            </span>
+                          </TableCell>
+                          <TableCell className="font-semibold text-xs text-foreground">
+                            {resName}
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {rec.address_sitio || "—"}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            <span className="font-medium text-foreground">{rec.bp || "—"}</span>
+                            {rec.bmi && <span className="text-muted-foreground ml-1">({rec.bmi} BMI)</span>}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {riskBadges.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {riskBadges.map((badge, idx) => (
+                                  <Badge key={idx} variant="outline" className="text-[10px] px-1.5 py-0 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800">
+                                    {badge}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground italic">None detected</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedRecordForView(rec);
+                                  setViewModalOpen(true);
+                                }}
+                                title="View & Print Full Record"
+                                className="h-7 w-7 text-primary hover:bg-primary/10"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setForm({
+                                    resident_id: rec.resident_id || "",
+                                    address: rec.address_sitio || "",
+                                    age: rec.age ? String(rec.age) : "",
+                                    birthdate: rec.birthdate || "",
+                                    currentDate: rec.record_date || getTodayDate(),
+                                    bp: rec.bp || "",
+                                    height: rec.height || "",
+                                    weight: rec.weight || "",
+                                    smokes: !!rec.smokes,
+                                    smokes_no: !rec.smokes,
+                                    smokes_remarks: rec.smokes_remarks || "",
+                                    drinks_alcohol: !!rec.drinks_alcohol,
+                                    drinks_alcohol_no: !rec.drinks_alcohol,
+                                    drinks_remarks: rec.drinks_remarks || "",
+                                    high_bp: !!rec.high_blood_pressure,
+                                    high_bp_no: !rec.high_blood_pressure,
+                                    bp_remarks_bp: rec.bp_remarks_bp || "",
+                                    bp_remarks_meds: rec.bp_remarks_meds || "",
+                                    bp_remarks_chest: rec.bp_remarks_chest || "",
+                                    diabetes: !!rec.diabetes_symptoms,
+                                    diabetes_no: !rec.diabetes_symptoms,
+                                    diabetes_palakain: !!rec.diabetes_palakain,
+                                    diabetes_palakain_no: !rec.diabetes_palakain,
+                                    diabetes_palaging_gutom: !!rec.diabetes_palaging_gutom,
+                                    diabetes_palaging_gutom_no: !rec.diabetes_palaging_gutom,
+                                    diabetes_madalas_umihi: !!rec.diabetes_madalas_umihi,
+                                    diabetes_madalas_umihi_no: !rec.diabetes_madalas_umihi,
+                                    diabetes_laging_uhaw: !!rec.diabetes_laging_uhaw,
+                                    diabetes_laging_uhaw_no: !rec.diabetes_laging_uhaw,
+                                    diabetes_remarks: rec.diabetes_remarks || ""
+                                  });
+                                  window.scrollTo({ top: 0, behavior: "smooth" });
+                                  toast.info(`Loaded PhilPen checklist for ${resName}`);
+                                }}
+                                title="Load into Form"
+                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* VIEW & PRINT RECORD DETAIL DIALOG */}
+      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
+        <DialogContent className="max-w-4xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 p-6 max-h-[90vh] overflow-y-auto">
+          {selectedRecordForView && (
+            <div className="space-y-5" id="philpen-modal-printable">
+              <DialogHeader className="border-b pb-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <img src={sanjuanLogo} alt="San Juan Logo" className="h-10 w-10 object-contain" />
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                        Republic of the Philippines • Municipality of San Juan
+                      </h4>
+                      <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">
+                        BARANGAY SUBUKIN HEALTH CENTER
+                      </h3>
+                      <p className="text-[11px] text-primary font-semibold">PhilPen Community Health Risk Assessment</p>
+                    </div>
+                  </div>
+                  <img src={barangayLogo} alt="Barangay Logo" className="h-10 w-10 object-contain" />
+                </div>
+              </DialogHeader>
+
+              {/* Patient Demographics */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1 flex items-center gap-1.5">
+                  <UserCheck className="h-3.5 w-3.5 text-primary" /> Patient Details
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+                  <div className="col-span-2">
+                    <span className="text-slate-500 text-[10px] block">Patient Name:</span>
+                    <strong className="text-sm text-slate-900 dark:text-slate-100">
+                      {selectedRecordForView.residents?.full_name || "—"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Assessment Date:</span>
+                    <strong className="text-slate-800 dark:text-slate-200">
+                      {selectedRecordForView.record_date || (selectedRecordForView.created_at ? new Date(selectedRecordForView.created_at).toLocaleDateString() : "—")}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Address / Sitio:</span>
+                    <span className="font-semibold">{selectedRecordForView.address_sitio || "Subukin"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Age:</span>
+                    <span className="font-semibold">{selectedRecordForView.age ? `${selectedRecordForView.age} yrs` : "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Birthdate:</span>
+                    <span>{selectedRecordForView.birthdate || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Blood Pressure (BP):</span>
+                    <strong className="text-slate-900 dark:text-slate-100">{selectedRecordForView.bp || "—"}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">BMI:</span>
+                    <strong className="text-slate-900 dark:text-slate-100">{selectedRecordForView.bmi || "—"}</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Health Risk Questions Table */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1 flex items-center gap-1.5">
+                  <Activity className="h-3.5 w-3.5 text-primary" /> Health Screening Questionnaire &amp; Findings
+                </h4>
+                <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden text-xs">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                      <tr>
+                        <th className="p-2.5">Health Condition / Risk Factor</th>
+                        <th className="p-2.5 w-20 text-center">Status</th>
+                        <th className="p-2.5">Remarks / Details</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                      <tr>
+                        <td className="p-2.5 font-medium">1. Naninigarilyo ka ba? (Smoking)</td>
+                        <td className="p-2.5 text-center">
+                          {selectedRecordForView.smokes ? (
+                            <Badge className="bg-rose-100 text-rose-800 border-rose-300">Oo (Yes)</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-slate-600">Hindi (No)</Badge>
+                          )}
+                        </td>
+                        <td className="p-2.5 text-slate-600 dark:text-slate-400">{selectedRecordForView.smokes_remarks || "—"}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2.5 font-medium">2. Umiinom ka ba ng alak? (Alcohol Consumption)</td>
+                        <td className="p-2.5 text-center">
+                          {selectedRecordForView.drinks_alcohol ? (
+                            <Badge className="bg-rose-100 text-rose-800 border-rose-300">Oo (Yes)</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-slate-600">Hindi (No)</Badge>
+                          )}
+                        </td>
+                        <td className="p-2.5 text-slate-600 dark:text-slate-400">{selectedRecordForView.drinks_remarks || "—"}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2.5 font-medium">3. Mayroon ka bang mataas na presyon ng dugo? (High Blood Pressure)</td>
+                        <td className="p-2.5 text-center">
+                          {selectedRecordForView.high_blood_pressure ? (
+                            <Badge className="bg-rose-100 text-rose-800 border-rose-300">Oo (Yes)</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-slate-600">Hindi (No)</Badge>
+                          )}
+                        </td>
+                        <td className="p-2.5 text-slate-600 dark:text-slate-400">
+                          BP: {selectedRecordForView.bp_remarks_bp || selectedRecordForView.bp || "—"} • Umiinom ng gamot: {selectedRecordForView.bp_remarks_meds || "—"} • Masakit ang dibdib: {selectedRecordForView.bp_remarks_chest || "—"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="p-2.5 font-medium">
+                          4. Mayroon ka bang sintomas ng Diabetes? (Diabetes Symptoms)
+                          <div className="text-[11px] text-slate-500 mt-1 pl-3 space-y-0.5">
+                            <div>• Palakain: {selectedRecordForView.diabetes_palakain ? "Oo" : "Hindi"}</div>
+                            <div>• Palaging gutom: {selectedRecordForView.diabetes_palaging_gutom ? "Oo" : "Hindi"}</div>
+                            <div>• Madalas umihi: {selectedRecordForView.diabetes_madalas_umihi ? "Oo" : "Hindi"}</div>
+                            <div>• Laging uhaw: {selectedRecordForView.diabetes_laging_uhaw ? "Oo" : "Hindi"}</div>
+                          </div>
+                        </td>
+                        <td className="p-2.5 text-center align-top">
+                          {selectedRecordForView.diabetes_symptoms ? (
+                            <Badge className="bg-rose-100 text-rose-800 border-rose-300">Oo (Yes)</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-slate-600">Hindi (No)</Badge>
+                          )}
+                        </td>
+                        <td className="p-2.5 text-slate-600 dark:text-slate-400 align-top">{selectedRecordForView.diabetes_remarks || "—"}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Signatures */}
+              <div className="pt-6 border-t border-slate-300 dark:border-slate-700 flex justify-between text-xs text-slate-700 dark:text-slate-300">
+                <div>
+                  <p>Certified Correct:</p>
+                  <div className="mt-4 border-b border-slate-400 w-44"></div>
+                  <p className="text-[10px] text-slate-500 mt-1">Attending Barangay Health Worker</p>
+                </div>
+                <div>
+                  <p>Approved By:</p>
+                  <div className="mt-4 border-b border-slate-400 w-44"></div>
+                  <p className="text-[10px] text-slate-500 mt-1">Barangay Health Supervisor / Midwife</p>
+                </div>
+              </div>
+
+              <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
+                <span className="text-[10px] text-slate-500">PhilPen Record ID: {selectedRecordForView.id}</span>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrintModal}
+                    className="gap-1.5 text-xs font-semibold"
+                  >
+                    <Printer className="h-3.5 w-3.5" /> Print Record
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setViewModalOpen(false)}
+                    className="text-xs"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -517,12 +517,27 @@ const MaternalCareForm = () => {
     window.print();
   };
 
+  const handlePrintModal = () => {
+    document.body.classList.add("printing-modal");
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove("printing-modal");
+    }, 1000);
+  };
+
   // Filter saved records
   const filteredRecords = savedRecords.filter(r => {
+    const q = searchQuery.toLowerCase().trim();
+    const createdDate = r.created_at ? new Date(r.created_at).toLocaleDateString() : "";
     const matchesSearch = 
-      !searchQuery.trim() ||
-      (r.patient_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (r.family_number || "").toLowerCase().includes(searchQuery.toLowerCase());
+      !q ||
+      (r.patient_name || "").toLowerCase().includes(q) ||
+      (r.family_number || "").toLowerCase().includes(q) ||
+      (r.sitio || "").toLowerCase().includes(q) ||
+      (r.edc || "").toLowerCase().includes(q) ||
+      (r.lmp || "").toLowerCase().includes(q) ||
+      (r.remarks || "").toLowerCase().includes(q) ||
+      createdDate.includes(q);
 
     const matchesSitio = 
       selectedSitioFilter === "all" ||
@@ -541,10 +556,11 @@ const MaternalCareForm = () => {
           body * {
             visibility: hidden !important;
           }
-          #maternal-print-area, #maternal-print-area * {
+          body:not(.printing-modal) #maternal-print-area,
+          body:not(.printing-modal) #maternal-print-area *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
           }
-          #maternal-print-area {
+          body:not(.printing-modal) #maternal-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
@@ -554,6 +570,34 @@ const MaternalCareForm = () => {
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
+          }
+          body.printing-modal #maternal-modal-printable,
+          body.printing-modal #maternal-modal-printable *:not(.no-print):not(.no-print *) {
+            visibility: visible !important;
+            color: #000000 !important;
+          }
+          body.printing-modal [role="dialog"],
+          body.printing-modal [data-radix-portal] {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            transform: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: none !important;
+            background: white !important;
+          }
+          body.printing-modal #maternal-modal-printable {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            color: black !important;
+            padding: 15px !important;
+            margin: 0 !important;
           }
           html, body {
             height: 100% !important;
@@ -1207,8 +1251,9 @@ const MaternalCareForm = () => {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-muted/40 border-b text-muted-foreground font-semibold">
-                  <th className="p-3">Family # (FN)</th>
+                  <th className="p-3 w-28">Date</th>
                   <th className="p-3">Patient Name</th>
+                  <th className="p-3">Family # (FN)</th>
                   <th className="p-3">Age</th>
                   <th className="p-3">Sitio</th>
                   <th className="p-3">EDC</th>
@@ -1218,48 +1263,63 @@ const MaternalCareForm = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredRecords.map(rec => (
-                  <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="p-3 font-semibold text-primary">{rec.family_number || "—"}</td>
-                    <td className="p-3 font-medium text-foreground">{rec.patient_name || "—"}</td>
-                    <td className="p-3">{rec.age || "—"}</td>
-                    <td className="p-3">{rec.sitio || "Subukin"}</td>
-                    <td className="p-3">{rec.edc || "—"}</td>
-                    <td className="p-3">
-                      {rec.obstetric_score || "—"} {rec.fpal ? `(${rec.fpal})` : ""}
-                    </td>
-                    <td className="p-3 max-w-xs truncate text-muted-foreground">{rec.remarks || "—"}</td>
-                    <td className="p-3 text-right space-x-1">
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        onClick={() => {
-                          setSelectedRecordForView(rec);
-                          setViewRecordModalOpen(true);
-                        }} 
-                        className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        onClick={() => handleEdit(rec)} 
-                        className="h-7 w-7 text-muted-foreground hover:text-primary"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        onClick={() => setDeleteConfirmId(rec.id)} 
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {filteredRecords.map(rec => {
+                  const dateStr = rec.created_at 
+                    ? new Date(rec.created_at).toLocaleDateString() 
+                    : (rec.edc || "—");
+
+                  return (
+                    <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-3 font-semibold text-primary whitespace-nowrap">
+                        <span className="flex items-center gap-1">
+                          <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                          {dateStr}
+                        </span>
+                      </td>
+                      <td className="p-3 font-bold text-foreground">{rec.patient_name || "—"}</td>
+                      <td className="p-3 font-medium text-foreground">{rec.family_number || "—"}</td>
+                      <td className="p-3">{rec.age ? `${rec.age} yrs` : "—"}</td>
+                      <td className="p-3">{rec.sitio || "Subukin"}</td>
+                      <td className="p-3">{rec.edc || "—"}</td>
+                      <td className="p-3">
+                        {rec.obstetric_score || "—"} {rec.fpal ? `(${rec.fpal})` : ""}
+                      </td>
+                      <td className="p-3 max-w-xs truncate text-muted-foreground">{rec.remarks || "—"}</td>
+                      <td className="p-3 text-right space-x-1 whitespace-nowrap">
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          onClick={() => {
+                            setSelectedRecordForView(rec);
+                            setViewRecordModalOpen(true);
+                          }} 
+                          title="View & Print Full Record"
+                          className="h-7 w-7 text-primary hover:bg-primary/10"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          onClick={() => handleEdit(rec)} 
+                          title="Edit Record"
+                          className="h-7 w-7 text-muted-foreground hover:text-primary"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          onClick={() => setDeleteConfirmId(rec.id)} 
+                          title="Delete Record"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -1268,111 +1328,214 @@ const MaternalCareForm = () => {
 
       {/* VIEW / PRINT RECORD DETAIL DIALOG */}
       <Dialog open={viewRecordModalOpen} onOpenChange={setViewRecordModalOpen}>
-        <DialogContent className="max-w-2xl bg-white text-slate-900 border border-slate-200">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
-              <Heart className="h-5 w-5 text-rose-500" /> Maternal Care Data Record
-            </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500">
-              Barangay Subukin – Official Maternal Record Details
-            </DialogDescription>
-          </DialogHeader>
-
+        <DialogContent className="max-w-4xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 p-6 max-h-[90vh] overflow-y-auto">
           {selectedRecordForView && (
-            <div className="space-y-4 text-xs py-2 max-h-[70vh] overflow-y-auto">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-md border">
-                <div><strong>FN:</strong> {selectedRecordForView.family_number || "—"}</div>
-                <div className="col-span-2"><strong>Patient Name:</strong> {selectedRecordForView.patient_name || "—"}</div>
-                <div><strong>Age:</strong> {selectedRecordForView.age || "—"}</div>
-                <div><strong>Sitio:</strong> {selectedRecordForView.sitio || "—"}</div>
-                <div><strong>EDC:</strong> {selectedRecordForView.edc || "—"}</div>
-                <div><strong>LMP:</strong> {selectedRecordForView.lmp || "—"}</div>
-                <div><strong>G/P Score:</strong> {selectedRecordForView.obstetric_score || "—"}</div>
-                <div><strong>FPAL:</strong> {selectedRecordForView.fpal || "—"}</div>
-                <div><strong>Height:</strong> {selectedRecordForView.patient_height || "—"}</div>
-                <div><strong>Blood Type:</strong> {selectedRecordForView.blood_type || "—"}</div>
+            <div className="space-y-5" id="maternal-modal-printable">
+              {/* Header Seals */}
+              <DialogHeader className="border-b pb-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <img src={sanjuanLogo} alt="San Juan Logo" className="h-10 w-10 object-contain" />
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                        Republic of the Philippines • Municipality of San Juan
+                      </h4>
+                      <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 uppercase">
+                        BARANGAY SUBUKIN HEALTH CENTER
+                      </h3>
+                      <p className="text-[11px] text-primary font-semibold">Official Maternal Care Patient Record</p>
+                    </div>
+                  </div>
+                  <img src={barangayLogo} alt="Barangay Logo" className="h-10 w-10 object-contain" />
+                </div>
+              </DialogHeader>
+
+              {/* Patient Demographics */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1 flex items-center gap-1.5">
+                  <UserCheck className="h-3.5 w-3.5 text-primary" /> Patient &amp; Obstetrical Information
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+                  <div className="col-span-2">
+                    <span className="text-slate-500 text-[10px] block">Patient Full Name:</span>
+                    <strong className="text-sm text-slate-900 dark:text-slate-100">
+                      {selectedRecordForView.patient_name || "—"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Family Number (FN):</span>
+                    <strong className="text-primary font-semibold">{selectedRecordForView.family_number || "—"}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Sitio / Area:</span>
+                    <span className="font-semibold">{selectedRecordForView.sitio || "Subukin"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Age:</span>
+                    <span className="font-semibold">{selectedRecordForView.age ? `${selectedRecordForView.age} yrs` : "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Expected Date of Confinement (EDC):</span>
+                    <strong className="text-slate-800 dark:text-slate-200">{selectedRecordForView.edc || "—"}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Last Menstrual Period (LMP):</span>
+                    <span>{selectedRecordForView.lmp || "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Obstetric Score (G/P):</span>
+                    <span>{selectedRecordForView.obstetric_score || "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">FPAL:</span>
+                    <span>{selectedRecordForView.fpal || "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Patient Height:</span>
+                    <span>{selectedRecordForView.patient_height ? `${selectedRecordForView.patient_height} cm` : "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Blood Type:</span>
+                    <strong className="text-rose-600 dark:text-rose-400">{selectedRecordForView.blood_type || "Unspecified"}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Date Recorded:</span>
+                    <span>{selectedRecordForView.created_at ? new Date(selectedRecordForView.created_at).toLocaleDateString() : "—"}</span>
+                  </div>
+                </div>
               </div>
 
               {/* Risk Factors */}
-              <div>
-                <h4 className="font-bold text-slate-800 mb-1">Risk Factors Assessed:</h4>
-                {(() => {
-                  let risks: string[] = [];
-                  if (Array.isArray(selectedRecordForView.risk_factors)) risks = selectedRecordForView.risk_factors;
-                  else if (typeof selectedRecordForView.risk_factors === "string") {
-                    try { risks = JSON.parse(selectedRecordForView.risk_factors); } catch (e) {}
-                  }
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1 flex items-center gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> Risk Factors Assessed
+                </h4>
+                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+                  {(() => {
+                    let risks: string[] = [];
+                    if (Array.isArray(selectedRecordForView.risk_factors)) risks = selectedRecordForView.risk_factors;
+                    else if (typeof selectedRecordForView.risk_factors === "string") {
+                      try { risks = JSON.parse(selectedRecordForView.risk_factors); } catch (e) {}
+                    }
 
-                  if (risks.length === 0) return <p className="text-slate-500 italic">No risk factors checked.</p>;
-                  return (
-                    <div className="flex flex-wrap gap-1">
-                      {risks.map(rf => (
-                        <span key={rf} className="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded text-[11px]">
-                          {rf}
-                        </span>
-                      ))}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* Prenatal Visits */}
-              <div>
-                <h4 className="font-bold text-slate-800 mb-1">Prenatal Visits:</h4>
-                {(() => {
-                  let visits: PrenatalVisit[] = [];
-                  if (Array.isArray(selectedRecordForView.prenatal_visits)) visits = selectedRecordForView.prenatal_visits;
-                  else if (typeof selectedRecordForView.prenatal_visits === "string") {
-                    try { visits = JSON.parse(selectedRecordForView.prenatal_visits); } catch (e) {}
-                  }
-
-                  if (visits.length === 0) return <p className="text-slate-500 italic">No prenatal visits recorded.</p>;
-                  return (
-                    <table className="w-full text-left text-[11px] border border-slate-200 border-collapse">
-                      <thead>
-                        <tr className="bg-slate-100 border-b">
-                          <th className="p-1.5">Date</th>
-                          <th className="p-1.5">Visit #</th>
-                          <th className="p-1.5">AOG</th>
-                          <th className="p-1.5">BP</th>
-                          <th className="p-1.5">Weight</th>
-                          <th className="p-1.5">Notes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {visits.map((v, i) => (
-                          <tr key={i} className="border-b">
-                            <td className="p-1.5">{v.visit_date}</td>
-                            <td className="p-1.5">{v.visit_number || i + 1}</td>
-                            <td className="p-1.5">{v.aog || "—"}</td>
-                            <td className="p-1.5">{v.blood_pressure || "—"}</td>
-                            <td className="p-1.5">{v.weight || "—"}</td>
-                            <td className="p-1.5">{v.notes || "—"}</td>
-                          </tr>
+                    if (risks.length === 0) return <p className="text-slate-500 italic">No maternal risk factors checked.</p>;
+                    return (
+                      <div className="flex flex-wrap gap-1.5">
+                        {risks.map((rf, idx) => (
+                          <Badge key={idx} variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 text-[11px]">
+                            {rf}
+                          </Badge>
                         ))}
-                      </tbody>
-                    </table>
-                  );
-                })()}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
+
+              {/* Prenatal Visits Table */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1 flex items-center gap-1.5">
+                  <FileText className="h-3.5 w-3.5 text-primary" /> Prenatal Visits &amp; Clinical Progress
+                </h4>
+                <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden text-xs">
+                  {(() => {
+                    let visits: PrenatalVisit[] = [];
+                    if (Array.isArray(selectedRecordForView.prenatal_visits)) visits = selectedRecordForView.prenatal_visits;
+                    else if (typeof selectedRecordForView.prenatal_visits === "string") {
+                      try { visits = JSON.parse(selectedRecordForView.prenatal_visits); } catch (e) {}
+                    }
+
+                    if (visits.length === 0) {
+                      return <div className="p-4 text-center text-slate-500 italic">No prenatal visits recorded for this patient yet.</div>;
+                    }
+                    return (
+                      <table className="w-full text-left border-collapse">
+                        <thead className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                          <tr>
+                            <th className="p-2.5">Date</th>
+                            <th className="p-2.5 w-16 text-center">Visit #</th>
+                            <th className="p-2.5">AOG</th>
+                            <th className="p-2.5">BP</th>
+                            <th className="p-2.5">Weight</th>
+                            <th className="p-2.5">Fundic / FHR</th>
+                            <th className="p-2.5">Clinical Remarks &amp; Treatment</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                          {visits.map((v, i) => (
+                            <tr key={i} className="hover:bg-slate-50/50">
+                              <td className="p-2.5 font-medium">{v.visit_date || "—"}</td>
+                              <td className="p-2.5 text-center font-bold">{v.visit_number || i + 1}</td>
+                              <td className="p-2.5">{v.aog || "—"}</td>
+                              <td className="p-2.5 font-semibold">{v.blood_pressure || "—"}</td>
+                              <td className="p-2.5">{v.weight ? `${v.weight} kg` : "—"}</td>
+                              <td className="p-2.5">
+                                {v.fundic_height ? `FH: ${v.fundic_height} cm` : ""} {v.fhr ? `• FHR: ${v.fhr} bpm` : ""}
+                              </td>
+                              <td className="p-2.5 text-slate-600 dark:text-slate-400">{v.notes || "—"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Remarks Summary */}
+              {selectedRecordForView.remarks && (
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-slate-600 uppercase">Additional Clinical Notes:</span>
+                  <div className="p-2.5 bg-slate-50 dark:bg-slate-900 rounded border text-xs whitespace-pre-wrap">
+                    {selectedRecordForView.remarks}
+                  </div>
+                </div>
+              )}
+
+              {/* Signatures */}
+              <div className="pt-6 border-t border-slate-300 dark:border-slate-700 flex justify-between text-xs text-slate-700 dark:text-slate-300">
+                <div>
+                  <p>Certified Correct:</p>
+                  <div className="mt-4 border-b border-slate-400 w-44"></div>
+                  <p className="text-[10px] text-slate-500 mt-1">Attending Barangay Health Worker</p>
+                </div>
+                <div>
+                  <p>Approved By:</p>
+                  <div className="mt-4 border-b border-slate-400 w-44"></div>
+                  <p className="text-[10px] text-slate-500 mt-1">Barangay Health Supervisor / Midwife</p>
+                </div>
+              </div>
+
+              <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
+                <span className="text-[10px] text-slate-500">Maternal Record ID: {selectedRecordForView.id}</span>
+                <div className="flex gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handlePrintModal}
+                    className="gap-1.5 text-xs font-semibold"
+                  >
+                    <Printer className="h-3.5 w-3.5" /> Print Record
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => setViewRecordModalOpen(false)}>
+                    Close
+                  </Button>
+                  <Button 
+                    type="button" 
+                    size="sm"
+                    onClick={() => {
+                      setViewRecordModalOpen(false);
+                      if (selectedRecordForView) handleEdit(selectedRecordForView);
+                    }} 
+                    className="bg-primary text-primary-foreground text-xs"
+                  >
+                    Edit Record
+                  </Button>
+                </div>
+              </DialogFooter>
             </div>
           )}
-
-          <DialogFooter className="gap-2 mt-4">
-            <Button type="button" variant="outline" onClick={() => setViewRecordModalOpen(false)}>
-              Close
-            </Button>
-            <Button 
-              type="button" 
-              onClick={() => {
-                setViewRecordModalOpen(false);
-                if (selectedRecordForView) handleEdit(selectedRecordForView);
-              }} 
-              className="bg-primary text-white"
-            >
-              Edit Record
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 

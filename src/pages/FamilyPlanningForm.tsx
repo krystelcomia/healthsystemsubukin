@@ -537,6 +537,14 @@ const FamilyPlanningForm = () => {
     window.print();
   };
 
+  const handlePrintModal = () => {
+    document.body.classList.add("printing-modal");
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove("printing-modal");
+    }, 1000);
+  };
+
   const parseRecordDetails = (rec: any): FPFullFormState | null => {
     try {
       if (rec?.details) {
@@ -548,8 +556,15 @@ const FamilyPlanningForm = () => {
   };
 
   const filteredHistoryRecords = savedRecords.filter((r) => {
-    const name = r.residents?.full_name || r.remarks || "";
-    return name.toLowerCase().includes(historySearch.toLowerCase());
+    const q = historySearch.toLowerCase().trim();
+    if (!q) return true;
+    const name = (r.residents?.full_name || "").toLowerCase();
+    const method = (r.method || "").toLowerCase();
+    const startDate = (r.start_date || "").toLowerCase();
+    const createdDate = r.created_at ? new Date(r.created_at).toLocaleDateString().toLowerCase() : "";
+    const remarks = (r.remarks || "").toLowerCase();
+    const detailsStr = typeof r.details === "string" ? r.details.toLowerCase() : JSON.stringify(r.details || {}).toLowerCase();
+    return name.includes(q) || method.includes(q) || startDate.includes(q) || createdDate.includes(q) || remarks.includes(q) || detailsStr.includes(q);
   });
 
   return (
@@ -560,16 +575,45 @@ const FamilyPlanningForm = () => {
           body * {
             visibility: hidden !important;
           }
-          #fp-print-area, #fp-print-area * {
+          body:not(.printing-modal) #fp-print-area,
+          body:not(.printing-modal) #fp-print-area *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
           }
-          #fp-print-area {
+          body:not(.printing-modal) #fp-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
+          }
+          body.printing-modal #fp-modal-printable,
+          body.printing-modal #fp-modal-printable *:not(.no-print):not(.no-print *) {
+            visibility: visible !important;
+            color: #000000 !important;
+          }
+          body.printing-modal [role="dialog"],
+          body.printing-modal [data-radix-portal] {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            transform: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: none !important;
+            background: white !important;
+          }
+          body.printing-modal #fp-modal-printable {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            color: black !important;
+            padding: 10px !important;
+            margin: 0 !important;
           }
           .no-print {
             display: none !important;
@@ -1547,15 +1591,23 @@ const FamilyPlanningForm = () => {
       {/* SAVED FAMILY PLANNING RECORDS (Positioned at the bottom of the page) */}
       <div className="no-print pt-4">
         <Card className="border-border/50 shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-bold font-heading">
-              Saved Family Planning Records ({filteredHistoryRecords.length})
-            </CardTitle>
-            <div className="relative w-64">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 gap-3">
+            <div className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle className="text-base font-bold font-heading">
+                  Saved Family Planning Records ({filteredHistoryRecords.length})
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  View, edit, or re-print past Family Planning Form 1 records.
+                </p>
+              </div>
+            </div>
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search resident or method..."
+                placeholder="Search resident, FP #, method..."
                 value={historySearch}
                 onChange={(e) => setHistorySearch(e.target.value)}
                 className="pl-9 h-9 text-xs"
@@ -1566,45 +1618,59 @@ const FamilyPlanningForm = () => {
             {loading ? (
               <div className="py-8 text-center text-xs text-muted-foreground">Loading records...</div>
             ) : filteredHistoryRecords.length === 0 ? (
-              <div className="py-8 text-center text-xs text-muted-foreground">No Family Planning records found.</div>
+              <div className="py-8 text-center text-xs text-muted-foreground italic">
+                {historySearch ? "No Family Planning records match your search." : "No Family Planning records recorded yet."}
+              </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-28">Date</TableHead>
                       <TableHead>Resident / Client Name</TableHead>
+                      <TableHead>FP Number</TableHead>
                       <TableHead>Method Accepted</TableHead>
-                      <TableHead>Start Date</TableHead>
-                      <TableHead>Remarks / FP Info</TableHead>
-                      <TableHead className="w-28 text-right">Actions</TableHead>
+                      <TableHead className="max-w-[260px]">Remarks / FP Info</TableHead>
+                      <TableHead className="w-32 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredHistoryRecords.map((rec) => {
                       const parsed = parseRecordDetails(rec);
-                      const clientName = rec.residents?.full_name || parsed?.sideA ? `${parsed.sideA.client_given_name} ${parsed.sideA.client_last_name}` : "—";
+                      const clientName = rec.residents?.full_name || (parsed?.sideA ? `${parsed.sideA.client_given_name} ${parsed.sideA.client_last_name}`.trim() : "—");
+                      const dateStr = rec.start_date || (rec.created_at ? new Date(rec.created_at).toLocaleDateString() : "—");
+                      const fpNum = parsed?.sideA?.fp_no || "—";
+
                       return (
-                        <TableRow key={rec.id}>
-                          <TableCell className="font-semibold text-xs">{clientName}</TableCell>
-                          <TableCell className="text-xs">{rec.method || "—"}</TableCell>
-                          <TableCell className="text-xs">{rec.start_date || "—"}</TableCell>
-                          <TableCell className="text-xs max-w-[260px] truncate">{rec.remarks || "—"}</TableCell>
+                        <TableRow key={rec.id} className="hover:bg-muted/30 transition-colors">
+                          <TableCell className="font-semibold text-xs text-primary whitespace-nowrap">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                              {dateStr}
+                            </span>
+                          </TableCell>
+                          <TableCell className="font-bold text-xs text-foreground">{clientName}</TableCell>
+                          <TableCell className="text-xs font-mono font-medium">{fpNum}</TableCell>
+                          <TableCell className="text-xs">
+                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[11px]">
+                              {rec.method || parsed?.sideA?.chosen_method || "—"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs max-w-[260px] truncate text-muted-foreground">{rec.remarks || "—"}</TableCell>
                           <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              {parsed && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setSelectedRecordForView(rec);
-                                    setViewModalOpen(true);
-                                  }}
-                                  title="View Detail"
-                                  className="h-7 w-7"
-                                >
-                                  <Eye className="h-3.5 w-3.5 text-primary" />
-                                </Button>
-                              )}
+                            <div className="flex items-center justify-end gap-1 whitespace-nowrap">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedRecordForView(rec);
+                                  setViewModalOpen(true);
+                                }}
+                                title="View & Print Full Record"
+                                className="h-7 w-7 text-primary hover:bg-primary/10"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -1618,7 +1684,7 @@ const FamilyPlanningForm = () => {
                                   }
                                 }}
                                 title="Edit Record"
-                                className="h-7 w-7"
+                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
                               >
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
@@ -1627,7 +1693,7 @@ const FamilyPlanningForm = () => {
                                 size="icon"
                                 onClick={() => setDeleteConfirmId(rec.id)}
                                 title="Delete Record"
-                                className="h-7 w-7 text-destructive"
+                                className="h-7 w-7 text-destructive hover:bg-destructive/10"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
@@ -1644,51 +1710,257 @@ const FamilyPlanningForm = () => {
         </Card>
       </div>
 
-      {/* VIEW RECORD DETAIL MODAL */}
+      {/* VIEW & PRINT RECORD DETAIL MODAL (EXACT FP FORM 1 REPLICA) */}
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="max-w-4xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 p-6 max-h-[90vh] overflow-y-auto">
-          {selectedRecordForView && parseRecordDetails(selectedRecordForView) && (
+        <DialogContent className="max-w-5xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 p-6 max-h-[90vh] overflow-y-auto">
+          {selectedRecordForView && (
             (() => {
-              const parsed = parseRecordDetails(selectedRecordForView)!;
+              const parsed = parseRecordDetails(selectedRecordForView);
+              const clientName = selectedRecordForView.residents?.full_name || (parsed?.sideA ? `${parsed.sideA.client_given_name} ${parsed.sideA.client_mi || ''} ${parsed.sideA.client_last_name}`.trim() : "Patient");
+              const sideA = parsed?.sideA;
+              const sideB = parsed?.sideB;
+
               return (
-                <div className="space-y-4 text-xs font-sans">
-                  <DialogHeader className="border-b pb-2">
-                    <DialogTitle className="text-base font-bold flex items-center gap-2">
-                      <Heart className="h-5 w-5 text-emerald-600" />
-                      FP FORM 1: {parsed.sideA.client_given_name} {parsed.sideA.client_last_name}
-                    </DialogTitle>
+                <div className="space-y-5" id="fp-modal-printable">
+                  {/* Official Header Seals */}
+                  <DialogHeader className="border-b pb-3">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <img src={sanjuanLogo} alt="San Juan Logo" className="h-10 w-10 object-contain" />
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                            Republic of the Philippines • Department of Health
+                          </h4>
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 uppercase">
+                            BARANGAY SUBUKIN HEALTH CENTER
+                          </h3>
+                          <p className="text-[11px] text-primary font-semibold">
+                            Family Planning Clinical Record (FP Form 1)
+                          </p>
+                        </div>
+                      </div>
+                      <img src={barangayLogo} alt="Barangay Logo" className="h-10 w-10 object-contain" />
+                    </div>
                   </DialogHeader>
 
-                  {/* Summary Overview */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 dark:bg-slate-900 p-3 rounded-md border text-xs">
-                    <div><strong>FP No:</strong> {parsed.sideA.fp_no || "N/A"}</div>
-                    <div><strong>Age / DOB:</strong> {parsed.sideA.client_age} y/o ({parsed.sideA.client_dob || "N/A"})</div>
-                    <div><strong>Civil Status:</strong> {parsed.sideA.civil_status || "N/A"}</div>
-                    <div><strong>Method Chosen:</strong> {parsed.sideA.chosen_method || "N/A"}</div>
-                    <div><strong>Spouse Name:</strong> {parsed.sideA.spouse_given_name} {parsed.sideA.spouse_last_name}</div>
-                    <div><strong>Children:</strong> {parsed.sideA.no_living_children || "0"}</div>
-                    <div><strong>Type of Client:</strong> {parsed.sideA.type_of_client || "N/A"}</div>
-                    <div><strong>Income:</strong> ₱{parsed.sideA.average_monthly_income || "N/A"}</div>
+                  {/* Top Metadata Badges */}
+                  <div className="flex items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+                    <div className="flex gap-4 flex-wrap">
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">FP Number:</span>
+                        <strong className="text-primary font-mono text-sm">{sideA?.fp_no || "N/A"}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">PhilHealth No:</span>
+                        <strong className="text-slate-800 dark:text-slate-200">{sideA?.philhealth_no || "N/A"}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">NHTS Beneficiary:</span>
+                        <span className="font-semibold">{sideA?.nhts === true ? "Yes" : sideA?.nhts === false ? "No" : "Unspecified"}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 text-[10px] block">Assessment Date:</span>
+                      <strong className="text-slate-900 dark:text-slate-100">
+                        {selectedRecordForView.start_date || (selectedRecordForView.created_at ? new Date(selectedRecordForView.created_at).toLocaleDateString() : "—")}
+                      </strong>
+                    </div>
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-2 border-t">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => {
-                        setFpState(parsed);
-                        setViewModalOpen(false);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                        toast.info("Record loaded into main editor.");
-                      }}
-                      className="gap-1 text-xs"
-                    >
-                      <Pencil className="h-3.5 w-3.5" /> Edit Record
-                    </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => window.print()} className="gap-1 text-xs">
-                      <Printer className="h-3.5 w-3.5" /> Print
-                    </Button>
+                  {/* SIDE A: I. Client & Spouse Personal Demographics */}
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1 flex items-center gap-1.5">
+                      <UserCheck className="h-3.5 w-3.5 text-primary" /> I. Personal Information
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+                      <div className="col-span-2">
+                        <span className="text-slate-500 text-[10px] block">Client Full Name:</span>
+                        <strong className="text-sm text-slate-900 dark:text-slate-100">{clientName}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">Age / DOB:</span>
+                        <span className="font-semibold">{sideA?.client_age ? `${sideA.client_age} yrs` : "—"} ({sideA?.client_dob || "N/A"})</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">Civil Status:</span>
+                        <span>{sideA?.civil_status || "—"}</span>
+                      </div>
+
+                      <div className="col-span-2">
+                        <span className="text-slate-500 text-[10px] block">Complete Address:</span>
+                        <span>{sideA?.address_street ? `Sitio ${sideA.address_street}, ` : ""}{sideA?.address_barangay || "Subukin"}, {sideA?.address_municipality || "San Juan"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">Contact Number:</span>
+                        <span>{sideA?.contact_number || "—"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">Religion:</span>
+                        <span>{sideA?.religion || "—"}</span>
+                      </div>
+
+                      <div className="col-span-2">
+                        <span className="text-slate-500 text-[10px] block">Spouse Name:</span>
+                        <span className="font-semibold">{`${sideA?.spouse_given_name || ''} ${sideA?.spouse_last_name || ''}`.trim() || "—"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">Spouse Age / DOB:</span>
+                        <span>{sideA?.spouse_age ? `${sideA.spouse_age} yrs` : "—"} ({sideA?.spouse_dob || "N/A"})</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">Monthly Income:</span>
+                        <span>₱{sideA?.average_monthly_income || "—"}</span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* SIDE A: II. Medical History */}
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1 flex items-center gap-1.5">
+                      <Stethoscope className="h-3.5 w-3.5 text-primary" /> II. Medical History &amp; Risk Factors
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+                      <div className="flex items-center justify-between p-1.5 border-b">
+                        <span>Severe Headaches / Migraine:</span>
+                        <Badge variant="outline" className={sideA?.medical_severe_headaches ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {sideA?.medical_severe_headaches ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-1.5 border-b">
+                        <span>Stroke / Heart Attack:</span>
+                        <Badge variant="outline" className={sideA?.medical_stroke_heart_attack ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {sideA?.medical_stroke_heart_attack ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-1.5 border-b">
+                        <span>Diabetes / High Blood Sugar:</span>
+                        <Badge variant="outline" className={sideA?.medical_diabetes ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {sideA?.medical_diabetes ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-1.5 border-b">
+                        <span>Severe Chest Pain / Angina:</span>
+                        <Badge variant="outline" className={sideA?.medical_severe_chest_pain ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {sideA?.medical_severe_chest_pain ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-1.5 border-b">
+                        <span>Abnormal Vaginal Bleeding:</span>
+                        <Badge variant="outline" className={sideA?.medical_vaginal_bleeding ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {sideA?.medical_vaginal_bleeding ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-1.5 border-b">
+                        <span>Smoker / Tobacco:</span>
+                        <Badge variant="outline" className={sideA?.medical_smoker ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {sideA?.medical_smoker ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SIDE A: III. Obstetrical History & IV. Physical Examination */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1">
+                        III. Obstetrical History
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+                        <div><span className="text-slate-500 text-[10px] block">Gravida:</span> <strong>{sideA?.ob_gravida || "0"}</strong></div>
+                        <div><span className="text-slate-500 text-[10px] block">Para:</span> <strong>{sideA?.ob_para || "0"}</strong></div>
+                        <div><span className="text-slate-500 text-[10px] block">Full Term:</span> <span>{sideA?.ob_full_term || "0"}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Living Children:</span> <span>{sideA?.ob_living_children || sideA?.no_living_children || "0"}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Last Delivery Date:</span> <span>{sideA?.date_of_last_delivery || "N/A"}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Type of Last Delivery:</span> <span>{sideA?.type_of_last_delivery || "N/A"}</span></div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1">
+                        IV. Physical Examination
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+                        <div><span className="text-slate-500 text-[10px] block">Weight:</span> <strong>{sideA?.pe_weight ? `${sideA.pe_weight} kg` : "—"}</strong></div>
+                        <div><span className="text-slate-500 text-[10px] block">Height:</span> <strong>{sideA?.pe_height ? `${sideA.pe_height} cm` : "—"}</strong></div>
+                        <div><span className="text-slate-500 text-[10px] block">Blood Pressure:</span> <strong>{sideA?.pe_blood_pressure || "—"}</strong></div>
+                        <div><span className="text-slate-500 text-[10px] block">Pulse Rate:</span> <span>{sideA?.pe_pulse_rate ? `${sideA.pe_pulse_rate} bpm` : "—"}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Skin:</span> <span>{sideA?.pe_skin || "Normal"}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Conjunctiva:</span> <span>{sideA?.pe_conjunctiva || "Pale / Normal"}</span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SIDE B: Method Accepted & Service Visits */}
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1">
+                      V. Family Planning Method &amp; Service Provision
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-lg border border-emerald-200 dark:border-emerald-800 text-xs">
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">Method Accepted:</span>
+                        <strong className="text-emerald-700 dark:text-emerald-300 text-sm font-bold">
+                          {selectedRecordForView.method || sideA?.chosen_method || "—"}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">Type of Client:</span>
+                        <span className="font-semibold">{sideA?.type_of_client || "New Acceptor"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">Reason for FP:</span>
+                        <span>{sideA?.reason_for_fp || "Spacing"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 text-[10px] block">Remarks / Notes:</span>
+                        <span>{selectedRecordForView.remarks || "—"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Signatures */}
+                  <div className="pt-6 border-t border-slate-300 dark:border-slate-700 flex justify-between text-xs text-slate-700 dark:text-slate-300">
+                    <div>
+                      <p>Client Signature / Thumbmark:</p>
+                      <div className="mt-4 border-b border-slate-400 w-44"></div>
+                      <p className="text-[10px] text-slate-500 mt-1">{clientName}</p>
+                    </div>
+                    <div>
+                      <p>Attending Provider / Midwife:</p>
+                      <div className="mt-4 border-b border-slate-400 w-44"></div>
+                      <p className="text-[10px] text-slate-500 mt-1">Barangay Health Center Personnel</p>
+                    </div>
+                  </div>
+
+                  <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
+                    <span className="text-[10px] text-slate-500">FP Record ID: {selectedRecordForView.id}</span>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handlePrintModal}
+                        className="gap-1.5 text-xs font-semibold"
+                      >
+                        <Printer className="h-3.5 w-3.5" /> Print Record
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          if (parsed) setFpState(parsed);
+                          setViewModalOpen(false);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                          toast.info("Record loaded into main editor.");
+                        }}
+                        className="bg-primary text-primary-foreground text-xs"
+                      >
+                        Edit Record
+                      </Button>
+                      <Button type="button" variant="secondary" size="sm" onClick={() => setViewModalOpen(false)} className="text-xs">
+                        Close
+                      </Button>
+                    </div>
+                  </DialogFooter>
                 </div>
               );
             })()

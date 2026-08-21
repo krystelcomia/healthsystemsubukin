@@ -40,7 +40,10 @@ import {
   Check,
   ListChecks,
   ImageIcon,
-  Save
+  Save,
+  History,
+  Calendar,
+  Search
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -210,7 +213,10 @@ const AddNewForm = () => {
   const [savedForms, setSavedForms] = useState<CustomForm[]>([]);
   const [selectedResidentId, setSelectedResidentId] = useState<string>("");
   const [residents, setResidents] = useState<any[]>([]);
-  const [deleteTemplateConfirmId, setDeleteTemplateConfirmId] = useState<string | null>(null);
+  const [submissionRecords, setSubmissionRecords] = useState<any[]>([]);
+  const [submissionSearch, setSubmissionSearch] = useState<string>("");
+  const [selectedSubmissionForView, setSelectedSubmissionForView] = useState<any | null>(null);
+  const [viewSubmissionModalOpen, setViewSubmissionModalOpen] = useState<boolean>(false);
 
   // Wizard step: 1 = Upload, 2 = Edit Fields, 3 = Preview & Deploy
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -218,11 +224,38 @@ const AddNewForm = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
+  const loadSubmissions = () => {
+    try {
+      const all = JSON.parse(localStorage.getItem("bhw_custom_form_records") || "[]");
+      if (formId) {
+        setSubmissionRecords(all.filter((r: any) => r.formId === formId));
+      } else {
+        setSubmissionRecords(all);
+      }
+    } catch (e) {
+      setSubmissionRecords([]);
+    }
+  };
+
+  const filteredSubmissions = useMemo(() => {
+    if (!submissionSearch.trim()) return submissionRecords;
+    const q = submissionSearch.toLowerCase().trim();
+    return submissionRecords.filter((rec: any) => {
+      const name = (rec.resident_name || "").toLowerCase();
+      const date = (rec.savedAt || rec.created_at || "").toLowerCase();
+      return name.includes(q) || date.includes(q);
+    });
+  }, [submissionRecords, submissionSearch]);
+
   useEffect(() => {
     const loaded = loadForms();
     setSavedForms(loaded);
 
     getFamilyOnlyResidents().then(r => setResidents(r || []));
+    loadSubmissions();
+
+    const handleSubmissionsUpdated = () => loadSubmissions();
+    window.addEventListener("custom-form-records-updated", handleSubmissionsUpdated);
 
     if (formId) {
       const activeForm = loaded.find(f => f.id === formId);
@@ -239,6 +272,10 @@ const AddNewForm = () => {
       // In Add New Form section, clear upload fields so next form can be uploaded cleanly
       fullReset();
     }
+
+    return () => {
+      window.removeEventListener("custom-form-records-updated", handleSubmissionsUpdated);
+    };
   }, [formId]);
 
   /* ── File / image handling ── */
@@ -678,6 +715,14 @@ const AddNewForm = () => {
   /* ════════════════════════════════════════════════════════════
      RENDER
      ════════════════════════════════════════════════════════════ */
+  const handlePrintModal = () => {
+    document.body.classList.add("printing-modal");
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove("printing-modal");
+    }, 1000);
+  };
+
   return (
     <div className="w-full space-y-6">
       <style>{`
@@ -692,8 +737,37 @@ const AddNewForm = () => {
           body * {
             visibility: hidden !important;
           }
-          #digital-replica-print-area, #digital-replica-print-area * {
+          body:not(.printing-modal) #digital-replica-print-area, 
+          body:not(.printing-modal) #digital-replica-print-area * {
             visibility: visible !important;
+          }
+          body.printing-modal #custom-submission-modal-printable,
+          body.printing-modal #custom-submission-modal-printable *:not(.no-print):not(.no-print *) {
+            visibility: visible !important;
+            color: #000000 !important;
+          }
+          body.printing-modal [role="dialog"],
+          body.printing-modal [data-radix-portal] {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            transform: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: none !important;
+            background: white !important;
+          }
+          body.printing-modal #custom-submission-modal-printable {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            color: black !important;
+            padding: 15px !important;
+            margin: 0 !important;
           }
           .no-print {
             display: none !important;
@@ -1398,6 +1472,242 @@ const AddNewForm = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* ─── SAVED FORM SUBMISSIONS HISTORY (Shown on deployed forms) ─── */}
+      {formId && (
+        <Card className="border-border/50 shadow-sm no-print mt-6">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 gap-3">
+            <div className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle className="text-base font-heading font-bold text-foreground">
+                  Saved Submissions History ({filteredSubmissions.length})
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  View, load, or re-print past submissions for this custom form.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Badge variant="secondary" className="bg-primary/10 text-primary font-bold shrink-0">
+                {filteredSubmissions.length} Submission(s)
+              </Badge>
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search resident or date..."
+                  value={submissionSearch}
+                  onChange={(e) => setSubmissionSearch(e.target.value)}
+                  className="pl-9 h-9 text-xs"
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {filteredSubmissions.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic py-6 text-center">
+                {submissionSearch ? "No submissions match your search." : "No submissions saved for this form yet. Fill out the form above and click Save to record an entry."}
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-muted/40 border-b text-muted-foreground font-semibold">
+                      <th className="p-3 w-32">Date</th>
+                      <th className="p-3">Resident / Patient Name</th>
+                      <th className="p-3">Summary of Key Entries</th>
+                      <th className="p-3 text-right w-28">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filteredSubmissions.map((rec: any) => {
+                      const dateStr = rec.savedAt ? new Date(rec.savedAt).toLocaleDateString() : (rec.created_at ? new Date(rec.created_at).toLocaleDateString() : "—");
+                      const summaryEntries = (rec.fields || [])
+                        .filter((f: any) => f.value && f.type !== "checkbox")
+                        .slice(0, 3)
+                        .map((f: any) => `${f.label}: ${f.value}`)
+                        .join(" • ");
+
+                      return (
+                        <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
+                          <TableCell className="p-3 font-semibold text-primary whitespace-nowrap">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3 text-muted-foreground" />
+                              {dateStr}
+                            </span>
+                          </TableCell>
+                          <TableCell className="p-3 font-semibold text-foreground">
+                            {rec.resident_name || "—"}
+                          </TableCell>
+                          <TableCell className="p-3 text-muted-foreground max-w-[320px] truncate" title={summaryEntries}>
+                            {summaryEntries || "—"}
+                          </TableCell>
+                          <TableCell className="p-3 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedSubmissionForView(rec);
+                                  setViewSubmissionModalOpen(true);
+                                }}
+                                title="View & Print Full Submission"
+                                className="h-7 w-7 text-primary hover:bg-primary/10"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  if (rec.fields) {
+                                    setDraftFields(rec.fields);
+                                    if (rec.residentId) setSelectedResidentId(rec.residentId);
+                                    window.scrollTo({ top: 0, behavior: "smooth" });
+                                    toast.info(`Loaded submission for ${rec.resident_name}`);
+                                  }
+                                }}
+                                title="Load into Form"
+                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              >
+                                <Edit3 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* VIEW & PRINT CUSTOM SUBMISSION MODAL */}
+      <Dialog open={viewSubmissionModalOpen} onOpenChange={setViewSubmissionModalOpen}>
+        <DialogContent className="max-w-4xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 p-6 max-h-[90vh] overflow-y-auto">
+          {selectedSubmissionForView && (
+            <div className="space-y-5" id="custom-submission-modal-printable">
+              <DialogHeader className="border-b pb-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <img src={sanjuanLogo} alt="San Juan Logo" className="h-10 w-10 object-contain" />
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                        Republic of the Philippines • Municipality of San Juan
+                      </h4>
+                      <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 uppercase">
+                        BARANGAY SUBUKIN HEALTH CENTER
+                      </h3>
+                      <p className="text-[11px] text-primary font-semibold">
+                        {selectedSubmissionForView.formTitle || draftTitle}
+                      </p>
+                    </div>
+                  </div>
+                  <img src={barangayLogo} alt="Barangay Logo" className="h-10 w-10 object-contain" />
+                </div>
+              </DialogHeader>
+
+              {/* Patient and Submission Header */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+                <div>
+                  <span className="text-slate-500 text-[10px] block">Resident / Client:</span>
+                  <strong className="text-sm text-slate-900 dark:text-slate-100">
+                    {selectedSubmissionForView.resident_name || "—"}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 text-[10px] block">Submission Date:</span>
+                  <strong className="text-slate-800 dark:text-slate-200">
+                    {selectedSubmissionForView.savedAt ? new Date(selectedSubmissionForView.savedAt).toLocaleDateString() : "—"}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 text-[10px] block">Form:</span>
+                  <span className="font-semibold">{selectedSubmissionForView.formTitle || draftTitle}</span>
+                </div>
+              </div>
+
+              {/* Exact Form Layout Field View */}
+              <div className="space-y-4 pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(selectedSubmissionForView.fields || []).map((field: DynField, idx: number) => {
+                    const prevSection = idx > 0 ? selectedSubmissionForView.fields[idx - 1]?.section : undefined;
+                    const showSection = field.section && field.section !== prevSection;
+
+                    return (
+                      <React.Fragment key={idx}>
+                        {showSection && (
+                          <div className="md:col-span-2 pt-3 pb-1 border-b-2 border-primary/30 mb-1">
+                            <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                              {field.section}
+                            </p>
+                          </div>
+                        )}
+                        <div className={`p-2 bg-slate-50/70 dark:bg-slate-900/50 rounded border border-slate-200 dark:border-slate-800 ${field.type === "textarea" ? "md:col-span-2" : ""}`}>
+                          <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-0.5">
+                            {field.label}:
+                          </span>
+                          {field.type === "checkbox" ? (
+                            <Badge variant="outline" className={field.value === "true" || field.value === "yes" ? "bg-emerald-50 text-emerald-700 border-emerald-300" : "text-slate-500"}>
+                              {field.value === "true" || field.value === "yes" ? "Checked / Yes" : "No / Unchecked"}
+                            </Badge>
+                          ) : (
+                            <p className="text-xs font-medium text-slate-900 dark:text-slate-100 whitespace-pre-wrap">
+                              {field.value || <span className="text-slate-400 italic">—</span>}
+                            </p>
+                          )}
+                        </div>
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Signatures */}
+              <div className="pt-6 border-t border-slate-300 dark:border-slate-700 flex justify-between text-xs text-slate-700 dark:text-slate-300">
+                <div>
+                  <p>Certified Correct:</p>
+                  <div className="mt-4 border-b border-slate-400 w-44"></div>
+                  <p className="text-[10px] text-slate-500 mt-1">Attending Barangay Health Worker</p>
+                </div>
+                <div>
+                  <p>Approved By:</p>
+                  <div className="mt-4 border-b border-slate-400 w-44"></div>
+                  <p className="text-[10px] text-slate-500 mt-1">Barangay Health Supervisor / Midwife</p>
+                </div>
+              </div>
+
+              <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
+                <span className="text-[10px] text-slate-500">Record ID: {selectedSubmissionForView.id}</span>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrintModal}
+                    className="gap-1.5 text-xs font-semibold"
+                  >
+                    <Printer className="h-3.5 w-3.5" /> Print Record
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setViewSubmissionModalOpen(false)}
+                    className="text-xs"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Form Template Confirmation Dialog */}
       <AlertDialog open={!!deleteTemplateConfirmId} onOpenChange={() => setDeleteTemplateConfirmId(null)}>

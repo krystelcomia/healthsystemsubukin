@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar } from "lucide-react";
+import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
@@ -123,6 +124,17 @@ const DenguePreventionForm = () => {
   const [savedForms, setSavedForms] = useState<SavedDengueForm[]>([]);
   const [viewingSavedForm, setViewingSavedForm] = useState<SavedDengueForm | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [historySearch, setHistorySearch] = useState("");
+
+  const filteredSavedForms = useMemo(() => {
+    if (!historySearch.trim()) return savedForms;
+    const q = historySearch.toLowerCase().trim();
+    return savedForms.filter((sf) => {
+      const date = (sf.formattedDate || "").toLowerCase();
+      const hasMatchingHousehold = sf.records.some(r => (r.household_name || "").toLowerCase().includes(q));
+      return date.includes(q) || hasMatchingHousehold;
+    });
+  }, [savedForms, historySearch]);
 
   const [deleteRowConfirm, setDeleteRowConfirm] = useState<{ id: string; name: string } | null>(null);
   const [deleteSavedFormConfirmId, setDeleteSavedFormConfirmId] = useState<string | null>(null);
@@ -1345,16 +1357,33 @@ const DenguePreventionForm = () => {
 
       {/* Saved Dengue Prevention Forms Section */}
       <div className="no-print mt-8 space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between flex-wrap gap-3 pb-1 border-b border-border/40">
           <div className="flex items-center gap-2">
             <History className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-heading font-bold text-foreground">
-              Saved Dengue Prevention Forms ({savedForms.length})
-            </h3>
+            <div>
+              <h3 className="text-lg font-heading font-bold text-foreground">
+                Saved Dengue Prevention Forms
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Forms saved via "Print Form" appear here for viewing and re-printing.
+              </p>
+            </div>
           </div>
-          <span className="text-xs text-muted-foreground">
-            Forms saved via "Print Form" appear here for viewing and re-printing.
-          </span>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Badge variant="secondary" className="bg-primary/10 text-primary font-bold shrink-0">
+              {filteredSavedForms.length} Form(s)
+            </Badge>
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search date or household..."
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                className="pl-9 h-9 text-xs"
+              />
+            </div>
+          </div>
         </div>
 
         {savedForms.length === 0 ? (
@@ -1367,9 +1396,13 @@ const DenguePreventionForm = () => {
               </p>
             </CardContent>
           </Card>
+        ) : filteredSavedForms.length === 0 ? (
+          <div className="p-8 text-center text-xs text-muted-foreground italic bg-muted/20 rounded-lg border border-border/40">
+            No saved dengue forms match "{historySearch}".
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-3">
-            {savedForms.map((sf, index) => {
+            {filteredSavedForms.map((sf, index) => {
               const positiveCount = sf.records.filter(r => r.has_larvae === true).length;
               return (
                 <Card key={sf.id} className="border border-border/60 hover:border-primary/40 transition-colors shadow-xs">

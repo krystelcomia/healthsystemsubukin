@@ -36,7 +36,10 @@ import {
   ChevronRight,
   ClipboardList,
   TrendingUp,
-  Hash
+  Hash,
+  History,
+  Eye,
+  Calendar
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -928,6 +931,125 @@ const FamilyDataForm = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* ================= SAVED FAMILY DATA RECORDS HISTORY ================= */}
+      <div className="no-print mt-8 space-y-4">
+        <Card className="border border-border/50 shadow-sm">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 gap-3">
+            <div className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle className="text-base font-bold font-heading">
+                  Saved Family Data Records History ({activeFamilyFiles.length})
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  View, edit, or re-print official family household census files.
+                </p>
+              </div>
+            </div>
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search family #, name, sitio..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 text-xs"
+              />
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 overflow-x-auto">
+            {loading ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">Loading family records...</div>
+            ) : activeFamilyFiles.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground italic">
+                {searchQuery ? "No family records match your search." : "No family records created yet."}
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-muted/40 border-b text-muted-foreground font-semibold">
+                    <th className="p-3 w-28">Date Recorded</th>
+                    <th className="p-3">Family # (FN)</th>
+                    <th className="p-3">Household Head (Father)</th>
+                    <th className="p-3">Mother's Name</th>
+                    <th className="p-3">Sitio</th>
+                    <th className="p-3 text-center">Households</th>
+                    <th className="p-3 text-center">Total Members</th>
+                    <th className="p-3 text-right w-32">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {activeFamilyFiles.map((rec) => {
+                    const membersList = parseMembers(rec.members_detail);
+                    const totalCount = rec.total_members || membersList.length || 0;
+                    const dateStr = rec.created_at ? new Date(rec.created_at).toLocaleDateString() : (rec.updated_at ? new Date(rec.updated_at).toLocaleDateString() : "—");
+
+                    return (
+                      <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="p-3 font-semibold text-primary whitespace-nowrap">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                            {dateStr}
+                          </span>
+                        </td>
+                        <td className="p-3 font-mono font-bold text-foreground">{rec.family_number || "—"}</td>
+                        <td className="p-3 font-semibold text-foreground">{rec.father_name || "—"}</td>
+                        <td className="p-3 text-muted-foreground">{rec.mother_name || "—"}</td>
+                        <td className="p-3">{rec.sitio || "Centro"}</td>
+                        <td className="p-3 text-center">{rec.num_households || 1}</td>
+                        <td className="p-3 text-center font-bold text-foreground">
+                          <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
+                            {totalCount} Member(s)
+                          </Badge>
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className="flex items-center justify-end gap-1 whitespace-nowrap">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenFile(rec)}
+                              title="View & Print Full Family File"
+                              className="h-7 w-7 text-primary hover:bg-primary/10"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            {!isAdmin && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  handleOpenFile(rec);
+                                  setIsEditingFileDetails(true);
+                                }}
+                                title="Edit File"
+                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                            {!isAdmin && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeleteFileConfirm({ id: rec.id, name: `${rec.family_number || 'FN'} - ${rec.father_name || 'Family'}` })}
+                                title="Delete File"
+                                className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* ================= OPENED FAMILY FILE DIALOG ================= */}
       <Dialog open={fileDialogOpen} onOpenChange={setFileDialogOpen}>

@@ -544,7 +544,9 @@ const ChildHealthForm = () => {
       if (!term) return true;
       const childName = getRecordChildName(r).toLowerCase();
       const remarks = (r.remarks || "").toLowerCase();
-      return childName.includes(term) || remarks.includes(term);
+      const checkupDate = (r.checkup_date || "").toLowerCase();
+      const detailsStr = typeof r.details === "string" ? r.details.toLowerCase() : JSON.stringify(r.details || {}).toLowerCase();
+      return childName.includes(term) || remarks.includes(term) || checkupDate.includes(term) || detailsStr.includes(term);
     });
 
     const configs = {
