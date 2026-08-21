@@ -133,6 +133,14 @@ const ConsultationForm = () => {
     }, 1000);
   };
 
+  const handlePrintHistory = () => {
+    document.body.classList.add("printing-history");
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove("printing-history");
+    }, 1000);
+  };
+
   const handleReset = () => {
     setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: getTodayDate(), temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
   };
@@ -204,18 +212,20 @@ const ConsultationForm = () => {
         }
         @media print {
           body * { visibility: hidden !important; }
-          body:not(.printing-modal) #consultation-print-area,
-          body:not(.printing-modal) #consultation-print-area *:not(.no-print):not(.no-print *) {
+
+          /* Default Single Form Print */
+          body:not(.printing-modal):not(.printing-history) #consultation-print-area,
+          body:not(.printing-modal):not(.printing-history) #consultation-print-area *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
             color: #000000 !important;
             border-color: #000000 !important;
           }
-          body:not(.printing-modal) #consultation-print-area .no-print,
-          body:not(.printing-modal) #consultation-print-area .no-print * {
+          body:not(.printing-modal):not(.printing-history) #consultation-print-area .no-print,
+          body:not(.printing-modal):not(.printing-history) #consultation-print-area .no-print * {
             display: none !important;
             visibility: hidden !important;
           }
-          body:not(.printing-modal) #consultation-print-area {
+          body:not(.printing-modal):not(.printing-history) #consultation-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
@@ -227,6 +237,8 @@ const ConsultationForm = () => {
             box-shadow: none !important;
             border: none !important;
           }
+
+          /* Modal Detail Print */
           body.printing-modal #consultation-modal-printable,
           body.printing-modal #consultation-modal-printable *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
@@ -255,6 +267,41 @@ const ConsultationForm = () => {
             padding: 15px !important;
             margin: 0 !important;
           }
+
+          /* History Table Print */
+          body.printing-history #consultation-history-print-area,
+          body.printing-history #consultation-history-print-area *:not(.no-print):not(.no-print *) {
+            visibility: visible !important;
+            color: #000000 !important;
+            border-color: #000000 !important;
+          }
+          body.printing-history #consultation-history-print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            color: black !important;
+            padding: 15px !important;
+            margin: 0 !important;
+            display: block !important;
+          }
+          body.printing-history #consultation-history-print-area table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          body.printing-history #consultation-history-print-area th,
+          body.printing-history #consultation-history-print-area td {
+            border: 1px solid #000000 !important;
+            padding: 5px 6px !important;
+            font-size: 10px !important;
+            color: #000000 !important;
+          }
+          body.printing-history #consultation-history-print-area th {
+            background-color: #f1f5f9 !important;
+            font-weight: bold !important;
+          }
+
           #consultation-print-area ::placeholder {
             color: transparent !important;
             opacity: 0 !important;
@@ -274,26 +321,9 @@ const ConsultationForm = () => {
           .print-only { display: flex !important; }
           .header-seal img { height: 75px !important; mix-blend-mode: multiply !important; }
           #consultation-print-area table td, #consultation-print-area table th { padding: 3px 5px !important; font-size: 11px !important; }
-          @page { size: A4 portrait; margin: 5mm; }
+          @page { size: A4 portrait; margin: 6mm; }
         }
       `}</style>
-
-      {/* Dynamic Theme Banner */}
-      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-            <Stethoscope className="h-6 w-6" />
-          </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-              {t("consultation.title") || "Consultation Record Form"}
-            </h2>
-            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-              Record patient vitals, physical measurements, and clinical notes for Barangay Subukin health registry.
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Main Consultation Form Card */}
       <Card id="consultation-print-area" className="border-border/60 shadow-md bg-card rounded-2xl overflow-hidden">
@@ -301,12 +331,19 @@ const ConsultationForm = () => {
           
           {/* Official Barangay Printable Header */}
           <div 
-            className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6 text-center"
-            style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
+            className="print-only header-seal flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-6 text-center"
+            style={{ display: "none", alignItems: "center", justifyContent: "center", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
           >
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <div className="flex items-center justify-center gap-6 md:gap-8" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
+              <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+              <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+              <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            </div>
+            <div className="mt-3 text-center">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+                Official Patient Consultation Record
+              </h2>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -485,15 +522,15 @@ const ConsultationForm = () => {
                   Consultation Records History
                 </CardTitle>
                 <p className="text-xs text-muted-foreground">
-                  View, load, or re-print past patient consultation records.
+                  View, load, or print past patient consultation records.
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
               <Badge variant="secondary" className="bg-primary/10 text-primary font-bold shrink-0">
                 {filteredHistory.length} Record(s)
               </Badge>
-              <div className="relative w-full sm:w-64">
+              <div className="relative w-full sm:w-60">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
@@ -503,6 +540,17 @@ const ConsultationForm = () => {
                   className="pl-9 h-9 text-xs"
                 />
               </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handlePrintHistory}
+                disabled={filteredHistory.length === 0}
+                className="h-9 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 shrink-0"
+              >
+                <Printer className="h-3.5 w-3.5" />
+                Print History
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -604,28 +652,106 @@ const ConsultationForm = () => {
         </Card>
       </div>
 
+      {/* PRINTABLE CONSULTATION HISTORY REPORT */}
+      <div id="consultation-history-print-area" className="hidden" style={{ display: "none" }}>
+        {/* Official Barangay Printable Header */}
+        <div 
+          className="header-seal flex flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center"
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "4px double #000", paddingBottom: "14px", marginBottom: "16px", textAlign: "center" }}
+        >
+          <div className="flex items-center justify-center gap-6 md:gap-8" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
+            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          </div>
+          <div className="mt-3 text-center">
+            <h2 className="text-base font-bold uppercase tracking-wider text-slate-900">
+              Official Patient Consultation Records History
+            </h2>
+            <p className="text-xs text-slate-600 mt-0.5">
+              Barangay Subukin Health Center Registry • Total: {filteredHistory.length} Record(s) • Generated: {new Date().toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+
+        {/* Printable History Table */}
+        <table className="w-full border-collapse" style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
+          <thead>
+            <tr style={{ backgroundColor: "#f1f5f9" }}>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "center" }}>#</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Date</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Patient Name</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Sitio / Area</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "center" }}>Age / Temp</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "center" }}>Pulse / Resp</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "center" }}>Ht / Wt</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Clinical Diagnosis / Complaint</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredHistory.map((rec, index) => (
+              <tr key={rec.id || index}>
+                <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>{index + 1}</td>
+                <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", whiteSpace: "nowrap" }}>
+                  {rec.consultation_date || (rec.created_at ? new Date(rec.created_at).toLocaleDateString() : "—")}
+                </td>
+                <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", fontWeight: "bold" }}>
+                  {rec.residents?.full_name || "—"}
+                </td>
+                <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>
+                  {rec.sitio || "—"}
+                </td>
+                <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>
+                  {rec.age ? `${rec.age}y` : "—"}{rec.temperature ? ` / ${rec.temperature}°C` : ""}
+                </td>
+                <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>
+                  {rec.pulse_rate ? `${rec.pulse_rate}bpm` : "—"}{rec.respiration_rate ? ` / ${rec.respiration_rate}bpm` : ""}
+                </td>
+                <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>
+                  {rec.height ? `${rec.height}cm` : "—"}{rec.weight ? ` / ${rec.weight}kg` : ""}
+                </td>
+                <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>
+                  {rec.consultation_cause || "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Printable Official Signatures */}
+        <div className="pt-10 mt-8 border-t border-slate-300 flex justify-between text-xs text-slate-800" style={{ display: "flex", justifyContent: "space-between", paddingTop: "35px", marginTop: "25px", borderTop: "1px solid #cbd5e1" }}>
+          <div>
+            Certified Correct: ___________________________<br />
+            <span className="text-[10px] text-slate-600">Attending Barangay Health Worker</span>
+          </div>
+          <div>
+            Approved By: ___________________________<br />
+            <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
+          </div>
+        </div>
+      </div>
+
       {/* VIEW & PRINT RECORD DETAIL DIALOG */}
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
         <DialogContent className="max-w-3xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 p-6 max-h-[90vh] overflow-y-auto">
           {selectedRecordForView && (
             <div className="space-y-5" id="consultation-modal-printable">
-              <DialogHeader className="border-b pb-3">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <img src={sanjuanLogo} alt="San Juan Logo" className="h-10 w-10 object-contain" />
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                        Republic of the Philippines • Municipality of San Juan
-                      </h4>
-                      <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">
-                        BARANGAY SUBUKIN HEALTH CENTER
-                      </h3>
-                      <p className="text-[11px] text-primary font-semibold">Official Patient Consultation Record</p>
-                    </div>
-                  </div>
-                  <img src={barangayLogo} alt="Barangay Logo" className="h-10 w-10 object-contain" />
+              {/* Official Barangay Printable Header Seal */}
+              <div 
+                className="header-seal flex flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center"
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "4px double #000", paddingBottom: "14px", marginBottom: "16px", textAlign: "center" }}
+              >
+                <div className="flex items-center justify-center gap-6 md:gap-8" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
+                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
                 </div>
-              </DialogHeader>
+                <div className="mt-3 text-center">
+                  <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                    Official Patient Consultation Record
+                  </h3>
+                </div>
+              </div>
 
               {/* Patient Demographics */}
               <div className="space-y-2">

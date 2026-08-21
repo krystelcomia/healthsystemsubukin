@@ -1332,23 +1332,22 @@ const MaternalCareForm = () => {
           {selectedRecordForView && (
             <div className="space-y-5" id="maternal-modal-printable">
               {/* Header Seals */}
-              <DialogHeader className="border-b pb-3">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <img src={sanjuanLogo} alt="San Juan Logo" className="h-10 w-10 object-contain" />
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                        Republic of the Philippines • Municipality of San Juan
-                      </h4>
-                      <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 uppercase">
-                        BARANGAY SUBUKIN HEALTH CENTER
-                      </h3>
-                      <p className="text-[11px] text-primary font-semibold">Official Maternal Care Patient Record</p>
-                    </div>
-                  </div>
-                  <img src={barangayLogo} alt="Barangay Logo" className="h-10 w-10 object-contain" />
+              {/* Official Barangay Printable Header Seal */}
+              <div 
+                className="header-seal flex flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center"
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "4px double #000", paddingBottom: "14px", marginBottom: "16px", textAlign: "center" }}
+              >
+                <div className="flex items-center justify-center gap-6 md:gap-8" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
+                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                  <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
                 </div>
-              </DialogHeader>
+                <div className="mt-3 text-center">
+                  <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                    Official Maternal Care Patient Record
+                  </h3>
+                </div>
+              </div>
 
               {/* Patient Demographics */}
               <div className="space-y-2">
