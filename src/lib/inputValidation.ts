@@ -99,3 +99,12 @@ export const sanitizeLetters = (val: string): string => {
 export const sanitizeLettersStrict = (val: string): string => {
   return val.replace(/[^a-zA-Z\u00C0-\u024F\u1E00-\u1EFF\s\-']/g, "");
 };
+
+export const sanitizeDateString = (val: string): string => {
+  return val.replace(/[^0-9-]/g, "");
+};
+
+export const sanitizeBpString = (val: string): string => {
+  return val.replace(/[^0-9/\s]/g, "");
+};
+

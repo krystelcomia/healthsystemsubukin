@@ -43,6 +43,8 @@ const sanitizeDecimalNumber = (val: string) => {
 };
 
 // 3. Date string format digits and hyphens (YYYY-MM-DD) -> blocks all letters
+const sanitizeDateString = (val: string) => val.replace(/[^0-9-]/g, "");
+
 const getTodayDate = () => {
   const d = new Date();
   const year = d.getFullYear();
