@@ -23,7 +23,7 @@ import {
 import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 
 const ProfilePage = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole, updateProfileState, refreshProfile } = useAuth();
   const { t } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -85,8 +85,11 @@ const ProfilePage = () => {
       .update({ assigned_sitio: assignedSitio } as any)
       .eq("user_id", user.id);
 
-    if (error) toast.error(t("profile.saveFailed") || "Failed to save profile");
-    else {
+    if (error) {
+      toast.error(t("profile.saveFailed") || "Failed to save profile");
+    } else {
+      updateProfileState({ username, full_name: fullName });
+      await refreshProfile();
       toast.success(t("profile.updated") || "Profile updated!");
       setEditing(false);
     }

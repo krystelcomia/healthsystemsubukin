@@ -8,8 +8,12 @@ interface AuthContextType {
   user: User | null;
   userRole: string | null;
   username: string | null;
+  fullName: string | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  setUsername: (name: string | null) => void;
+  refreshProfile: () => Promise<void>;
+  updateProfileState: (data: { username?: string; full_name?: string }) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -17,8 +21,12 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   userRole: null,
   username: null,
+  fullName: null,
   loading: true,
   signOut: async () => {},
+  setUsername: () => {},
+  refreshProfile: async () => {},
+  updateProfileState: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -28,6 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [fullName, setFullName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchRole = async (userId: string) => {
@@ -64,13 +73,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq("user_id", userId)
         .maybeSingle();
       if (data) {
-        if (data.username) localStorage.setItem("logged_in_username", data.username);
-        if ((data as any).full_name) localStorage.setItem("logged_in_fullname", (data as any).full_name);
+        if (data.username) {
+          localStorage.setItem("logged_in_username", data.username);
+          setUsername(data.username);
+        } else {
+          setUsername(null);
+        }
+        if ((data as any).full_name) {
+          localStorage.setItem("logged_in_fullname", (data as any).full_name);
+          setFullName((data as any).full_name);
+        } else {
+          setFullName(null);
+        }
       }
-      setUsername(data?.username || null);
     } catch (e) {
       console.error("Error fetching user profile:", e);
     }
+  };
+
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchProfile(user.id);
+    }
+  };
+
+  const updateProfileState = (data: { username?: string; full_name?: string }) => {
+    if (data.username !== undefined) {
+      setUsername(data.username || null);
+      if (data.username) localStorage.setItem("logged_in_username", data.username);
+      else localStorage.removeItem("logged_in_username");
+    }
+    if (data.full_name !== undefined) {
+      setFullName(data.full_name || null);
+      if (data.full_name) localStorage.setItem("logged_in_fullname", data.full_name);
+      else localStorage.removeItem("logged_in_fullname");
+    }
+    window.dispatchEvent(new Event("profile-updated"));
   };
 
   const updateOnlineStatus = async (userId: string, online: boolean) => {
@@ -105,6 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setUserRole(null);
         setUsername(null);
+        setFullName(null);
         localStorage.removeItem("logged_in_username");
         localStorage.removeItem("logged_in_fullname");
       }
@@ -141,10 +180,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setUserRole(null);
     setUsername(null);
+    setFullName(null);
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, userRole, username, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, userRole, username, fullName, loading, signOut, setUsername, refreshProfile, updateProfileState }}>
       {children}
     </AuthContext.Provider>
   );

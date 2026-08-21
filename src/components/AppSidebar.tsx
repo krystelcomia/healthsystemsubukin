@@ -49,6 +49,7 @@ export function AppSidebar() {
       return [];
     }
   });
+  const [, setProfileVersion] = useState(0);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -56,12 +57,20 @@ export function AppSidebar() {
         setCustomForms(JSON.parse(localStorage.getItem("bhw_custom_forms") || "[]"));
       } catch {}
     };
+    const handleProfileUpdate = () => {
+      setProfileVersion((v) => v + 1);
+    };
     window.addEventListener("custom-forms-updated", handleUpdate);
-    return () => window.removeEventListener("custom-forms-updated", handleUpdate);
+    window.addEventListener("profile-updated", handleProfileUpdate);
+    return () => {
+      window.removeEventListener("custom-forms-updated", handleUpdate);
+      window.removeEventListener("profile-updated", handleProfileUpdate);
+    };
   }, []);
 
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isAdmin = userRole === "supervisor" && isAdminRoute;
+  const displayUsername = username || localStorage.getItem("logged_in_username") || user?.email?.split("@")[0] || "User";
 
   // BHW user navigation
   const bhwMainItems = [
@@ -192,7 +201,7 @@ export function AppSidebar() {
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">{username || user?.email || "User"}</p>
+            <p className="text-sm font-medium text-sidebar-foreground truncate">{displayUsername}</p>
             <p className="text-xs text-sidebar-foreground/50 capitalize">
               {userRole === "bns" ? "BNS" : userRole === "supervisory" ? "Supervisory BHW" : (userRole || t("common.worker"))}
             </p>
