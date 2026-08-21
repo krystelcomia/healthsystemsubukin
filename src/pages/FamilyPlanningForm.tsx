@@ -6,10 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Heart, Plus, Pencil, Trash2, Printer, RefreshCw, Save, Search, Eye, Stethoscope, Calendar, UserCheck } from "lucide-react";
+import { Heart, Plus, Pencil, Trash2, Printer, RefreshCw, Save, Search, Eye, Stethoscope, Calendar, UserCheck, History } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -1715,10 +1715,10 @@ const FamilyPlanningForm = () => {
         <DialogContent className="max-w-5xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 p-6 max-h-[90vh] overflow-y-auto">
           {selectedRecordForView && (
             (() => {
-              const parsed = parseRecordDetails(selectedRecordForView);
+              const parsed: any = parseRecordDetails(selectedRecordForView);
               const clientName = selectedRecordForView.residents?.full_name || (parsed?.sideA ? `${parsed.sideA.client_given_name} ${parsed.sideA.client_mi || ''} ${parsed.sideA.client_last_name}`.trim() : "Patient");
-              const sideA = parsed?.sideA;
-              const sideB = parsed?.sideB;
+              const sideA: any = parsed?.sideA;
+              const sideB: any = parsed?.sideBVisits || parsed?.sideB;
 
               return (
                 <div className="space-y-5" id="fp-modal-printable">
@@ -1801,7 +1801,7 @@ const FamilyPlanningForm = () => {
                       </div>
                       <div>
                         <span className="text-slate-500 text-[10px] block">Spouse Age / DOB:</span>
-                        <span>{sideA?.spouse_age ? `${sideA.spouse_age} yrs` : "—"} ({sideA?.spouse_dob || "N/A"})</span>
+                        <span className="font-semibold">{sideA?.spouse_age ? `${sideA.spouse_age} yrs` : "—"} ({sideA?.spouse_dob || "N/A"})</span>
                       </div>
                       <div>
                         <span className="text-slate-500 text-[10px] block">Monthly Income:</span>
@@ -1818,38 +1818,38 @@ const FamilyPlanningForm = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
                       <div className="flex items-center justify-between p-1.5 border-b">
                         <span>Severe Headaches / Migraine:</span>
-                        <Badge variant="outline" className={sideA?.medical_severe_headaches ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
-                          {sideA?.medical_severe_headaches ? "Yes" : "No"}
+                        <Badge variant="outline" className={(sideA?.medical_severe_headaches || sideA?.medical_history?.severe_headaches) ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {(sideA?.medical_severe_headaches || sideA?.medical_history?.severe_headaches) ? "Yes" : "No"}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between p-1.5 border-b">
                         <span>Stroke / Heart Attack:</span>
-                        <Badge variant="outline" className={sideA?.medical_stroke_heart_attack ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
-                          {sideA?.medical_stroke_heart_attack ? "Yes" : "No"}
+                        <Badge variant="outline" className={(sideA?.medical_stroke_heart_attack || sideA?.medical_history?.history_stroke_hypertension) ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {(sideA?.medical_stroke_heart_attack || sideA?.medical_history?.history_stroke_hypertension) ? "Yes" : "No"}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between p-1.5 border-b">
-                        <span>Diabetes / High Blood Sugar:</span>
-                        <Badge variant="outline" className={sideA?.medical_diabetes ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
-                          {sideA?.medical_diabetes ? "Yes" : "No"}
+                        <span>Breast Cancer / Mass:</span>
+                        <Badge variant="outline" className={(sideA?.medical_diabetes || sideA?.medical_history?.breast_cancer_mass) ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {(sideA?.medical_diabetes || sideA?.medical_history?.breast_cancer_mass) ? "Yes" : "No"}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between p-1.5 border-b">
                         <span>Severe Chest Pain / Angina:</span>
-                        <Badge variant="outline" className={sideA?.medical_severe_chest_pain ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
-                          {sideA?.medical_severe_chest_pain ? "Yes" : "No"}
+                        <Badge variant="outline" className={(sideA?.medical_severe_chest_pain || sideA?.medical_history?.severe_chest_pain) ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {(sideA?.medical_severe_chest_pain || sideA?.medical_history?.severe_chest_pain) ? "Yes" : "No"}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between p-1.5 border-b">
                         <span>Abnormal Vaginal Bleeding:</span>
-                        <Badge variant="outline" className={sideA?.medical_vaginal_bleeding ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
-                          {sideA?.medical_vaginal_bleeding ? "Yes" : "No"}
+                        <Badge variant="outline" className={(sideA?.medical_vaginal_bleeding || sideA?.medical_history?.unexplained_vaginal_bleeding) ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {(sideA?.medical_vaginal_bleeding || sideA?.medical_history?.unexplained_vaginal_bleeding) ? "Yes" : "No"}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between p-1.5 border-b">
                         <span>Smoker / Tobacco:</span>
-                        <Badge variant="outline" className={sideA?.medical_smoker ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
-                          {sideA?.medical_smoker ? "Yes" : "No"}
+                        <Badge variant="outline" className={(sideA?.medical_smoker || sideA?.medical_history?.is_smoker) ? "bg-rose-50 text-rose-700 border-rose-300" : "text-slate-500"}>
+                          {(sideA?.medical_smoker || sideA?.medical_history?.is_smoker) ? "Yes" : "No"}
                         </Badge>
                       </div>
                     </div>
@@ -1862,12 +1862,12 @@ const FamilyPlanningForm = () => {
                         III. Obstetrical History
                       </h4>
                       <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-                        <div><span className="text-slate-500 text-[10px] block">Gravida:</span> <strong>{sideA?.ob_gravida || "0"}</strong></div>
-                        <div><span className="text-slate-500 text-[10px] block">Para:</span> <strong>{sideA?.ob_para || "0"}</strong></div>
-                        <div><span className="text-slate-500 text-[10px] block">Full Term:</span> <span>{sideA?.ob_full_term || "0"}</span></div>
-                        <div><span className="text-slate-500 text-[10px] block">Living Children:</span> <span>{sideA?.ob_living_children || sideA?.no_living_children || "0"}</span></div>
-                        <div><span className="text-slate-500 text-[10px] block">Last Delivery Date:</span> <span>{sideA?.date_of_last_delivery || "N/A"}</span></div>
-                        <div><span className="text-slate-500 text-[10px] block">Type of Last Delivery:</span> <span>{sideA?.type_of_last_delivery || "N/A"}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Gravida:</span> <strong>{sideA?.ob_gravida || sideA?.obstetrical_history?.g_pregnancies || "0"}</strong></div>
+                        <div><span className="text-slate-500 text-[10px] block">Para:</span> <strong>{sideA?.ob_para || sideA?.obstetrical_history?.p_pregnancies || "0"}</strong></div>
+                        <div><span className="text-slate-500 text-[10px] block">Full Term:</span> <span>{sideA?.ob_full_term || sideA?.obstetrical_history?.full_term || "0"}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Living Children:</span> <span>{sideA?.ob_living_children || sideA?.obstetrical_history?.living_children || sideA?.no_living_children || "0"}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Last Delivery Date:</span> <span>{sideA?.date_of_last_delivery || sideA?.obstetrical_history?.date_last_delivery || "N/A"}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Type of Last Delivery:</span> <span>{sideA?.type_of_last_delivery || sideA?.obstetrical_history?.type_last_delivery || "N/A"}</span></div>
                       </div>
                     </div>
 
@@ -1876,12 +1876,12 @@ const FamilyPlanningForm = () => {
                         IV. Physical Examination
                       </h4>
                       <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-                        <div><span className="text-slate-500 text-[10px] block">Weight:</span> <strong>{sideA?.pe_weight ? `${sideA.pe_weight} kg` : "—"}</strong></div>
-                        <div><span className="text-slate-500 text-[10px] block">Height:</span> <strong>{sideA?.pe_height ? `${sideA.pe_height} cm` : "—"}</strong></div>
-                        <div><span className="text-slate-500 text-[10px] block">Blood Pressure:</span> <strong>{sideA?.pe_blood_pressure || "—"}</strong></div>
-                        <div><span className="text-slate-500 text-[10px] block">Pulse Rate:</span> <span>{sideA?.pe_pulse_rate ? `${sideA.pe_pulse_rate} bpm` : "—"}</span></div>
-                        <div><span className="text-slate-500 text-[10px] block">Skin:</span> <span>{sideA?.pe_skin || "Normal"}</span></div>
-                        <div><span className="text-slate-500 text-[10px] block">Conjunctiva:</span> <span>{sideA?.pe_conjunctiva || "Pale / Normal"}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Weight:</span> <strong>{sideA?.pe_weight || (sideA?.physical_exam?.weight_kg ? `${sideA.physical_exam.weight_kg} kg` : "—")}</strong></div>
+                        <div><span className="text-slate-500 text-[10px] block">Height:</span> <strong>{sideA?.pe_height || (sideA?.physical_exam?.height_m ? `${sideA.physical_exam.height_m} m` : "—")}</strong></div>
+                        <div><span className="text-slate-500 text-[10px] block">Blood Pressure:</span> <strong>{sideA?.pe_blood_pressure || sideA?.physical_exam?.bp || "—"}</strong></div>
+                        <div><span className="text-slate-500 text-[10px] block">Pulse Rate:</span> <span>{sideA?.pe_pulse_rate || (sideA?.physical_exam?.pulse_rate ? `${sideA.physical_exam.pulse_rate} bpm` : "—")}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Skin:</span> <span>{sideA?.pe_skin || (sideA?.physical_exam?.skin_normal ? "Normal" : "Checked")}</span></div>
+                        <div><span className="text-slate-500 text-[10px] block">Conjunctiva:</span> <span>{sideA?.pe_conjunctiva || (sideA?.physical_exam?.conjunctiva_normal ? "Normal" : "Checked")}</span></div>
                       </div>
                     </div>
                   </div>
@@ -1904,7 +1904,7 @@ const FamilyPlanningForm = () => {
                       </div>
                       <div>
                         <span className="text-slate-500 text-[10px] block">Reason for FP:</span>
-                        <span>{sideA?.reason_for_fp || "Spacing"}</span>
+                        <span>{sideA?.reason_for_fp || sideA?.reason_fp || "Spacing"}</span>
                       </div>
                       <div>
                         <span className="text-slate-500 text-[10px] block">Remarks / Notes:</span>
