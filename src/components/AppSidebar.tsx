@@ -31,6 +31,7 @@ import {
   Shield,
   Plus,
   FileText,
+  DatabaseBackup,
 } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
 import { Button } from "@/components/ui/button";
@@ -99,6 +100,7 @@ export function AppSidebar() {
 
   const adminSystemItems = [
     { title: t("nav.settings"), url: "/admin/settings", icon: Settings },
+    { title: "Backup & Recovery", url: "/admin/settings/backup", icon: DatabaseBackup },
   ];
 
   const customAdminItems = customForms.map((cf) => ({

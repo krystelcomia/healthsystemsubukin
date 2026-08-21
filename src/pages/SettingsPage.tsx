@@ -3,84 +3,17 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Settings as SettingsIcon, Download, Upload } from "lucide-react";
-import { toast } from "sonner";
+import { Settings as SettingsIcon, DatabaseBackup, Lock, ShieldCheck, ArrowRight } from "lucide-react";
 import { useSettings, COLOR_THEMES } from "@/contexts/SettingsContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const SettingsPage = () => {
   const { darkMode, setDarkMode, fontSize, setFontSize, fontStyle, setFontStyle, language, setLanguage, colorTheme, setColorTheme, t } = useSettings();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { userRole } = useAuth();
+  const navigate = useNavigate();
 
-  const handleExport = async () => {
-    try {
-      toast.info("Exporting data...");
-      const [residents, consultations, familyData, dengue, philpen] = await Promise.all([
-        supabase.from("residents").select("*"),
-        supabase.from("consultations").select("*"),
-        supabase.from("family_data").select("*"),
-        supabase.from("dengue_prevention").select("*"),
-        supabase.from("philpen_health").select("*"),
-      ]);
-
-      const backup = {
-        exported_at: new Date().toISOString(),
-        residents: residents.data || [],
-        consultations: consultations.data || [],
-        family_data: familyData.data || [],
-        dengue_prevention: dengue.data || [],
-        philpen_health: philpen.data || [],
-      };
-
-      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `bhw-backup-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success("Data exported successfully!");
-    } catch {
-      toast.error("Failed to export data.");
-    }
-  };
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-
-      if (!data.residents || !data.exported_at) {
-        toast.error("Invalid backup file.");
-        return;
-      }
-
-      toast.info("Restoring data...");
-
-      const tables = ["residents", "consultations", "family_data", "dengue_prevention", "philpen_health"] as const;
-      for (const table of tables) {
-        const rows = data[table];
-        if (rows && rows.length > 0) {
-          const { error } = await supabase.from(table).upsert(rows, { onConflict: "id" });
-          if (error) {
-            console.error(`Error restoring ${table}:`, error);
-            toast.error(`Error restoring ${table}: ${error.message}`);
-            return;
-          }
-        }
-      }
-
-      toast.success("Data restored successfully!");
-    } catch {
-      toast.error("Failed to read backup file.");
-    } finally {
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
+  const isSupervisor = userRole === "supervisor";
 
   return (
     <div className="w-full space-y-6">
@@ -164,16 +97,46 @@ const SettingsPage = () => {
         </CardContent>
       </Card>
 
-      <Card className="border-border/50 shadow-sm">
-        <CardHeader><CardTitle className="text-lg font-heading">{t("settings.backup")}</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <Button variant="outline" className="w-full justify-start gap-2" onClick={handleExport}>
-            <Download className="h-4 w-4" /> {t("settings.export")}
-          </Button>
-          <Button variant="outline" className="w-full justify-start gap-2" onClick={() => fileInputRef.current?.click()}>
-            <Upload className="h-4 w-4" /> {t("settings.restore")}
-          </Button>
-          <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+      {/* Security & Data — Backup & Recovery */}
+      <Card className="border-border/50 shadow-sm overflow-hidden">
+        <div className="h-1 w-full bg-gradient-to-r from-primary via-primary/70 to-primary/30" />
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-heading flex items-center gap-2">
+            <DatabaseBackup className="h-5 w-5 text-primary" />
+            Security &amp; Data — Backup &amp; Recovery
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Complete database backups, automatic backup schedules, and system data recovery for Barangay Subukin Health Records.
+          </p>
+
+          {isSupervisor ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
+                <ShieldCheck className="h-4 w-4 shrink-0" />
+                <span>Authorized Administrator Access Granted</span>
+              </div>
+              <Button
+                className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+                onClick={() => navigate("/admin/settings/backup")}
+              >
+                <DatabaseBackup className="h-4 w-4" />
+                Open Backup &amp; Recovery Center
+                <ArrowRight className="h-4 w-4 ml-auto" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3 rounded-lg bg-muted/40 border border-border/60 p-4">
+              <Lock className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-foreground">Restricted to Authorized Administrators</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Database backup creation, system data restore, and permanent deletion functions are secured and accessible only to supervisory administrators. Contact your system supervisor if you require database maintenance.
+                </p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

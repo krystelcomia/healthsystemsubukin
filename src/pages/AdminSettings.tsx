@@ -1,10 +1,11 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Download, Upload } from "lucide-react";
+import { Settings, Download, Upload, DatabaseBackup, ShieldCheck, Clock, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings, COLOR_THEMES } from "@/contexts/SettingsContext";
@@ -13,6 +14,7 @@ const AdminSettings = () => {
   const [generating, setGenerating] = useState(false);
   const { darkMode, setDarkMode, fontSize, setFontSize, fontStyle, setFontStyle, language, setLanguage, colorTheme, setColorTheme, t } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const handleGenerateReport = async () => {
     setGenerating(true);
@@ -218,16 +220,51 @@ const AdminSettings = () => {
         </CardContent>
       </Card>
 
-      <Card className="border-border/50 shadow-sm">
-        <CardHeader><CardTitle className="text-lg font-heading">{t("settings.backup")}</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <Button variant="outline" className="w-full justify-start gap-2" onClick={handleExport}>
-            <Download className="h-4 w-4" /> {t("settings.export")}
+      <Card className="border-border/50 shadow-sm overflow-hidden">
+        <div className="h-1 w-full bg-gradient-to-r from-primary via-primary/70 to-primary/30" />
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-heading flex items-center gap-2">
+            <DatabaseBackup className="h-5 w-5 text-primary" />
+            Security &amp; Data — Backup &amp; Recovery
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Manage system backups, configure automatic backup schedules, and restore data from previous backups.
+            All backup and restore activities are recorded in the Activity Logs.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="rounded-lg border border-border/50 p-3 bg-muted/20 flex items-center gap-3">
+              <Clock className="h-5 w-5 text-primary shrink-0" />
+              <div>
+                <p className="text-xs font-semibold text-foreground">Backup History</p>
+                <p className="text-xs text-muted-foreground">View &amp; download past backups</p>
+              </div>
+            </div>
+            <div className="rounded-lg border border-border/50 p-3 bg-muted/20 flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+              <div>
+                <p className="text-xs font-semibold text-foreground">Auto Schedule</p>
+                <p className="text-xs text-muted-foreground">Daily, Weekly, or Monthly</p>
+              </div>
+            </div>
+            <div className="rounded-lg border border-border/50 p-3 bg-muted/20 flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-violet-600 shrink-0" />
+              <div>
+                <p className="text-xs font-semibold text-foreground">Restore &amp; Recovery</p>
+                <p className="text-xs text-muted-foreground">Restore from any backup file</p>
+              </div>
+            </div>
+          </div>
+
+          <Button
+            className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+            onClick={() => navigate("/admin/settings/backup")}
+          >
+            <DatabaseBackup className="h-4 w-4" />
+            Open Backup &amp; Recovery Center
           </Button>
-          <Button variant="outline" className="w-full justify-start gap-2" onClick={() => fileInputRef.current?.click()}>
-            <Upload className="h-4 w-4" /> {t("settings.restore")}
-          </Button>
-          <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
         </CardContent>
       </Card>
     </div>

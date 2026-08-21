@@ -24,6 +24,7 @@ import AdminResidents from "./pages/AdminResidents";
 import AdminWorkers from "./pages/AdminWorkers";
 import AdminHealthRecords from "./pages/AdminHealthRecords";
 import AdminSettings from "./pages/AdminSettings";
+import AdminBackupRecovery from "./pages/AdminBackupRecovery";
 import AdminFormConsultation from "./pages/AdminFormConsultation";
 import AdminFormFamilyData from "./pages/AdminFormFamilyData";
 import AdminFormPhilpenHealth from "./pages/AdminFormPhilpenHealth";
@@ -68,12 +69,14 @@ const App = () => (
                 <Route path="/forms/add-new" element={<ProtectedRoute><Layout><AddNewForm /></Layout></ProtectedRoute>} />
                 <Route path="/residents" element={<ProtectedRoute><Layout><ResidentRecords /></Layout></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
+                <Route path="/settings/backup" element={<ProtectedRoute><Layout><AdminBackupRecovery /></Layout></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Layout><ProfilePage /></Layout></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
                 <Route path="/admin/residents" element={<ProtectedRoute><Layout><AdminResidents /></Layout></ProtectedRoute>} />
                 <Route path="/admin/workers" element={<ProtectedRoute><Layout><AdminWorkers /></Layout></ProtectedRoute>} />
                 <Route path="/admin/health" element={<ProtectedRoute><Layout><AdminHealthRecords /></Layout></ProtectedRoute>} />
                 <Route path="/admin/settings" element={<ProtectedRoute><Layout><AdminSettings /></Layout></ProtectedRoute>} />
+                <Route path="/admin/settings/backup" element={<ProtectedRoute><Layout><AdminBackupRecovery /></Layout></ProtectedRoute>} />
                 <Route path="/admin/profile" element={<ProtectedRoute><Layout><ProfilePage /></Layout></ProtectedRoute>} />
                 <Route path="/admin/about" element={<ProtectedRoute><Layout><About /></Layout></ProtectedRoute>} />
                 <Route path="/admin/calendar" element={<ProtectedRoute><Layout><CalendarPage /></Layout></ProtectedRoute>} />
