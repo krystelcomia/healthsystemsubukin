@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Pencil, Save, Camera, Mail, AtSign, IdCard, ShieldCheck, Loader2, X, MapPin } from "lucide-react";
+import { User, Camera, Mail, AtSign, IdCard, ShieldCheck, Loader2, X, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,10 +18,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
+import { getAssignedSitio } from "@/lib/sitioMapping";
 
 const ProfilePage = () => {
-  const { user, userRole, updateProfileState, refreshProfile } = useAuth();
+  const { user, userRole } = useAuth();
   const { t } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -31,16 +29,9 @@ const ProfilePage = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [assignedSitio, setAssignedSitio] = useState("");
-  const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
   const [removePhotoConfirm, setRemovePhotoConfirm] = useState(false);
-
-  useEffect(() => {
-    getDatabaseSitios().then(sits => setSitioOptions(sits));
-  }, []);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -71,30 +62,6 @@ const ProfilePage = () => {
       setLoading(false);
     })();
   }, [user]);
-
-  const handleSave = async () => {
-    if (!user) return;
-    setSaving(true);
-    const { error } = await supabase
-      .from("profiles")
-      .upsert(
-        { user_id: user.id, full_name: fullName, username, assigned_sitio: assignedSitio } as any,
-        { onConflict: "user_id" }
-      );
-    await (supabase.from("bhw_workers") as any)
-      .update({ assigned_sitio: assignedSitio } as any)
-      .eq("user_id", user.id);
-
-    if (error) {
-      toast.error(t("profile.saveFailed") || "Failed to save profile");
-    } else {
-      updateProfileState({ username, full_name: fullName });
-      await refreshProfile();
-      toast.success(t("profile.updated") || "Profile updated!");
-      setEditing(false);
-    }
-    setSaving(false);
-  };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -191,11 +158,6 @@ const ProfilePage = () => {
                   <X className="h-4 w-4 mr-1" /> Remove photo
                 </Button>
               )}
-              {!editing && (
-                <Button onClick={() => setEditing(true)}>
-                  <Pencil className="h-4 w-4 mr-1" /> {t("common.edit")}
-                </Button>
-              )}
             </div>
           </div>
         </CardContent>
@@ -258,7 +220,7 @@ const ProfilePage = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-lg font-heading font-semibold text-foreground">{t("profile.info")}</h2>
-              <p className="text-sm text-muted-foreground">{t("profile.desc")}</p>
+              <p className="text-sm text-muted-foreground">Personal and assigned community details.</p>
             </div>
           </div>
 
@@ -268,38 +230,17 @@ const ProfilePage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("profile.fullName")}</Label>
-                {editing ? (
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder={t("profile.fullName")} />
-                ) : (
-                  <p className="text-foreground font-medium py-2 border-b border-border/50">{fullName || "—"}</p>
-                )}
+                <p className="text-foreground font-medium py-2 border-b border-border/50">{fullName || "—"}</p>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("profile.username")}</Label>
-                {editing ? (
-                  <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t("profile.username")} />
-                ) : (
-                  <p className="text-foreground font-medium py-2 border-b border-border/50">{username || "—"}</p>
-                )}
+                <p className="text-foreground font-medium py-2 border-b border-border/50">{username || "—"}</p>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wide text-muted-foreground">Assigned Sitio</Label>
-                {editing ? (
-                  <Select value={assignedSitio} onValueChange={setAssignedSitio}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select Sitio" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sitioOptions.map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <p className="text-foreground font-medium py-2 border-b border-border/50 flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-primary" /> {assignedSitio || "—"}
-                  </p>
-                )}
+                <p className="text-foreground font-medium py-2 border-b border-border/50 flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" /> {assignedSitio || "—"}
+                </p>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("profile.email")}</Label>
@@ -307,15 +248,6 @@ const ProfilePage = () => {
                   <Mail className="h-4 w-4 text-muted-foreground" /> {email}
                 </p>
               </div>
-
-              {editing && (
-                <div className="md:col-span-2 flex gap-2 pt-2">
-                  <Button onClick={handleSave} disabled={saving}>
-                    <Save className="h-4 w-4 mr-1" /> {saving ? t("profile.saving") : t("common.save")}
-                  </Button>
-                  <Button variant="outline" onClick={() => setEditing(false)}>{t("common.cancel")}</Button>
-                </div>
-              )}
             </div>
           )}
         </CardContent>
