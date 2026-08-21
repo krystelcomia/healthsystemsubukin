@@ -82,7 +82,7 @@ const STORAGE_KEY = "bhw_custom_forms";
 const DEFAULT_CONVERSION_PROMPT = 
   "Convert the uploaded form into a digital format. Use lines instead of boxes for the fields. Restrict input so that letters cannot be entered when only numbers are required, and vice versa, unless both are needed. Replicate everything from the form exactly—including the layout and the specific text—to create the digital version.";
 
-const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs w-full font-medium";
+const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-7 text-xs w-full font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-normal";
 
 const getTodayDate = () => {
   const d = new Date();
@@ -1204,8 +1204,8 @@ const AddNewForm = () => {
                           value={field.value}
                           onChange={(e) => updateField(idx, { value: e.target.value })}
                           rows={2}
-                          placeholder=""
-                          className="text-xs leading-relaxed border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 shadow-none w-full"
+                          placeholder={field.label}
+                          className="text-xs leading-relaxed border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 shadow-none w-full placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-normal"
                         />
                       ) : (
                         <Input
@@ -1213,7 +1213,7 @@ const AddNewForm = () => {
                           value={field.type === "date" && !field.value ? getTodayDate() : field.value}
                           onKeyDown={(e) => handleFieldKeyDown(field, e)}
                           onChange={(e) => handleFieldChange(idx, field, e.target.value)}
-                          placeholder=""
+                          placeholder={field.type === "date" ? undefined : field.label}
                           className={lineInputClass}
                         />
                       )}
