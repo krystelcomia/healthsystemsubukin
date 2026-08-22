@@ -280,6 +280,11 @@ const AdminBackupRecovery = () => {
       const customRecords = JSON.parse(localStorage.getItem("bhw_custom_form_records") || "[]");
       const attendanceLogs = JSON.parse(localStorage.getItem("bhw_attendance_logs") || "[]");
       const activityLogs = JSON.parse(localStorage.getItem("bhw_activity_logs") || "[]");
+      let authUsers = [];
+      try {
+        const dbStr = localStorage.getItem("supabase_mock_db");
+        if (dbStr) authUsers = JSON.parse(dbStr)["auth_users"] || [];
+      } catch {}
 
       const backupData = {
         exported_at: isoNow,
@@ -298,6 +303,7 @@ const AdminBackupRecovery = () => {
         family_planning: familyPlanning.data || [],
         profiles: profiles.data || [],
         user_roles: userRoles.data || [],
+        auth_users: authUsers,
         custom_forms: customForms,
         custom_form_records: customRecords,
         attendance_logs: attendanceLogs,
@@ -629,6 +635,63 @@ const AdminBackupRecovery = () => {
             recoveredSummary.push(`+${missingItems.length} ${loc.label}`);
           }
         }
+      }
+
+      // Restore or re-instate auth credentials for all restored workers so they can log in again
+      try {
+        const dbStr = localStorage.getItem("supabase_mock_db");
+        if (dbStr) {
+          const db = JSON.parse(dbStr);
+          if (!db["auth_users"]) db["auth_users"] = [];
+          if (!db["user_roles"]) db["user_roles"] = [];
+          if (!db["profiles"]) db["profiles"] = [];
+
+          // 1. Restore auth_users from backup if available
+          const backupAuthUsers: any[] = (data as any)["auth_users"] || [];
+          for (const u of backupAuthUsers) {
+            if (!db["auth_users"].some((existing: any) => (existing.email || "").toLowerCase() === (u.email || "").toLowerCase())) {
+              db["auth_users"].push(u);
+            }
+          }
+
+          // 2. Ensure all active workers in bhw_workers have a working auth_user account and role
+          const allWorkers = db["bhw_workers"] || [];
+          for (const w of allWorkers) {
+            const cleanEmail = (w.gmail || "").toLowerCase().trim();
+            if (cleanEmail && !db["auth_users"].some((u: any) => (u.email || "").toLowerCase().trim() === cleanEmail)) {
+              const defaultPass = "bhw" + (w.name.split(" ")[0] || "worker").toLowerCase();
+              db["auth_users"].push({
+                id: w.user_id || `user-${w.id}`,
+                email: cleanEmail,
+                password: defaultPass,
+                user_metadata: { full_name: w.name }
+              });
+            }
+
+            const userId = w.user_id || `user-${w.id}`;
+            if (!db["user_roles"].some((r: any) => r.user_id === userId)) {
+              db["user_roles"].push({
+                id: `role-${w.id}`,
+                user_id: userId,
+                role: cleanEmail.includes("bns") ? "bns" : "bhw"
+              });
+            }
+
+            if (!db["profiles"].some((p: any) => p.user_id === userId)) {
+              db["profiles"].push({
+                id: `profile-${w.id}`,
+                user_id: userId,
+                full_name: w.name,
+                username: w.name.split(" ")[0],
+                assigned_sitio: w.assigned_sitio || w.address || "Subukin"
+              });
+            }
+          }
+
+          localStorage.setItem("supabase_mock_db", JSON.stringify(db));
+        }
+      } catch (e) {
+        console.warn("Error restoring worker credentials:", e);
       }
 
       setRestoreProgress(90);

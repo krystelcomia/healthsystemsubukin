@@ -117,9 +117,36 @@ const AdminWorkers = () => {
   };
 
   const handleDeleteWorker = async (id: string) => {
+    const workerToDelete = workers.find(w => w.id === id);
     const { error } = await (supabase.from as any)("bhw_workers").delete().eq("id", id);
     if (error) { toast.error("Failed to delete worker"); return; }
-    toast.success("Worker deleted!"); setDeleteConfirmId(null); fetchWorkers();
+
+    if (workerToDelete) {
+      if (workerToDelete.user_id) {
+        await (supabase.from as any)("profiles").delete().eq("user_id", workerToDelete.user_id);
+        await (supabase.from as any)("user_roles").delete().eq("user_id", workerToDelete.user_id);
+      }
+      try {
+        const dbStr = localStorage.getItem("supabase_mock_db");
+        if (dbStr) {
+          const db = JSON.parse(dbStr);
+          if (db["auth_users"]) {
+            const cleanEmail = (workerToDelete.gmail || "").toLowerCase().trim();
+            db["auth_users"] = db["auth_users"].filter((u: any) => 
+              u.id !== workerToDelete.user_id && 
+              (u.email || "").toLowerCase().trim() !== cleanEmail
+            );
+          }
+          localStorage.setItem("supabase_mock_db", JSON.stringify(db));
+        }
+      } catch (e) {
+        console.warn("Error revoking deleted worker credentials:", e);
+      }
+    }
+
+    toast.success(t("workers.deleteWorker") + " Access revoked.");
+    setDeleteConfirmId(null);
+    fetchWorkers();
   };
 
   const handlePrint = () => {
