@@ -111,15 +111,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     window.dispatchEvent(new Event("profile-updated"));
   };
 
-  const updateOnlineStatus = async (userId: string, online: boolean) => {
+  const updateOnlineStatus = async (userId: string, online: boolean, userEmail?: string | null) => {
     try {
+      const now = new Date().toISOString();
       await (supabase.from as any)("bhw_workers")
-        .update({ is_online: online, last_seen: new Date().toISOString() })
+        .update({ is_online: online, last_seen: now })
         .eq("user_id", userId);
+
+      const emailToMatch = userEmail || user?.email;
+      if (emailToMatch) {
+        await (supabase.from as any)("bhw_workers")
+          .update({ is_online: online, last_seen: now, user_id: userId })
+          .eq("gmail", emailToMatch);
+      }
+
+      window.dispatchEvent(new CustomEvent("bhw-worker-status-changed", { detail: { userId, online } }));
     } catch (e) {
       console.error("Error updating online status:", e);
     }
   };
+
+  // Heartbeat to keep active online status synced across devices
+  useEffect(() => {
+    if (!user) return;
+
+    updateOnlineStatus(user.id, true, user.email);
+
+    const interval = setInterval(() => {
+      updateOnlineStatus(user.id, true, user.email);
+    }, 20000);
+
+    const handleBeforeUnload = () => {
+      updateOnlineStatus(user.id, false, user.email);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [user]);
 
   useEffect(() => {
     let isMounted = true;
@@ -133,7 +165,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await Promise.all([
           fetchRole(currentSession.user.id),
           fetchProfile(currentSession.user.id),
-          updateOnlineStatus(currentSession.user.id, true),
+          updateOnlineStatus(currentSession.user.id, true, currentSession.user.email),
         ]);
 
         if (event === "SIGNED_IN") {
@@ -171,7 +203,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
       await logActivity("logout", { description: "Signed out of the system" });
       await endSession();
-      await updateOnlineStatus(user.id, false);
+      await updateOnlineStatus(user.id, false, user.email);
     }
     localStorage.removeItem("logged_in_username");
     localStorage.removeItem("logged_in_fullname");

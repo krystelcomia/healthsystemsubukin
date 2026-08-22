@@ -39,7 +39,37 @@ const AdminWorkers = () => {
 
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
 
-  useEffect(() => { fetchWorkers(); }, []);
+  useEffect(() => {
+    fetchWorkers();
+
+    // Periodic polling every 3 seconds to reflect active device status in real-time
+    const interval = setInterval(() => {
+      fetchWorkers();
+    }, 3000);
+
+    // Realtime channel subscription for instant worker status change detection
+    const channel = supabase
+      .channel("realtime-admin-workers")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bhw_workers" },
+        () => {
+          fetchWorkers();
+        }
+      )
+      .subscribe();
+
+    const handleWorkerStatusEvent = () => fetchWorkers();
+    window.addEventListener("bhw-worker-status-changed", handleWorkerStatusEvent);
+    window.addEventListener("storage", handleWorkerStatusEvent);
+
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+      window.removeEventListener("bhw-worker-status-changed", handleWorkerStatusEvent);
+      window.removeEventListener("storage", handleWorkerStatusEvent);
+    };
+  }, []);
 
   const fetchWorkers = async () => {
     getDatabaseSitios().then(sits => setSitioOptions(sits));
@@ -188,18 +218,27 @@ const AdminWorkers = () => {
             <Card key={w.id} className="border-border/50 shadow-sm">
               <CardContent className="flex items-center justify-between py-4">
                 <div className="flex items-center gap-4 flex-1">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center relative">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center relative shrink-0">
                     <span className="text-sm font-semibold text-primary">{w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
-                    <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card ${w.is_online ? "bg-green-500" : "bg-muted-foreground/40"}`} />
+                    <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card ${w.is_online ? "bg-emerald-500 shadow-sm shadow-emerald-500/50 ring-2 ring-emerald-500/30 animate-pulse" : "bg-slate-400/60 dark:bg-slate-600"}`} />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium text-foreground">{w.name}</p>
-                      <Badge variant={w.is_online ? "default" : "secondary"} className="text-xs">
-                        {w.is_online ? <><UserCheck className="h-3 w-3 mr-1" />{t("admin.dashboard.online")}</> : <><UserX className="h-3 w-3 mr-1" />{t("admin.dashboard.offline")}</>}
-                      </Badge>
+                      {w.is_online ? (
+                        <Badge className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-600 text-white border-emerald-500 shadow-xs gap-1 py-0.5 px-2">
+                          <span className="h-2 w-2 rounded-full bg-white animate-pulse inline-block" />
+                          <UserCheck className="h-3 w-3" />
+                          {t("admin.dashboard.online")}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs font-normal text-muted-foreground bg-muted/60 border border-border/50 gap-1 py-0.5 px-2">
+                          <UserX className="h-3 w-3" />
+                          {t("admin.dashboard.offline")}
+                        </Badge>
+                      )}
                     </div>
-                    <p className="text-sm text-muted-foreground">Assigned Sitio: <strong className="text-foreground">{w.assigned_sitio || getAssignedSitio(w.name) || "—"}</strong> · {w.gmail} · {w.number}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">Assigned Sitio: <strong className="text-foreground">{w.assigned_sitio || getAssignedSitio(w.name) || "—"}</strong> · {w.gmail} · {w.number}</p>
                   </div>
                 </div>
                 <div className="flex gap-1">
@@ -246,8 +285,25 @@ const AdminWorkers = () => {
           {viewWorker && (
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center"><span className="text-lg font-bold text-primary">{viewWorker.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span></div>
-                <div><p className="text-lg font-semibold text-foreground">{viewWorker.name}</p><Badge variant={viewWorker.is_online ? "default" : "secondary"} className="text-xs">{viewWorker.is_online ? t("admin.dashboard.online") : t("admin.dashboard.offline")}</Badge></div>
+                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center relative shrink-0">
+                  <span className="text-lg font-bold text-primary">{viewWorker.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
+                  <span className={`absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-card ${viewWorker.is_online ? "bg-emerald-500 shadow-sm shadow-emerald-500/50 ring-2 ring-emerald-500/30 animate-pulse" : "bg-slate-400/60 dark:bg-slate-600"}`} />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-foreground">{viewWorker.name}</p>
+                  {viewWorker.is_online ? (
+                    <Badge className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-600 text-white border-emerald-500 gap-1 py-0.5 px-2 mt-1">
+                      <span className="h-2 w-2 rounded-full bg-white animate-pulse inline-block" />
+                      <UserCheck className="h-3 w-3" />
+                      {t("admin.dashboard.online")}
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs font-normal text-muted-foreground bg-muted/60 border border-border/50 gap-1 py-0.5 px-2 mt-1">
+                      <UserX className="h-3 w-3" />
+                      {t("admin.dashboard.offline")}
+                    </Badge>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><p className="text-muted-foreground">{t("workers.age")}</p><p className="font-medium text-foreground">{viewWorker.age}</p></div>

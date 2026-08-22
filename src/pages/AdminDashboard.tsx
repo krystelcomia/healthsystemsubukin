@@ -171,7 +171,28 @@ const AdminDashboard = () => {
       }
       setLoading(false);
     };
+
     fetchAll();
+
+    const refreshWorkersStatus = async () => {
+      const { data: workersData } = await (supabase.from as any)("bhw_workers").select("id, name, is_online, last_seen, gmail").order("name");
+      if (workersData) {
+        setWorkers(workersData);
+        const onlineCount = workersData.filter((w: any) => w.is_online).length;
+        setActiveWorkersCount(onlineCount);
+      }
+    };
+
+    const interval = setInterval(refreshWorkersStatus, 4000);
+    const handleStatusEvent = () => refreshWorkersStatus();
+    window.addEventListener("bhw-worker-status-changed", handleStatusEvent);
+    window.addEventListener("storage", handleStatusEvent);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("bhw-worker-status-changed", handleStatusEvent);
+      window.removeEventListener("storage", handleStatusEvent);
+    };
   }, []);
 
   const buildMonthlyChart = (formData: Record<string, { created_at: string }[]>) => {
@@ -339,18 +360,27 @@ const AdminDashboard = () => {
               ) : workers.map((w) => (
                 <div key={w.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center relative font-bold text-xs">
+                    <div className="h-9 w-9 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center relative font-bold text-xs shrink-0">
                       {w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                      <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card ${w.is_online ? "bg-green-500 animate-pulse" : "bg-muted-foreground/40"}`} />
+                      <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card ${w.is_online ? "bg-emerald-500 shadow-sm shadow-emerald-500/50 ring-2 ring-emerald-500/30 animate-pulse" : "bg-slate-400/60 dark:bg-slate-600"}`} />
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-foreground">{w.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{w.gmail}</p>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-foreground truncate">{w.name}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{w.gmail}</p>
                     </div>
                   </div>
-                  <Badge variant={w.is_online ? "default" : "secondary"} className={`text-[10px] px-2 py-0.5 font-semibold ${w.is_online ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}`}>
-                    {w.is_online ? <><UserCheck className="h-3 w-3 mr-1" />{t("admin.dashboard.online")}</> : <><UserX className="h-3 w-3 mr-1" />{t("admin.dashboard.offline")}</>}
-                  </Badge>
+                  {w.is_online ? (
+                    <Badge className="text-[10px] px-2 py-0.5 font-semibold bg-emerald-600 hover:bg-emerald-600 text-white border-emerald-500 shadow-xs gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse inline-block" />
+                      <UserCheck className="h-3 w-3" />
+                      {t("admin.dashboard.online")}
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-[10px] px-2 py-0.5 font-normal text-muted-foreground bg-muted/60 border border-border/50 gap-1">
+                      <UserX className="h-3 w-3" />
+                      {t("admin.dashboard.offline")}
+                    </Badge>
+                  )}
                 </div>
               ))}
             </div>
