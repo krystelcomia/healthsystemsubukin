@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,13 +15,10 @@ import { useSettings } from "@/contexts/SettingsContext";
 const AuthPage = () => {
   const { session, userRole, loading: authLoading } = useAuth();
   const { t } = useSettings();
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [forgotMode, setForgotMode] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
 
   const handleLogin = async () => {
     if (!email || !password) { toast.error("Please enter email and password"); return; }
@@ -31,54 +28,8 @@ const AuthPage = () => {
     toast.success("Signed in successfully"); setLoading(false);
   };
 
-  const handleForgotPassword = async () => {
-    if (!resetEmail) { toast.error("Please enter your email"); return; }
-    setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, { redirectTo: `${window.location.origin}/reset-password` });
-    if (error) { toast.error(error.message); } else { toast.success("Password reset link sent"); setForgotMode(false); }
-    setLoading(false);
-  };
-
   if (authLoading) return (<div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">{t("common.loading")}</p></div>);
   if (session) { return <Navigate to={userRole === "supervisor" ? "/admin" : "/"} replace />; }
-
-  if (forgotMode) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${loginBg})` }}
-      >
-        <Card className="w-full max-w-md border border-white/20 bg-background/10 backdrop-blur-sm shadow-2xl text-white">
-          <CardHeader className="text-center space-y-2">
-            <img src={barangayLogo} alt="Barangay Subukin Logo" className="mx-auto h-20 w-20 rounded-full object-cover" />
-            <CardTitle className="text-xl font-heading text-white">{t("auth.forgotTitle")}</CardTitle>
-            <CardDescription className="text-white/80">{t("auth.forgotDesc")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={(e) => { e.preventDefault(); handleForgotPassword(); }} className="space-y-4" autoComplete="off">
-              <div className="space-y-2">
-                <Label className="text-white">{t("auth.email")}</Label>
-                <Input
-                  className="bg-background/70 border-border/60 text-slate-900"
-                  type="email"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  autoComplete="off"
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t("auth.sending") : t("auth.sendResetLink")}
-              </Button>
-              <Button type="button" variant="ghost" className="w-full text-white hover:text-white/80 hover:bg-white/10" onClick={() => setForgotMode(false)}>
-                {t("auth.backToSignIn")}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -126,9 +77,6 @@ const AuthPage = () => {
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? t("auth.signingIn") : t("auth.signIn")}
-            </Button>
-            <Button type="button" variant="link" className="w-full text-sm text-white hover:text-white/80" onClick={() => setForgotMode(true)}>
-              {t("auth.forgotPassword")}
             </Button>
           </form>
         </CardContent>
