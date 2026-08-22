@@ -68,6 +68,8 @@ const ConsultationForm = () => {
   const [historyRecords, setHistoryRecords] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
+  const [historySitio, setHistorySitio] = useState("all");
+  const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
   const [selectedRecordForView, setSelectedRecordForView] = useState<any | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
@@ -90,20 +92,28 @@ const ConsultationForm = () => {
 
   useEffect(() => { 
     getFamilyOnlyResidents().then((data) => setResidents(data || [])); 
+    getDatabaseSitios().then(sits => setSitioOptions(sits));
     fetchHistory();
   }, []);
 
   const filteredHistory = useMemo(() => {
-    if (!historySearch.trim()) return historyRecords;
+    let result = historyRecords;
+    if (historySitio !== "all") {
+      result = result.filter(rec => {
+        const sitio = (rec.sitio || rec.residents?.sitio || "").toLowerCase();
+        return sitio.includes(historySitio.toLowerCase());
+      });
+    }
+    if (!historySearch.trim()) return result;
     const q = historySearch.toLowerCase().trim();
-    return historyRecords.filter((rec) => {
+    return result.filter((rec) => {
       const name = (rec.residents?.full_name || "").toLowerCase();
       const date = (rec.consultation_date || "").toLowerCase();
-      const sitio = (rec.sitio || "").toLowerCase();
+      const sitio = (rec.sitio || rec.residents?.sitio || "").toLowerCase();
       const cause = (rec.consultation_cause || "").toLowerCase();
       return name.includes(q) || date.includes(q) || sitio.includes(q) || cause.includes(q);
     });
-  }, [historyRecords, historySearch]);
+  }, [historyRecords, historySearch, historySitio]);
 
   const handleChange = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -524,16 +534,27 @@ const ConsultationForm = () => {
               <Badge variant="secondary" className="bg-primary/10 text-primary font-bold shrink-0">
                 {filteredHistory.length} Record(s)
               </Badge>
-              <div className="relative w-full sm:w-60">
+              <div className="relative w-full sm:w-56">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Search resident, date, sitio..."
+                  placeholder="Search resident, date, cause..."
                   value={historySearch}
                   onChange={(e) => setHistorySearch(e.target.value)}
                   className="pl-9 h-9 text-xs"
                 />
               </div>
+              <Select value={historySitio} onValueChange={setHistorySitio}>
+                <SelectTrigger className="h-9 text-xs w-36">
+                  <SelectValue placeholder="All Sitios" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sitios</SelectItem>
+                  {sitioOptions.map(s => (
+                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button
                 type="button"
                 variant="outline"

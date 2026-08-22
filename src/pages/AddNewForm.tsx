@@ -48,6 +48,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { getFamilyOnlyResidents, calculateAge, ensureResidentExists } from "@/lib/residentLinker";
 import { 
   allowOnlyNumbers, 
@@ -217,6 +218,8 @@ const AddNewForm = () => {
   const [residents, setResidents] = useState<any[]>([]);
   const [submissionRecords, setSubmissionRecords] = useState<any[]>([]);
   const [submissionSearch, setSubmissionSearch] = useState<string>("");
+  const [submissionSitio, setSubmissionSitio] = useState<string>("all");
+  const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
   const [selectedSubmissionForView, setSelectedSubmissionForView] = useState<any | null>(null);
   const [viewSubmissionModalOpen, setViewSubmissionModalOpen] = useState<boolean>(false);
   const [deleteTemplateConfirmId, setDeleteTemplateConfirmId] = useState<string | null>(null);
@@ -241,20 +244,29 @@ const AddNewForm = () => {
   };
 
   const filteredSubmissions = useMemo(() => {
-    if (!submissionSearch.trim()) return submissionRecords;
+    let result = submissionRecords;
+    if (submissionSitio !== "all") {
+      result = result.filter((rec: any) => {
+        const res = residents.find(r => r.id === rec.resident_id || r.full_name === rec.resident_name);
+        const sitio = (res?.sitio || rec.sitio || "").toLowerCase();
+        return sitio.includes(submissionSitio.toLowerCase());
+      });
+    }
+    if (!submissionSearch.trim()) return result;
     const q = submissionSearch.toLowerCase().trim();
-    return submissionRecords.filter((rec: any) => {
+    return result.filter((rec: any) => {
       const name = (rec.resident_name || "").toLowerCase();
       const date = (rec.savedAt || rec.created_at || "").toLowerCase();
       return name.includes(q) || date.includes(q);
     });
-  }, [submissionRecords, submissionSearch]);
+  }, [submissionRecords, submissionSearch, submissionSitio, residents]);
 
   useEffect(() => {
     const loaded = loadForms();
     setSavedForms(loaded);
 
     getFamilyOnlyResidents().then(r => setResidents(r || []));
+    getDatabaseSitios().then(s => setSitioOptions(s));
     loadSubmissions();
 
     const handleSubmissionsUpdated = () => loadSubmissions();
@@ -1491,11 +1503,11 @@ const AddNewForm = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
               <Badge variant="secondary" className="bg-primary/10 text-primary font-bold shrink-0">
                 {filteredSubmissions.length} Submission(s)
               </Badge>
-              <div className="relative w-full sm:w-64">
+              <div className="relative w-full sm:w-56">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
@@ -1505,6 +1517,17 @@ const AddNewForm = () => {
                   className="pl-9 h-9 text-xs"
                 />
               </div>
+              <Select value={submissionSitio} onValueChange={setSubmissionSitio}>
+                <SelectTrigger className="h-9 text-xs w-36">
+                  <SelectValue placeholder="All Sitios" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sitios</SelectItem>
+                  {sitioOptions.map(s => (
+                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardHeader>
           <CardContent>

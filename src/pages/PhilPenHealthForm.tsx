@@ -87,17 +87,26 @@ const PhilPenHealthForm = () => {
     fetchHistory();
   }, []);
 
+  const [historySitio, setHistorySitio] = useState("all");
+
   const filteredHistory = useMemo(() => {
-    if (!historySearch.trim()) return historyRecords;
+    let result = historyRecords;
+    if (historySitio !== "all") {
+      result = result.filter(rec => {
+        const addr = (rec.address_sitio || rec.address || rec.residents?.sitio || "").toLowerCase();
+        return addr.includes(historySitio.toLowerCase());
+      });
+    }
+    if (!historySearch.trim()) return result;
     const q = historySearch.toLowerCase().trim();
-    return historyRecords.filter((rec) => {
+    return result.filter((rec) => {
       const name = (rec.residents?.full_name || "").toLowerCase();
       const date = (rec.record_date || rec.date_of_assessment || "").toLowerCase();
-      const addr = (rec.address_sitio || rec.address || "").toLowerCase();
+      const addr = (rec.address_sitio || rec.address || rec.residents?.sitio || "").toLowerCase();
       const bp = (rec.bp || "").toLowerCase();
       return name.includes(q) || date.includes(q) || addr.includes(q) || bp.includes(q);
     });
-  }, [historyRecords, historySearch]);
+  }, [historyRecords, historySearch, historySitio]);
 
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -943,11 +952,11 @@ const PhilPenHealthForm = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
               <Badge variant="secondary" className="bg-primary/10 text-primary font-bold shrink-0">
                 {filteredHistory.length} Record(s)
               </Badge>
-              <div className="relative w-full sm:w-64">
+              <div className="relative w-full sm:w-56">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
@@ -957,6 +966,17 @@ const PhilPenHealthForm = () => {
                   className="pl-9 h-9 text-xs"
                 />
               </div>
+              <Select value={historySitio} onValueChange={setHistorySitio}>
+                <SelectTrigger className="h-9 text-xs w-36">
+                  <SelectValue placeholder="All Sitios" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sitios</SelectItem>
+                  {sitioOptions.map(s => (
+                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button
                 type="button"
                 variant="outline"

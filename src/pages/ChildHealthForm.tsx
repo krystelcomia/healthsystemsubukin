@@ -352,6 +352,7 @@ const ChildHealthForm = () => {
 
   // History & Modal
   const [historySearch, setHistorySearch] = useState("");
+  const [historySitio, setHistorySitio] = useState("all");
   const [selectedRecordForView, setSelectedRecordForView] = useState<any | null>(null);
   const [viewRecordModalOpen, setViewRecordModalOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -533,6 +534,21 @@ const ChildHealthForm = () => {
     return "Child Patient";
   };
 
+  const getRecordSitio = (rec: any) => {
+    if (rec.sitio) return rec.sitio;
+    if (rec.residents?.sitio) return rec.residents.sitio;
+    if (rec.details) {
+      try {
+        const d = typeof rec.details === "string" ? JSON.parse(rec.details) : rec.details;
+        if (d.address) return d.address;
+        if (d.header?.sitio) return d.header.sitio;
+        if (d.row_data?.purok_sitio_street) return d.row_data.purok_sitio_street;
+        if (d.row_data?.barangay) return d.row_data.barangay;
+      } catch {}
+    }
+    return "";
+  };
+
   const sickRecordsCount = savedHealthRecords.filter(r => getRecordFormType(r) === "sick-children").length;
   const vitARecordsCount = savedHealthRecords.filter(r => getRecordFormType(r) === "vitamin-a").length;
   const siaRecordsCount = savedHealthRecords.filter(r => getRecordFormType(r) === "sia-masterlist").length;
@@ -542,6 +558,10 @@ const ChildHealthForm = () => {
     const term = historySearch.toLowerCase().trim();
 
     const displayedRecords = formRecords.filter(r => {
+      if (historySitio !== "all") {
+        const s = getRecordSitio(r).toLowerCase();
+        if (!s.includes(historySitio.toLowerCase())) return false;
+      }
       if (!term) return true;
       const childName = getRecordChildName(r).toLowerCase();
       const remarks = (r.remarks || "").toLowerCase();
@@ -595,8 +615,8 @@ const ChildHealthForm = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
-              <div className="relative w-full md:w-64">
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0 justify-end">
+              <div className="relative w-full md:w-56">
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                 <Input 
                   type="text" 
@@ -606,6 +626,19 @@ const ChildHealthForm = () => {
                   className="pl-8 h-8 text-xs"
                 />
               </div>
+
+              <Select value={historySitio} onValueChange={setHistorySitio}>
+                <SelectTrigger className="h-8 text-xs w-36">
+                  <SelectValue placeholder="All Sitios" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sitios</SelectItem>
+                  {sitioOptions.map(s => (
+                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <Button
                 type="button"
                 variant="outline"
@@ -3190,6 +3223,10 @@ const ChildHealthForm = () => {
           const formRecords = savedHealthRecords.filter(r => getRecordFormType(r) === currentFormType);
           const term = historySearch.toLowerCase().trim();
           const filtered = formRecords.filter(r => {
+            if (historySitio !== "all") {
+              const s = getRecordSitio(r).toLowerCase();
+              if (!s.includes(historySitio.toLowerCase())) return false;
+            }
             if (!term) return true;
             const childName = getRecordChildName(r).toLowerCase();
             const remarks = (r.remarks || "").toLowerCase();

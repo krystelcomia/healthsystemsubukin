@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -24,6 +25,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { allowOnlyLetters, sanitizeLetters } from "@/lib/inputValidation";
 
 interface HouseholdHeadOption {
@@ -126,16 +128,32 @@ const DenguePreventionForm = () => {
   const [viewingSavedForm, setViewingSavedForm] = useState<SavedDengueForm | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
+  const [historySitio, setHistorySitio] = useState("all");
+  const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
+
+  useEffect(() => {
+    getDatabaseSitios().then(sits => setSitioOptions(sits));
+  }, []);
 
   const filteredSavedForms = useMemo(() => {
-    if (!historySearch.trim()) return savedForms;
+    let result = savedForms;
+    if (historySitio !== "all") {
+      result = result.filter(sf => {
+        return sf.records.some(r => {
+          const hh = householdHeads.find(h => h.full_name.toLowerCase() === (r.household_name || "").toLowerCase());
+          const sitio = (hh?.sitio || "").toLowerCase();
+          return sitio.includes(historySitio.toLowerCase()) || (r.household_name || "").toLowerCase().includes(historySitio.toLowerCase());
+        });
+      });
+    }
+    if (!historySearch.trim()) return result;
     const q = historySearch.toLowerCase().trim();
-    return savedForms.filter((sf) => {
+    return result.filter((sf) => {
       const date = (sf.formattedDate || "").toLowerCase();
       const hasMatchingHousehold = sf.records.some(r => (r.household_name || "").toLowerCase().includes(q));
       return date.includes(q) || hasMatchingHousehold;
     });
-  }, [savedForms, historySearch]);
+  }, [savedForms, historySearch, historySitio, householdHeads]);
 
   const [deleteRowConfirm, setDeleteRowConfirm] = useState<{ id: string; name: string } | null>(null);
   const [deleteSavedFormConfirmId, setDeleteSavedFormConfirmId] = useState<string | null>(null);
@@ -1370,11 +1388,11 @@ const DenguePreventionForm = () => {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
             <Badge variant="secondary" className="bg-primary/10 text-primary font-bold shrink-0">
               {filteredSavedForms.length} Form(s)
             </Badge>
-            <div className="relative w-full sm:w-64">
+            <div className="relative w-full sm:w-56">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
@@ -1384,6 +1402,17 @@ const DenguePreventionForm = () => {
                 className="pl-9 h-9 text-xs"
               />
             </div>
+            <Select value={historySitio} onValueChange={setHistorySitio}>
+              <SelectTrigger className="h-9 text-xs w-36">
+                <SelectValue placeholder="All Sitios" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sitios</SelectItem>
+                {sitioOptions.map(s => (
+                  <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

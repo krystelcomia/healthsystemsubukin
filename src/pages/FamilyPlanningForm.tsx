@@ -20,6 +20,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import {
   allowOnlyNumbers,
   allowNumbersAndDecimal,
@@ -351,6 +352,8 @@ const FamilyPlanningForm = () => {
   const [selectedResidentId, setSelectedResidentId] = useState<string>("");
   const [savedRecords, setSavedRecords] = useState<any[]>([]);
   const [historySearch, setHistorySearch] = useState<string>("");
+  const [historySitio, setHistorySitio] = useState<string>("all");
+  const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [selectedRecordForView, setSelectedRecordForView] = useState<any | null>(null);
@@ -366,6 +369,7 @@ const FamilyPlanningForm = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
+      getDatabaseSitios().then(sits => setSitioOptions(sits));
       const [resData, { data: fpData }] = await Promise.all([
         getFamilyOnlyResidents(),
         supabase.from("family_planning").select("*, residents(full_name, sitio, age, gender, birthday, family_number)").order("created_at", { ascending: false })
@@ -565,6 +569,11 @@ const FamilyPlanningForm = () => {
   };
 
   const filteredHistoryRecords = savedRecords.filter((r) => {
+    if (historySitio !== "all") {
+      const parsed = parseRecordDetails(r);
+      const street = (parsed?.sideA?.address_street || r.residents?.sitio || "").toLowerCase();
+      if (!street.includes(historySitio.toLowerCase())) return false;
+    }
     const q = historySearch.toLowerCase().trim();
     if (!q) return true;
     const name = (r.residents?.full_name || "").toLowerCase();
@@ -1655,8 +1664,8 @@ const FamilyPlanningForm = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-              <div className="relative w-full sm:w-64">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
+              <div className="relative w-full sm:w-56">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
@@ -1666,6 +1675,17 @@ const FamilyPlanningForm = () => {
                   className="pl-9 h-9 text-xs"
                 />
               </div>
+              <Select value={historySitio} onValueChange={setHistorySitio}>
+                <SelectTrigger className="h-9 text-xs w-36">
+                  <SelectValue placeholder="All Sitios" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sitios</SelectItem>
+                  {sitioOptions.map(s => (
+                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button
                 type="button"
                 variant="outline"
