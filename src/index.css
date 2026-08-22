@@ -111,6 +111,12 @@
   }
 }
 
+/* Cross-browser scrollbar styling (Firefox, Edge, Chrome, Safari) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+}
+
 /* Remove thick OS scrollbar buttons (arrows) system-wide */
 ::-webkit-scrollbar-button {
   display: none !important;
@@ -174,6 +180,7 @@
     color: #000000 !important;
     overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
+    -moz-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
