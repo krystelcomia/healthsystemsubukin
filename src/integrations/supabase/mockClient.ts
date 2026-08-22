@@ -287,12 +287,12 @@ class MockAuth {
     const userWithEmail = users.find((u: any) => (u.email || "").trim().toLowerCase() === cleanEmail);
     const workerWithEmail = workers.find((w: any) => (w.gmail || "").trim().toLowerCase() === cleanEmail);
 
-    // 1. If user email is not found in active auth_users and not in active bhw_workers
+    // 1. If user email is not found in the database and not part of BHW
     if (!userWithEmail && !workerWithEmail) {
       return {
         data: { user: null, session: null },
         error: {
-          message: "User account was not found. If this account was deleted by the administrator, it can be found and accessed again once restored through Backup & Recovery."
+          message: "User not found."
         }
       };
     }
@@ -305,7 +305,7 @@ class MockAuth {
       return {
         data: { user: null, session: null },
         error: {
-          message: "User account was not found. This account was deleted by the administrator and can be accessed again once restored through Backup & Recovery."
+          message: "User not found."
         }
       };
     }
