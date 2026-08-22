@@ -1050,7 +1050,12 @@ const FamilyDataForm = () => {
                 </h2>
               </div>
               <div className="flex items-center gap-2">
-                <Button onClick={handlePrintIndividualFile} size="sm" variant="outline" className="gap-1.5">
+                <Button 
+                  type="button"
+                  onClick={handlePrintIndividualFile} 
+                  variant="outline" 
+                  className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
+                >
                   <Printer className="h-4 w-4" /> Print
                 </Button>
               </div>
@@ -1196,12 +1201,13 @@ const FamilyDataForm = () => {
                     </Button>
                   )}
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
                     onClick={handlePrintIndividualFile}
-                    className="gap-1 text-xs"
+                    className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
                   >
-                    <Printer className="h-3.5 w-3.5" /> Print
+                    <Printer className="h-3.5 w-3.5" /> Print File
                   </Button>
                 </div>
               </div>

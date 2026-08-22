@@ -1234,17 +1234,17 @@ const MaternalCareForm = () => {
                 type="button" 
                 variant="outline" 
                 onClick={() => setResetConfirmOpen(true)} 
-                className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium"
+                className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
               >
-                <RefreshCw className="h-3.5 w-3.5" /> Reset
+                <RefreshCw className="h-4 w-4" /> Reset
               </Button>
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={handlePrint} 
-                className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10 font-semibold"
+                className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
               >
-                <Printer className="h-3.5 w-3.5" /> Print
+                <Printer className="h-4 w-4" /> Print
               </Button>
             </div>
           </form>

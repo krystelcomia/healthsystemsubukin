@@ -937,7 +937,7 @@ const PhilPenHealthForm = () => {
               <Button 
                 type="button" 
                 onClick={() => setResetConfirmOpen(true)}
-                className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4"
+                className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
                 variant="outline"
               >
                 <RefreshCw className="h-4 w-4" />
@@ -947,7 +947,7 @@ const PhilPenHealthForm = () => {
               <Button 
                 type="button" 
                 onClick={handlePrint}
-                className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-5"
+                className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
                 variant="outline"
               >
                 <Printer className="h-4 w-4" />

@@ -357,8 +357,14 @@ const ResidentRecords = () => {
             <ArrowLeft className="h-4 w-4" /> {t("residents.backToRecords")}
           </Button>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs border-primary/20 text-primary hover:bg-primary/10">
-              <Printer className="h-3.5 w-3.5" /> Print
+            <Button 
+              type="button"
+              variant="outline" 
+              size="sm" 
+              onClick={handlePrint} 
+              className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
+            >
+              <Printer className="h-3.5 w-3.5" /> Print Profile
             </Button>
           </div>
         </div>
@@ -802,9 +808,15 @@ const ResidentRecords = () => {
         </div>
 
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-          <Button variant="outline" size="sm" onClick={handlePrint} className="h-9 gap-1.5 text-xs border-border/70 hover:bg-muted">
+          <Button 
+            type="button"
+            variant="outline" 
+            size="sm" 
+            onClick={handlePrint} 
+            className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
+          >
             <Printer className="h-3.5 w-3.5" />
-            Print
+            Print Registry
           </Button>
 
           <div className="flex items-center p-1 rounded-lg bg-muted border border-border/50 shrink-0">

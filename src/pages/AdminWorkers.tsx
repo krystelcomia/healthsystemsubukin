@@ -125,8 +125,16 @@ const AdminWorkers = () => {
       <div className="flex items-center justify-between no-print">
         <p className="text-sm text-muted-foreground">{workers.length} {t("workers.registered")}</p>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> {t("common.print")}</Button>
-          <Button onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-2" /> {t("workers.addWorker")}</Button>
+          <Button 
+            type="button"
+            variant="outline" 
+            size="sm"
+            onClick={handlePrint}
+            className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
+          >
+            <Printer className="h-3.5 w-3.5" /> {t("common.print")}
+          </Button>
+          <Button size="sm" onClick={() => setDialogOpen(true)} className="gap-1.5 h-8 text-xs font-semibold"><Plus className="h-3.5 w-3.5" /> {t("workers.addWorker")}</Button>
         </div>
       </div>
 

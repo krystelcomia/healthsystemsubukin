@@ -2502,17 +2502,17 @@ const ChildHealthForm = () => {
                     type="button" 
                     variant="outline" 
                     onClick={() => setResetConfirmOpen(true)} 
-                    className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium"
+                    className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
                   >
-                    <RefreshCw className="h-3.5 w-3.5" /> Reset Form
+                    <RefreshCw className="h-4 w-4" /> Reset
                   </Button>
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={handlePrint} 
-                    className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10 font-semibold"
+                    className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
                   >
-                    <Printer className="h-3.5 w-3.5" /> Print
+                    <Printer className="h-4 w-4" /> Print
                   </Button>
                 </div>
 
@@ -2880,19 +2880,17 @@ const ChildHealthForm = () => {
                 {/* Official 3-Logo Seals Header - Print Only */}
                 <div className="hidden print:block">
                   <OfficialHeader
-                    title="Summary of Child Health Record • Barangay Subukin"
+                    title={
+                      viewFormType === "sick-children" 
+                        ? "Summary of Child Health Record (Sick Children 2m–5y)" 
+                        : viewFormType === "vitamin-a" 
+                        ? "Vitamin A & Deworming Master List Summary (RHU2)" 
+                        : "Supplemental Immunization Activity (SIA) Masterlist Summary"
+                    }
                     subtitle="Barangay Subukin Health Center • San Juan, Batangas"
                     showDoubleBorder={true}
                     logoHeight="75px"
                   />
-                </div>
-
-                <div className="hidden print:block text-center pb-1">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-heading">
-                    {viewFormType === "sick-children" && "SUMMARY OF CHILD HEALTH RECORD / BUOD NG REKORD NG KALUSUGAN NG BATA"}
-                    {viewFormType === "vitamin-a" && "VITAMIN A AND DEWORMING MASTER LIST - RHU2 SUMMARY"}
-                    {viewFormType === "sia-masterlist" && "SUPPLEMENTAL IMMUNIZATION ACTIVITY (SIA) MASTERLIST SUMMARY"}
-                  </h2>
                 </div>
 
                 {/* FORM 1: SICK CHILDREN VIEW */}

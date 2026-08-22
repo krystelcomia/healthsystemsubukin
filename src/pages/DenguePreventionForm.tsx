@@ -1363,11 +1363,11 @@ const DenguePreventionForm = () => {
               <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Progress"}
             </Button>
             <Button 
+              type="button"
               onClick={handlePrintForm} 
               disabled={saving}
-              size="sm" 
               variant="outline"
-              className="gap-1.5 border-primary/20 text-primary hover:bg-primary/10 font-medium shadow-xs"
+              className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
             >
               <Printer className="h-4 w-4" /> Print
             </Button>

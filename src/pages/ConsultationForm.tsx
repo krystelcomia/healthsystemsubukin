@@ -553,7 +553,7 @@ const ConsultationForm = () => {
                 type="button" 
                 onClick={() => setResetConfirmOpen(true)}
                 variant="outline"
-                className="border-destructive/30 text-destructive hover:bg-destructive/10 font-medium gap-2 px-4"
+                className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
               >
                 <RefreshCw className="h-4 w-4" />
                 Reset
@@ -563,7 +563,7 @@ const ConsultationForm = () => {
                 type="button" 
                 variant="outline" 
                 onClick={handlePrint}
-                className="border-primary/30 text-primary hover:bg-primary/10 font-semibold gap-2 px-5"
+                className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
               >
                 <Printer className="h-4 w-4" /> 
                 Print

@@ -230,7 +230,15 @@ const AdminResidents = () => {
             <SelectContent><SelectItem value="all">{t("admin.residents.allSitios")}</SelectItem>{sitios.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
           </Select>
         </div>
-        <Button variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" /> {t("common.print")}</Button>
+        <Button 
+          type="button"
+          variant="outline" 
+          size="sm"
+          onClick={handlePrint}
+          className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
+        >
+          <Printer className="h-3.5 w-3.5" /> {t("common.print")}
+        </Button>
       </div>
 
       <div id="admin-residents-print-area" className="space-y-6">

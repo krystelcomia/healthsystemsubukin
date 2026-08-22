@@ -1627,18 +1627,16 @@ const FamilyPlanningForm = () => {
               <Button 
                 type="button" 
                 variant="outline" 
-                size="sm" 
                 onClick={() => setResetConfirmOpen(true)} 
-                className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 shrink-0 whitespace-nowrap font-medium"
+                className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
               >
-                <RefreshCw className="h-3.5 w-3.5" /> Reset Form
+                <RefreshCw className="h-4 w-4" /> Reset
               </Button>
               <Button 
                 type="button" 
                 variant="outline" 
-                size="sm" 
                 onClick={handlePrint} 
-                className="gap-1.5 text-xs border-primary/20 text-primary hover:bg-primary/10 shrink-0 whitespace-nowrap font-semibold"
+                className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
               >
                 <Printer className="h-4 w-4" /> Print
               </Button>

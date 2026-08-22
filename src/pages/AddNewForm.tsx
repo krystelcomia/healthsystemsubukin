@@ -1337,9 +1337,9 @@ const AddNewForm = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => window.print()}
-                        className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                        className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
                       >
-                        <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print
+                        <Printer className="h-3.5 w-3.5" /> Print
                       </Button>
 
                       <Button
@@ -1377,9 +1377,9 @@ const AddNewForm = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => window.print()}
-                        className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                        className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
                       >
-                        <Printer className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Print
+                        <Printer className="h-3.5 w-3.5" /> Print
                       </Button>
 
                       <Button
