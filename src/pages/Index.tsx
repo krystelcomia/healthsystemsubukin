@@ -356,7 +356,16 @@ const Index = () => {
 
   const CHART_COLORS = currentStyle.chartColors;
 
-  const standardForms = [
+  interface LaunchpadItem {
+    title: string;
+    href: string;
+    icon: any;
+    color: string;
+    desc: string;
+    badge?: string;
+  }
+
+  const standardForms: LaunchpadItem[] = [
     { title: t("nav.consultation"), href: "/forms/consultation", icon: Stethoscope, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Log illness, vitals & diagnosis" },
     { title: t("nav.familyData"), href: "/forms/family-data", icon: ClipboardList, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Household profiles & members" },
     { title: t("nav.philpenHealth"), href: "/forms/philpen-health", icon: Activity, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "NCD risk screening & BP" },
@@ -367,7 +376,7 @@ const Index = () => {
     { title: t("nav.residentRecords"), href: "/residents", icon: Users, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Master resident directory & health records" },
   ];
 
-  const deployedCustomLaunchpadItems = customForms.map((cf) => ({
+  const deployedCustomLaunchpadItems: LaunchpadItem[] = customForms.map((cf) => ({
     title: cf.title,
     href: `/forms/custom/${cf.id}`,
     icon: FileText,
@@ -376,7 +385,7 @@ const Index = () => {
     badge: "Custom Form",
   }));
 
-  const allLaunchpadItems = [
+  const allLaunchpadItems: LaunchpadItem[] = [
     ...standardForms,
     ...deployedCustomLaunchpadItems,
     {
@@ -510,7 +519,7 @@ const Index = () => {
                         <h4 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
                           {item.title}
                         </h4>
-                        {"badge" in item && item.badge && (
+                        {item.badge && (
                           <Badge variant="outline" className="text-[9px] px-1 py-0 border-primary/30 text-primary shrink-0">
                             {item.badge}
                           </Badge>
