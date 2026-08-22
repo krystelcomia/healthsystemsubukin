@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import { bhwCheckIn, bhwCheckOut } from "@/lib/activityLogger";
 import { toast } from "sonner";
 
@@ -353,6 +354,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   })}
                 </nav>
               </TooltipProvider>
+
+              <NotificationCenter />
 
               <div className="border-l border-sidebar-border h-6 shrink-0" />
 

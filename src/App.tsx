@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { Layout } from "@/components/Layout";
 import Index from "./pages/Index";
@@ -51,7 +52,8 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <AuthProvider>
-              <Routes>
+              <NotificationProvider>
+                <Routes>
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/" element={<ProtectedRoute><Layout><Index /></Layout></ProtectedRoute>} />
@@ -91,8 +93,9 @@ const App = () => (
                 <Route path="/admin/forms/view" element={<ProtectedRoute><Layout><AdminHealthRecords /></Layout></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </AuthProvider>
-          </BrowserRouter>
+            </NotificationProvider>
+          </AuthProvider>
+        </BrowserRouter>
         </TooltipProvider>
       </SettingsProvider>
     </QueryClientProvider>
