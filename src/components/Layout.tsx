@@ -361,25 +361,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <Dialog open={logsDialogOpen} onOpenChange={setLogsDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col p-6 rounded-xl border border-border/50 bg-background">
           <DialogHeader className="pb-4 border-b border-border/30">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div>
-                <DialogTitle className="text-xl font-heading font-bold flex items-center gap-2 text-foreground">
-                  <Fingerprint className="h-5 w-5 text-primary animate-pulse" />
-                  {language === "tl" ? "Talaan ng Attendance ng mga Barangay Health Worker" : "Barangay Health Workers Attendance Log"}
-                </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  {language === "tl" ? "Opisyal na log-in at log-out attendance records ng mga tauhan sa kalusugan ng Barangay Subukin." : "Official time in and time out attendance records for Barangay Subukin health staff."}
-                </DialogDescription>
-              </div>
-              <Button
-                onClick={handlePrintAttendance}
-                size="sm"
-                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-sm"
-              >
-                <Printer className="h-4 w-4" />
-                {language === "tl" ? "I-print ang Attendance" : "Print Attendance Record"}
-              </Button>
-            </div>
+            <DialogTitle className="text-xl font-heading font-bold flex items-center gap-2 text-foreground">
+              <Fingerprint className="h-5 w-5 text-primary animate-pulse" />
+              {language === "tl" ? "Talaan ng Attendance ng mga Barangay Health Worker" : "Barangay Health Workers Attendance Log"}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+              {language === "tl" ? "Opisyal na log-in at log-out attendance records ng mga tauhan sa kalusugan ng Barangay Subukin." : "Official time in and time out attendance records for Barangay Subukin health staff."}
+            </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 overflow-hidden">
@@ -618,28 +606,40 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </Dialog>
 
       {/* Printable Official Attendance Record (Only visible during window.print) */}
-      <div id="attendance-print-area" className="hidden print:block text-black bg-white p-8 max-w-5xl mx-auto">
+      <div id="attendance-print-area" className="hidden print:block text-black bg-white w-full min-w-full p-0 m-0">
         <style>{`
           @media print {
+            html, body {
+              width: 100% !important;
+              min-width: 100% !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+              color: #000000 !important;
+            }
             body * {
-              visibility: hidden;
+              visibility: hidden !important;
             }
             #attendance-print-area, #attendance-print-area * {
-              visibility: visible;
+              visibility: visible !important;
             }
             #attendance-print-area {
-              position: absolute;
-              left: 0;
-              top: 0;
+              position: absolute !important;
+              left: 0 !important;
+              top: 0 !important;
               width: 100% !important;
-              background: white !important;
-              color: black !important;
-              padding: 24px !important;
+              max-width: 100% !important;
+              min-width: 100% !important;
+              background: #ffffff !important;
+              color: #000000 !important;
+              padding: 0 !important;
+              margin: 0 !important;
               display: block !important;
+              box-sizing: border-box !important;
             }
             @page {
-              size: auto;
-              margin: 12mm;
+              size: portrait;
+              margin: 12mm 15mm;
             }
           }
         `}</style>
@@ -652,7 +652,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Worker Summary Box */}
         {selectedWorker && (
-          <div className="border border-black p-4 rounded mb-5 text-xs grid grid-cols-2 gap-3 mt-4">
+          <div className="w-full border border-black p-3.5 rounded mb-4 text-xs grid grid-cols-2 gap-3 mt-3 box-border">
             <div className="space-y-1">
               <p><span className="font-bold uppercase tracking-wider">Personnel Name:</span> {selectedWorker.name}</p>
               <p><span className="font-bold uppercase tracking-wider">Designation / Role:</span> {selectedWorker.role === "supervisory" ? "Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar" : "Barangay Health Worker"}</p>
@@ -667,16 +667,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
         )}
 
         {/* Official Attendance Log Table */}
-        <div className="mb-6">
-          <table className="w-full text-left text-xs border border-black border-collapse">
+        <div className="w-full mb-5">
+          <table className="w-full min-w-full text-left text-xs border border-black border-collapse table-auto">
             <thead>
               <tr className="bg-slate-100 border-b border-black font-bold text-black">
                 <th className="border border-black p-2.5 text-center w-12">#</th>
                 <th className="border border-black p-2.5">Date (Petsa)</th>
                 <th className="border border-black p-2.5">Time In (Oras ng Pagpasok)</th>
                 <th className="border border-black p-2.5">Time Out (Oras ng Paglabas)</th>
-                <th className="border border-black p-2.5 text-center">Duration (Tagal)</th>
-                <th className="border border-black p-2.5 text-center">Status (Katayuan)</th>
+                <th className="border border-black p-2.5 text-center w-28">Duration (Tagal)</th>
+                <th className="border border-black p-2.5 text-center w-36">Status (Katayuan)</th>
               </tr>
             </thead>
             <tbody>
@@ -713,15 +713,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Official Certification and Sign-offs */}
-        <div className="grid grid-cols-2 gap-10 pt-10 mt-8 text-xs">
+        <div className="grid grid-cols-2 gap-8 pt-8 mt-6 text-xs w-full">
           <div className="text-center">
-            <div className="border-b border-black w-4/5 mx-auto pb-1 font-bold text-sm">
+            <div className="border-b border-black w-3/4 mx-auto pb-1 font-bold text-sm">
               {selectedWorker?.name || "BHW Personnel"}
             </div>
             <p className="mt-1.5 text-[11px] text-slate-800 font-medium">Signature over Printed Name / Personnel</p>
           </div>
           <div className="text-center">
-            <div className="border-b border-black w-4/5 mx-auto pb-1 font-bold text-sm">
+            <div className="border-b border-black w-3/4 mx-auto pb-1 font-bold text-sm">
               Admin Midwife
             </div>
             <p className="mt-1.5 text-[11px] text-slate-800 font-medium">Midwife Administrator / Certified Correct</p>
