@@ -2041,15 +2041,6 @@ const FamilyPlanningForm = () => {
                     <div className="flex gap-2">
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handlePrintModal}
-                        className="gap-1.5 text-xs font-semibold"
-                      >
-                        <Printer className="h-3.5 w-3.5" /> Print Record
-                      </Button>
-                      <Button
-                        type="button"
                         size="sm"
                         onClick={() => {
                           if (parsed) setFpState(parsed);

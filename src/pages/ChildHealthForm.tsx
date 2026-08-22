@@ -3149,9 +3149,6 @@ const ChildHealthForm = () => {
           <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
             <span className="text-[10px] text-slate-500 font-medium">Official Health Summary — Barangay Subukin</span>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={handlePrintSummary} className="gap-1 text-xs">
-                <Printer className="h-3.5 w-3.5" /> Print
-              </Button>
               <Button type="button" variant="secondary" size="sm" onClick={() => setViewRecordModalOpen(false)}>
                 Close
               </Button>

@@ -1619,15 +1619,6 @@ const MaternalCareForm = () => {
               <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
                 <span className="text-[10px] text-slate-500">Maternal Record ID: {selectedRecordForView.id}</span>
                 <div className="flex gap-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handlePrintModal}
-                    className="gap-1.5 text-xs font-semibold"
-                  >
-                    <Printer className="h-3.5 w-3.5" /> Print Record
-                  </Button>
                   <Button type="button" variant="outline" size="sm" onClick={() => setViewRecordModalOpen(false)}>
                     Close
                   </Button>

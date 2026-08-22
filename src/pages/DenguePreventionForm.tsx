@@ -1641,14 +1641,6 @@ const DenguePreventionForm = () => {
             <Button variant="outline" onClick={() => setViewModalOpen(false)}>
               Close
             </Button>
-            <Button
-              onClick={() => {
-                if (viewingSavedForm) handlePrintSavedForm(viewingSavedForm);
-              }}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold gap-1.5"
-            >
-              <Printer className="h-4 w-4" /> Print
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
