@@ -336,9 +336,40 @@ const ConsultationForm = () => {
         }
       `}</style>
 
+      {/* Dynamic Theme Banner */}
+      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+            <Stethoscope className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight flex items-center gap-2">
+              {t("consultation.title")}
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5">
+                Clinical Consultation
+              </Badge>
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              {t("consultation.desc")}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 self-stretch md:self-auto justify-end flex-wrap">
+          <div className="bg-card/80 border border-border/60 rounded-xl px-4 py-2 text-center shrink-0 shadow-2xs">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground block">Total Records</span>
+            <span className="text-base font-extrabold text-primary">{historyRecords.length}</span>
+          </div>
+          <div className="bg-card/80 border border-border/60 rounded-xl px-4 py-2 text-center shrink-0 shadow-2xs">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground block">Active Sitios</span>
+            <span className="text-base font-extrabold text-primary">{sitioOptions.length} Sitios</span>
+          </div>
+        </div>
+      </div>
+
       {/* Main Consultation Form Card */}
       <Card id="consultation-print-area" className="border-border/60 shadow-md bg-card rounded-2xl overflow-hidden">
-        <CardContent className="p-6 md:p-8">
+        <CardContent className="p-6 md:p-8 space-y-6">
           
           {/* Official Barangay Printable Header */}
           <div className="print-only" style={{ display: "none" }}>
@@ -348,6 +379,34 @@ const ConsultationForm = () => {
               showDoubleBorder={true}
               logoHeight="75px"
             />
+          </div>
+
+          {/* Header Bar with Barangay Subukin note & Action Toolbar (Hidden when printing) */}
+          <div className="flex items-center justify-between gap-2 no-print pb-2 border-b border-border/40">
+            <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+              BRGY: <strong className="text-foreground">SUBUKIN</strong>
+            </span>
+            <div className="flex items-center gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={handleReset} 
+                className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium shadow-xs"
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> Reset
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={handlePrint} 
+                className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10"
+              >
+                <Printer className="h-3.5 w-3.5" /> Print
+              </Button>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
