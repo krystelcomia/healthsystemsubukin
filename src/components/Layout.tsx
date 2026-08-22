@@ -139,7 +139,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const handlePrintAttendance = () => {
+    document.body.classList.add("printing-attendance");
     window.print();
+    const cleanup = () => {
+      document.body.classList.remove("printing-attendance");
+      window.removeEventListener("afterprint", cleanup);
+    };
+    window.addEventListener("afterprint", cleanup);
+    setTimeout(cleanup, 2000);
   };
 
   const [sidebarHeaderHeight, setSidebarHeaderHeight] = useState<number | null>(null);
@@ -605,140 +612,132 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </DialogContent>
       </Dialog>
 
-      {/* Printable Official Attendance Record (Only visible during window.print) */}
-      <div id="attendance-print-area" className="hidden print:block text-black bg-white w-full min-w-full p-0 m-0">
-        <style>{`
-          @media print {
-            html, body {
-              width: 100% !important;
-              min-width: 100% !important;
-              height: 100% !important;
-              margin: 0 !important;
-              padding: 0 !important;
-              background: #ffffff !important;
-              color: #000000 !important;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
+      {/* Printable Official Attendance Record (Only rendered when dialog is open and visible strictly during attendance print) */}
+      {logsDialogOpen && (
+        <div id="attendance-print-area" className="hidden print:block text-black bg-white w-full min-w-full p-0 m-0">
+          <style>{`
+            @media print {
+              body:not(.printing-attendance) #attendance-print-area {
+                display: none !important;
+                visibility: hidden !important;
+              }
+              body.printing-attendance * {
+                visibility: hidden !important;
+              }
+              body.printing-attendance #attendance-print-area,
+              body.printing-attendance #attendance-print-area * {
+                visibility: visible !important;
+              }
+              body.printing-attendance #attendance-print-area {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 100% !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+                box-sizing: border-box !important;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+              }
             }
-            body * {
-              visibility: hidden !important;
-            }
-            #attendance-print-area, #attendance-print-area * {
-              visibility: visible !important;
-            }
-            #attendance-print-area {
-              position: absolute !important;
-              left: 0 !important;
-              top: 0 !important;
-              width: 100% !important;
-              max-width: 100% !important;
-              min-width: 100% !important;
-              background: #ffffff !important;
-              color: #000000 !important;
-              padding: 0 !important;
-              margin: 0 !important;
-              display: block !important;
-              box-sizing: border-box !important;
-              page-break-after: avoid !important;
-              break-after: avoid !important;
-              page-break-inside: avoid !important;
-              break-inside: avoid !important;
-            }
-            @page {
-              size: A4 portrait;
-              margin: 8mm 12mm;
-            }
-          }
-        `}</style>
-        
-        {/* Official Header with logos and letterhead */}
-        <div className="w-full mb-3">
-          <OfficialHeader
-            title={language === "tl" ? "BARANGAY HEALTH WORKERS OPISYAL NA TALAAN NG ATTENDANCE" : "BARANGAY HEALTH WORKERS OFFICIAL ATTENDANCE RECORD"}
-            subtitle={language === "tl" ? "Barangay Subukin, San Juan, Batangas • Opisyal na Talaan ng Oras ng Pagpasok at Paglabas" : "Barangay Subukin Health Center, San Juan, Batangas • Official Time In & Time Out Record"}
-            showDoubleBorder={true}
-            logoHeight="125px"
-          />
-        </div>
-
-        {/* Worker Summary Box */}
-        {selectedWorker && (
-          <div className="w-full border-2 border-black p-4 rounded-md mb-4 text-[15px] leading-relaxed grid grid-cols-2 gap-4 mt-2 box-border bg-slate-50/70">
-            <div className="space-y-2">
-              <p><span className="font-bold uppercase tracking-wider text-black">Personnel Name:</span> <span className="font-bold text-black text-[16px]">{selectedWorker.name}</span></p>
-              <p><span className="font-bold uppercase tracking-wider text-black">Designation / Role:</span> <span className="font-semibold text-black">{selectedWorker.role === "supervisory" ? "Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
-              <p><span className="font-bold uppercase tracking-wider text-black">Assigned Station / Sitio:</span> <span className="font-semibold text-black">{selectedWorker.sitio || "Subukin Main"}</span></p>
-            </div>
-            <div className="text-right space-y-2">
-              <p><span className="font-bold uppercase tracking-wider text-black">Contact Number:</span> <span className="font-semibold text-black">{selectedWorker.phone || "—"}</span></p>
-              <p><span className="font-bold uppercase tracking-wider text-black">Document Type:</span> <span className="font-semibold text-black">Official Time Log & Duty Record</span></p>
-              <p><span className="font-bold uppercase tracking-wider text-black">Date Generated:</span> <span className="text-black font-semibold">{new Date().toLocaleDateString(undefined, { dateStyle: "long" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span></p>
-            </div>
+          `}</style>
+          
+          {/* Official Header with logos and letterhead */}
+          <div className="w-full mb-3">
+            <OfficialHeader
+              title={language === "tl" ? "BARANGAY HEALTH WORKERS OPISYAL NA TALAAN NG ATTENDANCE" : "BARANGAY HEALTH WORKERS OFFICIAL ATTENDANCE RECORD"}
+              subtitle={language === "tl" ? "Barangay Subukin, San Juan, Batangas • Opisyal na Talaan ng Oras ng Pagpasok at Paglabas" : "Barangay Subukin Health Center, San Juan, Batangas • Official Time In & Time Out Record"}
+              showDoubleBorder={true}
+              logoHeight="125px"
+            />
           </div>
-        )}
 
-        {/* Official Attendance Log Table */}
-        <div className="w-full mb-5">
-          <table className="w-full min-w-full text-left text-[15px] border-2 border-black border-collapse table-auto">
-            <thead>
-              <tr className="bg-slate-200/90 border-b-2 border-black font-bold text-black">
-                <th className="border-2 border-black p-3.5 text-center w-14 font-bold uppercase text-[14px]">#</th>
-                <th className="border-2 border-black p-3.5 font-bold uppercase text-[14px]">Date (Petsa)</th>
-                <th className="border-2 border-black p-3.5 font-bold uppercase text-[14px]">Time In (Oras ng Pagpasok)</th>
-                <th className="border-2 border-black p-3.5 font-bold uppercase text-[14px]">Time Out (Oras ng Paglabas)</th>
-                <th className="border-2 border-black p-3.5 text-center w-36 font-bold uppercase text-[14px]">Duration (Tagal)</th>
-                <th className="border-2 border-black p-3.5 text-center w-44 font-bold uppercase text-[14px]">Status (Katayuan)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selectedWorker && getWorkerAttendance(selectedWorker.name).length > 0 ? (
-                getWorkerAttendance(selectedWorker.name).map((log: any, idx: number) => {
-                  const loginDate = new Date(log.loginAt);
-                  const durationStr = log.logoutAt 
-                    ? formatDuration(new Date(log.loginAt), new Date(log.logoutAt))
-                    : (language === "tl" ? "Aktibong Shift" : "Active Shift");
-                  return (
-                    <tr key={log.id || idx} className="border-b-2 border-black text-black">
-                      <td className="border-2 border-black p-3.5 text-center font-mono font-bold text-[15px]">{idx + 1}</td>
-                      <td className="border-2 border-black p-3.5 font-bold text-[15px]">{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
-                      <td className="border-2 border-black p-3.5 font-mono font-semibold text-[15px]">{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
-                      <td className="border-2 border-black p-3.5 font-mono font-semibold text-[15px]">
-                        {log.logoutAt ? new Date(log.logoutAt).toLocaleTimeString(undefined, { timeStyle: "short" }) : "— (Active on Duty)"}
-                      </td>
-                      <td className="border-2 border-black p-3.5 text-center font-mono font-bold text-[15px]">{durationStr}</td>
-                      <td className="border-2 border-black p-3.5 text-center font-bold text-[15px]">
-                        {log.logoutAt ? "Completed Shift" : "On Duty (Active)"}
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={6} className="border-2 border-black p-10 text-center italic font-medium text-slate-800 text-[15px]">
-                    No official attendance records logged for this personnel during this period.
-                  </td>
+          {/* Worker Summary Box */}
+          {selectedWorker && (
+            <div className="w-full border-2 border-black p-4 rounded-md mb-4 text-[15px] leading-relaxed grid grid-cols-2 gap-4 mt-2 box-border bg-slate-50/70">
+              <div className="space-y-2">
+                <p><span className="font-bold uppercase tracking-wider text-black">Personnel Name:</span> <span className="font-bold text-black text-[16px]">{selectedWorker.name}</span></p>
+                <p><span className="font-bold uppercase tracking-wider text-black">Designation / Role:</span> <span className="font-semibold text-black">{selectedWorker.role === "supervisory" ? "Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
+                <p><span className="font-bold uppercase tracking-wider text-black">Assigned Station / Sitio:</span> <span className="font-semibold text-black">{selectedWorker.sitio || "Subukin Main"}</span></p>
+              </div>
+              <div className="text-right space-y-2">
+                <p><span className="font-bold uppercase tracking-wider text-black">Contact Number:</span> <span className="font-semibold text-black">{selectedWorker.phone || "—"}</span></p>
+                <p><span className="font-bold uppercase tracking-wider text-black">Document Type:</span> <span className="font-semibold text-black">Official Time Log & Duty Record</span></p>
+                <p><span className="font-bold uppercase tracking-wider text-black">Date Generated:</span> <span className="text-black font-semibold">{new Date().toLocaleDateString(undefined, { dateStyle: "long" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span></p>
+              </div>
+            </div>
+          )}
+
+          {/* Official Attendance Log Table */}
+          <div className="w-full mb-5">
+            <table className="w-full min-w-full text-left text-[15px] border-2 border-black border-collapse table-auto">
+              <thead>
+                <tr className="bg-slate-200/90 border-b-2 border-black font-bold text-black">
+                  <th className="border-2 border-black p-3.5 text-center w-14 font-bold uppercase text-[14px]">#</th>
+                  <th className="border-2 border-black p-3.5 font-bold uppercase text-[14px]">Date (Petsa)</th>
+                  <th className="border-2 border-black p-3.5 font-bold uppercase text-[14px]">Time In (Oras ng Pagpasok)</th>
+                  <th className="border-2 border-black p-3.5 font-bold uppercase text-[14px]">Time Out (Oras ng Paglabas)</th>
+                  <th className="border-2 border-black p-3.5 text-center w-36 font-bold uppercase text-[14px]">Duration (Tagal)</th>
+                  <th className="border-2 border-black p-3.5 text-center w-44 font-bold uppercase text-[14px]">Status (Katayuan)</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {selectedWorker && getWorkerAttendance(selectedWorker.name).length > 0 ? (
+                  getWorkerAttendance(selectedWorker.name).map((log: any, idx: number) => {
+                    const loginDate = new Date(log.loginAt);
+                    const durationStr = log.logoutAt 
+                      ? formatDuration(new Date(log.loginAt), new Date(log.logoutAt))
+                      : (language === "tl" ? "Aktibong Shift" : "Active Shift");
+                    return (
+                      <tr key={log.id || idx} className="border-b-2 border-black text-black">
+                        <td className="border-2 border-black p-3.5 text-center font-mono font-bold text-[15px]">{idx + 1}</td>
+                        <td className="border-2 border-black p-3.5 font-bold text-[15px]">{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
+                        <td className="border-2 border-black p-3.5 font-mono font-semibold text-[15px]">{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
+                        <td className="border-2 border-black p-3.5 font-mono font-semibold text-[15px]">
+                          {log.logoutAt ? new Date(log.logoutAt).toLocaleTimeString(undefined, { timeStyle: "short" }) : "— (Active on Duty)"}
+                        </td>
+                        <td className="border-2 border-black p-3.5 text-center font-mono font-bold text-[15px]">{durationStr}</td>
+                        <td className="border-2 border-black p-3.5 text-center font-bold text-[15px]">
+                          {log.logoutAt ? "Completed Shift" : "On Duty (Active)"}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="border-2 border-black p-10 text-center italic font-medium text-slate-800 text-[15px]">
+                      No official attendance records logged for this personnel during this period.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Official Certification and Sign-offs */}
-        <div className="grid grid-cols-2 gap-12 pt-6 mt-2 text-[14px] w-full">
-          <div className="text-center">
-            <div className="border-b-2 border-black w-4/5 mx-auto pb-1.5 font-bold text-[17px] text-black uppercase">
-              {selectedWorker?.name || "BHW Personnel"}
+          {/* Official Certification and Sign-offs */}
+          <div className="grid grid-cols-2 gap-12 pt-6 mt-2 text-[14px] w-full">
+            <div className="text-center">
+              <div className="border-b-2 border-black w-4/5 mx-auto pb-1.5 font-bold text-[17px] text-black uppercase">
+                {selectedWorker?.name || "BHW Personnel"}
+              </div>
+              <p className="mt-2 text-[13px] text-black font-bold uppercase tracking-wider">Signature over Printed Name / Personnel</p>
             </div>
-            <p className="mt-2 text-[13px] text-black font-bold uppercase tracking-wider">Signature over Printed Name / Personnel</p>
-          </div>
-          <div className="text-center">
-            <div className="border-b-2 border-black w-4/5 mx-auto pb-1.5 font-bold text-[17px] text-black uppercase">
-              Admin Midwife
+            <div className="text-center">
+              <div className="border-b-2 border-black w-4/5 mx-auto pb-1.5 font-bold text-[17px] text-black uppercase">
+                Admin Midwife
+              </div>
+              <p className="mt-2 text-[13px] text-black font-bold uppercase tracking-wider">Midwife Administrator / Certified Correct</p>
             </div>
-            <p className="mt-2 text-[13px] text-black font-bold uppercase tracking-wider">Midwife Administrator / Certified Correct</p>
           </div>
         </div>
-      </div>
+      )}
     </SidebarProvider>
   );
 }
