@@ -37,7 +37,7 @@ const BHW_WORKERS = [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { user, userRole, username } = useAuth();
+  const { user, userRole, username, fullName } = useAuth();
   const { t, language } = useSettings();
   const [activeBhw, setActiveBhw] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState("00:00:00");
@@ -50,7 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
 
   // Get active worker display name (full name, username or email local part)
-  const workerDisplayName = username || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "BHW Worker";
+  const workerDisplayName = fullName || username || user?.user_metadata?.full_name || (userRole === "supervisor" ? "Admin Midwife" : user?.email?.split("@")[0]) || "Staff";
 
   useEffect(() => {
     const updateBhwState = () => {
@@ -74,17 +74,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [logsDialogOpen]);
 
   useEffect(() => {
-    if (user && userRole !== "supervisor" && !activeBhw && !noticeDismissed) {
+    if (user && !activeBhw && !noticeDismissed) {
       const timer = setTimeout(() => setAttendanceNoticeOpen(true), 400);
       return () => clearTimeout(timer);
     }
-  }, [user, userRole, activeBhw, noticeDismissed]);
+  }, [user, activeBhw, noticeDismissed]);
 
   useEffect(() => {
-    if ((userRole === "bhw" || userRole === "bns" || userRole === "BNS" || userRole === "supervisory") && workerDisplayName) {
+    if (workerDisplayName) {
       setSelectedWorker({
         name: workerDisplayName,
-        role: userRole === "supervisory" ? "supervisory" : userRole === "bns" ? "bns" : "worker",
+        role: (userRole === "supervisor" || userRole === "supervisory") ? "supervisory" : userRole === "bns" ? "bns" : "worker",
         phone: user?.email ?? "—"
       });
     }
@@ -259,7 +259,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   >
                     <Fingerprint className={`h-5 w-5 ${!activeBhw ? "text-amber-500 animate-pulse" : "text-primary"}`} />
                     <span className="text-xs font-semibold max-w-[120px] truncate">
-                      {activeBhw ? activeBhw : (language === "tl" ? "BHW Sign In" : "BHW Sign In")}
+                      {activeBhw 
+                        ? activeBhw 
+                        : (userRole === "supervisor" || userRole === "supervisory")
+                        ? (language === "tl" ? "Mag-Clock In" : "Midwife Sign In")
+                        : (language === "tl" ? "Mag-Clock In" : "BHW Sign In")}
                     </span>
                     {activeBhw && (
                       <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background animate-pulse" />
@@ -354,7 +358,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </header>
 
           <div className="flex-1 p-6 animate-fade-in space-y-6 min-w-0 max-w-full">
-            {!activeBhw && user && userRole !== "supervisor" && (
+            {!activeBhw && user && (
               <div className="p-4 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-amber-500/5 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-bounce-subtle">
                 <div className="flex items-start gap-3">
                   <div className="h-10 w-10 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5 animate-pulse">
@@ -378,7 +382,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 text-xs shadow-md shrink-0 gap-2 w-full md:w-auto"
                   onClick={() => {
                     bhwCheckIn(workerDisplayName);
-                    toast.success(`Welcome, ${workerDisplayName}! You are now checked in for today's attendance.`);
+                    toast.success(language === "tl" ? `Maligayang pagdating, ${workerDisplayName}! Naka-check in ka na sa attendance ngayong araw.` : `Welcome, ${workerDisplayName}! You are now checked in for today's attendance.`);
                     setAttendanceNoticeOpen(false);
                     setNoticeDismissed(true);
                   }}
@@ -676,7 +680,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               size="sm"
               onClick={() => {
                 bhwCheckIn(workerDisplayName);
-                toast.success(`Welcome, ${workerDisplayName}! You are now checked in.`);
+                toast.success(language === "tl" ? `Maligayang pagdating, ${workerDisplayName}! Naka-check in ka na sa attendance ngayong araw.` : `Welcome, ${workerDisplayName}! You are now checked in.`);
                 setNoticeDismissed(true);
                 setAttendanceNoticeOpen(false);
               }}
