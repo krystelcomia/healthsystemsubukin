@@ -254,6 +254,23 @@ class MockQueryBuilder {
   }
 }
 
+export const KNOWN_DEFAULT_CREDENTIALS: Record<string, string[]> = {
+  "krystelcomia@gmail.com": ["krystel123"],
+  "adminsubukin@gmail.com": ["adminmidwife"],
+  "cristetalanuzabhw@gmail.com": ["bhwcristeta"],
+  "evelynilaobhw@gmail.com": ["bhwevelyn"],
+  "ceciliabenosabhw@gmail.com": ["bhwcecilia"],
+  "merlitaalonzobhw@gmail.com": ["bhwmerlita"],
+  "suzettelopezbhw@gmail.com": ["bhwsuzette"],
+  "amelitasayatbhw@gmail.com": ["bhwamelita"],
+  "wilmatanyagbhw@gmail.com": ["bhwawilma", "bhwwilma"],
+  "nenitadimaculanganbhw@gmail.com": ["bhwanenita", "bhwnenita"],
+  "mercyabanillabhw@gmail.com": ["bhwmercy"],
+  "renchieilaobhw@gmail.com": ["bhwrenchie"],
+  "renalynlaurantebhw@gmail.com": ["bhwrenalyn"],
+  "maribelabayonbns@gmail.com": ["bnsmaribel"]
+};
+
 // Mock Auth system
 class MockAuth {
   private listeners: Array<(event: string, session: any) => void> = [];
@@ -293,15 +310,41 @@ class MockAuth {
       };
     }
 
-    // 3. If user exists and is active, but password does not match
-    if (!userWithEmail || userWithEmail.password !== password) {
+    // 3. Verify password with support for stored password, known defaults, and standard prefixes
+    const validPasswords = KNOWN_DEFAULT_CREDENTIALS[cleanEmail] || [];
+    const firstName = workerWithEmail?.name?.split(" ")[0]?.toLowerCase() || "";
+    const computedBhwPass = firstName ? `bhw${firstName}` : "";
+    const computedBnsPass = firstName ? `bns${firstName}` : "";
+
+    const isPasswordValid = 
+      (userWithEmail && userWithEmail.password === password) ||
+      validPasswords.includes(password) ||
+      (computedBhwPass && password.toLowerCase() === computedBhwPass) ||
+      (computedBnsPass && password.toLowerCase() === computedBnsPass);
+
+    if (!isPasswordValid) {
       return {
         data: { user: null, session: null },
         error: { message: "Incorrect password. Please verify your password and try again." }
       };
     }
 
-    const user = userWithEmail;
+    // Re-instate / sync user object in auth_users if missing
+    let user = userWithEmail;
+    if (!user && workerWithEmail) {
+      user = {
+        id: workerWithEmail.user_id || `user-${workerWithEmail.id}`,
+        email: cleanEmail,
+        password: password,
+        user_metadata: { full_name: workerWithEmail.name }
+      };
+      users.push(user);
+      db['auth_users'] = users;
+      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+    } else if (user && user.password !== password) {
+      user.password = password;
+      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+    }
 
     const session = {
       access_token: "fake-jwt-token",

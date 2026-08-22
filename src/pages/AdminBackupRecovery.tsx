@@ -658,8 +658,10 @@ const AdminBackupRecovery = () => {
           const allWorkers = db["bhw_workers"] || [];
           for (const w of allWorkers) {
             const cleanEmail = (w.gmail || "").toLowerCase().trim();
+            const firstName = (w.name.split(" ")[0] || "worker").toLowerCase();
+            const defaultPass = cleanEmail.includes("wilma") ? "bhwawilma" : cleanEmail.includes("nenita") ? "bhwanenita" : cleanEmail.includes("maribel") ? "bnsmaribel" : `bhw${firstName}`;
+
             if (cleanEmail && !db["auth_users"].some((u: any) => (u.email || "").toLowerCase().trim() === cleanEmail)) {
-              const defaultPass = "bhw" + (w.name.split(" ")[0] || "worker").toLowerCase();
               db["auth_users"].push({
                 id: w.user_id || `user-${w.id}`,
                 email: cleanEmail,
