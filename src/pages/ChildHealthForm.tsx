@@ -1129,15 +1129,18 @@ const ChildHealthForm = () => {
           }
           .print-only {
             display: flex !important;
+            width: 100% !important;
+            flex-direction: column !important;
+            align-items: center !important;
           }
 
           /* Official Printable Header Seal */
           .header-seal {
             display: flex !important;
-            flex-direction: row !important;
+            flex-direction: column !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 24px !important;
+            width: 100% !important;
             border-bottom: 4px double #000000 !important;
             padding-bottom: 10px !important;
             margin-bottom: 10px !important;
@@ -1373,7 +1376,7 @@ const ChildHealthForm = () => {
         <CardContent className="p-4 md:p-6 space-y-5 overflow-visible">
           
           {/* Official Seals Header - Printing Only */}
-          <div className="print-only" style={{ display: "none" }}>
+          <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
             <OfficialHeader
               title="Child Health and Development Immunization Record"
               subtitle="Barangay Subukin Health Center • San Juan, Batangas"

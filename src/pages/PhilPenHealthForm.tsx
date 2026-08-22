@@ -470,7 +470,8 @@ const PhilPenHealthForm = () => {
           select, select * {
             display: none !important;
           }
-          .print-only { display: flex !important; }
+          .print-only { display: flex !important; width: 100% !important; flex-direction: column !important; align-items: center !important; }
+          .header-seal { width: 100% !important; }
           .header-seal img { height: 80px !important; mix-blend-mode: multiply !important; }
           #philpen-print-area table td, #philpen-print-area table th { padding: 3px 5px !important; font-size: 11px !important; }
           @page {
@@ -506,7 +507,7 @@ const PhilPenHealthForm = () => {
         <CardContent className="p-6 md:p-8 space-y-6">
           
           {/* Official Barangay Printable Header */}
-          <div className="print-only" style={{ display: "none" }}>
+          <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
             <OfficialHeader
               title="PhilPen Health Assessment Form"
               subtitle="Barangay Subukin Health Center • San Juan, Batangas"

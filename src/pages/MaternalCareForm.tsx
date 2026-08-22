@@ -661,6 +661,12 @@ const MaternalCareForm = () => {
           }
           .print-only {
             display: flex !important;
+            width: 100% !important;
+            flex-direction: column !important;
+            align-items: center !important;
+          }
+          .header-seal {
+            width: 100% !important;
           }
 
           /* Hide all placeholders and guide text when printing */
@@ -757,7 +763,7 @@ const MaternalCareForm = () => {
         <CardContent className="p-6 md:p-8 space-y-6">
           
           {/* Header Seal Layout - Visible ONLY when printing */}
-          <div className="print-only" style={{ display: "none" }}>
+          <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
             <OfficialHeader
               title="Maternal Care & Prenatal Health Record"
               subtitle="Barangay Subukin Health Center • San Juan, Batangas"

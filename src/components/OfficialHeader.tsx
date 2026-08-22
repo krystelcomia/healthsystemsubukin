@@ -22,7 +22,7 @@ export const OfficialHeader: React.FC<OfficialHeaderProps> = ({
 
   return (
     <div
-      className={`header-seal official-barangay-header flex flex-col items-center justify-center text-center ${
+      className={`header-seal official-barangay-header w-full flex flex-col items-center justify-center text-center ${
         showDoubleBorder ? "border-b-[4px] border-double border-slate-900 pb-3 mb-4" : "pb-2 mb-3"
       } ${className}`}
       style={{
@@ -31,6 +31,9 @@ export const OfficialHeader: React.FC<OfficialHeaderProps> = ({
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
+        width: "100%",
+        minWidth: "100%",
+        boxSizing: "border-box",
         borderBottom: showDoubleBorder ? "4px double #000000" : "none",
         paddingBottom: showDoubleBorder ? "12px" : "8px",
         marginBottom: "16px",

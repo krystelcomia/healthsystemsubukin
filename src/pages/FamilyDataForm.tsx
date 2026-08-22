@@ -783,6 +783,12 @@ const FamilyDataForm = () => {
           }
           .print-only {
             display: flex !important;
+            width: 100% !important;
+            flex-direction: column !important;
+            align-items: center !important;
+          }
+          .header-seal {
+            width: 100% !important;
           }
           .header-seal img {
             height: 75px !important;
@@ -1028,7 +1034,7 @@ const FamilyDataForm = () => {
         >
           <CardContent className="p-6 md:p-8 space-y-6">
             {/* Official Barangay Printable Header */}
-            <div className="print-only" style={{ display: "none" }}>
+            <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
               <OfficialHeader
                 title="Master Family Data Sheet Directory"
                 subtitle="Barangay Subukin Health Center • San Juan, Batangas"
@@ -1147,7 +1153,7 @@ const FamilyDataForm = () => {
           {selectedFile && (
             <div className="space-y-6">
               {/* Official Barangay Printable Header */}
-              <div className="print-only" style={{ display: "none" }}>
+              <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
                 <OfficialHeader
                   title="Official Barangay Household Census & Demographics Record"
                   subtitle="Barangay Subukin Health Center • San Juan, Batangas"

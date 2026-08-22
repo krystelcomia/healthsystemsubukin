@@ -681,6 +681,12 @@ const FamilyPlanningForm = () => {
           }
           .print-only {
             display: flex !important;
+            width: 100% !important;
+            flex-direction: column !important;
+            align-items: center !important;
+          }
+          .header-seal {
+            width: 100% !important;
           }
           .header-seal img {
             height: 68px !important;
@@ -765,7 +771,7 @@ const FamilyPlanningForm = () => {
         <div className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 border border-slate-300 dark:border-slate-700 rounded-md shadow-xs text-xs space-y-3 font-sans">
           
           {/* Official Barangay Printable Header */}
-          <div className="print-only" style={{ display: 'none' }}>
+          <div className="print-only w-full" style={{ display: 'none', width: '100%' }}>
             <OfficialHeader
               title="Family Planning Client Assessment Record (FP Form 1)"
               subtitle="Barangay Subukin Health Center • San Juan, Batangas"

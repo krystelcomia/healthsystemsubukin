@@ -1032,10 +1032,10 @@ const DenguePreventionForm = () => {
           /* Official Printable Header Seal */
           .header-seal, .header-border {
             display: flex !important;
-            flex-direction: row !important;
+            flex-direction: column !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 24px !important;
+            width: 100% !important;
             border-bottom: 4px double #000000 !important;
             padding-bottom: 16px !important;
             margin-bottom: 16px !important;
@@ -1132,7 +1132,8 @@ const DenguePreventionForm = () => {
           }
           .print-only {
             display: flex !important;
-            flex-direction: row !important;
+            width: 100% !important;
+            flex-direction: column !important;
             align-items: center !important;
             justify-content: center !important;
           }
@@ -1168,7 +1169,7 @@ const DenguePreventionForm = () => {
         <CardContent className="p-8 space-y-6">
           
           {/* Official Header Layout - Visible ONLY when printing */}
-          <div className="print-only" style={{ display: "none" }}>
+          <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
             <OfficialHeader
               title="SEARCH AND DESTROY 2026 — Dengue Prevention Checklist"
               subtitle="Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue • Barangay Subukin"

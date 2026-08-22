@@ -342,9 +342,10 @@ const ResidentRecords = () => {
               color: black !important;
             }
             .no-print { display: none !important; }
-            .print-only { display: flex !important; }
+            .print-only { display: flex !important; width: 100% !important; flex-direction: column !important; align-items: center !important; }
             .print-resident-header { display: block !important; width: 100% !important; }
             .print-only-table { display: table !important; }
+            .header-seal { width: 100% !important; }
             .header-seal img { height: 75px !important; mix-blend-mode: multiply !important; }
             #resident-print-area table td, #resident-print-area table th { padding: 3px 6px !important; font-size: 11px !important; }
             @page { size: A4 portrait; margin: 5mm; }
@@ -365,7 +366,7 @@ const ResidentRecords = () => {
         <div id="resident-print-area" className="space-y-5">
           
           {/* Printable Official Seals */}
-          <div className="print-only" style={{ display: "none" }}>
+          <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
             <OfficialHeader
               title={`Individual Resident Health Profile — ${selectedResident.full_name}`}
               subtitle="Barangay Subukin Health Center • San Juan, Batangas"
@@ -746,8 +747,9 @@ const ResidentRecords = () => {
             color: black !important;
           }
           .no-print { display: none !important; }
-          .print-only { display: flex !important; }
+          .print-only { display: flex !important; width: 100% !important; flex-direction: column !important; align-items: center !important; }
           .print-only-table { display: table !important; }
+          .header-seal { width: 100% !important; }
           .header-seal img { height: 75px !important; mix-blend-mode: multiply !important; }
           #resident-print-area table td, #resident-print-area table th { padding: 3px 6px !important; font-size: 11px !important; }
           @page { size: A4 portrait; margin: 5mm; }
@@ -836,7 +838,7 @@ const ResidentRecords = () => {
       <div id="resident-print-area" className="space-y-4">
         
         {/* Official Printable Header Seal */}
-        <div className="print-only" style={{ display: "none" }}>
+        <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
           <OfficialHeader
             title={`${t("residents.title")}${sitioFilter !== "all" ? ` — Sitio ${sitioFilter}` : ""}`}
             subtitle="Barangay Subukin Health Center • San Juan, Batangas"

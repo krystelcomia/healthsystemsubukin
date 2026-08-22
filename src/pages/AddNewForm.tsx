@@ -817,9 +817,10 @@ const AddNewForm = () => {
           /* Official Barangay 3-seal header */
           .header-seal {
             display: flex !important;
+            flex-direction: column !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 20px !important;
+            width: 100% !important;
             border-bottom: 4px double #000000 !important;
             padding-bottom: 12px !important;
             margin-bottom: 14px !important;
@@ -1215,7 +1216,7 @@ const AddNewForm = () => {
             <CardContent className="p-6 md:p-8 space-y-6">
 
               {/* Official Barangay Printable Header */}
-              <div className="print-only" style={{ display: "none" }}>
+              <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
                 <OfficialHeader
                   title={draftTitle || "Health Form Record"}
                   subtitle="Barangay Subukin Health Center • San Juan, Batangas"
