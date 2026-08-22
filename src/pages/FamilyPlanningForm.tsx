@@ -580,7 +580,11 @@ const FamilyPlanningForm = () => {
     <div className="w-full space-y-6 pb-12">
       {/* Dynamic Print CSS Setup */}
       <style>{`
-        @media print {          body:not(.printing-modal):not(.printing-history) #fp-print-area,
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          body:not(.printing-modal):not(.printing-history) #fp-print-area,
           body:not(.printing-modal):not(.printing-history) #fp-print-area *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
           }

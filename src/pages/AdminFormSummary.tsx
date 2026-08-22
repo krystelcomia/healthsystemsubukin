@@ -578,7 +578,47 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
         }
       `}</style>
 
-      {/* Hero Header */}
+      {/* Dynamic Print CSS */}
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          #admin-form-summary-print-area,
+          #admin-form-summary-print-area * {
+            visibility: visible !important;
+            color: #000000 !important;
+          }
+          #admin-form-summary-print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            padding: 10px 15px !important;
+            margin: 0 !important;
+            display: block !important;
+            box-sizing: border-box !important;
+          }
+          #admin-form-summary-print-area table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          #admin-form-summary-print-area th,
+          #admin-form-summary-print-area td {
+            border: 1px solid #000000 !important;
+            padding: 5px 6px !important;
+            font-size: 10px !important;
+            color: #000000 !important;
+          }
+          #admin-form-summary-print-area th {
+            background-color: #f1f5f9 !important;
+            font-weight: bold !important;
+          }
+        }
+      `}</style>
+
+      {/* Week Navigation Header */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/95 to-sidebar-background p-6 md:p-8 text-white shadow-xl no-print">
         <div className="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
         <div className="absolute left-1/3 bottom-0 h-48 w-48 rounded-full bg-white/5 blur-2xl pointer-events-none" />

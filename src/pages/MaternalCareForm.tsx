@@ -562,6 +562,11 @@ const MaternalCareForm = () => {
           display: none !important;
         }
         @media print {
+          body * {
+            visibility: hidden !important;
+          }
+
+          /* Single Form Print */
           body:not(.printing-modal):not(.printing-history) #maternal-print-area,
           body:not(.printing-modal):not(.printing-history) #maternal-print-area *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
@@ -598,9 +603,10 @@ const MaternalCareForm = () => {
             width: 100% !important;
             background: white !important;
             color: black !important;
-            padding: 15px !important;
+            padding: 10px 15px !important;
             margin: 0 !important;
             display: block !important;
+            box-sizing: border-box !important;
           }
           body.printing-history #maternal-history-print-area table {
             width: 100% !important;

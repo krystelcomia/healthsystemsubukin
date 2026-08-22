@@ -143,24 +143,64 @@
 
 @media print {
   @page {
-    margin: 5mm;
+    margin: 6mm;
+    size: auto;
   }
+
+  /* Globally hide all application chrome in print mode */
+  header,
+  nav,
+  aside,
+  [data-sidebar],
+  [data-sidebar="sidebar"],
+  .sidebar,
+  .no-print,
+  button:not(.allow-print) {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Reset layout flex/grid constraints so printable content takes 100% full paper width */
+  html, body {
+    height: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+
   ::-webkit-scrollbar, ::-webkit-scrollbar-button, ::-webkit-scrollbar-thumb, ::-webkit-scrollbar-track {
     display: none !important;
     width: 0 !important;
     height: 0 !important;
     background: transparent !important;
   }
-  html, body {
-    height: auto !important;
-    overflow: visible !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+
+  .print-only {
+    display: block !important;
+    visibility: visible !important;
   }
-  .print-area, [id*="-print-area"] {
+
+  .print-area, [id*="-print-area"], [id*="-printable"] {
     page-break-after: avoid !important;
     break-after: avoid !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
   }
 }
