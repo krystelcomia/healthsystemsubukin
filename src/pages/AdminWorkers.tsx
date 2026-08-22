@@ -47,17 +47,24 @@ const AdminWorkers = () => {
       fetchWorkers();
     }, 3000);
 
-    // Realtime channel subscription for instant worker status change detection
-    const channel = supabase
-      .channel("realtime-admin-workers")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "bhw_workers" },
-        () => {
-          fetchWorkers();
-        }
-      )
-      .subscribe();
+    // Realtime channel subscription for instant worker status change detection (with safe fallback)
+    let channel: any = null;
+    if (typeof (supabase as any)?.channel === "function") {
+      try {
+        channel = (supabase as any)
+          .channel("realtime-admin-workers")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "bhw_workers" },
+            () => {
+              fetchWorkers();
+            }
+          )
+          .subscribe();
+      } catch (e) {
+        console.warn("Realtime subscription fallback to polling:", e);
+      }
+    }
 
     const handleWorkerStatusEvent = () => fetchWorkers();
     window.addEventListener("bhw-worker-status-changed", handleWorkerStatusEvent);
@@ -65,7 +72,11 @@ const AdminWorkers = () => {
 
     return () => {
       clearInterval(interval);
-      supabase.removeChannel(channel);
+      if (channel && typeof (supabase as any)?.removeChannel === "function") {
+        try {
+          (supabase as any).removeChannel(channel);
+        } catch {}
+      }
       window.removeEventListener("bhw-worker-status-changed", handleWorkerStatusEvent);
       window.removeEventListener("storage", handleWorkerStatusEvent);
     };

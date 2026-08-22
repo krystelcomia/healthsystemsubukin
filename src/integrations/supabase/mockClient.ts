@@ -639,8 +639,34 @@ export function seedMockDatabase() {
   localStorage.setItem('supabase_mock_db', JSON.stringify(db));
 }
 
+class MockRealtimeChannel {
+  private topic: string;
+
+  constructor(topic: string) {
+    this.topic = topic;
+  }
+
+  on(_type: string, _filter: any, _callback: (payload: any) => void) {
+    return this;
+  }
+
+  subscribe(callback?: (status: string) => void) {
+    if (callback) {
+      setTimeout(() => callback("SUBSCRIBED"), 0);
+    }
+    return this;
+  }
+
+  unsubscribe() {
+    return Promise.resolve("ok");
+  }
+}
+
 export const mockSupabase = {
   auth: new MockAuth(),
   from: (table: string) => new MockQueryBuilder(table),
   functions: new MockFunctions(),
+  channel: (topic: string) => new MockRealtimeChannel(topic),
+  removeChannel: (_channel: any) => Promise.resolve("ok"),
+  removeAllChannels: () => Promise.resolve([]),
 } as any;
