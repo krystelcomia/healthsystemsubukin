@@ -746,11 +746,8 @@ const MaternalCareForm = () => {
           <Heart className="h-6 w-6" />
         </div>
         <div>
-          <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight flex items-center gap-2">
+          <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
             {t("maternal.title") || "Maternal Care & Prenatal Health Record"}
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5">
-              RHU Maternal Registry
-            </Badge>
           </h2>
           <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
             Comprehensive prenatal checkup tracking, obstetric milestones (FPAL), EDC/LMP calculation, and pregnancy risk factor assessment for mothers of Barangay Subukin.

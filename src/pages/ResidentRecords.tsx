@@ -763,14 +763,9 @@ const ResidentRecords = () => {
             <Users className="h-6 w-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2.5">
-              <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-                Resident Records
-              </h2>
-              <Badge variant="secondary" className="text-xs font-semibold bg-primary/10 text-primary border-primary/20">
-                {residents.length} Registered
-              </Badge>
-            </div>
+            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
+              Resident Records
+            </h2>
             <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
               Barangay Subukin population health registry and medical records database.
             </p>

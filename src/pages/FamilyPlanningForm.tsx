@@ -715,11 +715,8 @@ const FamilyPlanningForm = () => {
           <Heart className="h-6 w-6" />
         </div>
         <div>
-          <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight flex items-center gap-2">
+          <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
             {t("fp.title") || "Family Planning Client Assessment Record"}
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5">
-              DOH FP FORM 1
-            </Badge>
           </h2>
           <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
             Official Digital Replica of Department of Health FP Form 1 (Side A & Side B) – Client clinical assessment, medical history evaluation, method tracking, and follow-up records.

@@ -1359,11 +1359,8 @@ const ChildHealthForm = () => {
           <Baby className="h-6 w-6" />
         </div>
         <div>
-          <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight flex items-center gap-2">
+          <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
             {t("child.title") || "Child Health & Immunization Registry"}
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5">
-              IMCI & RHU2 Masterlist
-            </Badge>
           </h2>
           <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
             Comprehensive pediatric clinical management (Care for Sick Children 2m–5y), routine Vitamin A & Deworming distribution, and SIA vaccine masterlisting for Barangay Subukin.
