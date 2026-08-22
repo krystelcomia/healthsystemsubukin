@@ -1806,7 +1806,7 @@ const FamilyPlanningForm = () => {
                   <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>{index + 1}</td>
                   <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", whiteSpace: "nowrap" }}>{dateStr}</td>
                   <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", fontWeight: "bold" }}>{clientName}</td>
-                  <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{rec.family_number || parsed?.sideA?.family_serial_no || "—"}</td>
+                  <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{parsed?.sideA?.fp_no || rec.family_number || "—"}</td>
                   <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{method}</td>
                   <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{rec.remarks || "—"}</td>
                 </tr>
