@@ -82,17 +82,8 @@ const AuthPage = () => {
                   autoComplete="off"
                 />
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-white">{t("auth.password")}</Label>
-                  <button
-                    type="button"
-                    onClick={() => { setMode("forgot"); setResetSent(false); }}
-                    className="text-xs text-white/90 hover:text-white underline hover:no-underline transition-colors"
-                  >
-                    {t("auth.forgotPassword")}
-                  </button>
-                </div>
+              <div className="space-y-1.5">
+                <Label className="text-white">{t("auth.password")}</Label>
                 <div className="relative">
                   <Input
                     className="bg-background/70 border-border/60 text-slate-900"
@@ -108,6 +99,15 @@ const AuthPage = () => {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <div className="flex justify-end pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => { setMode("forgot"); setResetSent(false); }}
+                    className="text-xs text-white/80 hover:text-white hover:underline transition-colors cursor-pointer"
+                  >
+                    {t("auth.forgotPassword")}
                   </button>
                 </div>
               </div>
