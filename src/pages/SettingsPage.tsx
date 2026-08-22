@@ -2,18 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Settings as SettingsIcon, DatabaseBackup, Lock, ShieldCheck, ArrowRight } from "lucide-react";
+import { Settings as SettingsIcon } from "lucide-react";
 import { useSettings, COLOR_THEMES } from "@/contexts/SettingsContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 const SettingsPage = () => {
   const { darkMode, setDarkMode, fontSize, setFontSize, fontStyle, setFontStyle, language, setLanguage, colorTheme, setColorTheme, t } = useSettings();
-  const { userRole } = useAuth();
-  const navigate = useNavigate();
-
-  const isSupervisor = userRole === "supervisor";
 
   return (
     <div className="w-full space-y-6">
@@ -94,49 +87,6 @@ const SettingsPage = () => {
               );
             })}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Security & Data — Backup & Recovery */}
-      <Card className="border-border/50 shadow-sm overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-primary via-primary/70 to-primary/30" />
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-heading flex items-center gap-2">
-            <DatabaseBackup className="h-5 w-5 text-primary" />
-            {t("settings.backupAndRecovery")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            {t("settings.backupDesc")}
-          </p>
-
-          {isSupervisor ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
-                <ShieldCheck className="h-4 w-4 shrink-0" />
-                <span>{t("settings.authAdminGranted")}</span>
-              </div>
-              <Button
-                className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
-                onClick={() => navigate("/admin/settings/backup")}
-              >
-                <DatabaseBackup className="h-4 w-4" />
-                {t("settings.openBackupCenter")}
-                <ArrowRight className="h-4 w-4 ml-auto" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-start gap-3 rounded-lg bg-muted/40 border border-border/60 p-4">
-              <Lock className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-foreground">{t("settings.restrictedAdmin")}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {t("settings.restrictedAdminDesc")}
-                </p>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
