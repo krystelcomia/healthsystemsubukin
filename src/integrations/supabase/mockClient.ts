@@ -655,7 +655,7 @@ export function seedMockDatabase() {
     ];
 
     const defaultWorkers = [
-      { id: "worker-1", name: "Krystel Comia", age: 28, address: "Subukin", gmail: "krystelcomia@gmail.com", number: "09123456789", is_online: true, user_id: "user-1", assigned_sitio: "Maligaya", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      { id: "worker-1", name: "Krystel Comia", age: 28, address: "Subukin", gmail: "krystelcomia@gmail.com", number: "09123456789", is_online: false, user_id: "user-1", assigned_sitio: "Maligaya", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
       { id: "worker-cristeta", name: "Cristeta R. Lanuza", age: 0, address: "Masigla", gmail: "cristetalanuzaBHW@gmail.com", number: "0919-6980-712", is_online: false, user_id: "user-cristeta", assigned_sitio: "Masigla", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
       { id: "worker-evelyn", name: "Evelyn T. Ilao", age: 0, address: "Manggahan 1", gmail: "evelynilaoBHW@gmail.com", number: "0935-5638-247", is_online: false, user_id: "user-evelyn", assigned_sitio: "Manggahan 1", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
       { id: "worker-cecilia", name: "Cecilia G. Benosa", age: 0, address: "Maligaya", gmail: "ceciliabenosaBHW@gmail.com", number: "0921-8509-320", is_online: false, user_id: "user-cecilia", assigned_sitio: "Maligaya", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
@@ -675,6 +675,28 @@ export function seedMockDatabase() {
     db['profiles'] = defaultProfiles;
     db['bhw_workers'] = defaultWorkers;
     db['is_initialized'] = true;
+  }
+
+  // Ensure any worker not currently signed in is marked offline
+  if (db['bhw_workers']) {
+    let currentEmail = "";
+    try {
+      const sessionStr = localStorage.getItem('supabase_mock_session');
+      if (sessionStr) {
+        const session = JSON.parse(sessionStr);
+        currentEmail = (session?.user?.email || "").toLowerCase().trim();
+      }
+    } catch {}
+
+    db['bhw_workers'] = db['bhw_workers'].map((w: any) => {
+      const isCurrentlyLoggedIn = currentEmail && (
+        (w.gmail && w.gmail.toLowerCase().trim() === currentEmail)
+      );
+      if (!isCurrentlyLoggedIn && w.is_online) {
+        return { ...w, is_online: false };
+      }
+      return w;
+    });
   }
 
   localStorage.setItem('supabase_mock_db', JSON.stringify(db));
