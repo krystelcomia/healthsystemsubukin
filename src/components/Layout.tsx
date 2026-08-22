@@ -641,51 +641,53 @@ export function Layout({ children }: { children: React.ReactNode }) {
               box-sizing: border-box !important;
               page-break-after: avoid !important;
               break-after: avoid !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
             }
             @page {
               size: A4 portrait;
-              margin: 10mm 12mm;
+              margin: 8mm 12mm;
             }
           }
         `}</style>
         
         {/* Official Header with logos and letterhead */}
-        <div className="w-full mb-2">
+        <div className="w-full mb-3">
           <OfficialHeader
             title={language === "tl" ? "BARANGAY HEALTH WORKERS OPISYAL NA TALAAN NG ATTENDANCE" : "BARANGAY HEALTH WORKERS OFFICIAL ATTENDANCE RECORD"}
             subtitle={language === "tl" ? "Barangay Subukin, San Juan, Batangas • Opisyal na Talaan ng Oras ng Pagpasok at Paglabas" : "Barangay Subukin Health Center, San Juan, Batangas • Official Time In & Time Out Record"}
             showDoubleBorder={true}
-            logoHeight="100px"
+            logoHeight="125px"
           />
         </div>
 
         {/* Worker Summary Box */}
         {selectedWorker && (
-          <div className="w-full border-2 border-black p-4 rounded-md mb-4 text-[13px] leading-relaxed grid grid-cols-2 gap-4 mt-2 box-border bg-slate-50/50">
-            <div className="space-y-1.5">
-              <p><span className="font-bold uppercase tracking-wider text-black">Personnel Name:</span> <span className="font-semibold text-black">{selectedWorker.name}</span></p>
-              <p><span className="font-bold uppercase tracking-wider text-black">Designation / Role:</span> <span className="text-black">{selectedWorker.role === "supervisory" ? "Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
-              <p><span className="font-bold uppercase tracking-wider text-black">Assigned Station / Sitio:</span> <span className="text-black">{selectedWorker.sitio || "Subukin Main"}</span></p>
+          <div className="w-full border-2 border-black p-4 rounded-md mb-4 text-[15px] leading-relaxed grid grid-cols-2 gap-4 mt-2 box-border bg-slate-50/70">
+            <div className="space-y-2">
+              <p><span className="font-bold uppercase tracking-wider text-black">Personnel Name:</span> <span className="font-bold text-black text-[16px]">{selectedWorker.name}</span></p>
+              <p><span className="font-bold uppercase tracking-wider text-black">Designation / Role:</span> <span className="font-semibold text-black">{selectedWorker.role === "supervisory" ? "Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
+              <p><span className="font-bold uppercase tracking-wider text-black">Assigned Station / Sitio:</span> <span className="font-semibold text-black">{selectedWorker.sitio || "Subukin Main"}</span></p>
             </div>
-            <div className="text-right space-y-1.5">
-              <p><span className="font-bold uppercase tracking-wider text-black">Contact Number:</span> <span className="text-black">{selectedWorker.phone || "—"}</span></p>
-              <p><span className="font-bold uppercase tracking-wider text-black">Document Type:</span> <span className="text-black">Official Time Log & Duty Record</span></p>
-              <p><span className="font-bold uppercase tracking-wider text-black">Date Generated:</span> <span className="text-black font-medium">{new Date().toLocaleDateString(undefined, { dateStyle: "long" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span></p>
+            <div className="text-right space-y-2">
+              <p><span className="font-bold uppercase tracking-wider text-black">Contact Number:</span> <span className="font-semibold text-black">{selectedWorker.phone || "—"}</span></p>
+              <p><span className="font-bold uppercase tracking-wider text-black">Document Type:</span> <span className="font-semibold text-black">Official Time Log & Duty Record</span></p>
+              <p><span className="font-bold uppercase tracking-wider text-black">Date Generated:</span> <span className="text-black font-semibold">{new Date().toLocaleDateString(undefined, { dateStyle: "long" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span></p>
             </div>
           </div>
         )}
 
         {/* Official Attendance Log Table */}
-        <div className="w-full mb-6">
-          <table className="w-full min-w-full text-left text-[13px] border-2 border-black border-collapse table-auto">
+        <div className="w-full mb-5">
+          <table className="w-full min-w-full text-left text-[15px] border-2 border-black border-collapse table-auto">
             <thead>
-              <tr className="bg-slate-100 border-b-2 border-black font-bold text-black">
-                <th className="border border-black p-3 text-center w-12 font-bold uppercase text-[12px]">#</th>
-                <th className="border border-black p-3 font-bold uppercase text-[12px]">Date (Petsa)</th>
-                <th className="border border-black p-3 font-bold uppercase text-[12px]">Time In (Oras ng Pagpasok)</th>
-                <th className="border border-black p-3 font-bold uppercase text-[12px]">Time Out (Oras ng Paglabas)</th>
-                <th className="border border-black p-3 text-center w-32 font-bold uppercase text-[12px]">Duration (Tagal)</th>
-                <th className="border border-black p-3 text-center w-40 font-bold uppercase text-[12px]">Status (Katayuan)</th>
+              <tr className="bg-slate-200/90 border-b-2 border-black font-bold text-black">
+                <th className="border-2 border-black p-3.5 text-center w-14 font-bold uppercase text-[14px]">#</th>
+                <th className="border-2 border-black p-3.5 font-bold uppercase text-[14px]">Date (Petsa)</th>
+                <th className="border-2 border-black p-3.5 font-bold uppercase text-[14px]">Time In (Oras ng Pagpasok)</th>
+                <th className="border-2 border-black p-3.5 font-bold uppercase text-[14px]">Time Out (Oras ng Paglabas)</th>
+                <th className="border-2 border-black p-3.5 text-center w-36 font-bold uppercase text-[14px]">Duration (Tagal)</th>
+                <th className="border-2 border-black p-3.5 text-center w-44 font-bold uppercase text-[14px]">Status (Katayuan)</th>
               </tr>
             </thead>
             <tbody>
@@ -696,15 +698,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     ? formatDuration(new Date(log.loginAt), new Date(log.logoutAt))
                     : (language === "tl" ? "Aktibong Shift" : "Active Shift");
                   return (
-                    <tr key={log.id || idx} className="border-b border-black text-black">
-                      <td className="border border-black p-3 text-center font-mono font-bold">{idx + 1}</td>
-                      <td className="border border-black p-3 font-semibold">{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
-                      <td className="border border-black p-3 font-mono text-[13px]">{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
-                      <td className="border border-black p-3 font-mono text-[13px]">
+                    <tr key={log.id || idx} className="border-b-2 border-black text-black">
+                      <td className="border-2 border-black p-3.5 text-center font-mono font-bold text-[15px]">{idx + 1}</td>
+                      <td className="border-2 border-black p-3.5 font-bold text-[15px]">{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
+                      <td className="border-2 border-black p-3.5 font-mono font-semibold text-[15px]">{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
+                      <td className="border-2 border-black p-3.5 font-mono font-semibold text-[15px]">
                         {log.logoutAt ? new Date(log.logoutAt).toLocaleTimeString(undefined, { timeStyle: "short" }) : "— (Active on Duty)"}
                       </td>
-                      <td className="border border-black p-3 text-center font-mono font-semibold">{durationStr}</td>
-                      <td className="border border-black p-3 text-center font-semibold">
+                      <td className="border-2 border-black p-3.5 text-center font-mono font-bold text-[15px]">{durationStr}</td>
+                      <td className="border-2 border-black p-3.5 text-center font-bold text-[15px]">
                         {log.logoutAt ? "Completed Shift" : "On Duty (Active)"}
                       </td>
                     </tr>
@@ -712,7 +714,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="border border-black p-8 text-center italic text-slate-700 text-[13px]">
+                  <td colSpan={6} className="border-2 border-black p-10 text-center italic font-medium text-slate-800 text-[15px]">
                     No official attendance records logged for this personnel during this period.
                   </td>
                 </tr>
@@ -722,18 +724,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Official Certification and Sign-offs */}
-        <div className="grid grid-cols-2 gap-12 pt-8 mt-4 text-[13px] w-full">
+        <div className="grid grid-cols-2 gap-12 pt-6 mt-2 text-[14px] w-full">
           <div className="text-center">
-            <div className="border-b-2 border-black w-4/5 mx-auto pb-1.5 font-bold text-[15px] text-black">
+            <div className="border-b-2 border-black w-4/5 mx-auto pb-1.5 font-bold text-[17px] text-black uppercase">
               {selectedWorker?.name || "BHW Personnel"}
             </div>
-            <p className="mt-2 text-[12px] text-black font-semibold uppercase tracking-wider">Signature over Printed Name / Personnel</p>
+            <p className="mt-2 text-[13px] text-black font-bold uppercase tracking-wider">Signature over Printed Name / Personnel</p>
           </div>
           <div className="text-center">
-            <div className="border-b-2 border-black w-4/5 mx-auto pb-1.5 font-bold text-[15px] text-black">
+            <div className="border-b-2 border-black w-4/5 mx-auto pb-1.5 font-bold text-[17px] text-black uppercase">
               Admin Midwife
             </div>
-            <p className="mt-2 text-[12px] text-black font-semibold uppercase tracking-wider">Midwife Administrator / Certified Correct</p>
+            <p className="mt-2 text-[13px] text-black font-bold uppercase tracking-wider">Midwife Administrator / Certified Correct</p>
           </div>
         </div>
       </div>
