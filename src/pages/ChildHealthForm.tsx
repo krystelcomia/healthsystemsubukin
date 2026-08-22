@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { ensureResidentExists, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
@@ -223,6 +224,33 @@ export interface SIARow {
   vaccinator_middle_name: string;
 }
 
+const BHW_FULL_NAMES: Record<string, string> = {
+  "cristeta": "Cristeta R. Lanuza",
+  "evelyn": "Evelyn T. Ilao",
+  "cecilia": "Cecilia G. Benosa",
+  "merlita": "Merlita R. Alonzo",
+  "suzette": "Suzette B. Lopez",
+  "amelita": "Amelita R. Sayat",
+  "wilma": "Wilma D. Tanyag",
+  "nenita": "Nenita M. Dimaculangan",
+  "mercy": "Mercy O. Abanilla",
+  "renchie": "Renchie V. Ilao",
+  "renalyn": "Renalyn D. Laurente",
+  "maribel": "Maribel M. Abayon",
+  "krystel": "Krystel Comia",
+};
+
+const resolveBhwFullName = (rawName: string): string => {
+  if (!rawName) return "";
+  const lower = rawName.toLowerCase().trim();
+  for (const [key, fullName] of Object.entries(BHW_FULL_NAMES)) {
+    if (lower === key || lower.includes(key)) {
+      return fullName;
+    }
+  }
+  return rawName;
+};
+
 const initialSickForm: SickChildFormFull = {
   fn_number: "",
   first_name: "",
@@ -241,7 +269,7 @@ const initialSickForm: SickChildFormFull = {
   temp_c: "",
   pulse_rate: "",
   respiratory_rate: "",
-  examiner_name: "Cristeta R. Lanuza",
+  examiner_name: "",
   date_examined: new Date().toISOString().split("T")[0],
   chief_complaint: "",
   consultation_type: "",
@@ -343,7 +371,21 @@ const initialSickForm: SickChildFormFull = {
 
 const ChildHealthForm = () => {
   const { t } = useSettings();
+  const { user, fullName, username } = useAuth();
   const [activeTab, setActiveTab] = useState("sick-children");
+
+  const loggedInWorkerName = useMemo(() => {
+    const raw = 
+      fullName ||
+      localStorage.getItem("logged_in_fullname") ||
+      localStorage.getItem("active_bhw_worker") ||
+      user?.user_metadata?.full_name ||
+      username ||
+      localStorage.getItem("logged_in_username") ||
+      user?.email?.split("@")[0] ||
+      "";
+    return resolveBhwFullName(raw);
+  }, [fullName, username, user]);
   const [residents, setResidents] = useState<any[]>([]);
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
   const [savedHealthRecords, setSavedHealthRecords] = useState<any[]>([]);
@@ -404,8 +446,22 @@ const ChildHealthForm = () => {
   };
 
   // FORM 1 State
-  const [sickForm, setSickForm] = useState<SickChildFormFull>(initialSickForm);
+  const [sickForm, setSickForm] = useState<SickChildFormFull>(() => ({
+    ...initialSickForm,
+    examiner_name: loggedInWorkerName || "",
+  }));
   const [selectedResidentId, setSelectedResidentId] = useState<string>("");
+
+  useEffect(() => {
+    if (loggedInWorkerName) {
+      setSickForm(prev => {
+        if (!prev.examiner_name || prev.examiner_name === "Cristeta R. Lanuza" || prev.examiner_name === "Nag-eksamen") {
+          return { ...prev, examiner_name: loggedInWorkerName };
+        }
+        return prev;
+      });
+    }
+  }, [loggedInWorkerName]);
 
   // FORM 2 State (Vitamin A & Deworming Master List - RHU2)
   const [vitAInfo, setVitAInfo] = useState({
@@ -830,7 +886,10 @@ const ChildHealthForm = () => {
   };
 
   const handleResetSickForm = () => {
-    setSickForm(initialSickForm);
+    setSickForm({
+      ...initialSickForm,
+      examiner_name: loggedInWorkerName,
+    });
     setSelectedResidentId("");
     toast.info("Form reset.");
   };
@@ -2863,7 +2922,7 @@ const ChildHealthForm = () => {
                         </div>
                         <div>
                           <span className="text-slate-500 text-[10px] block">Examiner / BHW:</span>
-                          <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.examiner_name || "Cristeta R. Lanuza"}</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.examiner_name || loggedInWorkerName || "—"}</span>
                         </div>
                         <div>
                           <span className="text-slate-500 text-[10px] block">Consultation Type:</span>
