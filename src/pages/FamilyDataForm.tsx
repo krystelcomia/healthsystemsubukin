@@ -1043,13 +1043,13 @@ const FamilyDataForm = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40 no-print">
               <div>
                 <h2 className="font-heading font-semibold text-lg text-foreground">
                   Master Family Data Sheet Directory
                 </h2>
               </div>
-              <div className="flex items-center gap-2 no-print">
+              <div className="flex items-center gap-2">
                 <Button onClick={handlePrintIndividualFile} size="sm" variant="outline" className="gap-1.5">
                   <Printer className="h-4 w-4" /> Print
                 </Button>

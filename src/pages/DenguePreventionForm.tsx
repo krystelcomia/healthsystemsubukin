@@ -1178,7 +1178,7 @@ const DenguePreventionForm = () => {
             />
           </div>
 
-          <div className="text-center space-y-1 py-2">
+          <div className="text-center space-y-1 py-2 no-print">
             <h1 
               className="text-xl md:text-2xl font-bold tracking-widest text-foreground uppercase"
               style={{ fontFamily: "var(--font-heading)" }}

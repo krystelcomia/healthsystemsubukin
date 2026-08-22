@@ -244,12 +244,6 @@ const AdminResidents = () => {
           />
         </div>
 
-        <div className="print-only flex justify-between items-center mb-4">
-          <h2 style={{ fontSize: 16, fontWeight: "bold" }}>
-            {t("residents.title")} — {selectedSitio === "all" ? t("admin.residents.allSitios") : selectedSitio}
-          </h2>
-        </div>
-
         {loading ? (
           <Card className="border-border/50 p-6 text-center text-muted-foreground">{t("common.loading")}</Card>
         ) : filtered.length === 0 ? (

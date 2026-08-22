@@ -1226,7 +1226,7 @@ const AddNewForm = () => {
               </div>
 
               {/* Form Title Banner & Resident Linker */}
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-3 border-b border-border/50">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-3 border-b border-border/50 no-print">
                 <div className="flex-1">
                   <h1 className="text-base md:text-lg font-bold font-heading uppercase text-foreground tracking-wide print-title-heading">
                     {draftTitle || "Health Form Record"}

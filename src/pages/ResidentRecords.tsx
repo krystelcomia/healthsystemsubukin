@@ -842,12 +842,6 @@ const ResidentRecords = () => {
           />
         </div>
 
-        <div className="print-only flex justify-between items-center mb-4">
-          <h2 style={{ fontSize: 16, fontWeight: "bold" }}>
-            {t("residents.title")}{sitioFilter !== "all" ? ` — Sitio ${sitioFilter}` : ""}
-          </h2>
-        </div>
-
         {/* Printable Resident List Table */}
         <table className="print-only-table w-full border-collapse" style={{ width: "100%", borderCollapse: "collapse", display: "none" }}>
           <thead>

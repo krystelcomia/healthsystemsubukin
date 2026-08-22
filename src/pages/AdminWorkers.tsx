@@ -141,15 +141,6 @@ const AdminWorkers = () => {
           />
         </div>
 
-        <div className="print-only flex justify-between items-center mb-4" style={{ display: "none" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: "bold" }}>
-            BARANGAY HEALTH WORKERS (BHW) REGISTRY DIRECTORY
-          </h2>
-          <span style={{ fontSize: "12px", color: "#666" }}>
-            Total Registered: {workers.length}
-          </span>
-        </div>
-
         {/* Printable Table */}
         <div className="print-only" style={{ display: "none" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>

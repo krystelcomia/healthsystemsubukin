@@ -22,70 +22,88 @@ export const OfficialHeader: React.FC<OfficialHeaderProps> = ({
 
   return (
     <div
-      className={`header-seal official-barangay-header w-full flex flex-col items-center justify-center text-center ${
-        showDoubleBorder ? "border-b-[4px] border-double border-slate-900 pb-3 mb-4" : "pb-2 mb-3"
-      } ${className}`}
+      className={`official-header-wrapper w-full ${className}`}
       style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
         width: "100%",
         minWidth: "100%",
         boxSizing: "border-box",
-        borderBottom: showDoubleBorder ? "4px double #000000" : "none",
-        paddingBottom: showDoubleBorder ? "12px" : "8px",
         marginBottom: "16px",
       }}
     >
-      <div
-        className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8 max-w-full"
+      {/* Actual Official Barangay Header Area (Logos & Official Subukin Letterhead) */}
+      <header
+        role="banner"
+        className={`header-seal official-barangay-header w-full flex items-center justify-center text-center ${
+          showDoubleBorder ? "border-b-[4px] border-double border-slate-900 pb-3" : "pb-2"
+        }`}
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: "24px",
+          textAlign: "center",
           width: "100%",
+          minWidth: "100%",
+          boxSizing: "border-box",
+          borderBottom: showDoubleBorder ? "4px double #000000" : "none",
+          paddingBottom: showDoubleBorder ? "12px" : "8px",
         }}
       >
-        <img
-          src={sanjuanLogo}
-          alt="San Juan Seal"
-          className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply"
+        <div
+          className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8 max-w-full"
           style={{
-            height: heightStyle,
-            width: "auto",
-            objectFit: "contain",
-            mixBlendMode: "multiply",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "24px",
+            width: "100%",
           }}
-        />
-        <img
-          src={headerTextImg}
-          alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin"
-          className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply max-w-[65%] sm:max-w-none"
-          style={{
-            height: heightStyle,
-            width: "auto",
-            objectFit: "contain",
-            mixBlendMode: "multiply",
-          }}
-        />
-        <img
-          src={barangayLogo}
-          alt="Barangay Subukin Logo"
-          className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply"
-          style={{
-            height: heightStyle,
-            width: "auto",
-            objectFit: "contain",
-            mixBlendMode: "multiply",
-          }}
-        />
-      </div>
+        >
+          <img
+            src={sanjuanLogo}
+            alt="San Juan Seal"
+            className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply"
+            style={{
+              height: heightStyle,
+              width: "auto",
+              objectFit: "contain",
+              mixBlendMode: "multiply",
+            }}
+          />
+          <img
+            src={headerTextImg}
+            alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin"
+            className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply max-w-[65%] sm:max-w-none"
+            style={{
+              height: heightStyle,
+              width: "auto",
+              objectFit: "contain",
+              mixBlendMode: "multiply",
+            }}
+          />
+          <img
+            src={barangayLogo}
+            alt="Barangay Subukin Logo"
+            className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply"
+            style={{
+              height: heightStyle,
+              width: "auto",
+              objectFit: "contain",
+              mixBlendMode: "multiply",
+            }}
+          />
+        </div>
+      </header>
 
+      {/* Document Title & Subtitle - Outside & Below the Double Lines */}
       {(title || subtitle) && (
-        <div className="mt-2 text-center" style={{ marginTop: "8px", textAlign: "center" }}>
+        <div
+          className="document-title-section text-center mt-3 mb-2"
+          style={{
+            marginTop: "12px",
+            marginBottom: "8px",
+            textAlign: "center",
+          }}
+        >
           {title && (
             <h2
               className="text-sm sm:text-base font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100"

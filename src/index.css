@@ -154,7 +154,7 @@
   }
 
   /* Globally hide all application chrome in print mode */
-  header,
+  header:not(.official-barangay-header):not(.header-seal),
   nav,
   aside,
   [data-sidebar],
@@ -168,6 +168,17 @@
     height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
+  }
+
+  /* Ensure printable official barangay header is visible and properly formatted */
+  header.official-barangay-header,
+  .official-barangay-header,
+  .official-header-wrapper,
+  .header-seal {
+    display: flex !important;
+    visibility: visible !important;
+    width: 100% !important;
+    height: auto !important;
   }
 
   /* Reset layout flex/grid constraints so printable content takes 100% full paper width */
