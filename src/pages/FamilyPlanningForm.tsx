@@ -1655,22 +1655,24 @@ const FamilyPlanningForm = () => {
                 </p>
               </div>
             </div>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search resident, FP #, method..."
-                value={historySearch}
-                onChange={(e) => setHistorySearch(e.target.value)}
-                className="pl-9 h-9 text-xs"
-              />
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search resident, FP #, method..."
+                  value={historySearch}
+                  onChange={(e) => setHistorySearch(e.target.value)}
+                  className="pl-9 h-9 text-xs"
+                />
+              </div>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handlePrintHistory}
                 disabled={filteredHistoryRecords.length === 0}
-                className="h-9 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 shrink-0"
+                className="h-9 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 shrink-0 whitespace-nowrap"
               >
                 <Printer className="h-3.5 w-3.5" />
                 Print History

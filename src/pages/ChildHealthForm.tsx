@@ -595,15 +595,28 @@ const ChildHealthForm = () => {
               </div>
             </div>
 
-            <div className="relative w-full md:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <Input 
-                type="text" 
-                placeholder="Search child name..." 
-                value={historySearch} 
-                onChange={e => setHistorySearch(e.target.value)} 
-                className="pl-8 h-8 text-xs"
-              />
+            <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input 
+                  type="text" 
+                  placeholder="Search child name..." 
+                  value={historySearch} 
+                  onChange={e => setHistorySearch(e.target.value)} 
+                  className="pl-8 h-8 text-xs"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handlePrintHistory}
+                disabled={displayedRecords.length === 0}
+                className="h-8 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 shrink-0"
+              >
+                <Printer className="h-3.5 w-3.5" />
+                Print History
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -954,6 +967,14 @@ const ChildHealthForm = () => {
     }, 1000);
   };
 
+  const handlePrintHistory = () => {
+    document.body.classList.add("printing-history");
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove("printing-history");
+    }, 1000);
+  };
+
   const lineInputClass = "w-full text-xs border-0 border-b border-slate-400 dark:border-slate-500 bg-transparent rounded-none shadow-none focus-visible:ring-0 focus:outline-none px-1 h-6";
   const lineInputInlineClass = "inline-block text-xs border-0 border-b border-slate-400 dark:border-slate-500 bg-transparent rounded-none shadow-none focus-visible:ring-0 focus:outline-none px-1 h-5 text-center";
 
@@ -996,9 +1017,44 @@ const ChildHealthForm = () => {
             visibility: visible !important;
           }
 
+          /* History Print Mode */
+          body.printing-history #child-history-print-area,
+          body.printing-history #child-history-print-area *:not(.no-print):not(.no-print *) {
+            visibility: visible !important;
+            color: #000000 !important;
+            border-color: #000000 !important;
+          }
+          body.printing-history #child-history-print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            color: black !important;
+            padding: 10px 15px !important;
+            margin: 0 !important;
+            display: block !important;
+            box-sizing: border-box !important;
+          }
+          body.printing-history #child-history-print-area table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          body.printing-history #child-history-print-area th,
+          body.printing-history #child-history-print-area td {
+            border: 1px solid #000000 !important;
+            padding: 5px 6px !important;
+            font-size: 10px !important;
+            color: #000000 !important;
+          }
+          body.printing-history #child-history-print-area th {
+            background-color: #f1f5f9 !important;
+            font-weight: bold !important;
+          }
+
           /* If printing main form, make child-print-area visible */
-          body:not(.printing-summary) #child-print-area,
-          body:not(.printing-summary) #child-print-area * {
+          body:not(.printing-summary):not(.printing-history) #child-print-area,
+          body:not(.printing-summary):not(.printing-history) #child-print-area * {
             visibility: visible !important;
           }
 
@@ -3129,6 +3185,149 @@ const ChildHealthForm = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* PRINTABLE CHILD HEALTH HISTORY REPORT */}
+      <div id="child-history-print-area" className="hidden print:block" style={{ display: "none" }}>
+        {(() => {
+          const currentFormType = activeTab as "sick-children" | "vitamin-a" | "sia-masterlist";
+          const formRecords = savedHealthRecords.filter(r => getRecordFormType(r) === currentFormType);
+          const term = historySearch.toLowerCase().trim();
+          const filtered = formRecords.filter(r => {
+            if (!term) return true;
+            const childName = getRecordChildName(r).toLowerCase();
+            const remarks = (r.remarks || "").toLowerCase();
+            const checkupDate = (r.checkup_date || "").toLowerCase();
+            const detailsStr = typeof r.details === "string" ? r.details.toLowerCase() : JSON.stringify(r.details || {}).toLowerCase();
+            return childName.includes(term) || remarks.includes(term) || checkupDate.includes(term) || detailsStr.includes(term);
+          });
+
+          const reportTitles = {
+            "sick-children": "Official Care for Sick Children Records History (2m - 5y)",
+            "vitamin-a": "Official Vitamin A & Deworming Master List History (RHU2)",
+            "sia-masterlist": "Official SIA Master List History (6–59 Months)",
+          };
+
+          return (
+            <div>
+              <OfficialHeader
+                title={reportTitles[currentFormType] || "Official Child Health Records History"}
+                subtitle={`Barangay Subukin Health Center • Total: ${filtered.length} Record(s) • Generated: ${new Date().toLocaleDateString()}`}
+                showDoubleBorder={true}
+                logoHeight="75px"
+              />
+
+              <table className="w-full border-collapse" style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
+                <thead>
+                  {currentFormType === "sick-children" && (
+                    <tr style={{ backgroundColor: "#f1f5f9" }}>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "center", width: "35px" }}>#</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left", width: "85px" }}>Checkup Date</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Child's Name</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "center", width: "95px" }}>Age & Sex</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Chief Complaint / Classifications & Treatment</th>
+                    </tr>
+                  )}
+                  {currentFormType === "vitamin-a" && (
+                    <tr style={{ backgroundColor: "#f1f5f9" }}>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "center", width: "35px" }}>#</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left", width: "85px" }}>Date Saved</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Child's Name</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "center", width: "85px" }}>Date of Birth</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left", width: "90px" }}>Sitio</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Dose Records / Remarks</th>
+                    </tr>
+                  )}
+                  {currentFormType === "sia-masterlist" && (
+                    <tr style={{ backgroundColor: "#f1f5f9" }}>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "center", width: "35px" }}>#</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left", width: "85px" }}>Date</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Child's Name</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "center", width: "85px" }}>Age & Gender</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left", width: "95px" }}>Vaccine Given</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left", width: "95px" }}>Sitio / Address</th>
+                      <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Vaccinator / Remarks</th>
+                    </tr>
+                  )}
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ border: "1px solid #000", padding: "14px", textAlign: "center", fontStyle: "italic", fontSize: "11px" }}>
+                        No records found.
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((rec, index) => {
+                      let detailsObj: any = null;
+                      try {
+                        if (rec.details) {
+                          detailsObj = typeof rec.details === "string" ? JSON.parse(rec.details) : rec.details;
+                        }
+                      } catch {}
+                      const childName = getRecordChildName(rec);
+
+                      if (currentFormType === "sick-children") {
+                        return (
+                          <tr key={rec.id || index}>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>{index + 1}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", whiteSpace: "nowrap" }}>{rec.checkup_date || "—"}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", fontWeight: "bold" }}>{childName}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>
+                              {detailsObj?.age_months ? `${detailsObj.age_months} mos (${detailsObj.sex || "—"})` : "—"}
+                            </td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>
+                              {detailsObj?.chief_complaint ? `Complaint: ${detailsObj.chief_complaint}` : rec.remarks || "—"}
+                            </td>
+                          </tr>
+                        );
+                      } else if (currentFormType === "vitamin-a") {
+                        return (
+                          <tr key={rec.id || index}>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>{index + 1}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", whiteSpace: "nowrap" }}>{rec.checkup_date || "—"}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", fontWeight: "bold" }}>{childName}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>{detailsObj?.row_data?.dob || "—"}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{detailsObj?.header?.sitio || "Subukin"}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{rec.remarks || "—"}</td>
+                          </tr>
+                        );
+                      } else {
+                        return (
+                          <tr key={rec.id || index}>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>{index + 1}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", whiteSpace: "nowrap" }}>
+                              {detailsObj?.row_data?.vaccination_date || rec.checkup_date || "—"}
+                            </td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", fontWeight: "bold" }}>{childName}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>
+                              {detailsObj?.row_data?.age_months ? `${detailsObj.row_data.age_months} mos (${detailsObj.row_data.gender === "M" ? "Male" : detailsObj.row_data.gender === "F" ? "Female" : detailsObj.row_data.gender || "—"})` : "—"}
+                            </td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{detailsObj?.row_data?.vaccine_given || "—"}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{detailsObj?.row_data?.purok_sitio_street || detailsObj?.row_data?.barangay || "Subukin"}</td>
+                            <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{detailsObj?.row_data?.vaccinator || rec.remarks || "—"}</td>
+                          </tr>
+                        );
+                      }
+                    })
+                  )}
+                </tbody>
+              </table>
+
+              {/* Official Signatures */}
+              <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "35px", marginTop: "25px", borderTop: "1px solid #cbd5e1" }}>
+                <div>
+                  Certified Correct: ___________________________<br />
+                  <span style={{ fontSize: "10px", color: "#4b5563" }}>Attending Barangay Health Worker</span>
+                </div>
+                <div>
+                  Approved By: ___________________________<br />
+                  <span style={{ fontSize: "10px", color: "#4b5563" }}>Barangay Health Supervisor / Midwife</span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
     </div>
   );
 };
