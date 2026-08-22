@@ -637,7 +637,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 min-width: 100% !important;
                 background: #ffffff !important;
                 color: #000000 !important;
-                padding: 0 !important;
+                padding: 4mm 0 0 0 !important;
                 margin: 0 !important;
                 display: block !important;
                 box-sizing: border-box !important;
@@ -646,22 +646,46 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
               }
+              body.printing-attendance #attendance-print-area .official-barangay-header {
+                padding-bottom: 8px !important;
+                margin-bottom: 8px !important;
+                border-bottom: 3.5px double #000000 !important;
+              }
+              body.printing-attendance #attendance-print-area .header-seal img {
+                height: 135px !important;
+                width: auto !important;
+                object-fit: contain !important;
+                mix-blend-mode: multiply !important;
+              }
+              body.printing-attendance #attendance-print-area .document-title-section h2 {
+                font-size: 19px !important;
+                font-weight: 800 !important;
+                letter-spacing: 0.05em !important;
+                margin-top: 6px !important;
+                margin-bottom: 3px !important;
+                color: #000000 !important;
+              }
+              body.printing-attendance #attendance-print-area .document-title-section p {
+                font-size: 13px !important;
+                color: #374151 !important;
+                margin-bottom: 10px !important;
+              }
             }
           `}</style>
           
           {/* Official Header with logos and letterhead */}
-          <div className="w-full mb-3 pt-1">
+          <div className="w-full mb-3 pt-2">
             <OfficialHeader
               title={language === "tl" ? "BARANGAY HEALTH WORKERS OPISYAL NA TALAAN NG ATTENDANCE" : "BARANGAY HEALTH WORKERS OFFICIAL ATTENDANCE RECORD"}
               subtitle={language === "tl" ? "Barangay Subukin, San Juan, Batangas • Opisyal na Talaan ng Oras ng Pagpasok at Paglabas" : "Barangay Subukin Health Center, San Juan, Batangas • Official Time In & Time Out Record"}
               showDoubleBorder={true}
-              logoHeight="115px"
+              logoHeight="135px"
             />
           </div>
 
           {/* Worker Summary Box */}
           {selectedWorker && (
-            <div className="w-full border-2 border-black p-3.5 rounded-md mb-4 text-[14px] leading-relaxed grid grid-cols-2 gap-4 mt-1 box-border bg-slate-50/70">
+            <div className="w-full border-2 border-black p-3.5 rounded-md mb-4 text-[14px] leading-relaxed grid grid-cols-2 gap-4 mt-2 box-border bg-slate-50/70">
               <div className="space-y-1.5">
                 <p><span className="font-bold uppercase tracking-wider text-black">Personnel Name:</span> <span className="font-bold text-black text-[15px]">{selectedWorker.name}</span></p>
                 <p><span className="font-bold uppercase tracking-wider text-black">Designation / Role:</span> <span className="font-semibold text-black">{selectedWorker.role === "supervisory" ? "Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
@@ -676,7 +700,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           )}
 
           {/* Official Attendance Log Table */}
-          <div className="w-full mb-6">
+          <div className="w-full mb-5">
             <table className="w-full min-w-full text-left text-[14px] border-2 border-black border-collapse table-auto">
               <thead>
                 <tr className="bg-slate-200/90 border-b-2 border-black font-bold text-black">
@@ -722,7 +746,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Official Certification and Sign-offs */}
-          <div className="grid grid-cols-2 gap-12 pt-6 mt-4 text-[14px] w-full">
+          <div className="grid grid-cols-2 gap-12 pt-6 mt-3 text-[14px] w-full">
             <div className="text-center">
               <div className="border-b-2 border-black w-4/5 mx-auto pb-1.5 font-bold text-[16px] text-black uppercase">
                 {selectedWorker?.name || "BHW Personnel"}
