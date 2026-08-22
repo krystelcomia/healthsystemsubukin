@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { NotificationCenter } from "@/components/NotificationCenter";
 import { bhwCheckIn, bhwCheckOut } from "@/lib/activityLogger";
 import { toast } from "sonner";
 
@@ -40,7 +39,6 @@ const BHW_WORKERS = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, userRole, username } = useAuth();
   const { t } = useSettings();
-  const [showAlertBadge, setShowAlertBadge] = useState(false);
   const [activeBhw, setActiveBhw] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState("00:00:00");
   const [logsDialogOpen, setLogsDialogOpen] = useState(false);
@@ -53,67 +51,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   // Get active worker display name (full name, username or email local part)
   const workerDisplayName = username || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "BHW Worker";
-
-  useEffect(() => {
-    const checkUpcomingEvents = () => {
-      try {
-        const storedEvents = localStorage.getItem("subukin_calendar_events");
-        const storedSeen = localStorage.getItem("subukin_seen_events");
-        const seenIds: string[] = storedSeen ? JSON.parse(storedSeen) : [];
-        
-        if (!storedEvents) {
-          setShowAlertBadge(false);
-          return;
-        }
-        const events = JSON.parse(storedEvents);
-        if (!Array.isArray(events)) {
-          setShowAlertBadge(false);
-          return;
-        }
-        
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        let hasUnseen = false;
-
-        events.forEach((event: any) => {
-          if (event.status !== "scheduled" && event.status !== "rescheduled") {
-            return;
-          }
-          
-          const eventDate = new Date(event.date);
-          eventDate.setHours(0, 0, 0, 0);
-
-          const diffTime = eventDate.getTime() - today.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-          // Alert triggers if the event starts in the next 3 days and has not been seen yet
-          if (diffDays >= 0 && diffDays <= 3) {
-            if (!seenIds.includes(event.id)) {
-              hasUnseen = true;
-            }
-          }
-        });
-
-        setShowAlertBadge(hasUnseen);
-      } catch (e) {
-        console.error("Error checking unseen events:", e);
-        setShowAlertBadge(false);
-      }
-    };
-
-    checkUpcomingEvents();
-    const interval = setInterval(checkUpcomingEvents, 10000);
-
-    const handleEventsUpdate = () => checkUpcomingEvents();
-    window.addEventListener("calendar-events-updated", handleEventsUpdate);
-    window.addEventListener("storage", handleEventsUpdate);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("calendar-events-updated", handleEventsUpdate);
-      window.removeEventListener("storage", handleEventsUpdate);
-    };
-  }, []);
 
   useEffect(() => {
     const updateBhwState = () => {
@@ -179,44 +116,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
     return () => clearInterval(timer);
   }, [activeBhw]);
-
-  const markAllAsSeen = () => {
-    try {
-      const storedEvents = localStorage.getItem("subukin_calendar_events");
-      if (!storedEvents) return;
-      const events = JSON.parse(storedEvents);
-      if (!Array.isArray(events)) return;
-      
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const upcomingIds: string[] = [];
-
-      events.forEach((event: any) => {
-        if (event.status !== "scheduled" && event.status !== "rescheduled") {
-          return;
-        }
-        
-        const eventDate = new Date(event.date);
-        eventDate.setHours(0, 0, 0, 0);
-
-        const diffTime = eventDate.getTime() - today.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays >= 0 && diffDays <= 3) {
-          upcomingIds.push(event.id);
-        }
-      });
-
-      const storedSeen = localStorage.getItem("subukin_seen_events");
-      const seenIds: string[] = storedSeen ? JSON.parse(storedSeen) : [];
-      const newSeenIds = Array.from(new Set([...seenIds, ...upcomingIds]));
-      
-      localStorage.setItem("subukin_seen_events", JSON.stringify(newSeenIds));
-      window.dispatchEvent(new Event("calendar-events-updated"));
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   const getWorkerAttendance = (workerName: string) => {
     const cleanWorkerName = workerName.toLowerCase();
@@ -326,26 +225,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   {headerLinks.map(({ label, to, Icon }) => {
                     const isAdminMode = userRole === "supervisor";
                     const resolvedTo = isAdminMode ? (to === "/" ? "/admin" : `/admin${to}`) : to;
-                    const isCalendar = label === "Calendar";
                     return (
                       <Tooltip key={label}>
                         <TooltipTrigger asChild>
                           <NavLink
                             to={resolvedTo}
                             end
-                            onClick={isCalendar ? markAllAsSeen : undefined}
                             className="flex items-center justify-center px-3 py-1.5 rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                             activeClassName="bg-sidebar-accent text-sidebar-primary"
                           >
-                            <div className="relative">
-                              <Icon className="h-5 w-5" aria-label={label} />
-                              {isCalendar && showAlertBadge && (
-                                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                                </span>
-                              )}
-                            </div>
+                            <Icon className="h-5 w-5" aria-label={label} />
                           </NavLink>
                         </TooltipTrigger>
                         <TooltipContent>{label}</TooltipContent>
@@ -354,8 +243,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   })}
                 </nav>
               </TooltipProvider>
-
-              <NotificationCenter />
 
               <div className="border-l border-sidebar-border h-6 shrink-0" />
 
