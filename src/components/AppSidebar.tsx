@@ -197,13 +197,17 @@ export function AppSidebar() {
         <NavLink to={isAdmin ? "/admin/profile" : "/profile"} className="flex items-center gap-3 rounded-md p-1 -m-1 transition-colors hover:bg-sidebar-accent" activeClassName="">
           <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center">
             <span className="text-xs font-semibold text-sidebar-accent-foreground">
-              {isAdmin ? "SV" : (userRole === "bns" ? "BN" : "BH")}
+              {isAdmin ? "MW" : (userRole === "bns" ? "BN" : "BH")}
             </span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">{displayUsername}</p>
-            <p className="text-xs text-sidebar-foreground/50 capitalize">
-              {userRole === "bns" ? "BNS" : userRole === "supervisory" ? "Supervisory BHW" : (userRole || t("common.worker"))}
+            <p className="text-xs text-sidebar-foreground/50">
+              {isAdmin || userRole === "supervisor" || userRole === "supervisory" 
+                ? "Midwife" 
+                : userRole === "bns" 
+                ? "BNS" 
+                : (userRole === "bhw" ? "BHW" : t("common.worker"))}
             </p>
           </div>
         </NavLink>

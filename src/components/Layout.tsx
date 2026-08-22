@@ -272,8 +272,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       <div className="space-y-1">
                         <h4 className="font-heading font-semibold text-sm text-foreground flex items-center gap-1.5">
                           <Fingerprint className="h-4 w-4 text-primary" />
-                          {userRole === "supervisory" 
-                            ? (language === "tl" ? "Aktibong Shift ng Midwife" : "Supervisory Active Shift") 
+                          {userRole === "supervisory" || userRole === "supervisor"
+                            ? (language === "tl" ? "Aktibong Shift ng Midwife" : "Midwife Active Shift") 
                             : userRole === "bns" 
                             ? (language === "tl" ? "Aktibong Shift ng BNS Scholar" : "BNS Scholar Active Shift") 
                             : (language === "tl" ? "Aktibong Shift ng BHW" : "BHW Active Shift")}

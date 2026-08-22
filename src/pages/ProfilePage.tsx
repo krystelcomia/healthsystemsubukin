@@ -145,7 +145,7 @@ const ProfilePage = () => {
                     <>
                       <span className="hidden md:inline">•</span>
                       <span className="flex items-center gap-1 text-primary font-semibold">
-                        <MapPin className="h-3.5 w-3.5" />Assigned Sitio: {assignedSitio}
+                        <MapPin className="h-3.5 w-3.5" />{t("profile.assignedSitio")}: {assignedSitio}
                       </span>
                     </>
                   )}
@@ -155,7 +155,7 @@ const ProfilePage = () => {
             <div className="flex gap-2">
               {avatarUrl && (
                 <Button variant="outline" size="sm" onClick={() => setRemovePhotoConfirm(true)}>
-                  <X className="h-4 w-4 mr-1" /> Remove photo
+                  <X className="h-4 w-4 mr-1" /> {t("profile.removePhoto")}
                 </Button>
               )}
             </div>
@@ -171,8 +171,14 @@ const ProfilePage = () => {
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">{t("profile.role") || "Role"}</p>
-              <p className="font-semibold text-foreground capitalize">{userRole === "bns" ? "BNS" : userRole === "supervisory" ? "Supervisory" : (userRole || "—")}</p>
+              <p className="text-xs text-muted-foreground">{t("profile.role")}</p>
+              <p className="font-semibold text-foreground">
+                {userRole === "supervisor" || userRole === "supervisory" 
+                  ? t("profile.midwife") 
+                  : userRole === "bns" 
+                  ? t("profile.bns") 
+                  : t("profile.bhwWorker")}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -183,7 +189,7 @@ const ProfilePage = () => {
               <MapPin className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Assigned Sitio</p>
+              <p className="text-xs text-muted-foreground">{t("profile.assignedSitio")}</p>
               <p className="font-semibold text-foreground truncate">{assignedSitio || "—"}</p>
             </div>
           </CardContent>
@@ -195,7 +201,7 @@ const ProfilePage = () => {
               <IdCard className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">{t("profile.userId") || "User ID"}</p>
+              <p className="text-xs text-muted-foreground">{t("profile.userId")}</p>
               <p className="font-mono text-xs text-foreground truncate">{user?.id || "—"}</p>
             </div>
           </CardContent>
@@ -207,8 +213,8 @@ const ProfilePage = () => {
               <User className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">{t("profile.status") || "Status"}</p>
-              <p className="font-semibold text-foreground">Active</p>
+              <p className="text-xs text-muted-foreground">{t("profile.status")}</p>
+              <p className="font-semibold text-foreground">{t("profile.active")}</p>
             </div>
           </CardContent>
         </Card>
@@ -220,7 +226,7 @@ const ProfilePage = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-lg font-heading font-semibold text-foreground">{t("profile.info")}</h2>
-              <p className="text-sm text-muted-foreground">Personal and assigned community details.</p>
+              <p className="text-sm text-muted-foreground">{t("profile.detailsDesc")}</p>
             </div>
           </div>
 
@@ -237,7 +243,7 @@ const ProfilePage = () => {
                 <p className="text-foreground font-medium py-2 border-b border-border/50">{username || "—"}</p>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground">Assigned Sitio</Label>
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("profile.assignedSitio")}</Label>
                 <p className="text-foreground font-medium py-2 border-b border-border/50 flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-primary" /> {assignedSitio || "—"}
                 </p>
