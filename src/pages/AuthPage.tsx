@@ -14,7 +14,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 
 const AuthPage = () => {
   const { session, userRole, loading: authLoading } = useAuth();
-  const { t } = useSettings();
+  const { t, language } = useSettings();
   const [mode, setMode] = useState<"login" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,11 +23,19 @@ const AuthPage = () => {
   const [resetSent, setResetSent] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) { toast.error("Please enter email and password"); return; }
+    if (!email || !password) {
+      toast.error(language === "tl" ? "Mangyaring ilagay ang email at password" : "Please enter email and password");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    if (error) { toast.error(error.message); setLoading(false); return; }
-    toast.success("Signed in successfully"); setLoading(false);
+    if (error) {
+      toast.error(error.message, { duration: 7000 });
+      setLoading(false);
+      return;
+    }
+    toast.success(language === "tl" ? "Matagumpay na nakapag-sign in" : "Signed in successfully");
+    setLoading(false);
   };
 
   const handleForgotPassword = async () => {

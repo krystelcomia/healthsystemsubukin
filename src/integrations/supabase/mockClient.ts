@@ -263,34 +263,45 @@ class MockAuth {
     const dbStr = localStorage.getItem('supabase_mock_db');
     const db = dbStr ? JSON.parse(dbStr) : {};
     const users = db['auth_users'] || [];
-    
-    const cleanEmail = (email || "").trim().toLowerCase();
-    const user = users.find((u: any) => (u.email || "").trim().toLowerCase() === cleanEmail && u.password === password);
-    if (!user) {
-      return { data: { user: null, session: null }, error: { message: "Invalid login credentials" } };
-    }
-
-    // Check if worker account was deleted by administrator
     const workers = db['bhw_workers'] || [];
     const roles = db['user_roles'] || [];
-    const userRoleObj = roles.find((r: any) => r.user_id === user.id);
-    const isSupervisor = userRoleObj?.role === "supervisor" || cleanEmail.includes("adminsubukin");
+    
+    const cleanEmail = (email || "").trim().toLowerCase();
+    const userWithEmail = users.find((u: any) => (u.email || "").trim().toLowerCase() === cleanEmail);
+    const workerWithEmail = workers.find((w: any) => (w.gmail || "").trim().toLowerCase() === cleanEmail);
 
-    if (!isSupervisor) {
-      const isWorkerActive = workers.some((w: any) => 
-        (w.gmail && w.gmail.toLowerCase().trim() === cleanEmail) || 
-        (w.user_id && w.user_id === user.id)
-      );
-
-      if (!isWorkerActive) {
-        return {
-          data: { user: null, session: null },
-          error: {
-            message: "This account has been deleted by the administrator and no longer has access to the system. Please contact your Midwife Administrator."
-          }
-        };
-      }
+    // 1. If user email is not found in active auth_users and not in active bhw_workers
+    if (!userWithEmail && !workerWithEmail) {
+      return {
+        data: { user: null, session: null },
+        error: {
+          message: "User account was not found. If this account was deleted by the administrator, it can be found and accessed again once restored through Backup & Recovery."
+        }
+      };
     }
+
+    // 2. If user exists in auth_users but worker account was deleted from active bhw_workers
+    const isSupervisor = cleanEmail.includes("adminsubukin") || 
+      roles.some((r: any) => r.user_id === userWithEmail?.id && r.role === "supervisor");
+
+    if (!isSupervisor && !workerWithEmail) {
+      return {
+        data: { user: null, session: null },
+        error: {
+          message: "User account was not found. This account was deleted by the administrator and can be accessed again once restored through Backup & Recovery."
+        }
+      };
+    }
+
+    // 3. If user exists and is active, but password does not match
+    if (!userWithEmail || userWithEmail.password !== password) {
+      return {
+        data: { user: null, session: null },
+        error: { message: "Incorrect password. Please verify your password and try again." }
+      };
+    }
+
+    const user = userWithEmail;
 
     const session = {
       access_token: "fake-jwt-token",
