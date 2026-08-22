@@ -14,11 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { bhwCheckIn, bhwCheckOut } from "@/lib/activityLogger";
 import { toast } from "sonner";
 
-const headerLinks = [
-  { label: "Home", to: "/", Icon: Home },
-  { label: "About", to: "/about", Icon: Info },
-  { label: "Calendar", to: "/calendar", Icon: Calendar },
-  { label: "Contact", to: "/contact", Icon: Phone },
+const getHeaderLinks = (t: (key: string) => string) => [
+  { label: t("nav.dashboard"), to: "/", Icon: Home },
+  { label: t("nav.about"), to: "/about", Icon: Info },
+  { label: t("nav.calendar"), to: "/calendar", Icon: Calendar },
+  { label: t("nav.contact"), to: "/contact", Icon: Phone },
 ];
 
 const BHW_WORKERS = [
@@ -38,7 +38,7 @@ const BHW_WORKERS = [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, userRole, username } = useAuth();
-  const { t } = useSettings();
+  const { t, language } = useSettings();
   const [activeBhw, setActiveBhw] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState("00:00:00");
   const [logsDialogOpen, setLogsDialogOpen] = useState(false);
@@ -222,7 +222,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-4 ml-auto">
               <TooltipProvider delayDuration={100}>
                 <nav className="flex items-center gap-2">
-                  {headerLinks.map(({ label, to, Icon }) => {
+                  {getHeaderLinks(t).map(({ label, to, Icon }) => {
                     const isAdminMode = userRole === "supervisor";
                     const resolvedTo = isAdminMode ? (to === "/" ? "/admin" : `/admin${to}`) : to;
                     return (
@@ -259,7 +259,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   >
                     <Fingerprint className={`h-5 w-5 ${!activeBhw ? "text-amber-500 animate-pulse" : "text-primary"}`} />
                     <span className="text-xs font-semibold max-w-[120px] truncate">
-                      {activeBhw ? activeBhw : "BHW Sign In"}
+                      {activeBhw ? activeBhw : (language === "tl" ? "BHW Sign In" : "BHW Sign In")}
                     </span>
                     {activeBhw && (
                       <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background animate-pulse" />
@@ -272,21 +272,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       <div className="space-y-1">
                         <h4 className="font-heading font-semibold text-sm text-foreground flex items-center gap-1.5">
                           <Fingerprint className="h-4 w-4 text-primary" />
-                          {userRole === "supervisory" ? "Supervisory Active Shift" : userRole === "bns" ? "BNS Scholar Active Shift" : "BHW Active Shift"}
+                          {userRole === "supervisory" 
+                            ? (language === "tl" ? "Aktibong Shift ng Midwife" : "Supervisory Active Shift") 
+                            : userRole === "bns" 
+                            ? (language === "tl" ? "Aktibong Shift ng BNS Scholar" : "BNS Scholar Active Shift") 
+                            : (language === "tl" ? "Aktibong Shift ng BHW" : "BHW Active Shift")}
                         </h4>
                         <p className="text-xs text-muted-foreground">
-                          Shift tracker using your active login profile: <span className="font-bold text-foreground">{workerDisplayName}</span>.
+                          {language === "tl" ? "Tagasubaybay ng shift gamit ang aktibong profile: " : "Shift tracker using your active login profile: "}<span className="font-bold text-foreground">{workerDisplayName}</span>.
                         </p>
                       </div>
 
                       {activeBhw ? (
                         <div className="p-3 bg-muted/40 border border-border/30 rounded-lg space-y-2 text-xs">
                           <p className="text-foreground">
-                            Active Shift: <strong>{activeBhw}</strong>
+                            {language === "tl" ? "Aktibong Shift: " : "Active Shift: "}<strong>{activeBhw}</strong>
                           </p>
                           <p className="text-muted-foreground flex items-center gap-1">
                             <Clock className="h-3 w-3 text-primary/75" />
-                            Shift duration: <span className="font-mono text-primary font-semibold">{sessionDuration}</span>
+                            {language === "tl" ? "Tagal ng shift: " : "Shift duration: "}<span className="font-mono text-primary font-semibold">{sessionDuration}</span>
                           </p>
                           <Button 
                             variant="destructive" 
@@ -294,16 +298,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             className="w-full text-xs h-8 mt-1 gap-1 font-semibold"
                             onClick={() => {
                               bhwCheckOut();
-                              toast.success("Shift ended successfully!");
+                              toast.success(language === "tl" ? "Matagumpay na natapos ang shift!" : "Shift ended successfully!");
                             }}
                           >
-                            <LogOut className="h-3.5 w-3.5" /> End Shift / Check Out
+                            <LogOut className="h-3.5 w-3.5" /> {language === "tl" ? "Tapusin ang Shift / Mag-Check Out" : "End Shift / Check Out"}
                           </Button>
                         </div>
                       ) : (
                         <div className="space-y-3">
                           <div className="p-3 bg-muted/20 border border-border/10 rounded-lg space-y-1">
-                            <p className="text-xs text-muted-foreground">Logged In User Profile:</p>
+                            <p className="text-xs text-muted-foreground">{language === "tl" ? "Naka-log in na User Profile:" : "Logged In User Profile:"}</p>
                             <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                               <User className="h-3.5 w-3.5 text-primary" /> {workerDisplayName}
                             </p>
@@ -313,10 +317,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             className="w-full text-xs h-8 gap-1.5 font-semibold"
                             onClick={() => {
                               bhwCheckIn(workerDisplayName);
-                              toast.success(`Welcome, ${workerDisplayName}! Shift started.`);
+                              toast.success(language === "tl" ? `Maligayang pagdating, ${workerDisplayName}! Nagsimula na ang iyong shift.` : `Welcome, ${workerDisplayName}! Shift started.`);
                             }}
                           >
-                            <UserCheck className="h-3.5 w-3.5" /> Clock In / Start Shift
+                            <UserCheck className="h-3.5 w-3.5" /> {language === "tl" ? "Mag-Clock In / Simulan ang Shift" : "Clock In / Start Shift"}
                           </Button>
                         </div>
                       )}
@@ -327,7 +331,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <div className="space-y-1 p-2 bg-muted/20 border border-border/20 rounded-md">
                       <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
                         <Shield className="h-3.5 w-3.5 text-primary" />
-                        Midwife Admin Mode
+                        {language === "tl" ? "Mode ng Midwife Admin" : "Midwife Admin Mode"}
                       </p>
                     </div>
                   )}
@@ -341,7 +345,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         setLogsDialogOpen(true);
                       }}
                     >
-                      <List className="h-3.5 w-3.5" /> View Attendance & Logs
+                      <List className="h-3.5 w-3.5" /> {language === "tl" ? "Tingnan ang Attendance at Logs" : "View Attendance & Logs"}
                     </Button>
                   </div>
                 </PopoverContent>
@@ -396,10 +400,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <DialogHeader className="pb-4 border-b border-border/30">
             <DialogTitle className="text-xl font-heading font-bold flex items-center gap-2 text-foreground">
               <Fingerprint className="h-5 w-5 text-primary animate-pulse" />
-              Barangay Health Workers Attendance & Logs
+              {language === "tl" ? "Attendance at Logs ng mga Barangay Health Worker" : "Barangay Health Workers Attendance & Logs"}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Attendance records and shift activity history for Barangay Subukin health staff.
+              {language === "tl" ? "Mga tala ng attendance at kasaysayan ng shift para sa mga kawani ng kalusugan ng Barangay Subukin." : "Attendance records and shift activity history for Barangay Subukin health staff."}
             </DialogDescription>
           </DialogHeader>
 
@@ -408,7 +412,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {userRole === "supervisor" ? (
               <div className="border-r border-border/30 pr-4 overflow-y-auto space-y-2 h-full">
                 <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
-                  BHW Personnel Directory ({BHW_WORKERS.length})
+                  {language === "tl" ? "Direktoryo ng mga Tauhan ng BHW" : "BHW Personnel Directory"} ({BHW_WORKERS.length})
                 </Label>
                 {BHW_WORKERS.map((worker) => {
                   const isSelected = selectedWorker?.name === worker.name;
@@ -434,7 +438,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             {worker.name}
                           </p>
                           <p className="text-[10px] text-muted-foreground capitalize truncate">
-                            {worker.role === "supervisory" ? "Midwife" : worker.role === "bns" ? "BNS Scholar" : "BHW Worker"}
+                            {worker.role === "supervisory" ? (language === "tl" ? "Midwife" : "Midwife") : worker.role === "bns" ? "BNS Scholar" : "BHW Worker"}
                           </p>
                         </div>
                       </div>
@@ -457,28 +461,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       <div>
                         <h3 className="text-base font-bold text-foreground">{selectedWorker.name}</h3>
                         <p className="text-[10px] text-muted-foreground capitalize">
-                          {selectedWorker.role === "supervisory" ? "Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar" : "Barangay Health Worker"}
+                          {selectedWorker.role === "supervisory" ? (language === "tl" ? "Midwife" : "Midwife") : selectedWorker.role === "bns" ? (language === "tl" ? "Barangay Nutrition Scholar" : "Barangay Nutrition Scholar") : (language === "tl" ? "Barangay Health Worker" : "Barangay Health Worker")}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
                         {activeBhw === selectedWorker.name ? (
                           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-800 dark:bg-green-950/30 dark:text-green-400 border border-green-200 dark:border-green-900/30">
                             <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                            On Duty (Shift duration: {sessionDuration})
+                            {language === "tl" ? `Nasa Trabaho (Tagal ng shift: ${sessionDuration})` : `On Duty (Shift duration: ${sessionDuration})`}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-muted text-muted-foreground border border-border/30">
-                            Off Duty
+                            {language === "tl" ? "Wala sa Trabaho" : "Off Duty"}
                           </span>
                         )}
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground pt-1 border-t border-border/10">
                       <div>
-                        <strong>User ID / Phone:</strong> {selectedWorker.phone || "—"}
+                        <strong>{language === "tl" ? "User ID / Telepono:" : "User ID / Phone:"}</strong> {selectedWorker.phone || "—"}
                       </div>
                       <div>
-                        <strong>Shift Access:</strong> Registered BHW Staff
+                        <strong>{language === "tl" ? "Access sa Shift:" : "Shift Access:"}</strong> {language === "tl" ? "Rehistradong Kawani ng BHW" : "Registered BHW Staff"}
                       </div>
                     </div>
                   </div>
@@ -487,17 +491,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   <div className="space-y-2">
                     <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <CalendarDays className="h-3.5 w-3.5 text-primary" />
-                      Attendance History
+                      {language === "tl" ? "Kasaysayan ng Attendance" : "Attendance History"}
                     </h4>
                     <div className="border border-border/30 rounded-xl overflow-hidden bg-card/50">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
                           <tr className="bg-muted/40 border-b border-border/30 font-semibold text-muted-foreground">
-                            <th className="p-2.5">Date</th>
-                            <th className="p-2.5">Check In</th>
-                            <th className="p-2.5">Check Out</th>
-                            <th className="p-2.5">Duration</th>
-                            <th className="p-2.5 text-center">Actions</th>
+                            <th className="p-2.5">{language === "tl" ? "Petsa" : "Date"}</th>
+                            <th className="p-2.5">{language === "tl" ? "Pagpasok (Check In)" : "Check In"}</th>
+                            <th className="p-2.5">{language === "tl" ? "Paglabas (Check Out)" : "Check Out"}</th>
+                            <th className="p-2.5">{language === "tl" ? "Tagal" : "Duration"}</th>
+                            <th className="p-2.5 text-center">{language === "tl" ? "Mga Aksyon" : "Actions"}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border/20">
@@ -506,7 +510,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                               const loginDate = new Date(log.loginAt);
                               const durationStr = log.logoutAt 
                                 ? formatDuration(new Date(log.loginAt), new Date(log.logoutAt))
-                                : "Active Shift";
+                                : (language === "tl" ? "Aktibong Shift" : "Active Shift");
                               const isCurrentSession = selectedSessionId === log.id;
                               return (
                                 <tr key={log.id} className={`hover:bg-muted/20 text-foreground/90 transition-colors ${isCurrentSession ? "bg-primary/5 hover:bg-primary/10" : ""}`}>
@@ -530,7 +534,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                       size="icon"
                                       className="h-6 w-6 rounded"
                                       onClick={() => setSelectedSessionId(log.id)}
-                                      title="Filter activities for this shift"
+                                      title={language === "tl" ? "I-filter ang mga aktibidad para sa shift na ito" : "Filter activities for this shift"}
                                     >
                                       <Eye className="h-3 w-3" />
                                     </Button>
@@ -541,7 +545,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           ) : (
                             <tr>
                               <td colSpan={5} className="p-4 text-center text-muted-foreground italic">
-                                No attendance records found.
+                                {language === "tl" ? "Walang nahanap na tala ng attendance." : "No attendance records found."}
                               </td>
                             </tr>
                           )}
@@ -555,13 +559,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <div className="flex items-center justify-between gap-4">
                       <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                         <Activity className="h-3.5 w-3.5 text-primary" />
-                        {selectedSessionId ? "Shift Action Log" : "All Actions Log"}
+                        {selectedSessionId 
+                          ? (language === "tl" ? "Log ng Aksyon sa Shift" : "Shift Action Log") 
+                          : (language === "tl" ? "Log ng Lahat ng Aksyon" : "All Actions Log")}
                         {selectedSessionId && (
                           <span className="text-[10px] text-muted-foreground font-normal lowercase">
                             ({(() => {
                               const sess = attendanceLogs.find(l => l.id === selectedSessionId);
                               if (!sess) return "";
-                              return `${new Date(sess.loginAt).toLocaleTimeString(undefined, {timeStyle: "short"})} - ${sess.logoutAt ? new Date(sess.logoutAt).toLocaleTimeString(undefined, {timeStyle: "short"}) : "present"}`;
+                              return `${new Date(sess.loginAt).toLocaleTimeString(undefined, {timeStyle: "short"})} - ${sess.logoutAt ? new Date(sess.logoutAt).toLocaleTimeString(undefined, {timeStyle: "short"}) : (language === "tl" ? "kasalukuyan" : "present")}`;
                             })()})
                           </span>
                         )}
@@ -573,7 +579,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           className="h-6 text-[10px] px-2 hover:bg-muted text-primary"
                           onClick={() => setSelectedSessionId(null)}
                         >
-                          Show All History
+                          {language === "tl" ? "Ipakita ang Lahat ng Kasaysayan" : "Show All History"}
                         </Button>
                       )}
                     </div>
@@ -594,7 +600,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                   {activity.description}
                                 </p>
                                 <p className="text-[10px] text-muted-foreground mt-0.5">
-                                  {logTime.toLocaleDateString()} at {logTime.toLocaleTimeString(undefined, { timeStyle: "medium" })}
+                                  {logTime.toLocaleDateString()} {language === "tl" ? "nang" : "at"} {logTime.toLocaleTimeString(undefined, { timeStyle: "medium" })}
                                 </p>
                               </div>
                             </div>
@@ -603,8 +609,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       ) : (
                         <div className="p-6 text-center text-xs text-muted-foreground italic border border-dashed border-border/30 rounded-xl bg-muted/10">
                           {selectedSessionId 
-                            ? "No logged actions found during this shift. Click 'Show All History' or another shift to view logs." 
-                            : "No logged actions found."}
+                            ? (language === "tl" ? "Walang naitalang aksyon sa shift na ito. I-click ang 'Ipakita ang Lahat ng Kasaysayan' o ibang shift para makita ang logs." : "No logged actions found during this shift. Click 'Show All History' or another shift to view logs.") 
+                            : (language === "tl" ? "Walang naitalang aksyon." : "No logged actions found.")}
                         </div>
                       )}
                     </div>
@@ -613,7 +619,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground py-12">
                   <User className="h-10 w-10 text-muted-foreground/50 mb-2" />
-                  <p className="text-xs">Review logs and attendance sessions above.</p>
+                  <p className="text-xs">{language === "tl" ? "Suriin ang mga log at sesyon ng attendance sa itaas." : "Review logs and attendance sessions above."}</p>
                 </div>
               )}
             </div>
@@ -621,7 +627,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           
           <DialogFooter className="pt-4 border-t border-border/30 mt-4 shrink-0 font-semibold">
             <Button variant="outline" size="sm" onClick={() => setLogsDialogOpen(false)}>
-              Close Log Viewer
+              {language === "tl" ? "Isara ang Log Viewer" : "Close Log Viewer"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -645,10 +651,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-xs text-amber-800 dark:text-amber-300 font-medium space-y-1">
             <p className="flex items-center gap-1.5 font-bold">
               <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-              Attendance Warning:
+              {language === "tl" ? "Babala sa Attendance:" : "Attendance Warning:"}
             </p>
             <p className="text-[11px] leading-normal opacity-90">
-              Check-in serves as your official daily attendance log. Failing to check in now means your <strong>"In" time</strong> will not be recorded.
+              {language === "tl" 
+                ? <>Nagsisilbi ang check-in bilang opisyal na tala ng iyong pang-araw-araw na attendance. Ang hindi pag-check in ay nangangahulugang hindi maire-record ang iyong <strong>oras ng pagpasok ("In" time)</strong>.</>
+                : <>Check-in serves as your official daily attendance log. Failing to check in now means your <strong>"In" time</strong> will not be recorded.</>}
             </p>
           </div>
 

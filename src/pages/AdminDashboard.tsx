@@ -35,7 +35,7 @@ interface BHWWorker {
 }
 
 const AdminDashboard = () => {
-  const { t, colorTheme } = useSettings();
+  const { t, colorTheme, language } = useSettings();
   const [stats, setStats] = useState({
     totalResidents: 0, totalWorkers: 0, onlineWorkers: 0, consultations: 0, familyRecords: 0, philpenRecords: 0, dengueRecords: 0,
   });
@@ -204,6 +204,13 @@ const AdminDashboard = () => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+    if (language === "tl") {
+      if (diffHrs < 1) return "Kani-kanina lang";
+      if (diffHrs < 24) return `${diffHrs} oras ang nakalipas`;
+      const diffDays = Math.floor(diffHrs / 24);
+      if (diffDays === 1) return "Kahapon";
+      return `${diffDays} araw ang nakalipas`;
+    }
     if (diffHrs < 1) return "Just now";
     if (diffHrs < 24) return `${diffHrs}h ago`;
     const diffDays = Math.floor(diffHrs / 24);
@@ -234,13 +241,13 @@ const AdminDashboard = () => {
           <div className="space-y-2 max-w-2xl">
             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md ${currentStyle.badgeStyle}`}>
               <Shield className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
-              Midwife Admin Supervisory Portal
+              {language === "tl" ? "Supervisory Portal ng Midwife Admin" : "Midwife Admin Supervisory Portal"}
             </div>
             <h1 className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-white flex items-center gap-2">
               {t("admin.dashboard.title")}
             </h1>
             <p className="text-sm text-white/80 leading-relaxed">
-              {t("admin.dashboard.desc")} Comprehensive health system overview, active staff shift monitoring, and health forms analytics.
+              {t("admin.dashboard.desc")} {language === "tl" ? "Komprehensibong pangkalahatang-ideya ng kalusugan, pagsubaybay sa shift ng kawani, at analytics ng mga form." : "Comprehensive health system overview, active staff shift monitoring, and health forms analytics."}
             </p>
           </div>
 
@@ -248,17 +255,17 @@ const AdminDashboard = () => {
             <div className="px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-center text-xs space-y-0.5">
               <div className="text-white/90 font-semibold flex items-center justify-center gap-1.5">
                 <Clock className="h-3.5 w-3.5" />
-                {currentTime.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                {currentTime.toLocaleDateString(language === "tl" ? "fil-PH" : "en-US", { weekday: "short", month: "short", day: "numeric" })}
               </div>
               <div className="font-mono text-xs font-bold text-white tracking-widest">
-                {currentTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                {currentTime.toLocaleTimeString(language === "tl" ? "fil-PH" : "en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
               </div>
             </div>
 
             <Button asChild size="sm" className={`${currentStyle.btnStyle} shadow-lg gap-2 text-xs`}>
               <Link to="/admin/workers">
                 <Users className="h-3.5 w-3.5" />
-                Manage Staff
+                {language === "tl" ? "Pamahalaan ang Kawani" : "Manage Staff"}
               </Link>
             </Button>
           </div>
@@ -290,7 +297,7 @@ const AdminDashboard = () => {
                   {stat.desc}
                 </span>
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-border/60">
-                  Verified
+                  {language === "tl" ? "Beripikado" : "Verified"}
                 </Badge>
               </div>
             </CardContent>
@@ -309,11 +316,13 @@ const AdminDashboard = () => {
                 <Shield className="h-5 w-5 text-indigo-600" />
                 {t("admin.dashboard.workersStatus")}
               </CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">Live duty status of health center staff</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {language === "tl" ? "Live na katayuan sa tungkulin ng kawani sa sentro ng kalusugan" : "Live duty status of health center staff"}
+              </p>
             </div>
             <Button asChild variant="outline" size="sm" className="text-xs h-7 gap-1">
               <Link to="/admin/workers">
-                View All <ChevronRight className="h-3 w-3" />
+                {language === "tl" ? "Tingnan Lahat" : "View All"} <ChevronRight className="h-3 w-3" />
               </Link>
             </Button>
           </CardHeader>
@@ -355,7 +364,9 @@ const AdminDashboard = () => {
               <Activity className="h-5 w-5 text-sky-600" />
               {t("admin.dashboard.recentReports")}
             </CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Recent clinical consultations across Barangay Subukin</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {language === "tl" ? "Kamakailang mga klinikal na konsultasyon sa buong Barangay Subukin" : "Recent clinical consultations across Barangay Subukin"}
+            </p>
           </CardHeader>
           <CardContent className="p-4 flex-1">
             <div className="space-y-3">
@@ -396,14 +407,14 @@ const AdminDashboard = () => {
             <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.formsOverviewDesc")}</p>
           </div>
           <Badge variant="outline" className="text-xs gap-1 font-semibold text-indigo-600 border-indigo-500/30 bg-indigo-500/5">
-            <Sparkles className="h-3 w-3" /> System Analytics Trends
+            <Sparkles className="h-3 w-3" /> {language === "tl" ? "Mga Trend sa Analytics ng Sistema" : "System Analytics Trends"}
           </Badge>
         </CardHeader>
 
         <CardContent className="pt-6">
           {loading ? (
             <div className="h-72 flex items-center justify-center text-xs text-muted-foreground">
-              Loading analytics chart...
+              {language === "tl" ? "Naglo-load ng analytics tsart..." : "Loading analytics chart..."}
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={320}>

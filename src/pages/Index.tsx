@@ -30,7 +30,7 @@ import { syncFamilyDataToResidents } from "@/lib/residentLinker";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const Index = () => {
-  const { t, colorTheme } = useSettings();
+  const { t, colorTheme, language } = useSettings();
   const [stats, setStats] = useState({
     totalResidents: 0,
     consultations: 0,
@@ -347,6 +347,13 @@ const Index = () => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+    if (language === "tl") {
+      if (diffHrs < 1) return "Kani-kanina lang";
+      if (diffHrs < 24) return `${diffHrs} oras ang nakalipas`;
+      const diffDays = Math.floor(diffHrs / 24);
+      if (diffDays === 1) return "Kahapon";
+      return `${diffDays} araw ang nakalipas`;
+    }
     if (diffHrs < 1) return "Just now";
     if (diffHrs < 24) return `${diffHrs}h ago`;
     const diffDays = Math.floor(diffHrs / 24);
@@ -366,14 +373,62 @@ const Index = () => {
   }
 
   const standardForms: LaunchpadItem[] = [
-    { title: t("nav.consultation"), href: "/forms/consultation", icon: Stethoscope, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Log illness, vitals & diagnosis" },
-    { title: t("nav.familyData"), href: "/forms/family-data", icon: ClipboardList, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Household profiles & members" },
-    { title: t("nav.philpenHealth"), href: "/forms/philpen-health", icon: Activity, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "NCD risk screening & BP" },
-    { title: t("nav.childHealth"), href: "/forms/child-health", icon: Baby, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Sick child, Vit A & SIA list" },
-    { title: t("nav.maternalCare"), href: "/forms/maternal-care", icon: HeartPulse, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Prenatal & pregnant records" },
-    { title: t("nav.denguePrevention"), href: "/forms/dengue-prevention", icon: Bug, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Household larvae inspection" },
-    { title: t("nav.familyPlanning"), href: "/forms/family-planning", icon: Syringe, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Contraceptive method tracking" },
-    { title: t("nav.residentRecords"), href: "/residents", icon: Users, color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", desc: "Master resident directory & health records" },
+    { 
+      title: t("nav.consultation"), 
+      href: "/forms/consultation", 
+      icon: Stethoscope, 
+      color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", 
+      desc: language === "tl" ? "Itala ang sakit, vitals at diagnosis" : "Log illness, vitals & diagnosis" 
+    },
+    { 
+      title: t("nav.familyData"), 
+      href: "/forms/family-data", 
+      icon: ClipboardList, 
+      color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", 
+      desc: language === "tl" ? "Profile ng sambahayan at mga miyembro" : "Household profiles & members" 
+    },
+    { 
+      title: t("nav.philpenHealth"), 
+      href: "/forms/philpen-health", 
+      icon: Activity, 
+      color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", 
+      desc: language === "tl" ? "NCD risk screening at presyon ng dugo (BP)" : "NCD risk screening & BP" 
+    },
+    { 
+      title: t("nav.childHealth"), 
+      href: "/forms/child-health", 
+      icon: Baby, 
+      color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", 
+      desc: language === "tl" ? "May sakit na bata, Vit A at talaan ng SIA" : "Sick child, Vit A & SIA list" 
+    },
+    { 
+      title: t("nav.maternalCare"), 
+      href: "/forms/maternal-care", 
+      icon: HeartPulse, 
+      color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", 
+      desc: language === "tl" ? "Talaan ng prenatal at mga buntis" : "Prenatal & pregnant records" 
+    },
+    { 
+      title: t("nav.denguePrevention"), 
+      href: "/forms/dengue-prevention", 
+      icon: Bug, 
+      color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", 
+      desc: language === "tl" ? "Inspeksyon ng kiti-kiti sa sambahayan" : "Household larvae inspection" 
+    },
+    { 
+      title: t("nav.familyPlanning"), 
+      href: "/forms/family-planning", 
+      icon: Syringe, 
+      color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", 
+      desc: language === "tl" ? "Pagsubaybay sa pamamaraan ng contraceptive" : "Contraceptive method tracking" 
+    },
+    { 
+      title: t("nav.residentRecords"), 
+      href: "/residents", 
+      icon: Users, 
+      color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", 
+      desc: language === "tl" ? "Master direktoryo ng residente at rekord ng kalusugan" : "Master resident directory & health records" 
+    },
   ];
 
   const deployedCustomLaunchpadItems: LaunchpadItem[] = customForms.map((cf) => ({
@@ -381,20 +436,20 @@ const Index = () => {
     href: `/forms/custom/${cf.id}`,
     icon: FileText,
     color: "from-primary/25 via-primary/15 to-primary/5 text-primary border-primary/30 hover:border-primary/60 shadow-xs",
-    desc: cf.description || "Deployed official health form",
-    badge: "Custom Form",
+    desc: cf.description || (language === "tl" ? "Naka-deploy na opisyal na form ng kalusugan" : "Deployed official health form"),
+    badge: language === "tl" ? "Custom Form" : "Custom Form",
   }));
 
   const allLaunchpadItems: LaunchpadItem[] = [
     ...standardForms,
     ...deployedCustomLaunchpadItems,
     {
-      title: "Add New Form",
+      title: language === "tl" ? "Magdagdag ng Bagong Form" : "Add New Form",
       href: "/forms/add-new",
       icon: Plus,
       color: "from-muted/40 to-muted/10 text-muted-foreground border-dashed border-border/80 hover:border-primary/50 hover:text-primary",
-      desc: "Scan and deploy new digital health forms",
-      badge: "Deploy",
+      desc: language === "tl" ? "Mag-scan at mag-deploy ng mga bagong digital health form" : "Scan and deploy new digital health forms",
+      badge: language === "tl" ? "I-deploy" : "Deploy",
     },
   ];
 
@@ -417,13 +472,13 @@ const Index = () => {
           <div className="space-y-2 max-w-2xl">
             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md ${currentStyle.badgeStyle}`}>
               <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
-              Barangay Subukin Health Center Hub
+              {language === "tl" ? "Sentro ng Kalusugan ng Barangay Subukin" : "Barangay Subukin Health Center Hub"}
             </div>
             <h1 className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-white">
               {t("dashboard.title")}
             </h1>
             <p className="text-sm text-white/80 leading-relaxed">
-              {t("dashboard.welcome")} Complete health care monitoring, resident registry, and form services.
+              {t("dashboard.welcome")} {language === "tl" ? "Kumpletong pagsubaybay sa kalusugan, rehistro ng residente, at mga serbisyo sa form." : "Complete health care monitoring, resident registry, and form services."}
             </p>
           </div>
 
@@ -431,17 +486,17 @@ const Index = () => {
             <div className="px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-center text-xs space-y-0.5">
               <div className={`font-semibold flex items-center justify-center gap-1.5 ${currentStyle.accentText}`}>
                 <Calendar className="h-3.5 w-3.5" />
-                {currentTime.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                {currentTime.toLocaleDateString(language === "tl" ? "fil-PH" : "en-US", { weekday: "short", month: "short", day: "numeric" })}
               </div>
               <div className="font-mono text-xs font-bold text-white tracking-widest">
-                {currentTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                {currentTime.toLocaleTimeString(language === "tl" ? "fil-PH" : "en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
               </div>
             </div>
 
             <Button asChild size="sm" className={`${currentStyle.btnStyle} shadow-lg gap-2 text-xs`}>
               <Link to="/residents">
                 <Search className="h-3.5 w-3.5" />
-                Search Resident
+                {language === "tl" ? "Maghanap ng Residente" : "Search Resident"}
               </Link>
             </Button>
           </div>
@@ -473,7 +528,7 @@ const Index = () => {
                   {stat.desc}
                 </span>
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-border/60">
-                  Active
+                  {language === "tl" ? "Aktibo" : "Active"}
                 </Badge>
               </div>
             </CardContent>
@@ -490,14 +545,14 @@ const Index = () => {
             <div>
               <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
                 <FileText className="h-5 w-5 text-primary" />
-                Health Form Services Launchpad
+                {language === "tl" ? "Pangunahing Sentro ng mga Form ng Kalusugan" : "Health Form Services Launchpad"}
               </CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Quick access to complete barangay health records & forms
+                {language === "tl" ? "Mabilis na access sa kumpletong mga talaan at form ng kalusugan ng barangay" : "Quick access to complete barangay health records & forms"}
               </p>
             </div>
             <Badge variant="secondary" className="text-xs gap-1 font-semibold bg-primary/10 text-primary border-primary/20">
-              <CheckCircle2 className="h-3 w-3" /> {standardForms.length + customForms.length} Active Services
+              <CheckCircle2 className="h-3 w-3" /> {standardForms.length + customForms.length} {language === "tl" ? "Aktibong Serbisyo" : "Active Services"}
             </Badge>
           </CardHeader>
 
@@ -544,7 +599,9 @@ const Index = () => {
               <Clock className="h-5 w-5 text-sky-600" />
               {t("dashboard.recentActivity")}
             </CardTitle>
-            <p className="text-xs text-muted-foreground">Real-time health center events & records</p>
+            <p className="text-xs text-muted-foreground">
+              {language === "tl" ? "Real-time na mga kaganapan at talaan sa sentro ng kalusugan" : "Real-time health center events & records"}
+            </p>
           </CardHeader>
           <CardContent className="p-4 flex-1">
             <div className="space-y-3">
@@ -598,7 +655,7 @@ const Index = () => {
             <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.formsOverviewDesc")}</p>
           </div>
           <Badge variant="outline" className="text-xs gap-1 font-semibold text-emerald-600 border-emerald-500/30 bg-emerald-500/5">
-            <Sparkles className="h-3 w-3" /> Monthly Activity Trends
+            <Sparkles className="h-3 w-3" /> {language === "tl" ? "Buwanang Trend ng Aktibidad" : "Monthly Activity Trends"}
           </Badge>
         </CardHeader>
 
