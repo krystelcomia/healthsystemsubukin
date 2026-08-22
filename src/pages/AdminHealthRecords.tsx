@@ -946,7 +946,7 @@ const AdminHealthRecords = () => {
               View Forms & Templates
             </h1>
             <p className="text-sm text-white/80 leading-relaxed">
-              Browse all official barangay health forms. You can inspect submitted entries or generate clean printable blank form templates in read-only mode.
+              Browse all official barangay health forms. You can inspect and manage submitted entries in read-only mode.
             </p>
           </div>
 
@@ -1011,26 +1011,15 @@ const AdminHealthRecords = () => {
                 </CardContent>
               </div>
 
-              <div className="p-4 pt-0 space-y-2">
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePrintBlankForm(form)}
-                    className="text-xs h-8 gap-1 hover:bg-primary/10 hover:text-primary border-border/80"
-                  >
-                    <Printer className="h-3.5 w-3.5" />
-                    Blank Form
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => handleOpenFormRecords(form)}
-                    className="text-xs h-8 gap-1"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    View Records
-                  </Button>
-                </div>
+              <div className="p-4 pt-0">
+                <Button
+                  size="sm"
+                  onClick={() => handleOpenFormRecords(form)}
+                  className="w-full text-xs h-8 gap-1.5"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  View Records
+                </Button>
               </div>
             </Card>
           );
