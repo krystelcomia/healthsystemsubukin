@@ -791,7 +791,7 @@ const FamilyDataForm = () => {
             width: 100% !important;
           }
           .header-seal img {
-            height: 75px !important;
+            height: 95px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
@@ -826,7 +826,7 @@ const FamilyDataForm = () => {
             overflow: visible !important;
           }
           .header-seal img {
-            height: 80px !important;
+            height: 95px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
@@ -1039,7 +1039,7 @@ const FamilyDataForm = () => {
                 title="Master Family Data Sheet Directory"
                 subtitle="Barangay Subukin Health Center • San Juan, Batangas"
                 showDoubleBorder={true}
-                logoHeight="75px"
+                logoHeight="95px"
               />
             </div>
 
@@ -1163,7 +1163,7 @@ const FamilyDataForm = () => {
                   title="Official Barangay Household Census & Demographics Record"
                   subtitle="Barangay Subukin Health Center • San Juan, Batangas"
                   showDoubleBorder={true}
-                  logoHeight="75px"
+                  logoHeight="95px"
                 />
               </div>
 

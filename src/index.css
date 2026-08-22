@@ -171,14 +171,40 @@
   }
 
   /* Ensure printable official barangay header is visible and properly formatted */
+  .official-header-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    visibility: visible !important;
+    margin-bottom: 10px !important;
+  }
+
   header.official-barangay-header,
   .official-barangay-header,
-  .official-header-wrapper,
   .header-seal {
     display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
     visibility: visible !important;
     width: 100% !important;
     height: auto !important;
+  }
+
+  .header-seal img {
+    height: 95px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    mix-blend-mode: multiply !important;
+  }
+
+  .document-title-section {
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+    visibility: visible !important;
   }
 
   /* Reset layout flex/grid constraints so printable content takes 100% full paper width */

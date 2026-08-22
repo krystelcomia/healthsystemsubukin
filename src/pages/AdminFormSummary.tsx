@@ -566,7 +566,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             font-weight: bold !important;
           }
           .header-seal img {
-            height: 75px !important;
+            height: 95px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
@@ -994,7 +994,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             title={printState.reportTitle}
             subtitle={printState.subtitle}
             showDoubleBorder={true}
-            logoHeight="75px"
+            logoHeight="95px"
           />
 
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>

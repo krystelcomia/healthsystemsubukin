@@ -770,7 +770,7 @@ const MaternalCareForm = () => {
               title="Maternal Care & Prenatal Health Record"
               subtitle="Barangay Subukin Health Center • San Juan, Batangas"
               showDoubleBorder={true}
-              logoHeight="75px"
+              logoHeight="95px"
             />
           </div>
 
@@ -1394,7 +1394,7 @@ const MaternalCareForm = () => {
           title="Official Maternal Care & Prenatal Health Records History"
           subtitle={`Barangay Subukin Health Center Registry • Total: ${filteredRecords.length} Record(s) • Generated: ${new Date().toLocaleDateString()}`}
           showDoubleBorder={true}
-          logoHeight="75px"
+          logoHeight="95px"
         />
 
         <table className="w-full border-collapse" style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
@@ -1454,7 +1454,7 @@ const MaternalCareForm = () => {
                 title="Official Maternal Care Patient Record"
                 subtitle="Barangay Subukin Health Center • San Juan, Batangas"
                 showDoubleBorder={true}
-                logoHeight="75px"
+                logoHeight="95px"
               />
 
               {/* Patient Demographics */}

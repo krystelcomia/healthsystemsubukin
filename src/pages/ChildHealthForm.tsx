@@ -1215,8 +1215,8 @@ const ChildHealthForm = () => {
             text-align: center !important;
           }
           .header-seal img, .print-only img {
-            height: 80px !important;
-            max-height: 80px !important;
+            height: 95px !important;
+            max-height: 95px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
@@ -1446,7 +1446,7 @@ const ChildHealthForm = () => {
               title="Child Health and Development Immunization Record"
               subtitle="Barangay Subukin Health Center • San Juan, Batangas"
               showDoubleBorder={true}
-              logoHeight="75px"
+              logoHeight="95px"
             />
           </div>
 
@@ -2889,7 +2889,7 @@ const ChildHealthForm = () => {
                     }
                     subtitle="Barangay Subukin Health Center • San Juan, Batangas"
                     showDoubleBorder={true}
-                    logoHeight="75px"
+                    logoHeight="95px"
                   />
                 </div>
 
@@ -3304,7 +3304,7 @@ const ChildHealthForm = () => {
                 title={reportTitles[currentFormType] || "Official Child Health Records History"}
                 subtitle={`Barangay Subukin Health Center • Total: ${filtered.length} Record(s) • Generated: ${new Date().toLocaleDateString()}`}
                 showDoubleBorder={true}
-                logoHeight="75px"
+                logoHeight="95px"
               />
 
               <table className="w-full border-collapse" style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>

@@ -111,7 +111,7 @@ const AdminWorkers = () => {
           .no-print { display: none !important; }
           .print-only { display: flex !important; width: 100% !important; flex-direction: column !important; align-items: center !important; }
           .header-seal { width: 100% !important; }
-          .header-seal img { height: 75px !important; mix-blend-mode: multiply !important; }
+          .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
           #admin-workers-print-area table td, #admin-workers-print-area table th { padding: 6px 10px !important; font-size: 11px !important; color: #000 !important; }
           @page { size: A4 portrait; margin: 6mm; }
         }
@@ -145,7 +145,7 @@ const AdminWorkers = () => {
             title="Barangay Health Workers (BHW) Registry Directory"
             subtitle={`Barangay Subukin Health Center • Total Registered: ${workers.length}`}
             showDoubleBorder={true}
-            logoHeight="75px"
+            logoHeight="95px"
           />
         </div>
 

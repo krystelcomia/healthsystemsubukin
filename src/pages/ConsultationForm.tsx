@@ -365,7 +365,7 @@ const ConsultationForm = () => {
           .no-print { display: none !important; }
           .print-only { display: flex !important; width: 100% !important; flex-direction: column !important; align-items: center !important; }
           .header-seal { width: 100% !important; }
-          .header-seal img { height: 75px !important; mix-blend-mode: multiply !important; }
+          .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
           #consultation-print-area table td, #consultation-print-area table th { padding: 3px 5px !important; font-size: 11px !important; }
           @page { size: A4 portrait; margin: 6mm; }
         }
@@ -396,7 +396,7 @@ const ConsultationForm = () => {
               title="Official Patient Consultation Record"
               subtitle="Barangay Subukin Health Center • San Juan, Batangas"
               showDoubleBorder={true}
-              logoHeight="75px"
+              logoHeight="95px"
             />
           </div>
 
@@ -741,7 +741,7 @@ const ConsultationForm = () => {
           title="Official Patient Consultation Records History"
           subtitle={`Barangay Subukin Health Center Registry • Total: ${filteredHistory.length} Record(s) • Generated: ${new Date().toLocaleDateString()}`}
           showDoubleBorder={true}
-          logoHeight="75px"
+          logoHeight="95px"
         />
 
         {/* Printable History Table */}
@@ -811,7 +811,7 @@ const ConsultationForm = () => {
                 title="Official Patient Consultation Record"
                 subtitle="Barangay Subukin Health Center • San Juan, Batangas"
                 showDoubleBorder={true}
-                logoHeight="75px"
+                logoHeight="95px"
               />
 
               {/* Patient Demographics */}

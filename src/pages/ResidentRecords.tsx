@@ -346,7 +346,7 @@ const ResidentRecords = () => {
             .print-resident-header { display: block !important; width: 100% !important; }
             .print-only-table { display: table !important; }
             .header-seal { width: 100% !important; }
-            .header-seal img { height: 75px !important; mix-blend-mode: multiply !important; }
+            .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
             #resident-print-area table td, #resident-print-area table th { padding: 3px 6px !important; font-size: 11px !important; }
             @page { size: A4 portrait; margin: 5mm; }
           }
@@ -377,7 +377,7 @@ const ResidentRecords = () => {
               title={`Individual Resident Health Profile — ${selectedResident.full_name}`}
               subtitle="Barangay Subukin Health Center • San Juan, Batangas"
               showDoubleBorder={true}
-              logoHeight="75px"
+              logoHeight="95px"
             />
           </div>
 
@@ -756,7 +756,7 @@ const ResidentRecords = () => {
           .print-only { display: flex !important; width: 100% !important; flex-direction: column !important; align-items: center !important; }
           .print-only-table { display: table !important; }
           .header-seal { width: 100% !important; }
-          .header-seal img { height: 75px !important; mix-blend-mode: multiply !important; }
+          .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
           #resident-print-area table td, #resident-print-area table th { padding: 3px 6px !important; font-size: 11px !important; }
           @page { size: A4 portrait; margin: 5mm; }
         }
@@ -850,7 +850,7 @@ const ResidentRecords = () => {
             title={`${t("residents.title")}${sitioFilter !== "all" ? ` — Sitio ${sitioFilter}` : ""}`}
             subtitle="Barangay Subukin Health Center • San Juan, Batangas"
             showDoubleBorder={true}
-            logoHeight="75px"
+            logoHeight="95px"
           />
         </div>
 

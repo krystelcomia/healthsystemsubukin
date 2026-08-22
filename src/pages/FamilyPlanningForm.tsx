@@ -691,8 +691,8 @@ const FamilyPlanningForm = () => {
             width: 100% !important;
           }
           .header-seal img {
-            height: 68px !important;
-            max-height: 68px !important;
+            height: 95px !important;
+            max-height: 95px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
@@ -765,7 +765,7 @@ const FamilyPlanningForm = () => {
               title="Family Planning Client Assessment Record (FP Form 1)"
               subtitle="Barangay Subukin Health Center • San Juan, Batangas"
               showDoubleBorder={true}
-              logoHeight="75px"
+              logoHeight="95px"
             />
           </div>
 
@@ -1799,7 +1799,7 @@ const FamilyPlanningForm = () => {
           title="Official Family Planning Records History (FP Form 1)"
           subtitle={`Barangay Subukin Health Center Registry • Total: ${filteredHistoryRecords.length} Record(s) • Generated: ${new Date().toLocaleDateString()}`}
           showDoubleBorder={true}
-          logoHeight="75px"
+          logoHeight="95px"
         />
 
         <table className="w-full border-collapse" style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
@@ -1863,7 +1863,7 @@ const FamilyPlanningForm = () => {
                     title="Family Planning Clinical Record (FP Form 1)"
                     subtitle="Barangay Subukin Health Center • San Juan, Batangas"
                     showDoubleBorder={true}
-                    logoHeight="75px"
+                    logoHeight="95px"
                   />
 
                   {/* Top Metadata Badges */}

@@ -1438,7 +1438,7 @@ const AdminHealthRecords = () => {
             title={printContent.title}
             subtitle="Barangay Subukin Health Center • San Juan, Batangas"
             showDoubleBorder={true}
-            logoHeight="75px"
+            logoHeight="95px"
           />
           <div dangerouslySetInnerHTML={{ __html: printContent.html }} />
           <style>{`

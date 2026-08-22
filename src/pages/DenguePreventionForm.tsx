@@ -1042,8 +1042,8 @@ const DenguePreventionForm = () => {
             text-align: center !important;
           }
           .header-seal img, .header-border img, .print-only img {
-            height: 80px !important;
-            max-height: 80px !important;
+            height: 95px !important;
+            max-height: 95px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
@@ -1174,7 +1174,7 @@ const DenguePreventionForm = () => {
               title="SEARCH AND DESTROY 2026 — Dengue Prevention Checklist"
               subtitle="Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue • Barangay Subukin"
               showDoubleBorder={true}
-              logoHeight="75px"
+              logoHeight="95px"
             />
           </div>
 
@@ -1572,7 +1572,7 @@ const DenguePreventionForm = () => {
                     title="SEARCH AND DESTROY 2026 — Dengue Prevention Checklist"
                     subtitle="Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue • Barangay Subukin"
                     showDoubleBorder={true}
-                    logoHeight="75px"
+                    logoHeight="95px"
                   />
                 </div>
 

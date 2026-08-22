@@ -827,7 +827,7 @@ const AddNewForm = () => {
             text-align: center !important;
           }
           .header-seal img {
-            height: 70px !important;
+            height: 95px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
@@ -1221,7 +1221,7 @@ const AddNewForm = () => {
                   title={draftTitle || "Health Form Record"}
                   subtitle="Barangay Subukin Health Center • San Juan, Batangas"
                   showDoubleBorder={true}
-                  logoHeight="75px"
+                  logoHeight="95px"
                 />
               </div>
 
@@ -1623,7 +1623,7 @@ const AddNewForm = () => {
                 title={selectedSubmissionForView.formTitle || draftTitle || "Custom Form Submission Record"}
                 subtitle="Barangay Subukin Health Center • San Juan, Batangas"
                 showDoubleBorder={true}
-                logoHeight="75px"
+                logoHeight="95px"
               />
 
               {/* Patient and Submission Header */}
