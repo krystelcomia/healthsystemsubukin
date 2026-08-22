@@ -1077,7 +1077,13 @@ const AdminHealthRecords = () => {
                   </DialogDescription>
                 </div>
 
-                <Button size="sm" variant="outline" onClick={handlePrintRecordsLedger} className="gap-1.5 text-xs shrink-0">
+                <Button 
+                  type="button"
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handlePrintRecordsLedger} 
+                  className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
+                >
                   <Printer className="h-3.5 w-3.5" /> Print
                 </Button>
               </DialogHeader>
@@ -1179,7 +1185,13 @@ const AdminHealthRecords = () => {
                   </DialogTitle>
                 </div>
 
-                <Button size="sm" onClick={handlePrintSingleFilledRecord} className="gap-1.5 text-xs">
+                <Button 
+                  type="button"
+                  size="sm" 
+                  variant="outline"
+                  onClick={handlePrintSingleFilledRecord} 
+                  className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
+                >
                   <Printer className="h-3.5 w-3.5" /> Print
                 </Button>
               </DialogHeader>
