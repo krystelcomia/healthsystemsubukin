@@ -41,6 +41,7 @@ import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { OfficialHeader } from "@/components/OfficialHeader";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 
 interface Resident {
@@ -332,13 +333,13 @@ const ResidentRecords = () => {
         <div id="resident-print-area" className="space-y-5">
           
           {/* Printable Official Seals */}
-          <div 
-            className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
-            style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-          >
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          <div className="print-only" style={{ display: "none" }}>
+            <OfficialHeader
+              title={`Individual Resident Health Profile — ${selectedResident.full_name}`}
+              subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+              showDoubleBorder={true}
+              logoHeight="75px"
+            />
           </div>
 
           {/* Resident Header Profile Card */}
@@ -803,13 +804,13 @@ const ResidentRecords = () => {
       <div id="resident-print-area" className="space-y-4">
         
         {/* Official Printable Header Seal */}
-        <div 
-          className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
-          style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-        >
-          <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-          <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-          <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+        <div className="print-only" style={{ display: "none" }}>
+          <OfficialHeader
+            title={`${t("residents.title")}${sitioFilter !== "all" ? ` — Sitio ${sitioFilter}` : ""}`}
+            subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+            showDoubleBorder={true}
+            logoHeight="75px"
+          />
         </div>
 
         <div className="print-only flex justify-between items-center mb-4">

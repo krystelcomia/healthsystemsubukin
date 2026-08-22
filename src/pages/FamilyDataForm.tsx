@@ -50,6 +50,7 @@ import { logActivity } from "@/lib/activityLogger";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { OfficialHeader } from "@/components/OfficialHeader";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 
 export interface FamilyMember {
@@ -574,8 +575,12 @@ const FamilyDataForm = () => {
           body * {
             visibility: hidden !important;
           }
-          #individual-file-print-area, #individual-file-print-area *,
-          #family-print-area, #family-print-area * {
+          body:not(.printing-dialog) #family-print-area,
+          body:not(.printing-dialog) #family-print-area *:not(.no-print):not(.no-print *) {
+            visibility: visible !important;
+          }
+          body.printing-dialog #individual-file-print-area,
+          body.printing-dialog #individual-file-print-area *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
           }
           .no-print {
@@ -584,29 +589,35 @@ const FamilyDataForm = () => {
           .print-only {
             display: flex !important;
           }
-          .header-seal {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            gap: 24px !important;
-            border-bottom: 4px double #000000 !important;
-            padding-bottom: 16px !important;
-            margin-bottom: 20px !important;
-            text-align: center !important;
+          .header-seal img {
+            height: 75px !important;
+            width: auto !important;
+            object-fit: contain !important;
+            mix-blend-mode: multiply !important;
           }
-          #individual-file-print-area, #family-print-area {
+          body:not(.printing-dialog) #family-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
             background: white !important;
-            padding: 20px !important;
+            padding: 15px !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
             color: black !important;
           }
-          #individual-file-print-area {
+          body.printing-dialog #individual-file-print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            padding: 15px !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            color: black !important;
             transform: none !important;
             max-width: 100% !important;
             max-height: none !important;
@@ -822,13 +833,13 @@ const FamilyDataForm = () => {
         >
           <CardContent className="p-6 md:p-8 space-y-6">
             {/* Official Barangay Printable Header */}
-            <div 
-              className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
-              style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-            >
-              <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-              <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-              <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+            <div className="print-only" style={{ display: "none" }}>
+              <OfficialHeader
+                title="Master Family Data Sheet Directory"
+                subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+                showDoubleBorder={true}
+                logoHeight="75px"
+              />
             </div>
 
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
@@ -1060,20 +1071,13 @@ const FamilyDataForm = () => {
           {selectedFile && (
             <div className="space-y-6">
               {/* Official Barangay Printable Header */}
-              <div 
-                className="print-only header-seal flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center"
-                style={{ display: "none", alignItems: "center", justifyContent: "center", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-              >
-                <div className="flex items-center justify-center gap-6 md:gap-8" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
-                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                </div>
-                <div className="mt-3 text-center">
-                  <p className="text-xs text-slate-600 italic">
-                    Official Barangay Household Census &amp; Demographics Record
-                  </p>
-                </div>
+              <div className="print-only" style={{ display: "none" }}>
+                <OfficialHeader
+                  title="Official Barangay Household Census & Demographics Record"
+                  subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+                  showDoubleBorder={true}
+                  logoHeight="75px"
+                />
               </div>
 
               {/* Opened File Folder Banner */}

@@ -23,6 +23,7 @@ import { ensureResidentExists } from "@/lib/residentLinker";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { OfficialHeader } from "@/components/OfficialHeader";
 import { allowOnlyLetters, sanitizeLetters } from "@/lib/inputValidation";
 
 interface HouseholdHeadOption {
@@ -1149,13 +1150,13 @@ const DenguePreventionForm = () => {
         <CardContent className="p-8 space-y-6">
           
           {/* Official Header Layout - Visible ONLY when printing */}
-          <div 
-            className="print-only header-border header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6 text-center"
-            style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-          >
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          <div className="print-only" style={{ display: "none" }}>
+            <OfficialHeader
+              title="SEARCH AND DESTROY 2026 — Dengue Prevention Checklist"
+              subtitle="Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue • Barangay Subukin"
+              showDoubleBorder={true}
+              logoHeight="75px"
+            />
           </div>
 
           <div className="text-center space-y-1 py-2">
@@ -1536,13 +1537,13 @@ const DenguePreventionForm = () => {
             >
               <CardContent className="p-8 space-y-6">
                 {/* Official Header Layout - Visible ONLY when printing */}
-                <div 
-                  className="print-only header-border header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6 text-center"
-                  style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-                >
-                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={barangayLogo} alt="Subukin Logo" className="h-14 md:h-16 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                <div className="print-only" style={{ display: "none" }}>
+                  <OfficialHeader
+                    title="SEARCH AND DESTROY 2026 — Dengue Prevention Checklist"
+                    subtitle="Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue • Barangay Subukin"
+                    showDoubleBorder={true}
+                    logoHeight="75px"
+                  />
                 </div>
 
                 <div className="text-center space-y-1 py-2">

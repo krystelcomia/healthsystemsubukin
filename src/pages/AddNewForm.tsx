@@ -62,6 +62,7 @@ import {
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { OfficialHeader } from "@/components/OfficialHeader";
 import { convertPaperFormToDigital } from "@/lib/formConverter";
 
 type FieldType = "text" | "number" | "date" | "textarea" | "checkbox";
@@ -1202,13 +1203,13 @@ const AddNewForm = () => {
             <CardContent className="p-6 md:p-8 space-y-6">
 
               {/* Official Barangay Printable Header */}
-              <div 
-                className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6 text-center"
-                style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-              >
-                <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+              <div className="print-only" style={{ display: "none" }}>
+                <OfficialHeader
+                  title={draftTitle || "Health Form Record"}
+                  subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+                  showDoubleBorder={true}
+                  logoHeight="75px"
+                />
               </div>
 
               {/* Form Title Banner & Resident Linker */}
@@ -1594,21 +1595,12 @@ const AddNewForm = () => {
           {selectedSubmissionForView && (
             <div className="space-y-5" id="custom-submission-modal-printable">
               {/* Official Barangay Printable Header Seal */}
-              <div 
-                className="header-seal flex flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center"
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "4px double #000", paddingBottom: "14px", marginBottom: "16px", textAlign: "center" }}
-              >
-                <div className="flex items-center justify-center gap-6 md:gap-8" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
-                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                </div>
-                <div className="mt-3 text-center">
-                  <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
-                    {selectedSubmissionForView.formTitle || draftTitle || "Custom Form Submission Record"}
-                  </h3>
-                </div>
-              </div>
+              <OfficialHeader
+                title={selectedSubmissionForView.formTitle || draftTitle || "Custom Form Submission Record"}
+                subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+                showDoubleBorder={true}
+                logoHeight="75px"
+              />
 
               {/* Patient and Submission Header */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">

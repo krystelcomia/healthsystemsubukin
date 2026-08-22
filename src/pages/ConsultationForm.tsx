@@ -15,6 +15,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { ensureResidentExists, getFamilyOnlyResidents, calculateAge } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
+import { OfficialHeader } from "@/components/OfficialHeader";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import barangayLogo from "@/assets/barangay-logo.png";
@@ -330,20 +331,13 @@ const ConsultationForm = () => {
         <CardContent className="p-6 md:p-8">
           
           {/* Official Barangay Printable Header */}
-          <div 
-            className="print-only header-seal flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-6 text-center"
-            style={{ display: "none", alignItems: "center", justifyContent: "center", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-          >
-            <div className="flex items-center justify-center gap-6 md:gap-8" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
-              <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-              <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-              <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            </div>
-            <div className="mt-3 text-center">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-                Official Patient Consultation Record
-              </h2>
-            </div>
+          <div className="print-only" style={{ display: "none" }}>
+            <OfficialHeader
+              title="Official Patient Consultation Record"
+              subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+              showDoubleBorder={true}
+              logoHeight="75px"
+            />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -653,26 +647,14 @@ const ConsultationForm = () => {
       </div>
 
       {/* PRINTABLE CONSULTATION HISTORY REPORT */}
-      <div id="consultation-history-print-area" className="hidden" style={{ display: "none" }}>
+      <div id="consultation-history-print-area" className="hidden print:block" style={{ display: "none" }}>
         {/* Official Barangay Printable Header */}
-        <div 
-          className="header-seal flex flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center"
-          style={{ display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "4px double #000", paddingBottom: "14px", marginBottom: "16px", textAlign: "center" }}
-        >
-          <div className="flex items-center justify-center gap-6 md:gap-8" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-          </div>
-          <div className="mt-3 text-center">
-            <h2 className="text-base font-bold uppercase tracking-wider text-slate-900">
-              Official Patient Consultation Records History
-            </h2>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Barangay Subukin Health Center Registry • Total: {filteredHistory.length} Record(s) • Generated: {new Date().toLocaleDateString()}
-            </p>
-          </div>
-        </div>
+        <OfficialHeader
+          title="Official Patient Consultation Records History"
+          subtitle={`Barangay Subukin Health Center Registry • Total: ${filteredHistory.length} Record(s) • Generated: ${new Date().toLocaleDateString()}`}
+          showDoubleBorder={true}
+          logoHeight="75px"
+        />
 
         {/* Printable History Table */}
         <table className="w-full border-collapse" style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
@@ -737,21 +719,12 @@ const ConsultationForm = () => {
           {selectedRecordForView && (
             <div className="space-y-5" id="consultation-modal-printable">
               {/* Official Barangay Printable Header Seal */}
-              <div 
-                className="header-seal flex flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center"
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "4px double #000", paddingBottom: "14px", marginBottom: "16px", textAlign: "center" }}
-              >
-                <div className="flex items-center justify-center gap-6 md:gap-8" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
-                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                </div>
-                <div className="mt-3 text-center">
-                  <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
-                    Official Patient Consultation Record
-                  </h3>
-                </div>
-              </div>
+              <OfficialHeader
+                title="Official Patient Consultation Record"
+                subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+                showDoubleBorder={true}
+                logoHeight="75px"
+              />
 
               {/* Patient Demographics */}
               <div className="space-y-2">

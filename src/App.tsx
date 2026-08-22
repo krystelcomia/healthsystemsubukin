@@ -81,7 +81,7 @@ const App = () => (
                 <Route path="/admin/about" element={<ProtectedRoute><Layout><About /></Layout></ProtectedRoute>} />
                 <Route path="/admin/calendar" element={<ProtectedRoute><Layout><CalendarPage /></Layout></ProtectedRoute>} />
                 <Route path="/admin/contact" element={<ProtectedRoute><Layout><Contact /></Layout></ProtectedRoute>} />
-                <Route path="/admin/forms/family-data" element={<ProtectedRoute><Layout><FamilyDataForm /></Layout></ProtectedRoute>} />
+                <Route path="/admin/forms/family-data" element={<ProtectedRoute><Layout><AdminFormFamilyData /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/consultation" element={<ProtectedRoute><Layout><AdminFormConsultation /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/philpen-health" element={<ProtectedRoute><Layout><AdminFormPhilpenHealth /></Layout></ProtectedRoute>} />
                 <Route path="/admin/forms/dengue-prevention" element={<ProtectedRoute><Layout><AdminFormDenguePrevention /></Layout></ProtectedRoute>} />

@@ -19,6 +19,7 @@ import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { OfficialHeader } from "@/components/OfficialHeader";
 import {
   allowOnlyNumbers,
   allowNumbersAndDecimal,
@@ -545,6 +546,14 @@ const FamilyPlanningForm = () => {
     }, 1000);
   };
 
+  const handlePrintHistory = () => {
+    document.body.classList.add("printing-history");
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove("printing-history");
+    }, 1000);
+  };
+
   const parseRecordDetails = (rec: any): FPFullFormState | null => {
     try {
       if (rec?.details) {
@@ -571,26 +580,65 @@ const FamilyPlanningForm = () => {
     <div className="w-full space-y-6 pb-12">
       {/* Dynamic Print CSS Setup */}
       <style>{`
-        @media print {
-          body * {
-            visibility: hidden !important;
-          }
-          body:not(.printing-modal) #fp-print-area,
-          body:not(.printing-modal) #fp-print-area *:not(.no-print):not(.no-print *) {
+        @media print {          body:not(.printing-modal):not(.printing-history) #fp-print-area,
+          body:not(.printing-modal):not(.printing-history) #fp-print-area *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
           }
-          body:not(.printing-modal) #fp-print-area {
+          body:not(.printing-modal):not(.printing-history) #fp-print-area .no-print,
+          body:not(.printing-modal):not(.printing-history) #fp-print-area .no-print * {
+            display: none !important;
+            visibility: hidden !important;
+          }
+          body:not(.printing-modal):not(.printing-history) #fp-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            margin: 0 !important;
+            background: white !important;
             padding: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            color: black !important;
           }
+
+          /* History Table Print */
+          body.printing-history #fp-history-print-area,
+          body.printing-history #fp-history-print-area *:not(.no-print):not(.no-print *) {
+            visibility: visible !important;
+            color: #000000 !important;
+            border-color: #000000 !important;
+          }
+          body.printing-history #fp-history-print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            color: black !important;
+            padding: 15px !important;
+            margin: 0 !important;
+            display: block !important;
+          }
+          body.printing-history #fp-history-print-area table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          body.printing-history #fp-history-print-area th,
+          body.printing-history #fp-history-print-area td {
+            border: 1px solid #000000 !important;
+            padding: 5px 6px !important;
+            font-size: 10px !important;
+            color: #000000 !important;
+          }
+          body.printing-history #fp-history-print-area th {
+            background-color: #f1f5f9 !important;
+            font-weight: bold !important;
+          }
+
           body.printing-modal #fp-modal-printable,
           body.printing-modal #fp-modal-printable *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
-            color: #000000 !important;
           }
           body.printing-modal [role="dialog"],
           body.printing-modal [data-radix-portal] {
@@ -717,13 +765,13 @@ const FamilyPlanningForm = () => {
         <div className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 border border-slate-300 dark:border-slate-700 rounded-md shadow-xs text-xs space-y-3 font-sans">
           
           {/* Official Barangay Printable Header */}
-          <div 
-            className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6 text-center" 
-            style={{ display: 'none', alignItems: 'center', justifyContent: 'center', gap: '24px', borderBottom: '4px double #000', paddingBottom: '16px', marginBottom: '20px', textAlign: 'center' }}
-          >
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: '80px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
-            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: '80px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
-            <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: '80px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+          <div className="print-only" style={{ display: 'none' }}>
+            <OfficialHeader
+              title="Family Planning Client Assessment Record (FP Form 1)"
+              subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+              showDoubleBorder={true}
+              logoHeight="75px"
+            />
           </div>
 
           {/* Form Title Header Banner */}
@@ -1612,6 +1660,17 @@ const FamilyPlanningForm = () => {
                 onChange={(e) => setHistorySearch(e.target.value)}
                 className="pl-9 h-9 text-xs"
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handlePrintHistory}
+                disabled={filteredHistoryRecords.length === 0}
+                className="h-9 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 shrink-0"
+              >
+                <Printer className="h-3.5 w-3.5" />
+                Print History
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -1710,6 +1769,59 @@ const FamilyPlanningForm = () => {
         </Card>
       </div>
 
+      {/* PRINTABLE FAMILY PLANNING HISTORY REPORT */}
+      <div id="fp-history-print-area" className="hidden print:block" style={{ display: "none" }}>
+        <OfficialHeader
+          title="Official Family Planning Records History (FP Form 1)"
+          subtitle={`Barangay Subukin Health Center Registry • Total: ${filteredHistoryRecords.length} Record(s) • Generated: ${new Date().toLocaleDateString()}`}
+          showDoubleBorder={true}
+          logoHeight="75px"
+        />
+
+        <table className="w-full border-collapse" style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
+          <thead>
+            <tr style={{ backgroundColor: "#f1f5f9" }}>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "center", width: "35px" }}>#</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left", width: "85px" }}>Date</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Resident / Client Name</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left", width: "85px" }}>FP Number</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left", width: "110px" }}>Method Accepted</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", fontSize: "11px", textAlign: "left" }}>Remarks / Clinical Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredHistoryRecords.map((rec, index) => {
+              const parsed = parseRecordDetails(rec);
+              const clientName = rec.residents?.full_name || (parsed?.sideA ? `${parsed.sideA.client_given_name} ${parsed.sideA.client_last_name}`.trim() : "—");
+              const dateStr = rec.start_date || (rec.created_at ? new Date(rec.created_at).toLocaleDateString() : "—");
+              const method = rec.method || parsed?.sideA?.chosen_method || "—";
+              return (
+                <tr key={rec.id || index}>
+                  <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", textAlign: "center" }}>{index + 1}</td>
+                  <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", whiteSpace: "nowrap" }}>{dateStr}</td>
+                  <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", fontWeight: "bold" }}>{clientName}</td>
+                  <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{rec.family_number || parsed?.sideA?.family_serial_no || "—"}</td>
+                  <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{method}</td>
+                  <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>{rec.remarks || "—"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* Printable Official Signatures */}
+        <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "35px", marginTop: "25px", borderTop: "1px solid #cbd5e1" }}>
+          <div>
+            Certified Correct: ___________________________<br />
+            <span style={{ fontSize: "10px", color: "#4b5563" }}>Attending Barangay Health Worker</span>
+          </div>
+          <div>
+            Approved By: ___________________________<br />
+            <span style={{ fontSize: "10px", color: "#4b5563" }}>Barangay Health Supervisor / Midwife</span>
+          </div>
+        </div>
+      </div>
+
       {/* VIEW & PRINT RECORD DETAIL MODAL (EXACT FP FORM 1 REPLICA) */}
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
         <DialogContent className="max-w-5xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 p-6 max-h-[90vh] overflow-y-auto">
@@ -1723,21 +1835,12 @@ const FamilyPlanningForm = () => {
               return (
                 <div className="space-y-5" id="fp-modal-printable">
                   {/* Official Barangay Printable Header Seal */}
-                  <div 
-                    className="header-seal flex flex-col items-center justify-center border-b-[4px] border-double border-slate-900 pb-4 mb-4 text-center"
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "4px double #000", paddingBottom: "14px", marginBottom: "16px", textAlign: "center" }}
-                  >
-                    <div className="flex items-center justify-center gap-6 md:gap-8" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "24px" }}>
-                      <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                      <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                      <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                    </div>
-                    <div className="mt-3 text-center">
-                      <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
-                        Family Planning Clinical Record (FP Form 1)
-                      </h3>
-                    </div>
-                  </div>
+                  <OfficialHeader
+                    title="Family Planning Clinical Record (FP Form 1)"
+                    subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+                    showDoubleBorder={true}
+                    logoHeight="75px"
+                  />
 
                   {/* Top Metadata Badges */}
                   <div className="flex items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">

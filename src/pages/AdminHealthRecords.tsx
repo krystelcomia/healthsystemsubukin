@@ -34,6 +34,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { OfficialHeader } from "@/components/OfficialHeader";
 
 interface FormMeta {
   id: string;
@@ -1432,11 +1433,12 @@ const AdminHealthRecords = () => {
       {/* Hidden In-System Print Container */}
       {printContent && (
         <div id="admin-in-system-print" className="hidden print:block text-black bg-white p-6">
-          <div className="flex items-center justify-center gap-6 border-b-[4px] border-double border-slate-900 pb-3 mb-4 text-center header-seal">
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 object-contain mix-blend-multiply" />
-            <img src={headerTextImg} alt="Header Text" className="h-16 object-contain mix-blend-multiply" />
-            <img src={barangayLogo} alt="Subukin Logo" className="h-16 object-contain mix-blend-multiply" />
-          </div>
+          <OfficialHeader
+            title={printContent.title}
+            subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+            showDoubleBorder={true}
+            logoHeight="75px"
+          />
           <div dangerouslySetInnerHTML={{ __html: printContent.html }} />
           <style>{`
             @media print {

@@ -16,6 +16,7 @@ import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitio
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { OfficialHeader } from "@/components/OfficialHeader";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 
 interface BHWWorker {
@@ -131,13 +132,13 @@ const AdminWorkers = () => {
 
       <div id="admin-workers-print-area" className="space-y-6">
         {/* Printable Official Header Seal */}
-        <div 
-          className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6"
-          style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-        >
-          <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-          <img src={headerTextImg} alt="Header Text" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-          <img src={barangayLogo} alt="Barangay Subukin Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain shrink-0 mix-blend-multiply dark:mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+        <div className="print-only" style={{ display: "none" }}>
+          <OfficialHeader
+            title="Barangay Health Workers (BHW) Registry Directory"
+            subtitle={`Barangay Subukin Health Center • Total Registered: ${workers.length}`}
+            showDoubleBorder={true}
+            logoHeight="75px"
+          />
         </div>
 
         <div className="print-only flex justify-between items-center mb-4" style={{ display: "none" }}>

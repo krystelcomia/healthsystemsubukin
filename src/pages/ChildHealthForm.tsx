@@ -36,6 +36,7 @@ import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
+import { OfficialHeader } from "@/components/OfficialHeader";
 import {
   allowOnlyLetters,
   allowOnlyNumbers,
@@ -1300,13 +1301,13 @@ const ChildHealthForm = () => {
         <CardContent className="p-4 md:p-6 space-y-5 overflow-visible">
           
           {/* Official Seals Header - Printing Only */}
-          <div 
-            className="print-only header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6 text-center header-border"
-            style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-          >
-            <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-            <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+          <div className="print-only" style={{ display: "none" }}>
+            <OfficialHeader
+              title="Child Health and Development Immunization Record"
+              subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+              showDoubleBorder={true}
+              logoHeight="75px"
+            />
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -2729,13 +2730,13 @@ const ChildHealthForm = () => {
             return (
               <div id="summary-print-area" className="space-y-4 text-xs py-2 max-h-[70vh] overflow-y-auto pr-1">
                 {/* Official 3-Logo Seals Header - Print Only */}
-                <div 
-                  className="hidden print:flex header-seal items-center justify-center gap-6 md:gap-8 border-b-[4px] border-double border-slate-900 pb-4 mb-6 text-center header-border"
-                  style={{ display: "none", alignItems: "center", justifyContent: "center", gap: "24px", borderBottom: "4px double #000", paddingBottom: "16px", marginBottom: "20px", textAlign: "center" }}
-                >
-                  <img src={sanjuanLogo} alt="San Juan Seal" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={headerTextImg} alt="Republika ng Pilipinas Lalawigan ng Batangas Munisipalidad ng San Juan Barangay Subukin" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
-                  <img src={barangayLogo} alt="Subukin Logo" className="h-16 md:h-20 object-contain shrink-0 mix-blend-multiply" style={{ height: "80px", width: "auto", objectFit: "contain", mixBlendMode: "multiply" }} />
+                <div className="hidden print:block">
+                  <OfficialHeader
+                    title="Summary of Child Health Record • Barangay Subukin"
+                    subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+                    showDoubleBorder={true}
+                    logoHeight="75px"
+                  />
                 </div>
 
                 <div className="hidden print:block text-center pb-1">
