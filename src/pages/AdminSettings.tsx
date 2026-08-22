@@ -159,10 +159,10 @@ const AdminSettings = () => {
           <div className="flex items-center justify-between">
             <Label>{t("settings.language")}</Label>
             <Select value={language} onValueChange={(v) => setLanguage(v as "en" | "tl")}>
-              <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="tl">{t("common.tagalog")} (Default)</SelectItem>
                 <SelectItem value="en">{t("common.english")}</SelectItem>
-                <SelectItem value="tl">{t("common.tagalog")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -170,9 +170,9 @@ const AdminSettings = () => {
       </Card>
 
       <Card className="border-border/50 shadow-sm">
-        <CardHeader><CardTitle className="text-lg font-heading">Color Palette</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg font-heading">{t("settings.colorPalette")}</CardTitle></CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">Choose a color theme for the system.</p>
+          <p className="text-sm text-muted-foreground mb-4">{t("settings.colorPaletteDesc")}</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {COLOR_THEMES.map((theme) => {
               const active = colorTheme === theme.id;
@@ -195,7 +195,7 @@ const AdminSettings = () => {
         <CardHeader><CardTitle className="text-lg font-heading">{t("settings.generateReport")}</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Generate a complete offline archive of all official printable forms, weekly health summaries, admin activity updates, and full database backups directly saved into a folder on your device.
+            {t("settings.generateReportDesc")}
           </p>
           {generating && generationProgress && (
             <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-medium flex items-center gap-2">
@@ -215,13 +215,12 @@ const AdminSettings = () => {
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-heading flex items-center gap-2">
             <DatabaseBackup className="h-5 w-5 text-primary" />
-            Security &amp; Data — Backup &amp; Recovery
+            {t("settings.backupAndRecovery")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Manage system backups, configure automatic backup schedules, and restore data from previous backups.
-            All backup and restore activities are recorded in the Activity Logs.
+            {t("settings.backupDesc")}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -253,7 +252,7 @@ const AdminSettings = () => {
             onClick={() => navigate("/admin/settings/backup")}
           >
             <DatabaseBackup className="h-4 w-4" />
-            Open Backup &amp; Recovery Center
+            {t("settings.openBackupCenter")}
           </Button>
         </CardContent>
       </Card>

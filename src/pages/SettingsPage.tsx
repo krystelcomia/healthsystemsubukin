@@ -65,10 +65,10 @@ const SettingsPage = () => {
           <div className="flex items-center justify-between">
             <Label>{t("settings.language")}</Label>
             <Select value={language} onValueChange={(v) => setLanguage(v as "en" | "tl")}>
-              <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="tl">{t("common.tagalog")} (Default)</SelectItem>
                 <SelectItem value="en">{t("common.english")}</SelectItem>
-                <SelectItem value="tl">{t("common.tagalog")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -76,9 +76,9 @@ const SettingsPage = () => {
       </Card>
 
       <Card className="border-border/50 shadow-sm">
-        <CardHeader><CardTitle className="text-lg font-heading">Color Palette</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg font-heading">{t("settings.colorPalette")}</CardTitle></CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">Choose a color theme for the system.</p>
+          <p className="text-sm text-muted-foreground mb-4">{t("settings.colorPaletteDesc")}</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {COLOR_THEMES.map((theme) => {
               const active = colorTheme === theme.id;
@@ -103,26 +103,26 @@ const SettingsPage = () => {
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-heading flex items-center gap-2">
             <DatabaseBackup className="h-5 w-5 text-primary" />
-            Security &amp; Data — Backup &amp; Recovery
+            {t("settings.backupAndRecovery")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Complete database backups, automatic backup schedules, and system data recovery for Barangay Subukin Health Records.
+            {t("settings.backupDesc")}
           </p>
 
           {isSupervisor ? (
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
                 <ShieldCheck className="h-4 w-4 shrink-0" />
-                <span>Authorized Administrator Access Granted</span>
+                <span>{t("settings.authAdminGranted")}</span>
               </div>
               <Button
                 className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
                 onClick={() => navigate("/admin/settings/backup")}
               >
                 <DatabaseBackup className="h-4 w-4" />
-                Open Backup &amp; Recovery Center
+                {t("settings.openBackupCenter")}
                 <ArrowRight className="h-4 w-4 ml-auto" />
               </Button>
             </div>
@@ -130,9 +130,9 @@ const SettingsPage = () => {
             <div className="flex items-start gap-3 rounded-lg bg-muted/40 border border-border/60 p-4">
               <Lock className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="text-xs font-semibold text-foreground">Restricted to Authorized Administrators</p>
+                <p className="text-xs font-semibold text-foreground">{t("settings.restrictedAdmin")}</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Database backup creation, system data restore, and permanent deletion functions are secured and accessible only to supervisory administrators. Contact your system supervisor if you require database maintenance.
+                  {t("settings.restrictedAdminDesc")}
                 </p>
               </div>
             </div>

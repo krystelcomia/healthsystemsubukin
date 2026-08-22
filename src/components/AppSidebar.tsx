@@ -93,7 +93,7 @@ export function AppSidebar() {
     { title: t("nav.childHealth"), url: "/forms/child-health", icon: Baby },
     { title: t("nav.familyPlanning"), url: "/forms/family-planning", icon: Syringe },
     ...customBhwItems,
-    { title: "Add New Form", url: "/forms/add-new", icon: Plus },
+    { title: t("nav.addNewForm"), url: "/forms/add-new", icon: Plus },
   ];
 
   const bhwSystemItems = [
@@ -109,7 +109,7 @@ export function AppSidebar() {
 
   const adminSystemItems = [
     { title: t("nav.settings"), url: "/admin/settings", icon: Settings },
-    { title: "Backup & Recovery", url: "/admin/settings/backup", icon: DatabaseBackup },
+    { title: t("settings.backup"), url: "/admin/settings/backup", icon: DatabaseBackup },
   ];
 
   const customAdminItems = customForms.map((cf) => ({
@@ -126,7 +126,7 @@ export function AppSidebar() {
     { title: t("nav.maternalCare"), url: "/admin/forms/maternal-care", icon: HeartPulse },
     { title: t("nav.childHealth"), url: "/admin/forms/child-health", icon: Baby },
     { title: t("nav.familyPlanning"), url: "/admin/forms/family-planning", icon: Syringe },
-    { title: "View Forms", url: "/admin/forms/view", icon: FileText },
+    { title: t("nav.viewForms"), url: "/admin/forms/view", icon: FileText },
   ];
 
   const mainItems = isAdmin ? adminMainItems : bhwMainItems;

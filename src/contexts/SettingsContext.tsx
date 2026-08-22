@@ -125,11 +125,18 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("darkMode") === "true");
   const [fontSize, setFontSize] = useState(() => localStorage.getItem("fontSize") || "medium");
   const [fontStyle, setFontStyle] = useState(() => localStorage.getItem("fontStyle") || "inter");
-  const [language, setLanguage] = useState<Language>(() => (localStorage.getItem("language") as Language) || "tl");
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem("language");
+    if (saved === "en" || saved === "tl") return saved;
+    try {
+      localStorage.setItem("language", "tl");
+    } catch {}
+    return "tl";
+  });
   const [colorTheme, setColorTheme] = useState<ColorTheme>(() => (localStorage.getItem("colorTheme") as ColorTheme) || "emerald");
 
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    return translations[language]?.[key] || translations["tl"]?.[key] || translations["en"]?.[key] || key;
   };
 
   useEffect(() => {
