@@ -43,9 +43,19 @@ const AdminResidents = () => {
     if (error) { toast.error("Failed to load residents"); setLoading(false); return; }
 
     // Resident records are strictly limited to those included in family data (regardless of placement)
-    const familyOnlyResidents = (data || []).filter(r => 
+    const rawFamilyOnly = (data || []).filter(r => 
       r.full_name && familyNamesSet.has(r.full_name.trim().toLowerCase())
     );
+
+    const seenNames = new Set<string>();
+    const familyOnlyResidents: Resident[] = [];
+    for (const r of rawFamilyOnly) {
+      const key = r.full_name.trim().toLowerCase();
+      if (!seenNames.has(key)) {
+        seenNames.add(key);
+        familyOnlyResidents.push(r);
+      }
+    }
 
     setResidents(familyOnlyResidents);
     const dbSitios = Array.from(new Set(familyOnlyResidents.map(r => r.sitio).filter(s => Boolean(s) && s !== "Centro" && s !== "Sitio Centro"))).sort() as string[];

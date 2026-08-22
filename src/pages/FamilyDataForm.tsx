@@ -132,17 +132,136 @@ const FamilyDataForm = () => {
   }, [records, selectedFile, editFamNum]);
 
   const parseMembers = (membersData: any): FamilyMember[] => {
-    if (!membersData) return [];
-    if (Array.isArray(membersData)) return membersData;
-    if (typeof membersData === "string") {
+    let list: any[] = [];
+    if (!membersData) list = [];
+    else if (Array.isArray(membersData)) list = membersData;
+    else if (typeof membersData === "string") {
       try {
-        return JSON.parse(membersData);
+        list = JSON.parse(membersData);
       } catch {
-        return [];
+        list = [];
       }
     }
-    return [];
+    const seen = new Set<string>();
+    const uniqueList: FamilyMember[] = [];
+    for (const m of list) {
+      if (!m) continue;
+      const key = (m.full_name || "").trim().toLowerCase();
+      if (!key) {
+        uniqueList.push(m);
+        continue;
+      }
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueList.push(m);
+      }
+    }
+    return uniqueList;
   };
+
+  // Helper to check if a resident is registered in any family file
+  const getResidentDuplicateInfo = (name: string, excludeFamilyId?: string) => {
+    const clean = name.trim().toLowerCase();
+    if (!clean) return null;
+    for (const rec of records) {
+      if (excludeFamilyId && rec.id === excludeFamilyId) continue;
+      if (!rec.family_number && !rec.father_name && !rec.mother_name) continue;
+      const famNum = rec.family_number || "N/A";
+      const fName = (rec.father_name || "").trim();
+      const mName = (rec.mother_name || "").trim();
+      if (fName && fName.toLowerCase() === clean) {
+        return `Already registered as Father in Family File #${famNum} (${fName}).`;
+      }
+      if (mName && mName.toLowerCase() === clean) {
+        return `Already registered as Mother in Family File #${famNum} (${mName}).`;
+      }
+      const mems = parseMembers(rec.members_detail);
+      const m = mems.find((item) => (item.full_name || "").trim().toLowerCase() === clean);
+      if (m) {
+        return `Already registered as ${m.relationship || "Member"} in Family File #${famNum} (${fName || mName || "Family"}).`;
+      }
+    }
+    return null;
+  };
+
+  // Real-time validation for Add Member Dialog inside opened file
+  const addMemberDuplicateError = useMemo(() => {
+    const clean = memName.trim().toLowerCase();
+    if (!clean) return null;
+    if (editFather && editFather.trim().toLowerCase() === clean) {
+      return "Already listed as Father (Head) in this family file.";
+    }
+    if (editMother && editMother.trim().toLowerCase() === clean) {
+      return "Already listed as Mother in this family file.";
+    }
+    const inActive = activeMembers.some(
+      (m) => (m.full_name || "").trim().toLowerCase() === clean
+    );
+    if (inActive) {
+      return "Already listed in this family file.";
+    }
+    const inOtherFamily = getResidentDuplicateInfo(clean, selectedFile?.id);
+    if (inOtherFamily) {
+      return `${inOtherFamily} Duplicate resident records are not allowed.`;
+    }
+    return null;
+  }, [memName, editFather, editMother, activeMembers, records, selectedFile]);
+
+  // Real-time validation for Create New Family File modal
+  const newFatherDuplicateError = useMemo(() => {
+    const clean = newFather.trim().toLowerCase();
+    if (!clean) return null;
+    if (newMother && newMother.trim().toLowerCase() === clean) {
+      return "Father and Mother cannot have the same name.";
+    }
+    const inOther = getResidentDuplicateInfo(clean);
+    if (inOther) {
+      return `${inOther} Duplicate resident records are not allowed.`;
+    }
+    return null;
+  }, [newFather, newMother, records]);
+
+  const newMotherDuplicateError = useMemo(() => {
+    const clean = newMother.trim().toLowerCase();
+    if (!clean) return null;
+    if (newFather && newFather.trim().toLowerCase() === clean) {
+      return "Mother and Father cannot have the same name.";
+    }
+    const inOther = getResidentDuplicateInfo(clean);
+    if (inOther) {
+      return `${inOther} Duplicate resident records are not allowed.`;
+    }
+    return null;
+  }, [newMother, newFather, records]);
+
+  // Real-time validation for Editing Opened Family File headers
+  const editFatherDuplicateError = useMemo(() => {
+    if (!selectedFile) return null;
+    const clean = editFather.trim().toLowerCase();
+    if (!clean) return null;
+    if (editMother && editMother.trim().toLowerCase() === clean) {
+      return "Father and Mother cannot have the same name.";
+    }
+    const inOther = getResidentDuplicateInfo(clean, selectedFile.id);
+    if (inOther) {
+      return `${inOther} Duplicate resident records are not allowed.`;
+    }
+    return null;
+  }, [editFather, editMother, selectedFile, records]);
+
+  const editMotherDuplicateError = useMemo(() => {
+    if (!selectedFile) return null;
+    const clean = editMother.trim().toLowerCase();
+    if (!clean) return null;
+    if (editFather && editFather.trim().toLowerCase() === clean) {
+      return "Mother and Father cannot have the same name.";
+    }
+    const inOther = getResidentDuplicateInfo(clean, selectedFile.id);
+    if (inOther) {
+      return `${inOther} Duplicate resident records are not allowed.`;
+    }
+    return null;
+  }, [editMother, editFather, selectedFile, records]);
 
 
 
@@ -271,12 +390,53 @@ const FamilyDataForm = () => {
       return;
     }
 
-    // Input is already filtered in real-time to only permit valid characters
+    // Check duplicate for Father
+    if (newFather.trim()) {
+      if (newFatherDuplicateError) {
+        toast.error(newFatherDuplicateError);
+        return;
+      }
+    }
 
+    // Check duplicate for Mother
+    if (newMother.trim()) {
+      if (newMotherDuplicateError) {
+        toast.error(newMotherDuplicateError);
+        return;
+      }
+    }
+
+    // Validate no duplicate members
     const validMembers = newMembers.filter((m) => m.full_name.trim());
-    const malesCount = validMembers.filter((m) => m.gender === "Male").length;
-    const femalesCount = validMembers.filter((m) => m.gender === "Female").length;
-    const totalCount = validMembers.length || (newFather ? 1 : 0) + (newMother ? 1 : 0);
+    const seenNew = new Set<string>();
+    const deduplicatedNewMembers: FamilyMember[] = [];
+    for (const mem of validMembers) {
+      const clean = mem.full_name.trim();
+      const key = clean.toLowerCase();
+      if (seenNew.has(key)) {
+        toast.error(`Duplicate member "${clean}" is not allowed.`);
+        return;
+      }
+      if (mem.relationship !== "Father" && newFather && newFather.trim().toLowerCase() === key) {
+        toast.error(`Member "${clean}" is already listed as Father.`);
+        return;
+      }
+      if (mem.relationship !== "Mother" && newMother && newMother.trim().toLowerCase() === key) {
+        toast.error(`Member "${clean}" is already listed as Mother.`);
+        return;
+      }
+      const inOther = getResidentDuplicateInfo(key);
+      if (inOther) {
+        toast.error(`Member "${clean}": ${inOther} Duplicate resident records are not allowed.`);
+        return;
+      }
+      seenNew.add(key);
+      deduplicatedNewMembers.push({ ...mem, full_name: clean });
+    }
+
+    const malesCount = deduplicatedNewMembers.filter((m) => m.gender === "Male").length;
+    const femalesCount = deduplicatedNewMembers.filter((m) => m.gender === "Female").length;
+    const totalCount = deduplicatedNewMembers.length || (newFather ? 1 : 0) + (newMother ? 1 : 0);
 
     // Auto-link residents in system database
     let mainResidentId: string | null = null;
@@ -288,7 +448,7 @@ const FamilyDataForm = () => {
       if (!mainResidentId) mainResidentId = motherId;
     }
 
-    for (const mem of validMembers) {
+    for (const mem of deduplicatedNewMembers) {
       await ensureResidentExists({
         fullName: mem.full_name,
         sitio: newSitio,
@@ -307,7 +467,7 @@ const FamilyDataForm = () => {
       num_males: malesCount,
       num_females: femalesCount,
       total_members: totalCount,
-      members_detail: validMembers
+      members_detail: deduplicatedNewMembers
     };
 
     const { data, error } = await supabase
@@ -336,11 +496,11 @@ const FamilyDataForm = () => {
     
     if (members.length === 0) {
       const defaultMembers: FamilyMember[] = [];
-      if (rec.father_name) {
-        defaultMembers.push({ id: `f-${Date.now()}`, full_name: rec.father_name, relationship: "Father", age: "", gender: "Male" });
+      if (rec.father_name && rec.father_name.trim()) {
+        defaultMembers.push({ id: `f-${Date.now()}`, full_name: rec.father_name.trim(), relationship: "Father", age: "", gender: "Male" });
       }
-      if (rec.mother_name) {
-        defaultMembers.push({ id: `m-${Date.now()}`, full_name: rec.mother_name, relationship: "Mother", age: "", gender: "Female" });
+      if (rec.mother_name && rec.mother_name.trim()) {
+        defaultMembers.push({ id: `m-${Date.now()}`, full_name: rec.mother_name.trim(), relationship: "Mother", age: "", gender: "Female" });
       }
       setActiveMembers(defaultMembers);
     } else {
@@ -375,11 +535,44 @@ const FamilyDataForm = () => {
       return;
     }
 
-    // Input is already filtered in real-time to only permit valid characters
+    // Check duplicate for editFather
+    if (editFather.trim()) {
+      if (editFatherDuplicateError) {
+        toast.error(editFatherDuplicateError);
+        return;
+      }
+    }
 
-    const malesCount = activeMembers.filter((m) => m.gender === "Male").length;
-    const femalesCount = activeMembers.filter((m) => m.gender === "Female").length;
-    const totalCount = activeMembers.length;
+    // Check duplicate for editMother
+    if (editMother.trim()) {
+      if (editMotherDuplicateError) {
+        toast.error(editMotherDuplicateError);
+        return;
+      }
+    }
+
+    // Deduplicate active members
+    const seenActive = new Set<string>();
+    const deduplicatedActiveMembers: FamilyMember[] = [];
+    for (const mem of activeMembers) {
+      const clean = (mem.full_name || "").trim();
+      const key = clean.toLowerCase();
+      if (!key) continue;
+      if (seenActive.has(key)) {
+        continue;
+      }
+      const dupMem = getResidentDuplicateInfo(key, selectedFile.id);
+      if (dupMem) {
+        toast.error(`Member "${clean}": ${dupMem} Duplicate resident records are not allowed.`);
+        return;
+      }
+      seenActive.add(key);
+      deduplicatedActiveMembers.push({ ...mem, full_name: clean });
+    }
+
+    const malesCount = deduplicatedActiveMembers.filter((m) => m.gender === "Male").length;
+    const femalesCount = deduplicatedActiveMembers.filter((m) => m.gender === "Female").length;
+    const totalCount = deduplicatedActiveMembers.length;
 
     // Link father, mother, and all family members to the family_number in residents system
     const famNumStr = editFamNum.trim();
@@ -389,7 +582,7 @@ const FamilyDataForm = () => {
     if (editMother.trim()) {
       await ensureResidentExists({ fullName: editMother.trim(), sitio: editSitio, gender: "Female", familyNumber: famNumStr });
     }
-    for (const mem of activeMembers) {
+    for (const mem of deduplicatedActiveMembers) {
       await ensureResidentExists({
         fullName: mem.full_name,
         sitio: editSitio,
@@ -409,7 +602,7 @@ const FamilyDataForm = () => {
       num_males: malesCount,
       num_females: femalesCount,
       total_members: totalCount,
-      members_detail: activeMembers
+      members_detail: deduplicatedActiveMembers
     };
 
     if (selectedFile.id.startsWith("temp-")) {
@@ -424,6 +617,7 @@ const FamilyDataForm = () => {
       } else {
         toast.success("Family file created and saved!");
         setSelectedFile(data);
+        setActiveMembers(deduplicatedActiveMembers);
         fetchRecords();
       }
     } else {
@@ -441,6 +635,7 @@ const FamilyDataForm = () => {
           description: `Updated family file ${editFamNum} - ${editFather}`
         });
         setSelectedFile((prev) => (prev ? { ...prev, ...updatePayload } : null));
+        setActiveMembers(deduplicatedActiveMembers);
         setIsEditingFileDetails(false);
         fetchRecords();
       }
@@ -449,14 +644,20 @@ const FamilyDataForm = () => {
 
   // Add member inside opened file modal
   const handleAddMemberToActiveFile = () => {
-    if (!memName.trim()) {
+    const cleanName = memName.trim();
+    if (!cleanName) {
       toast.error("Please enter member's full name");
+      return;
+    }
+
+    if (addMemberDuplicateError) {
+      toast.error(addMemberDuplicateError);
       return;
     }
 
     const newMemObj: FamilyMember = {
       id: `mem-${Date.now()}`,
-      full_name: memName.trim(),
+      full_name: cleanName,
       relationship: memRole,
       age: memAge || "",
       birthday: memBirthday || "",
@@ -470,7 +671,7 @@ const FamilyDataForm = () => {
     setMemAge("");
     setMemBirthday("");
     setAddMemberDialogOpen(false);
-    toast.success(`Added ${memName} to family members list`);
+    toast.success(`Added ${cleanName} to family members list`);
   };
 
   // Remove member inside opened file
@@ -1031,8 +1232,13 @@ const FamilyDataForm = () => {
                             const val = sanitizeLetters(e.target.value);
                             setEditFather(val);
                           }}
-                          className="h-8 text-xs"
+                          className={`h-8 text-xs ${editFather.trim() !== "" && editFatherDuplicateError ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                         />
+                        {editFather.trim() !== "" && editFatherDuplicateError && (
+                          <p className="text-[10px] text-destructive mt-1 font-medium">
+                            {editFatherDuplicateError}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <Label className="text-xs">Mother's Name</Label>
@@ -1043,8 +1249,13 @@ const FamilyDataForm = () => {
                             const val = sanitizeLetters(e.target.value);
                             setEditMother(val);
                           }}
-                          className="h-8 text-xs"
+                          className={`h-8 text-xs ${editMother.trim() !== "" && editMotherDuplicateError ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                         />
+                        {editMother.trim() !== "" && editMotherDuplicateError && (
+                          <p className="text-[10px] text-destructive mt-1 font-medium">
+                            {editMotherDuplicateError}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <Label className="text-xs">Sitio</Label>
@@ -1287,8 +1498,13 @@ const FamilyDataForm = () => {
                     setNewFather(val);
                     setNewMembers(prev => prev.map(m => m.relationship === "Father" ? { ...m, full_name: val } : m));
                   }}
-                  className="text-xs mt-1"
+                  className={`text-xs mt-1 ${newFather.trim() !== "" && newFatherDuplicateError ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                 />
+                {newFather.trim() !== "" && newFatherDuplicateError && (
+                  <p className="text-[10px] text-destructive mt-1 font-medium">
+                    {newFatherDuplicateError}
+                  </p>
+                )}
               </div>
               <div>
                 <Label className="text-xs font-semibold">Mother's Name</Label>
@@ -1300,8 +1516,13 @@ const FamilyDataForm = () => {
                     setNewMother(val);
                     setNewMembers(prev => prev.map(m => m.relationship === "Mother" ? { ...m, full_name: val } : m));
                   }}
-                  className="text-xs mt-1"
+                  className={`text-xs mt-1 ${newMother.trim() !== "" && newMotherDuplicateError ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
                 />
+                {newMother.trim() !== "" && newMotherDuplicateError && (
+                  <p className="text-[10px] text-destructive mt-1 font-medium">
+                    {newMotherDuplicateError}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -1345,109 +1566,120 @@ const FamilyDataForm = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {newMembers.map((mem) => (
-                      <tr key={mem.id} className="border-b border-border/30 hover:bg-muted/20">
-                        <td className="p-1.5">
-                          <Input
-                            placeholder="Full Name"
-                            value={mem.full_name}
-                            onKeyDown={allowOnlyLetters}
-                            onChange={(e) => {
-                              const val = sanitizeLetters(e.target.value);
-                              setNewMembers((prev) =>
-                                prev.map((m) => (m.id === mem.id ? { ...m, full_name: val } : m))
-                              );
-                              if (mem.relationship === "Father") setNewFather(val);
-                              if (mem.relationship === "Mother") setNewMother(val);
-                            }}
-                            className="h-8 text-xs"
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Input
-                            type="date"
-                            value={mem.birthday || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              const computedAge = calculateAge(val);
-                              setNewMembers((prev) =>
-                                prev.map((m) =>
-                                  m.id === mem.id
-                                    ? { ...m, birthday: val, age: val ? computedAge : "" }
-                                    : m
+                    {newMembers.map((mem) => {
+                      const memberClean = mem.full_name.trim().toLowerCase();
+                      const isDupInList = memberClean !== "" && newMembers.filter(m => m.full_name.trim().toLowerCase() === memberClean).length > 1;
+                      const isDupOther = memberClean !== "" && Boolean(getResidentDuplicateInfo(memberClean));
+                      const isMemberDuplicate = isDupInList || isDupOther;
+                      return (
+                        <tr key={mem.id} className="border-b border-border/30 hover:bg-muted/20">
+                          <td className="p-1.5">
+                            <Input
+                              placeholder="Full Name"
+                              value={mem.full_name}
+                              onKeyDown={allowOnlyLetters}
+                              onChange={(e) => {
+                                const val = sanitizeLetters(e.target.value);
+                                setNewMembers((prev) =>
+                                  prev.map((m) => (m.id === mem.id ? { ...m, full_name: val } : m))
+                                );
+                                if (mem.relationship === "Father") setNewFather(val);
+                                if (mem.relationship === "Mother") setNewMother(val);
+                              }}
+                              className={`h-8 text-xs ${isMemberDuplicate ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
+                            />
+                            {isMemberDuplicate && (
+                              <p className="text-[9px] text-destructive mt-0.5 font-medium leading-tight">
+                                {isDupInList ? "Duplicate in member list" : getResidentDuplicateInfo(memberClean)}
+                              </p>
+                            )}
+                          </td>
+                          <td className="p-1.5">
+                            <Input
+                              type="date"
+                              value={mem.birthday || ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                const computedAge = calculateAge(val);
+                                setNewMembers((prev) =>
+                                  prev.map((m) =>
+                                    m.id === mem.id
+                                      ? { ...m, birthday: val, age: val ? computedAge : "" }
+                                      : m
+                                  )
+                                );
+                              }}
+                              className="h-8 text-xs"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <Input
+                              type="number"
+                              placeholder="Age"
+                              value={mem.age || ""}
+                              onKeyDown={allowOnlyNumbers}
+                              onChange={(e) => {
+                                const val = sanitizeNumbers(e.target.value);
+                                setNewMembers((prev) =>
+                                  prev.map((m) => (m.id === mem.id ? { ...m, age: val } : m))
+                                );
+                              }}
+                              className="h-8 text-xs text-center"
+                              min="0"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <Select
+                              value={mem.relationship}
+                              onValueChange={(val) =>
+                                setNewMembers((prev) =>
+                                  prev.map((m) => (m.id === mem.id ? { ...m, relationship: val } : m))
                                 )
-                              );
-                            }}
-                            className="h-8 text-xs"
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Input
-                            type="number"
-                            placeholder="Age"
-                            value={mem.age || ""}
-                            onKeyDown={allowOnlyNumbers}
-                            onChange={(e) => {
-                              const val = sanitizeNumbers(e.target.value);
-                              setNewMembers((prev) =>
-                                prev.map((m) => (m.id === mem.id ? { ...m, age: val } : m))
-                              );
-                            }}
-                            className="h-8 text-xs text-center"
-                            min="0"
-                          />
-                        </td>
-                        <td className="p-1.5">
-                          <Select
-                            value={mem.relationship}
-                            onValueChange={(val) =>
-                              setNewMembers((prev) =>
-                                prev.map((m) => (m.id === mem.id ? { ...m, relationship: val } : m))
-                              )
-                            }
-                          >
-                            <SelectTrigger className="h-8 text-xs px-2">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Father">Father</SelectItem>
-                              <SelectItem value="Mother">Mother</SelectItem>
-                              <SelectItem value="Child">Child</SelectItem>
-                              <SelectItem value="Grandparent">Grandparent</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </td>
-                        <td className="p-1.5">
-                          <Select
-                            value={mem.gender}
-                            onValueChange={(val) =>
-                              setNewMembers((prev) =>
-                                prev.map((m) => (m.id === mem.id ? { ...m, gender: val } : m))
-                              )
-                            }
-                          >
-                            <SelectTrigger className="h-8 text-xs px-2">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Male">Male</SelectItem>
-                              <SelectItem value="Female">Female</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </td>
-                        <td className="p-1.5 text-center">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                            onClick={() => setNewMembers((prev) => prev.filter((m) => m.id !== mem.id))}
-                          >
-                            <Trash className="h-3.5 w-3.5" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
+                              }
+                            >
+                              <SelectTrigger className="h-8 text-xs px-2">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Father">Father</SelectItem>
+                                <SelectItem value="Mother">Mother</SelectItem>
+                                <SelectItem value="Child">Child</SelectItem>
+                                <SelectItem value="Grandparent">Grandparent</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </td>
+                          <td className="p-1.5">
+                            <Select
+                              value={mem.gender}
+                              onValueChange={(val) =>
+                                setNewMembers((prev) =>
+                                  prev.map((m) => (m.id === mem.id ? { ...m, gender: val } : m))
+                                )
+                              }
+                            >
+                              <SelectTrigger className="h-8 text-xs px-2">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Male">Male</SelectItem>
+                                <SelectItem value="Female">Female</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </td>
+                          <td className="p-1.5 text-center">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              onClick={() => setNewMembers((prev) => prev.filter((m) => m.id !== mem.id))}
+                            >
+                              <Trash className="h-3.5 w-3.5" />
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1488,8 +1720,13 @@ const FamilyDataForm = () => {
                 onKeyDown={allowOnlyLetters}
                 onChange={(e) => setMemName(sanitizeLetters(e.target.value))}
                 placeholder="e.g. Juan dela Cruz Jr."
-                className="h-8 text-xs mt-1"
+                className={`h-8 text-xs mt-1 ${memName.trim() !== "" && addMemberDuplicateError ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
               />
+              {memName.trim() !== "" && addMemberDuplicateError && (
+                <p className="text-[11px] text-destructive mt-1 font-medium leading-tight">
+                  {addMemberDuplicateError}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -1578,7 +1815,13 @@ const FamilyDataForm = () => {
             <Button type="button" variant="ghost" size="sm" onClick={() => setAddMemberDialogOpen(false)}>
               Cancel
             </Button>
-            <Button type="button" size="sm" onClick={handleAddMemberToActiveFile}>
+            <Button 
+              type="button" 
+              size="sm" 
+              onClick={handleAddMemberToActiveFile}
+              disabled={Boolean(addMemberDuplicateError) || !memName.trim()}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
               Add to Family Members
             </Button>
           </DialogFooter>

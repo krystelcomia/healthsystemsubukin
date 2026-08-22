@@ -35,11 +35,18 @@ export async function ensureResidentExists(opts: {
       .select("id, full_name, sitio, age, gender, birthday, family_number, status")
       .order("created_at", { ascending: false });
 
-    const match = existing?.find(
-      (r: any) => r.full_name.trim().toLowerCase() === cleanName.toLowerCase()
-    );
+    const matches = existing?.filter(
+      (r: any) => r.full_name && r.full_name.trim().toLowerCase() === cleanName.toLowerCase()
+    ) || [];
 
-    if (match) {
+    if (matches.length > 0) {
+      const match = matches[0];
+      // Clean up any extra duplicates in DB if more than 1 match
+      if (matches.length > 1) {
+        const extraIds = matches.slice(1).map((m: any) => m.id);
+        await supabase.from("residents").delete().in("id", extraIds);
+      }
+
       const updates: any = {};
       if (opts.sitio) updates.sitio = opts.sitio;
       if (opts.gender) updates.gender = opts.gender;
@@ -101,7 +108,28 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
     ]);
 
     const familyRecords = famRes.data || [];
-    const residentRecords = resRes.data || [];
+    let residentRecords: any[] = resRes.data || [];
+
+    // Deduplicate residents in database if duplicate records already exist
+    const seenMap = new Map<string, any>();
+    const dupIdsToDelete: string[] = [];
+    const uniqueResidentRecords: any[] = [];
+
+    for (const r of residentRecords) {
+      if (!r.full_name || !r.full_name.trim()) continue;
+      const key = r.full_name.trim().toLowerCase();
+      if (seenMap.has(key)) {
+        dupIdsToDelete.push(r.id);
+      } else {
+        seenMap.set(key, r);
+        uniqueResidentRecords.push(r);
+      }
+    }
+
+    if (dupIdsToDelete.length > 0) {
+      await supabase.from("residents").delete().in("id", dupIdsToDelete);
+    }
+    residentRecords = uniqueResidentRecords;
 
     for (const fam of familyRecords) {
       const famNum = fam.family_number;
@@ -112,7 +140,7 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
         familyNamesSet.add(fatherClean.toLowerCase());
 
         const fatherMatch = residentRecords.find(
-          (r) => r.full_name.trim().toLowerCase() === fatherClean.toLowerCase()
+          (r) => r.full_name && r.full_name.trim().toLowerCase() === fatherClean.toLowerCase()
         );
         if (fatherMatch) {
           const updates: any = {};
@@ -122,7 +150,7 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
             await supabase.from("residents").update(updates).eq("id", fatherMatch.id);
           }
         } else {
-          await supabase.from("residents").insert({
+          const { data: inserted } = await supabase.from("residents").insert({
             full_name: fatherClean,
             gender: "Male",
             age: 0,
@@ -132,7 +160,8 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
             nationality: "Filipino",
             sitio: sitio || "",
             family_number: famNum || null,
-          });
+          }).select().maybeSingle();
+          if (inserted) residentRecords.push(inserted);
         }
       }
 
@@ -141,7 +170,7 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
         familyNamesSet.add(motherClean.toLowerCase());
 
         const motherMatch = residentRecords.find(
-          (r) => r.full_name.trim().toLowerCase() === motherClean.toLowerCase()
+          (r) => r.full_name && r.full_name.trim().toLowerCase() === motherClean.toLowerCase()
         );
         if (motherMatch) {
           const updates: any = {};
@@ -151,7 +180,7 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
             await supabase.from("residents").update(updates).eq("id", motherMatch.id);
           }
         } else {
-          await supabase.from("residents").insert({
+          const { data: inserted } = await supabase.from("residents").insert({
             full_name: motherClean,
             gender: "Female",
             age: 0,
@@ -161,7 +190,8 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
             nationality: "Filipino",
             sitio: sitio || "",
             family_number: famNum || null,
-          });
+          }).select().maybeSingle();
+          if (inserted) residentRecords.push(inserted);
         }
       }
 
@@ -178,7 +208,7 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
         familyNamesSet.add(nameClean.toLowerCase());
 
         const memMatch = residentRecords.find(
-          (r) => r.full_name.trim().toLowerCase() === nameClean.toLowerCase()
+          (r) => r.full_name && r.full_name.trim().toLowerCase() === nameClean.toLowerCase()
         );
 
         const computedAge = mem.birthday ? calculateAge(mem.birthday) : (Number(mem.age) || 0);
@@ -200,7 +230,7 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
             await supabase.from("residents").update(updates).eq("id", memMatch.id);
           }
         } else {
-          await supabase.from("residents").insert({
+          const { data: inserted } = await supabase.from("residents").insert({
             full_name: nameClean,
             gender: mem.gender || "Male",
             age: computedAge,
@@ -211,7 +241,8 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
             sitio: sitio || "",
             birthday: mem.birthday || null,
             family_number: famNum || null,
-          });
+          }).select().maybeSingle();
+          if (inserted) residentRecords.push(inserted);
         }
       }
     }
@@ -225,7 +256,19 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
 export async function getFamilyOnlyResidents(): Promise<any[]> {
   const familyNamesSet = await syncFamilyDataToResidents();
   const { data } = await supabase.from("residents").select("*").order("full_name");
-  return (data || []).filter((r: any) =>
+  const filtered = (data || []).filter((r: any) =>
     r.full_name && familyNamesSet.has(r.full_name.trim().toLowerCase())
   );
+  
+  // Deduplicate residents by lowercase trimmed name
+  const seen = new Set<string>();
+  const uniqueResidents: any[] = [];
+  for (const r of filtered) {
+    const key = r.full_name.trim().toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueResidents.push(r);
+    }
+  }
+  return uniqueResidents;
 }

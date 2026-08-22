@@ -92,9 +92,19 @@ const ResidentRecords = () => {
     if (error) { toast.error("Failed to load residents"); setLoading(false); return; }
 
     // Resident records are strictly limited to those included in the family data (regardless of placement)
-    const familyOnlyResidents = (data || []).filter(r => 
+    const rawFamilyOnly = (data || []).filter(r => 
       r.full_name && familyNamesSet.has(r.full_name.trim().toLowerCase())
     );
+
+    const seenNames = new Set<string>();
+    const familyOnlyResidents: Resident[] = [];
+    for (const r of rawFamilyOnly) {
+      const key = r.full_name.trim().toLowerCase();
+      if (!seenNames.has(key)) {
+        seenNames.add(key);
+        familyOnlyResidents.push(r);
+      }
+    }
 
     setResidents(familyOnlyResidents);
     setLoading(false);
@@ -103,8 +113,18 @@ const ResidentRecords = () => {
   useEffect(() => { fetchResidents(); }, []);
 
   const handleAddResident = async () => {
-    if (!newResident.full_name.trim()) { toast.error(t("residents.fullName") + " required"); return; }
     const cleanName = newResident.full_name.trim();
+    if (!cleanName) { toast.error(t("residents.fullName") + " required"); return; }
+    
+    // Check if resident already exists
+    const isDuplicate = residents.some(
+      (r) => r.full_name && r.full_name.trim().toLowerCase() === cleanName.toLowerCase()
+    );
+    if (isDuplicate) {
+      toast.error(`A resident named "${cleanName}" already exists. Duplicate resident records are not allowed.`);
+      return;
+    }
+
     const isFemale = newResident.gender === "Female";
 
     const { error } = await supabase.from("residents").insert({
@@ -143,12 +163,24 @@ const ResidentRecords = () => {
 
   const handleEditResident = async () => {
     if (!editResident) return;
+    const cleanName = (editResident.full_name || "").trim();
+    if (!cleanName) {
+      toast.error(t("residents.fullName") + " required");
+      return;
+    }
+    const isDuplicate = residents.some(
+      (r) => r.id !== editResident.id && r.full_name && r.full_name.trim().toLowerCase() === cleanName.toLowerCase()
+    );
+    if (isDuplicate) {
+      toast.error(`A resident named "${cleanName}" already exists. Duplicate resident records are not allowed.`);
+      return;
+    }
     const { error } = await supabase.from("residents").update({
-      full_name: editResident.full_name, gender: editResident.gender, age: editResident.age, status: editResident.status,
+      full_name: cleanName, gender: editResident.gender, age: editResident.age, status: editResident.status,
       sitio: editResident.sitio, birthday: editResident.birthday || null,
     }).eq("id", editResident.id);
     if (error) { toast.error("Failed to update resident"); return; }
-    logActivity("update_resident", { entity_type: "resident", entity_id: editResident.id, description: `Updated resident record: ${editResident.full_name.trim()}` });
+    logActivity("update_resident", { entity_type: "resident", entity_id: editResident.id, description: `Updated resident record: ${cleanName}` });
     toast.success("Resident updated!");
     setEditDialogOpen(false); setEditResident(null); fetchResidents();
   };
