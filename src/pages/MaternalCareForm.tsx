@@ -77,17 +77,24 @@ export const RISK_FACTORS_COLUMN_3 = [
 ];
 
 export interface PrenatalVisit {
-  id: string;
-  visit_date: string;
-  visit_number: string;
-  aog: string;
-  blood_pressure: string;
-  weight: string;
-  fundic_height: string;
-  fhr: string;
-  fhr_location: string;
-  presentation: string;
-  notes: string;
+  id?: string;
+  visit_date?: string;
+  visit_number?: string;
+  aog?: string;
+  aog_weeks?: string;
+  blood_pressure?: string;
+  bp?: string;
+  weight?: string;
+  weight_kg?: string;
+  fundic_height?: string;
+  fundic_height_cm?: string;
+  fhr?: string;
+  fhb_bpm?: string;
+  fhr_location?: string;
+  presentation?: string;
+  notes?: string;
+  findings?: string;
+  remarks?: string;
 }
 
 export interface MaternalCareRecord {
@@ -340,7 +347,7 @@ const MaternalCareForm = () => {
       blood_type: "Unspecified",
       risk_factors: [],
       prenatal_visits: [
-        { visit_date: "", aog_weeks: "", weight_kg: "", bp: "", fundic_height_cm: "", fhb_bpm: "", findings: "", remarks: "" }
+        { id: `visit-${Date.now()}`, visit_date: "", visit_number: "1", aog: "", blood_pressure: "", weight: "", fundic_height: "", fhr: "", fhr_location: "", presentation: "", notes: "" }
       ]
     });
     setEditRecordId(null);
