@@ -398,6 +398,7 @@ const ChildHealthForm = () => {
   const [selectedRecordForView, setSelectedRecordForView] = useState<any | null>(null);
   const [viewRecordModalOpen, setViewRecordModalOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
 
   const STORAGE_KEY_VITA_DRAFT = "bhw_child_health_vita_draft";
   const STORAGE_KEY_SIA_DRAFT = "bhw_child_health_sia_draft";
@@ -891,7 +892,26 @@ const ChildHealthForm = () => {
       examiner_name: loggedInWorkerName,
     });
     setSelectedResidentId("");
+    setResetConfirmOpen(false);
     toast.info("Form reset.");
+  };
+
+  const handleDeleteRecord = async (id: string) => {
+    try {
+      const rec = savedHealthRecords.find(r => r.id === id);
+      const { error } = await supabase.from("child_health" as any).delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Child health record deleted successfully");
+      logActivity("delete_child_health", {
+        entity_type: "child_health",
+        entity_id: id,
+        description: `Deleted child health record for ${getRecordChildName(rec)}`
+      });
+      setDeleteConfirmId(null);
+      fetchSavedRecords();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete child health record");
+    }
   };
 
   const handleSaveSickChild = async (e: React.FormEvent) => {
@@ -1037,17 +1057,6 @@ const ChildHealthForm = () => {
     }
   };
 
-  const handleDeleteRecord = async (id: string) => {
-    const { error } = await supabase.from("child_health" as any).delete().eq("id", id);
-    if (!error) {
-      toast.success("Child health record deleted.");
-      logActivity("delete_child_health", { entity_type: "child_health", description: `Deleted record ID: ${id}` });
-      fetchSavedRecords();
-    } else {
-      toast.error("Failed to delete record.");
-    }
-    setDeleteConfirmId(null);
-  };
 
   const handlePrint = () => window.print();
 
@@ -1452,14 +1461,6 @@ const ChildHealthForm = () => {
                   <span className="inline-block w-2 h-2 rounded-full bg-sky-500"></span>
                   BRGY: <strong className="text-foreground">SUBUKIN</strong>
                 </span>
-                <div className="flex items-center gap-2">
-                  <Button type="button" variant="outline" size="sm" onClick={handleResetSickForm} className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium">
-                    <RefreshCw className="h-3.5 w-3.5" /> Reset Form
-                  </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
-                    <Printer className="h-3.5 w-3.5" /> Print
-                  </Button>
-                </div>
               </div>
 
               {/* Navigation Tabs */}
@@ -2497,6 +2498,22 @@ const ChildHealthForm = () => {
                   <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
                     <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Sick Child Record"}
                   </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setResetConfirmOpen(true)} 
+                    className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" /> Reset Form
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handlePrint} 
+                    className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10 font-semibold"
+                  >
+                    <Printer className="h-3.5 w-3.5" /> Print
+                  </Button>
                 </div>
 
                 {renderHistoryCard("sick-children")}
@@ -3404,6 +3421,58 @@ const ChildHealthForm = () => {
           );
         })()}
       </div>
+
+      {/* RESET CONFIRMATION DIALOG */}
+      <Dialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">
+              Reset Child Health Form?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to reset the form? Any unsaved child demographic and clinical entries will be cleared.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setResetConfirmOpen(false)} className="text-xs">
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              onClick={handleResetSickForm} 
+              className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold"
+            >
+              Reset Form
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <Dialog open={!!deleteConfirmId} onOpenChange={open => !open && setDeleteConfirmId(null)}>
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">
+              Delete Child Health Record?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to delete this child health record? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setDeleteConfirmId(null)} className="text-xs">
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              onClick={() => deleteConfirmId && handleDeleteRecord(deleteConfirmId)} 
+              className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold"
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -139,6 +139,7 @@ const MaternalCareForm = () => {
   const [viewRecordModalOpen, setViewRecordModalOpen] = useState(false);
   const [selectedRecordForView, setSelectedRecordForView] = useState<MaternalCareRecord | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
 
   // Main Form State
   const [form, setForm] = useState({
@@ -338,9 +339,13 @@ const MaternalCareForm = () => {
       patient_height: "",
       blood_type: "Unspecified",
       risk_factors: [],
-      prenatal_visits: [],
+      prenatal_visits: [
+        { visit_date: "", aog_weeks: "", weight_kg: "", bp: "", fundic_height_cm: "", fhb_bpm: "", findings: "", remarks: "" }
+      ]
     });
     setEditRecordId(null);
+    setResetConfirmOpen(false);
+    toast.info("Maternal care form reset to blank.");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -769,26 +774,12 @@ const MaternalCareForm = () => {
             />
           </div>
 
-          {/* Header Bar with Barangay Subukin note & Action Toolbar (Hidden when printing) */}
+          {/* Header Bar with Barangay Subukin note (Hidden when printing) */}
           <div className="flex items-center justify-between gap-2 no-print pb-2 border-b border-border/40">
             <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
               BRGY: <strong className="text-foreground">SUBUKIN</strong>
             </span>
-            <div className="flex items-center gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={handleResetForm} 
-                className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium shadow-xs"
-              >
-                <RefreshCw className="h-3.5 w-3.5" /> Reset
-              </Button>
-              <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10">
-                <Printer className="h-3.5 w-3.5" /> Print
-              </Button>
-            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -1239,6 +1230,22 @@ const MaternalCareForm = () => {
               <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
                 <Save className="h-4 w-4" /> {saving ? "Saving..." : editRecordId ? "Update Record" : "Save Record"}
               </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setResetConfirmOpen(true)} 
+                className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium"
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> Reset
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handlePrint} 
+                className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10 font-semibold"
+              >
+                <Printer className="h-3.5 w-3.5" /> Print
+              </Button>
             </div>
           </form>
         </CardContent>
@@ -1630,25 +1637,51 @@ const MaternalCareForm = () => {
         </DialogContent>
       </Dialog>
 
+      {/* RESET CONFIRMATION DIALOG */}
+      <Dialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">
+              Reset Maternal Care Form?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to reset the form? All unsaved prenatal and maternal care entries will be cleared.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setResetConfirmOpen(false)} className="text-xs">
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              onClick={handleResetForm} 
+              className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold"
+            >
+              Reset Form
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* DELETE CONFIRMATION DIALOG */}
       <Dialog open={!!deleteConfirmId} onOpenChange={open => !open && setDeleteConfirmId(null)}>
-        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200">
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">
               Delete Maternal Care Record?
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500">
+            <DialogDescription className="text-xs text-muted-foreground">
               Are you sure you want to delete this maternal care record? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 mt-4">
-            <Button type="button" variant="outline" onClick={() => setDeleteConfirmId(null)}>
+            <Button type="button" variant="outline" onClick={() => setDeleteConfirmId(null)} className="text-xs">
               Cancel
             </Button>
             <Button 
               type="button" 
               onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)} 
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold"
             >
               Delete
             </Button>

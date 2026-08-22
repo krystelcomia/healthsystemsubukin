@@ -359,6 +359,7 @@ const FamilyPlanningForm = () => {
   const [selectedRecordForView, setSelectedRecordForView] = useState<any | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState<boolean>(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (fpState) {
@@ -437,6 +438,7 @@ const FamilyPlanningForm = () => {
     localStorage.removeItem(STORAGE_KEY_FP_DRAFT);
     setFpState(createInitialFPForm());
     setSelectedResidentId("");
+    setResetConfirmOpen(false);
     toast.info("Form reset to blank.");
   };
 
@@ -746,16 +748,6 @@ const FamilyPlanningForm = () => {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <Button type="button" variant="outline" size="sm" onClick={handleResetForm} className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 shrink-0 whitespace-nowrap">
-                <RefreshCw className="h-3.5 w-3.5" /> Reset Form
-              </Button>
-
-              <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 text-xs border-primary/20 text-primary hover:bg-primary/10 shrink-0 whitespace-nowrap">
-                <Printer className="h-4 w-4" /> Print
-              </Button>
             </div>
           </div>
         </CardContent>
@@ -1632,6 +1624,24 @@ const FamilyPlanningForm = () => {
               <Button type="button" size="sm" onClick={handleSaveFPRecord} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground shrink-0 whitespace-nowrap font-bold px-5">
                 <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save FP Record"}
               </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setResetConfirmOpen(true)} 
+                className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 shrink-0 whitespace-nowrap font-medium"
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> Reset Form
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={handlePrint} 
+                className="gap-1.5 text-xs border-primary/20 text-primary hover:bg-primary/10 shrink-0 whitespace-nowrap font-semibold"
+              >
+                <Printer className="h-4 w-4" /> Print
+              </Button>
             </div>
           </div>
 
@@ -2071,6 +2081,32 @@ const FamilyPlanningForm = () => {
               );
             })()
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* RESET CONFIRMATION DIALOG */}
+      <Dialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">
+              Reset Family Planning Form?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to reset the form? All unsaved FP Form 1 assessment entries and checklist answers will be cleared.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setResetConfirmOpen(false)} className="text-xs">
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              onClick={handleResetForm} 
+              className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold"
+            >
+              Reset Form
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

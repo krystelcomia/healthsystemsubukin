@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Activity, Save, Printer, RefreshCw, HeartPulse, CheckCircle2, Search, Eye, Pencil, History, Calendar, UserCheck } from "lucide-react";
+import { Activity, Save, Printer, RefreshCw, HeartPulse, CheckCircle2, Search, Eye, Pencil, History, Calendar, UserCheck, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
@@ -88,6 +88,8 @@ const PhilPenHealthForm = () => {
   }, []);
 
   const [historySitio, setHistorySitio] = useState("all");
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const filteredHistory = useMemo(() => {
     let result = historyRecords;
@@ -231,7 +233,26 @@ const PhilPenHealthForm = () => {
       diabetes_laging_uhaw_no: false,
       diabetes_remarks: ""
     });
-    toast.success("Form cleared successfully");
+    setResetConfirmOpen(false);
+    toast.success("PhilPen health form reset to blank");
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const rec = historyRecords.find(r => r.id === id);
+      const { error } = await supabase.from("philpen_health").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("PhilPen record deleted successfully");
+      logActivity("delete_philpen", {
+        entity_type: "philpen_health",
+        entity_id: id,
+        description: `Deleted PhilPen record for ${rec?.residents?.full_name || "resident"}`
+      });
+      setDeleteConfirmId(null);
+      fetchHistory();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete PhilPen record");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -915,7 +936,7 @@ const PhilPenHealthForm = () => {
 
               <Button 
                 type="button" 
-                onClick={handleReset}
+                onClick={() => setResetConfirmOpen(true)}
                 className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4"
                 variant="outline"
               >
@@ -1108,6 +1129,15 @@ const PhilPenHealthForm = () => {
                                 className="h-7 w-7 text-muted-foreground hover:text-foreground"
                               >
                                 <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeleteConfirmId(rec.id)}
+                                title="Delete Record"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
                           </TableCell>
@@ -1349,6 +1379,58 @@ const PhilPenHealthForm = () => {
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* RESET CONFIRMATION DIALOG */}
+      <Dialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">
+              Reset PhilPen Health Form?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to reset the form? All unsaved risk assessments and vitals will be cleared.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setResetConfirmOpen(false)} className="text-xs">
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              onClick={handleReset} 
+              className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold"
+            >
+              Reset Form
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">
+              Delete PhilPen Record?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to delete this PhilPen risk assessment record? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setDeleteConfirmId(null)} className="text-xs">
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)} 
+              className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold"
+            >
+              Delete
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

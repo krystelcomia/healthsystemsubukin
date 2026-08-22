@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Stethoscope, Printer, RefreshCw, UserCheck, Activity, FileText, CheckCircle2, Search, Eye, Pencil, History, Calendar, HeartPulse } from "lucide-react";
+import { Stethoscope, Printer, RefreshCw, UserCheck, Activity, FileText, CheckCircle2, Search, Eye, Pencil, History, Calendar, HeartPulse, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ensureResidentExists, getFamilyOnlyResidents, calculateAge } from "@/lib/residentLinker";
@@ -72,6 +72,8 @@ const ConsultationForm = () => {
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
   const [selectedRecordForView, setSelectedRecordForView] = useState<any | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const fetchHistory = async () => {
     setLoadingHistory(true);
@@ -153,7 +155,39 @@ const ConsultationForm = () => {
   };
 
   const handleReset = () => {
-    setForm({ resident_id: "", birthdate: "", age: "", sitio: "", date: getTodayDate(), temperature: "", pulseRate: "", respirationRate: "", height: "", weight: "", consultationCause: "" });
+    setForm({
+      resident_id: "",
+      birthdate: "",
+      age: "",
+      sitio: "",
+      date: getTodayDate(),
+      temperature: "",
+      pulseRate: "",
+      respirationRate: "",
+      height: "",
+      weight: "",
+      consultationCause: "",
+    });
+    setResetConfirmOpen(false);
+    toast.success("Consultation form reset to blank");
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const rec = historyRecords.find(r => r.id === id);
+      const { error } = await supabase.from("consultations").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Consultation record deleted successfully");
+      logActivity("delete_consultation", {
+        entity_type: "consultation",
+        entity_id: id,
+        description: `Deleted consultation record for ${rec?.residents?.full_name || "resident"}`
+      });
+      setDeleteConfirmId(null);
+      fetchHistory();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete consultation record");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -366,32 +400,12 @@ const ConsultationForm = () => {
             />
           </div>
 
-          {/* Header Bar with Barangay Subukin note & Action Toolbar (Hidden when printing) */}
+          {/* Header Bar with Barangay Subukin note (Hidden when printing) */}
           <div className="flex items-center justify-between gap-2 no-print pb-2 border-b border-border/40">
             <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
               BRGY: <strong className="text-foreground">SUBUKIN</strong>
             </span>
-            <div className="flex items-center gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={handleReset} 
-                className="gap-1 text-xs text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30 font-medium shadow-xs"
-              >
-                <RefreshCw className="h-3.5 w-3.5" /> Reset
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={handlePrint} 
-                className="gap-1 text-xs border-primary/20 text-primary hover:bg-primary/10"
-              >
-                <Printer className="h-3.5 w-3.5" /> Print
-              </Button>
-            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -537,7 +551,7 @@ const ConsultationForm = () => {
 
               <Button 
                 type="button" 
-                onClick={handleReset}
+                onClick={() => setResetConfirmOpen(true)}
                 variant="outline"
                 className="border-destructive/30 text-destructive hover:bg-destructive/10 font-medium gap-2 px-4"
               >
@@ -697,6 +711,15 @@ const ConsultationForm = () => {
                                 className="h-7 w-7 text-muted-foreground hover:text-foreground"
                               >
                                 <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeleteConfirmId(rec.id)}
+                                title="Delete Record"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
                           </TableCell>
@@ -893,6 +916,58 @@ const ConsultationForm = () => {
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* RESET CONFIRMATION DIALOG */}
+      <Dialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">
+              Reset Consultation Form?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to reset the form? All unsaved inputs and selected resident details will be cleared.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setResetConfirmOpen(false)} className="text-xs">
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              onClick={handleReset} 
+              className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold"
+            >
+              Reset Form
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">
+              Delete Consultation Record?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to delete this consultation record? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setDeleteConfirmId(null)} className="text-xs">
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)} 
+              className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold"
+            >
+              Delete
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
