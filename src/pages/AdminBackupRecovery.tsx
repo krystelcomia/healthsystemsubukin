@@ -48,11 +48,14 @@ import {
   Info,
   Shield,
   Activity,
+  Layers,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { logActivity } from "@/lib/activityLogger";
+import { syncFamilyDataToResidents } from "@/lib/residentLinker";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -74,16 +77,27 @@ interface BackupSchedule {
   nextScheduled: string | null;
 }
 
+interface RestoreAnalysis {
+  totalInBackup: number;
+  missingCount: number;
+  existingCount: number;
+  analyzing: boolean;
+  details: Record<string, { missing: number; existing: number; label: string }>;
+}
+
 const BACKUP_HISTORY_KEY = "bhw_backup_history";
 const BACKUP_SCHEDULE_KEY = "bhw_backup_schedule";
 
 const TABLE_DEFS = [
   { key: "residents",        label: "Residents",       colorClass: "text-blue-600",    bgClass: "bg-blue-50 dark:bg-blue-950/30" },
+  { key: "bhw_workers",      label: "BH Workers",      colorClass: "text-indigo-600",  bgClass: "bg-indigo-50 dark:bg-indigo-950/30" },
   { key: "consultations",    label: "Consultations",   colorClass: "text-violet-600",  bgClass: "bg-violet-50 dark:bg-violet-950/30" },
   { key: "family_data",      label: "Family Data",     colorClass: "text-emerald-600", bgClass: "bg-emerald-50 dark:bg-emerald-950/30" },
-  { key: "dengue_prevention",label: "Dengue",          colorClass: "text-orange-600",  bgClass: "bg-orange-50 dark:bg-orange-950/30" },
   { key: "philpen_health",   label: "PhilPen",         colorClass: "text-cyan-600",    bgClass: "bg-cyan-50 dark:bg-cyan-950/30" },
-  { key: "family_planning",  label: "Family Planning", colorClass: "text-pink-600",    bgClass: "bg-pink-50 dark:bg-pink-950/30" },
+  { key: "dengue_prevention",label: "Dengue",          colorClass: "text-orange-600",  bgClass: "bg-orange-50 dark:bg-orange-950/30" },
+  { key: "maternal_care",    label: "Maternal Care",   colorClass: "text-pink-600",    bgClass: "bg-pink-50 dark:bg-pink-950/30" },
+  { key: "child_health",     label: "Child Health",    colorClass: "text-amber-600",   bgClass: "bg-amber-50 dark:bg-amber-950/30" },
+  { key: "family_planning",  label: "Family Planning", colorClass: "text-rose-600",    bgClass: "bg-rose-50 dark:bg-rose-950/30" },
 ] as const;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -173,6 +187,7 @@ const AdminBackupRecovery = () => {
   const [restoreTarget, setRestoreTarget] = useState<BackupRecord | null>(null);
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [pendingRestoreData, setPendingRestoreData] = useState<string | null>(null);
+  const [restoreAnalysis, setRestoreAnalysis] = useState<RestoreAnalysis | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<BackupRecord | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -186,14 +201,14 @@ const AdminBackupRecovery = () => {
     username ||
     localStorage.getItem("logged_in_fullname") ||
     user?.email?.split("@")[0] ||
-    "Administrator";
+    "Midwife Administrator";
 
   // ── Fetch DB stats ──────────────────────────────────────────────────────────
   const fetchDbStats = async () => {
     setLoadingStats(true);
     try {
       const results = await Promise.all(
-        TABLE_DEFS.map((t) => supabase.from(t.key as any).select("*", { count: "exact", head: true }))
+        TABLE_DEFS.map((t) => (supabase.from as any)(t.key).select("*", { count: "exact", head: true }))
       );
       const stats: Record<string, number> = {};
       TABLE_DEFS.forEach((t, i) => { stats[t.key] = results[i].count ?? 0; });
@@ -233,29 +248,60 @@ const AdminBackupRecovery = () => {
 
     try {
       setBackupProgress(15);
-      const [residents, consultations, familyData, dengue, philpen, familyPlanning] = await Promise.all([
+      const [
+        residents,
+        workers,
+        consultations,
+        familyData,
+        dengue,
+        philpen,
+        maternal,
+        child,
+        familyPlanning,
+        profiles,
+        userRoles,
+      ] = await Promise.all([
         supabase.from("residents").select("*"),
+        (supabase.from as any)("bhw_workers").select("*"),
         supabase.from("consultations").select("*"),
         supabase.from("family_data").select("*"),
         supabase.from("dengue_prevention").select("*"),
         supabase.from("philpen_health").select("*"),
+        (supabase.from as any)("maternal_care").select("*"),
+        (supabase.from as any)("child_health").select("*"),
         supabase.from("family_planning").select("*"),
+        (supabase.from as any)("profiles").select("*"),
+        (supabase.from as any)("user_roles").select("*"),
       ]);
 
-      setBackupProgress(60);
+      setBackupProgress(55);
+
+      const customForms = JSON.parse(localStorage.getItem("bhw_custom_forms") || "[]");
+      const customRecords = JSON.parse(localStorage.getItem("bhw_custom_form_records") || "[]");
+      const attendanceLogs = JSON.parse(localStorage.getItem("bhw_attendance_logs") || "[]");
+      const activityLogs = JSON.parse(localStorage.getItem("bhw_activity_logs") || "[]");
 
       const backupData = {
         exported_at: isoNow,
         backup_type: type,
         created_by: creatorName,
-        version: "2.0",
+        version: "2.1",
         system: "Barangay Health Information Management System — Subukin",
         residents: residents.data || [],
+        bhw_workers: workers.data || [],
         consultations: consultations.data || [],
         family_data: familyData.data || [],
         dengue_prevention: dengue.data || [],
         philpen_health: philpen.data || [],
+        maternal_care: maternal.data || [],
+        child_health: child.data || [],
         family_planning: familyPlanning.data || [],
+        profiles: profiles.data || [],
+        user_roles: userRoles.data || [],
+        custom_forms: customForms,
+        custom_form_records: customRecords,
+        attendance_logs: attendanceLogs,
+        activity_logs: activityLogs,
       };
 
       const jsonStr = JSON.stringify(backupData, null, 2);
@@ -329,6 +375,106 @@ const AdminBackupRecovery = () => {
     }
   };
 
+  // ── Analyze Backup for Duplicate Detection & Selective Restore ───────────────
+  const analyzeBackupData = async (jsonStr: string) => {
+    setRestoreAnalysis({
+      totalInBackup: 0,
+      missingCount: 0,
+      existingCount: 0,
+      analyzing: true,
+      details: {},
+    });
+
+    try {
+      const data = JSON.parse(jsonStr);
+      const dbTables = [
+        { key: "residents", label: "Residents" },
+        { key: "bhw_workers", label: "BH Workers" },
+        { key: "consultations", label: "Consultations" },
+        { key: "family_data", label: "Family Data" },
+        { key: "philpen_health", label: "PhilPen Health" },
+        { key: "dengue_prevention", label: "Dengue Prevention" },
+        { key: "maternal_care", label: "Maternal Care" },
+        { key: "child_health", label: "Child Health" },
+        { key: "family_planning", label: "Family Planning" },
+        { key: "profiles", label: "User Profiles" },
+        { key: "user_roles", label: "User Roles" },
+      ];
+
+      let totalInBackup = 0;
+      let missingCount = 0;
+      let existingCount = 0;
+      const details: Record<string, { missing: number; existing: number; label: string }> = {};
+
+      for (const tbl of dbTables) {
+        const backupRows: any[] = data[tbl.key] || [];
+        if (!Array.isArray(backupRows) || backupRows.length === 0) continue;
+        totalInBackup += backupRows.length;
+
+        const { data: activeRows } = await (supabase.from as any)(tbl.key).select("*");
+        const activeIds = new Set((activeRows || []).map((r: any) => r.id));
+        const activeGmails = new Set((activeRows || []).map((r: any) => r.gmail?.toLowerCase()).filter(Boolean));
+        const activeUserIds = new Set((activeRows || []).map((r: any) => r.user_id).filter(Boolean));
+
+        let tblMissing = 0;
+        let tblExisting = 0;
+
+        for (const row of backupRows) {
+          const exists = activeIds.has(row.id) ||
+            (tbl.key === "bhw_workers" && row.gmail && activeGmails.has(row.gmail.toLowerCase())) ||
+            (tbl.key === "profiles" && row.user_id && activeUserIds.has(row.user_id));
+
+          if (exists) tblExisting++;
+          else tblMissing++;
+        }
+
+        missingCount += tblMissing;
+        existingCount += tblExisting;
+        if (tblMissing > 0 || tblExisting > 0) {
+          details[tbl.key] = { missing: tblMissing, existing: tblExisting, label: tbl.label };
+        }
+      }
+
+      // LocalStorage collections
+      const localCollections = [
+        { key: "custom_forms", storageKey: "bhw_custom_forms", label: "Custom Forms" },
+        { key: "custom_form_records", storageKey: "bhw_custom_form_records", label: "Custom Records" },
+        { key: "attendance_logs", storageKey: "bhw_attendance_logs", label: "Attendance Logs" },
+      ];
+
+      for (const loc of localCollections) {
+        const backupRows: any[] = data[loc.key] || [];
+        if (!Array.isArray(backupRows) || backupRows.length === 0) continue;
+        totalInBackup += backupRows.length;
+
+        const activeRows: any[] = JSON.parse(localStorage.getItem(loc.storageKey) || "[]");
+        const activeIds = new Set(activeRows.map((r: any) => r.id));
+
+        let locMissing = 0;
+        let locExisting = 0;
+        for (const row of backupRows) {
+          if (activeIds.has(row.id)) locExisting++;
+          else locMissing++;
+        }
+        missingCount += locMissing;
+        existingCount += locExisting;
+        if (locMissing > 0 || locExisting > 0) {
+          details[loc.key] = { missing: locMissing, existing: locExisting, label: loc.label };
+        }
+      }
+
+      setRestoreAnalysis({
+        totalInBackup,
+        missingCount,
+        existingCount,
+        analyzing: false,
+        details,
+      });
+    } catch {
+      setRestoreAnalysis(null);
+    }
+  };
+
   // ── Download history entry ──────────────────────────────────────────────────
   const handleDownloadHistory = (record: BackupRecord) => {
     if (record.dataSnapshot) {
@@ -352,6 +498,11 @@ const AdminBackupRecovery = () => {
   const handleRestoreFromHistory = (record: BackupRecord) => {
     setRestoreTarget(record);
     setPendingRestoreData(record.dataSnapshot ?? null);
+    if (record.dataSnapshot) {
+      analyzeBackupData(record.dataSnapshot);
+    } else {
+      setRestoreAnalysis(null);
+    }
     setRestoreDialogOpen(true);
   };
 
@@ -362,8 +513,8 @@ const AdminBackupRecovery = () => {
     try {
       const text = await file.text();
       const parsed = JSON.parse(text);
-      if (!parsed.exported_at || !parsed.residents) {
-        toast.error("Invalid backup file — missing required fields.");
+      if (!parsed.exported_at || (!parsed.residents && !parsed.bhw_workers && !parsed.consultations)) {
+        toast.error("Invalid backup file — missing required system fields.");
         return;
       }
       setPendingRestoreData(text);
@@ -372,10 +523,11 @@ const AdminBackupRecovery = () => {
         timestamp: parsed.exported_at,
         type: parsed.backup_type ?? "Manual",
         fileSize: formatBytes(new Blob([text]).size),
-        createdBy: parsed.created_by ?? "Unknown",
+        createdBy: parsed.created_by ?? "Midwife Administrator",
         status: "Success",
         filename: file.name,
       });
+      analyzeBackupData(text);
       setRestoreDialogOpen(true);
     } catch {
       toast.error("Could not read backup file. Ensure it is a valid .json backup.");
@@ -384,7 +536,7 @@ const AdminBackupRecovery = () => {
     }
   };
 
-  // ── Confirm restore ─────────────────────────────────────────────────────────
+  // ── Confirm selective restore with duplicate prevention ─────────────────────
   const confirmRestore = async () => {
     if (!restoreTarget || !pendingRestoreData) return;
     setRestoring(true);
@@ -393,29 +545,125 @@ const AdminBackupRecovery = () => {
 
     try {
       const data = JSON.parse(pendingRestoreData);
-      const tables = ["residents", "consultations", "family_data", "dengue_prevention", "philpen_health", "family_planning"] as const;
+      const dbTables = [
+        { key: "residents", label: "Residents" },
+        { key: "bhw_workers", label: "BH Workers" },
+        { key: "consultations", label: "Consultations" },
+        { key: "family_data", label: "Family Data" },
+        { key: "philpen_health", label: "PhilPen Health" },
+        { key: "dengue_prevention", label: "Dengue Prevention" },
+        { key: "maternal_care", label: "Maternal Care" },
+        { key: "child_health", label: "Child Health" },
+        { key: "family_planning", label: "Family Planning" },
+        { key: "profiles", label: "Profiles" },
+        { key: "user_roles", label: "User Roles" },
+      ];
+
+      let recoveredCount = 0;
+      let preservedCount = 0;
+      const recoveredSummary: string[] = [];
 
       let step = 0;
-      for (const table of tables) {
+      for (const tbl of dbTables) {
         step++;
-        setRestoreProgress(Math.round(10 + (step / tables.length) * 80));
-        const rows = (data as any)[table];
-        if (rows && rows.length > 0) {
-          const { error } = await supabase.from(table as any).upsert(rows, { onConflict: "id" });
-          if (error) throw new Error(`Failed to restore ${table}: ${error.message}`);
+        setRestoreProgress(Math.round(5 + (step / (dbTables.length + 3)) * 75));
+        const backupRows = (data as any)[tbl.key];
+        if (!backupRows || !Array.isArray(backupRows) || backupRows.length === 0) continue;
+
+        // Fetch current active data to detect duplicates and missing items
+        const { data: currentRows } = await (supabase.from as any)(tbl.key).select("*");
+        const activeIds = new Set((currentRows || []).map((r: any) => r.id));
+        const activeGmails = new Set((currentRows || []).map((r: any) => r.gmail?.toLowerCase()).filter(Boolean));
+        const activeUserIds = new Set((currentRows || []).map((r: any) => r.user_id).filter(Boolean));
+
+        const missingItems: any[] = [];
+        let existingInTable = 0;
+
+        for (const row of backupRows) {
+          const exists = activeIds.has(row.id) ||
+            (tbl.key === "bhw_workers" && row.gmail && activeGmails.has(row.gmail.toLowerCase())) ||
+            (tbl.key === "profiles" && row.user_id && activeUserIds.has(row.user_id));
+
+          if (exists) {
+            existingInTable++;
+          } else {
+            missingItems.push(row);
+          }
+        }
+
+        preservedCount += existingInTable;
+
+        // Restore only missing or deleted records
+        if (missingItems.length > 0) {
+          const { error: upsertErr } = await (supabase.from as any)(tbl.key).upsert(missingItems, { onConflict: "id" });
+          if (upsertErr) {
+            for (const singleItem of missingItems) {
+              await (supabase.from as any)(tbl.key).upsert(singleItem, { onConflict: "id" });
+            }
+          }
+          recoveredCount += missingItems.length;
+          recoveredSummary.push(`+${missingItems.length} ${tbl.label}`);
         }
       }
 
+      // Restore LocalStorage collections without duplication
+      const localCollections = [
+        { key: "custom_forms", storageKey: "bhw_custom_forms", label: "Custom Forms" },
+        { key: "custom_form_records", storageKey: "bhw_custom_form_records", label: "Custom Records" },
+        { key: "attendance_logs", storageKey: "bhw_attendance_logs", label: "Attendance Logs" },
+      ];
+
+      for (const loc of localCollections) {
+        const backupRows: any[] = data[loc.key];
+        if (backupRows && Array.isArray(backupRows) && backupRows.length > 0) {
+          const activeRows: any[] = JSON.parse(localStorage.getItem(loc.storageKey) || "[]");
+          const activeIds = new Set(activeRows.map((r: any) => r.id));
+          const missingItems = backupRows.filter((r: any) => !activeIds.has(r.id));
+          const existingCount = backupRows.length - missingItems.length;
+          preservedCount += existingCount;
+
+          if (missingItems.length > 0) {
+            const merged = [...activeRows, ...missingItems];
+            localStorage.setItem(loc.storageKey, JSON.stringify(merged));
+            recoveredCount += missingItems.length;
+            recoveredSummary.push(`+${missingItems.length} ${loc.label}`);
+          }
+        }
+      }
+
+      setRestoreProgress(90);
+
+      // Re-sync family data to residents to ensure consistency
+      try {
+        await syncFamilyDataToResidents();
+      } catch (e) {
+        console.warn("syncFamilyDataToResidents error:", e);
+      }
+
+      // Notify other components and tabs immediately
+      window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new Event("custom-forms-updated"));
+      window.dispatchEvent(new Event("bhw-attendance-updated"));
+      window.dispatchEvent(new Event("profile-updated"));
+
       setRestoreProgress(95);
+
+      const descriptionMsg = recoveredCount > 0
+        ? `Recovered ${recoveredCount} missing/deleted record(s) (${recoveredSummary.join(", ")}). ${preservedCount} existing record(s) detected and preserved without duplication.`
+        : `All ${preservedCount} backup record(s) were already present in the active system. No duplicate records were created.`;
 
       await logActivity("backup_restored", {
         entity_type: "backup",
         entity_id: restoreTarget.id,
-        description: `System data restored from backup: ${restoreTarget.filename} (created ${formatDateTime(restoreTarget.timestamp)}, by ${restoreTarget.createdBy}) — restored by ${creatorName}`,
+        description: `System restore completed: ${restoreTarget.filename} — ${descriptionMsg} by ${creatorName}`,
       });
 
       setRestoreProgress(100);
-      toast.success("System data restored successfully!", { description: `Restored from: ${restoreTarget.filename}` });
+      toast.success("System Data Restore Completed!", {
+        description: descriptionMsg,
+        duration: 7000,
+      });
+
       await fetchDbStats();
     } catch (err: any) {
       await logActivity("backup_restore_failed", {
@@ -427,6 +675,7 @@ const AdminBackupRecovery = () => {
       setTimeout(() => { setRestoreProgress(0); setRestoring(false); }, 800);
       setRestoreTarget(null);
       setPendingRestoreData(null);
+      setRestoreAnalysis(null);
     }
   };
 
@@ -961,41 +1210,103 @@ const AdminBackupRecovery = () => {
               All backup creation, restore operations, and deletion activities are automatically recorded in the{" "}
               <strong>Activity Logs</strong> with timestamps, the administrator's identity, and action details.
               Unauthorized access to this page is blocked. Only users with the{" "}
-              <strong>Supervisor / Administrator</strong> role can perform backup, restore, or data deletion operations.
+              <strong>Midwife / Administrator</strong> role can perform backup, restore, or data deletion operations.
             </p>
           </div>
         </div>
 
         {/* ── Restore Confirmation Dialog ── */}
         <AlertDialog open={restoreDialogOpen} onOpenChange={setRestoreDialogOpen}>
-          <AlertDialogContent className="max-w-md">
+          <AlertDialogContent className="max-w-lg">
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-                <AlertTriangle className="h-5 w-5" />
-                Confirm Data Restore
+                <RotateCcw className="h-5 w-5" />
+                Smart Data Restore &amp; Recovery
               </AlertDialogTitle>
               <AlertDialogDescription asChild>
                 <div className="space-y-3 text-sm">
-                  <p>You are about to restore system data from the following backup:</p>
+                  <p className="text-foreground text-xs leading-relaxed">
+                    The system will perform a selective restore with <strong>duplicate detection</strong>, recovering only deleted or missing records while preserving existing data without duplication.
+                  </p>
+
                   {restoreTarget && (
                     <div className="rounded-md bg-muted/60 border border-border/60 p-3 space-y-1 text-xs font-mono">
-                      <p><span className="text-muted-foreground">File:</span> {restoreTarget.filename}</p>
-                      <p><span className="text-muted-foreground">Created:</span> {formatDateTime(restoreTarget.timestamp)}</p>
-                      <p><span className="text-muted-foreground">By:</span> {restoreTarget.createdBy}</p>
-                      <p><span className="text-muted-foreground">Size:</span> {restoreTarget.fileSize}</p>
+                      <p><span className="text-muted-foreground font-sans">File:</span> {restoreTarget.filename}</p>
+                      <p><span className="text-muted-foreground font-sans">Created:</span> {formatDateTime(restoreTarget.timestamp)}</p>
+                      <p><span className="text-muted-foreground font-sans">By:</span> {restoreTarget.createdBy}</p>
+                      <p><span className="text-muted-foreground font-sans">Size:</span> {restoreTarget.fileSize}</p>
                     </div>
                   )}
-                  <div className="rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3">
-                    <p className="font-bold text-red-700 dark:text-red-400 mb-2 flex items-center gap-1.5">
-                      <AlertTriangle className="h-3.5 w-3.5" /> Important Warning
+
+                  {/* ── Analysis Summary ── */}
+                  {restoreAnalysis?.analyzing ? (
+                    <div className="flex items-center gap-2 p-3 bg-muted/40 rounded-md text-xs text-muted-foreground border border-border/60">
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin text-primary shrink-0" />
+                      <span>Scanning active database for missing items and duplicate prevention…</span>
+                    </div>
+                  ) : restoreAnalysis ? (
+                    <div className="rounded-md border border-primary/20 bg-primary/5 p-3 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-foreground flex items-center gap-1.5">
+                          <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                          Duplicate Detection Summary
+                        </span>
+                        <Badge variant="outline" className="text-[10px] bg-background">
+                          {restoreAnalysis.totalInBackup} Total in Backup
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="rounded border border-amber-500/30 bg-amber-50 dark:bg-amber-950/30 p-2 text-center">
+                          <p className="text-base font-bold text-amber-700 dark:text-amber-400">
+                            {restoreAnalysis.missingCount}
+                          </p>
+                          <p className="text-[10px] text-amber-800 dark:text-amber-300 font-medium">
+                            Missing / Deleted to Recover
+                          </p>
+                        </div>
+                        <div className="rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/30 p-2 text-center">
+                          <p className="text-base font-bold text-emerald-700 dark:text-emerald-400">
+                            {restoreAnalysis.existingCount}
+                          </p>
+                          <p className="text-[10px] text-emerald-800 dark:text-emerald-300 font-medium">
+                            Existing (No Duplicate)
+                          </p>
+                        </div>
+                      </div>
+
+                      {restoreAnalysis.missingCount > 0 && (
+                        <div className="pt-1">
+                          <p className="text-[11px] font-semibold text-foreground mb-1.5">Items to be recovered:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {Object.entries(restoreAnalysis.details)
+                              .filter(([_, v]) => v.missing > 0)
+                              .map(([k, v]) => (
+                                <Badge
+                                  key={k}
+                                  variant="secondary"
+                                  className="text-[10px] font-medium bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30"
+                                >
+                                  +{v.missing} {v.label}
+                                </Badge>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+
+                  <div className="rounded-md bg-muted/40 border border-border/60 p-3">
+                    <p className="font-bold text-foreground text-xs mb-1.5 flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-primary" /> Key Recovery Principles
                     </p>
-                    <ul className="list-disc pl-4 space-y-1 text-xs text-red-700 dark:text-red-400">
-                      <li>This will <strong>overwrite existing records</strong> that share the same IDs as the backup.</li>
-                      <li>Records not present in the backup will <strong>remain unchanged</strong>.</li>
-                      <li>This action <strong>cannot be undone</strong> without a newer backup.</li>
-                      <li>This restore will be <strong>recorded in the Activity Logs</strong>.</li>
+                    <ul className="list-disc pl-4 space-y-1 text-[11px] text-muted-foreground">
+                      <li><strong>Selective Recovery:</strong> If a single form, record, or BH worker was deleted, this restore recovers that exact missing item.</li>
+                      <li><strong>Zero Duplication:</strong> Active records that already exist in the database are detected and preserved without creating duplicates.</li>
+                      <li><strong>Newer Data Safe:</strong> Any new records created after this backup will remain completely untouched.</li>
                     </ul>
                   </div>
+
                   {!pendingRestoreData && restoreTarget?.id !== "file-upload" && (
                     <div className="rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-800 dark:text-amber-400">
                       <strong>Note:</strong> This backup's data is no longer in memory. Use the{" "}
@@ -1006,7 +1317,7 @@ const AdminBackupRecovery = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => { setRestoreTarget(null); setPendingRestoreData(null); }}>
+              <AlertDialogCancel onClick={() => { setRestoreTarget(null); setPendingRestoreData(null); setRestoreAnalysis(null); }}>
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction

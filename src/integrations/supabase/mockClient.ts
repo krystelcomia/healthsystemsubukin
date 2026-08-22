@@ -14,6 +14,9 @@ class MockQueryBuilder {
   private updateData: any = null;
   private isInsert: boolean = false;
   private insertData: any = null;
+  private isUpsert: boolean = false;
+  private upsertData: any = null;
+  private onConflictCol: string = 'id';
   private countOption: string | null = null;
 
   constructor(tableName: string) {
@@ -30,6 +33,15 @@ class MockQueryBuilder {
   insert(data: any) {
     this.isInsert = true;
     this.insertData = data;
+    return this;
+  }
+
+  upsert(data: any, options?: { onConflict?: string }) {
+    this.isUpsert = true;
+    this.upsertData = data;
+    if (options?.onConflict) {
+      this.onConflictCol = options.onConflict;
+    }
     return this;
   }
 
@@ -117,6 +129,34 @@ class MockQueryBuilder {
     }
 
     let tableData = [...db[this.tableName]];
+
+    if (this.isUpsert) {
+      const itemsToUpsert = Array.isArray(this.upsertData) ? this.upsertData : [this.upsertData];
+      const conflictKey = this.onConflictCol || 'id';
+      const results = itemsToUpsert.map(item => {
+        const existingIdx = db[this.tableName].findIndex((existing: any) => existing[conflictKey] === item[conflictKey]);
+        if (existingIdx >= 0) {
+          const updatedItem = {
+            ...db[this.tableName][existingIdx],
+            ...item,
+            updated_at: new Date().toISOString()
+          };
+          db[this.tableName][existingIdx] = updatedItem;
+          return updatedItem;
+        } else {
+          const newItem = {
+            id: item.id || crypto.randomUUID(),
+            created_at: item.created_at || new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            ...item
+          };
+          db[this.tableName].push(newItem);
+          return newItem;
+        }
+      });
+      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+      return { data: Array.isArray(this.upsertData) ? results : results[0], error: null };
+    }
 
     if (this.isInsert) {
       const itemsToInsert = Array.isArray(this.insertData) ? this.insertData : [this.insertData];
