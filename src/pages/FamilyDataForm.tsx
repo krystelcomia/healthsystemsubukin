@@ -722,8 +722,31 @@ const FamilyDataForm = () => {
   };
 
   const handlePrintIndividualFile = () => {
+    document.body.classList.add("printing-dialog");
+    window.print();
+    setTimeout(() => {
+      if (!fileDialogOpen) {
+        document.body.classList.remove("printing-dialog");
+      }
+    }, 1000);
+  };
+
+  const handlePrintLedger = () => {
+    document.body.classList.remove("printing-dialog");
     window.print();
   };
+
+  // Sync printing-dialog class on body when fileDialogOpen changes
+  useEffect(() => {
+    if (fileDialogOpen) {
+      document.body.classList.add("printing-dialog");
+    } else {
+      document.body.classList.remove("printing-dialog");
+    }
+    return () => {
+      document.body.classList.remove("printing-dialog");
+    };
+  }, [fileDialogOpen]);
 
   return (
     <div className="w-full space-y-6">
@@ -767,78 +790,150 @@ const FamilyDataForm = () => {
           color: #000000 !important;
         }
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 8mm 6mm;
+          }
+
           body * {
             visibility: hidden !important;
           }
-          body:not(.printing-dialog) #family-print-area,
-          body:not(.printing-dialog) #family-print-area *:not(.no-print):not(.no-print *) {
-            visibility: visible !important;
-          }
-          body.printing-dialog #individual-file-print-area,
-          body.printing-dialog #individual-file-print-area *:not(.no-print):not(.no-print *) {
-            visibility: visible !important;
-          }
-          .no-print {
+
+          .no-print,
+          [data-radix-portal] > div:first-child:not([role="dialog"]),
+          button:not(.allow-print) {
             display: none !important;
+            visibility: hidden !important;
           }
+
           .print-only {
-            display: flex !important;
+            display: block !important;
+            visibility: visible !important;
             width: 100% !important;
+          }
+
+          .official-header-wrapper {
+            display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            visibility: visible !important;
+            margin-bottom: 8px !important;
           }
+
           .header-seal {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            visibility: visible !important;
             width: 100% !important;
           }
+
           .header-seal img {
-            height: 95px !important;
+            height: 90px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
           }
-          body:not(.printing-dialog) #family-print-area {
+
+          .document-title-section {
+            display: block !important;
+            width: 100% !important;
+            text-align: center !important;
+            visibility: visible !important;
+          }
+
+          /* Individual File Dialog Print Mode */
+          body.printing-dialog [role="dialog"],
+          body.printing-dialog [data-radix-portal] {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
-            width: 100% !important;
-            background: white !important;
-            padding: 15px !important;
+            transform: none !important;
             margin: 0 !important;
-            box-shadow: none !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
             border: none !important;
-            color: black !important;
+            box-shadow: none !important;
+            background: white !important;
+            overflow: visible !important;
           }
+
           body.printing-dialog #individual-file-print-area {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
             background: white !important;
-            padding: 15px !important;
+            color: #000000 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            transform: none !important;
+          }
+
+          body.printing-dialog #individual-file-print-area,
+          body.printing-dialog #individual-file-print-area *:not(.no-print):not(.no-print *) {
+            visibility: visible !important;
+            color: #000000 !important;
+          }
+
+          body.printing-dialog #individual-file-print-area .no-print,
+          body.printing-dialog #individual-file-print-area .no-print * {
+            display: none !important;
+            visibility: hidden !important;
+          }
+
+          /* Master Ledger Print Mode */
+          body:not(.printing-dialog) #family-print-area,
+          body:not(.printing-dialog) #family-print-area *:not(.no-print):not(.no-print *) {
+            visibility: visible !important;
+            color: #000000 !important;
+          }
+
+          body:not(.printing-dialog) #family-print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            background: white !important;
+            padding: 0 !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            color: black !important;
-            transform: none !important;
-            max-width: 100% !important;
-            max-height: none !important;
-            height: auto !important;
-            overflow: visible !important;
+            color: #000000 !important;
           }
-          .header-seal img {
-            height: 95px !important;
-            width: auto !important;
-            object-fit: contain !important;
-            mix-blend-mode: multiply !important;
+
+          #family-print-area table,
+          #individual-file-print-area table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin-top: 6px !important;
           }
-          #family-print-area table td, #family-print-area table th,
-          #individual-file-print-area table td, #individual-file-print-area table th {
-            padding: 3px 6px !important;
+
+          #family-print-area table td,
+          #family-print-area table th,
+          #individual-file-print-area table td,
+          #individual-file-print-area table th {
+            padding: 5px 8px !important;
             font-size: 11px !important;
+            border: 1px solid #000000 !important;
+            color: #000000 !important;
           }
-          @page {
-            size: A4 portrait;
-            margin: 5mm;
+
+          #family-print-area table th,
+          #individual-file-print-area table th {
+            background-color: #f1f5f9 !important;
+            font-weight: bold !important;
           }
         }
       `}</style>
@@ -1034,10 +1129,10 @@ const FamilyDataForm = () => {
         >
           <CardContent className="p-6 md:p-8 space-y-6">
             {/* Official Barangay Printable Header */}
-            <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
+            <div className="print-only w-full">
               <OfficialHeader
                 title="Master Family Data Sheet Directory"
-                subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+                subtitle={`Barangay Subukin Health Center • San Juan, Batangas • Total Registered Families: ${filteredRecords.length}`}
                 showDoubleBorder={true}
                 logoHeight="95px"
               />
@@ -1052,7 +1147,7 @@ const FamilyDataForm = () => {
               <div className="flex items-center gap-2">
                 <Button 
                   type="button"
-                  onClick={handlePrintIndividualFile} 
+                  onClick={handlePrintLedger} 
                   variant="outline" 
                   className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
                 >
@@ -1145,6 +1240,18 @@ const FamilyDataForm = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Printable Official Footer Signatures */}
+            <div className="print-only pt-8 mt-8 border-t border-slate-400 flex justify-between text-xs text-slate-900">
+              <div>
+                Certified Correct: ___________________________<br />
+                <span className="text-[10px] text-slate-600">Attending Barangay Health Worker</span>
+              </div>
+              <div>
+                Approved By: ___________________________<br />
+                <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -1158,17 +1265,55 @@ const FamilyDataForm = () => {
           {selectedFile && (
             <div className="space-y-6">
               {/* Official Barangay Printable Header */}
-              <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
+              <div className="print-only w-full">
                 <OfficialHeader
-                  title="Official Barangay Household Census & Demographics Record"
-                  subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+                  title="Official Barangay Family File & Demographics Record"
+                  subtitle={`Barangay Subukin Health Center • San Juan, Batangas • Family #${editFamNum || selectedFile.family_number || ""} — ${editFather || selectedFile.father_name || "Head of Household"}`}
                   showDoubleBorder={true}
                   logoHeight="95px"
                 />
               </div>
 
-              {/* Opened File Folder Banner */}
-              <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              {/* Official Printable Family Information Summary Block */}
+              <div className="print-only w-full border border-slate-400 p-4 rounded-lg bg-slate-50/50">
+                <div className="grid grid-cols-4 gap-4 text-xs">
+                  <div>
+                    <span className="text-slate-500 font-semibold uppercase text-[10px] block">Family Number</span>
+                    <strong className="text-black text-sm font-mono">{editFamNum || selectedFile.family_number || "—"}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-semibold uppercase text-[10px] block">Sitio</span>
+                    <strong className="text-black text-sm">{editSitio || selectedFile.sitio || "Centro"}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-semibold uppercase text-[10px] block">Father / Household Head</span>
+                    <strong className="text-black text-sm">{editFather || selectedFile.father_name || "—"}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-semibold uppercase text-[10px] block">Mother</span>
+                    <strong className="text-black text-sm">{editMother || selectedFile.mother_name || "—"}</strong>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 text-xs mt-3 pt-3 border-t border-slate-200">
+                  <div>
+                    <span className="text-slate-500 font-semibold uppercase text-[10px] block">Number of Households</span>
+                    <strong className="text-black text-sm">{editHouseholds || selectedFile.num_households || "1"}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-semibold uppercase text-[10px] block">Total Household Members</span>
+                    <strong className="text-black text-sm">{activeMembers.length}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-semibold uppercase text-[10px] block">Gender Breakdown</span>
+                    <span className="text-black text-xs font-semibold">
+                      Male: {activeMembers.filter(m => m.gender === "Male").length} | Female: {activeMembers.filter(m => m.gender === "Female").length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Opened File Folder Banner (Screen only) */}
+              <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 no-print">
                 <div className="flex items-center gap-3">
                   <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
                     <FolderOpen className="h-6 w-6" />
@@ -1212,8 +1357,8 @@ const FamilyDataForm = () => {
                 </div>
               </div>
 
-              {/* Header Fields (Father, Mother, Sitio, Households) */}
-              <Card className="border-border/60 bg-card">
+              {/* Header Fields (Father, Mother, Sitio, Households) - Screen only */}
+              <Card className="border-border/60 bg-card no-print">
                 <CardContent className="p-4 space-y-4">
                   {isEditingFileDetails ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
