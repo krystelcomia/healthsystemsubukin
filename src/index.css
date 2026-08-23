@@ -241,6 +241,15 @@
     visibility: visible !important;
   }
 
+  .print-signatures,
+  .print-footer-signatures {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+  }
+
   .print-area, [id*="-print-area"], [id*="-printable"] {
     page-break-after: avoid !important;
     break-after: avoid !important;

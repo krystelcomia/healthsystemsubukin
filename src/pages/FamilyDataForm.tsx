@@ -935,6 +935,15 @@ const FamilyDataForm = () => {
             background-color: #f1f5f9 !important;
             font-weight: bold !important;
           }
+
+          .print-signatures,
+          .print-footer-signatures {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: flex-start !important;
+            width: 100% !important;
+          }
         }
       `}</style>
 
@@ -1242,12 +1251,21 @@ const FamilyDataForm = () => {
             </div>
 
             {/* Printable Official Footer Signatures */}
-            <div className="print-only pt-8 mt-8 border-t border-slate-400 flex justify-between text-xs text-slate-900">
-              <div>
+            <div
+              className="print-only print-footer-signatures pt-8 mt-8 border-t border-slate-400 text-xs text-slate-900 w-full"
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                width: "100%",
+              }}
+            >
+              <div style={{ textAlign: "left" }}>
                 Certified Correct: ___________________________<br />
                 <span className="text-[10px] text-slate-600">Attending Barangay Health Worker</span>
               </div>
-              <div>
+              <div style={{ textAlign: "right" }}>
                 Approved By: ___________________________<br />
                 <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
               </div>
@@ -1554,12 +1572,21 @@ const FamilyDataForm = () => {
                 </div>
 
                 {/* Printable Official Footer Signatures */}
-                <div className="print-only pt-8 mt-8 border-t border-slate-300 flex justify-between text-xs text-slate-800">
-                  <div>
+                <div
+                  className="print-only print-footer-signatures pt-8 mt-8 border-t border-slate-300 text-xs text-slate-800 w-full"
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    width: "100%",
+                  }}
+                >
+                  <div style={{ textAlign: "left" }}>
                     Certified Correct: ___________________________<br />
                     <span className="text-[10px] text-slate-600">Attending Barangay Health Worker</span>
                   </div>
-                  <div>
+                  <div style={{ textAlign: "right" }}>
                     Approved By: ___________________________<br />
                     <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
                   </div>

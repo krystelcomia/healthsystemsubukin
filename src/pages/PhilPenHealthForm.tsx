@@ -912,12 +912,12 @@ const PhilPenHealthForm = () => {
             </div>
 
             {/* Printable Official Footer Signatures */}
-            <div className="print-only pt-8 mt-6 border-t border-slate-300 flex justify-between text-xs text-slate-800">
-              <div>
+            <div className="print-only print-footer-signatures pt-8 mt-6 border-t border-slate-300 text-xs text-slate-800 w-full" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "100%" }}>
+              <div style={{ textAlign: "left" }}>
                 Certified Correct: ___________________________<br />
                 <span className="text-[10px] text-slate-600">Attending Barangay Health Worker</span>
               </div>
-              <div>
+              <div style={{ textAlign: "right" }}>
                 Approved By: ___________________________<br />
                 <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
               </div>
@@ -1209,12 +1209,12 @@ const PhilPenHealthForm = () => {
         </table>
 
         {/* Printable Official Signatures */}
-        <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "35px", marginTop: "25px", borderTop: "1px solid #cbd5e1" }}>
-          <div>
+        <div className="print-footer-signatures" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "100%", paddingTop: "35px", marginTop: "25px", borderTop: "1px solid #cbd5e1" }}>
+          <div style={{ textAlign: "left" }}>
             Certified Correct: ___________________________<br />
             <span style={{ fontSize: "10px", color: "#4b5563" }}>Attending Barangay Health Worker</span>
           </div>
-          <div>
+          <div style={{ textAlign: "right" }}>
             Approved By: ___________________________<br />
             <span style={{ fontSize: "10px", color: "#4b5563" }}>Barangay Health Supervisor / Midwife</span>
           </div>
@@ -1350,15 +1350,15 @@ const PhilPenHealthForm = () => {
               </div>
 
               {/* Signatures */}
-              <div className="pt-6 border-t border-slate-300 dark:border-slate-700 flex justify-between text-xs text-slate-700 dark:text-slate-300">
-                <div>
+              <div className="print-footer-signatures pt-6 border-t border-slate-300 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 w-full" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "100%" }}>
+                <div style={{ textAlign: "left" }}>
                   <p>Certified Correct:</p>
                   <div className="mt-4 border-b border-slate-400 w-44"></div>
                   <p className="text-[10px] text-slate-500 mt-1">Attending Barangay Health Worker</p>
                 </div>
-                <div>
+                <div style={{ textAlign: "right" }}>
                   <p>Approved By:</p>
-                  <div className="mt-4 border-b border-slate-400 w-44"></div>
+                  <div className="mt-4 border-b border-slate-400 w-44 ml-auto"></div>
                   <p className="text-[10px] text-slate-500 mt-1">Barangay Health Supervisor / Midwife</p>
                 </div>
               </div>

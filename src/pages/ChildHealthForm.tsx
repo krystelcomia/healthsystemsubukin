@@ -3405,12 +3405,12 @@ const ChildHealthForm = () => {
               </table>
 
               {/* Official Signatures */}
-              <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "35px", marginTop: "25px", borderTop: "1px solid #cbd5e1" }}>
-                <div>
+              <div className="print-footer-signatures" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "100%", paddingTop: "35px", marginTop: "25px", borderTop: "1px solid #cbd5e1" }}>
+                <div style={{ textAlign: "left" }}>
                   Certified Correct: ___________________________<br />
                   <span style={{ fontSize: "10px", color: "#4b5563" }}>Attending Barangay Health Worker</span>
                 </div>
-                <div>
+                <div style={{ textAlign: "right" }}>
                   Approved By: ___________________________<br />
                   <span style={{ fontSize: "10px", color: "#4b5563" }}>Barangay Health Supervisor / Midwife</span>
                 </div>
