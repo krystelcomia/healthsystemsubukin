@@ -214,7 +214,8 @@ const AdminResidents = () => {
             color: black !important;
           }
           .no-print { display: none !important; }
-          .print-only { display: flex !important; width: 100% !important; flex-direction: column !important; align-items: center !important; }
+          .print-only { display: block !important; visibility: visible !important; width: 100% !important; }
+          .print-footer-info { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; }
           .header-seal { width: 100% !important; }
           .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
           #admin-residents-print-area table td, #admin-residents-print-area table th { padding: 3px 6px !important; font-size: 11px !important; }
@@ -329,9 +330,9 @@ const AdminResidents = () => {
           })
         )}
 
-        <div className="print-only flex justify-between items-center mt-4">
-          <p style={{ fontSize: 12, color: "#4b5563" }}>{t("common.total")}: {filtered.length}</p>
-          <p className="print-date" style={{ fontSize: 10, color: "#6b7280" }}>{new Date().toLocaleString()}</p>
+        <div className="print-only print-footer-info flex justify-between items-center mt-4 w-full">
+          <p className="print-date text-left" style={{ fontSize: 10, color: "#6b7280", margin: 0 }}>{new Date().toLocaleString()}</p>
+          <p className="print-total text-right font-semibold" style={{ fontSize: 12, color: "#111827", margin: 0 }}>{t("common.total")}: {filtered.length}</p>
         </div>
       </div>
 

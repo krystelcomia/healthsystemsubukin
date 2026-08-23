@@ -581,7 +581,10 @@ const AdminHealthRecords = () => {
           }).join("")}
         </tbody>
       </table>
-      <div style="text-align:right;font-size:10px;color:#6b7280;margin-top:20px;">Report Generated: ${new Date().toLocaleString()} &bull; Total Entries: ${filteredFormRecords.length}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#6b7280;margin-top:20px;width:100%;">
+        <span style="text-align:left;">Report Generated: ${new Date().toLocaleString()}</span>
+        <span style="text-align:right;font-weight:bold;color:#111827;font-size:11px;">Total Entries: ${filteredFormRecords.length}</span>
+      </div>
     `;
     triggerInSystemPrint(`${selectedForm.title} Records`, html, orientation);
   };

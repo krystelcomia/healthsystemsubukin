@@ -243,8 +243,13 @@ const AdminWorkers = () => {
               ))}
             </tbody>
           </table>
-          <div style={{ marginTop: "16px", textAlign: "right", fontSize: "10px", color: "#64748b" }}>
-            Report Generated: {new Date().toLocaleString()}
+          <div className="print-footer-info" style={{ marginTop: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+            <p style={{ fontSize: "10px", color: "#64748b", margin: 0, textAlign: "left" }}>
+              Report Generated: {new Date().toLocaleString()}
+            </p>
+            <p style={{ fontSize: "11px", fontWeight: "bold", color: "#0f172a", margin: 0, textAlign: "right" }}>
+              Total Active Workers: {workers.length}
+            </p>
           </div>
         </div>
 
