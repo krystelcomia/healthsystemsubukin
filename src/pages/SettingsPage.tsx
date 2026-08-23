@@ -100,7 +100,7 @@ const SettingsPage = () => {
         </CardContent>
       </Card>
 
-      {/* 3. Security & Data — Backup & Recovery (Locked with System Color Theme) */}
+      {/* 3. Security & Data — Backup & Recovery (Locked with System Color Theme & Red Lock Highlight) */}
       <Card className="border-border/60 shadow-sm overflow-hidden">
         <CardHeader className="bg-primary/5 pb-4 border-b border-border/40">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -117,19 +117,19 @@ const SettingsPage = () => {
                 </p>
               </div>
             </div>
-            <Badge variant="outline" className="gap-1.5 bg-primary/10 text-primary border-primary/30 text-xs font-semibold self-start sm:self-auto py-1 px-3">
-              <Lock className="h-3 w-3" />
+            <Badge variant="outline" className="gap-1.5 bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30 text-xs font-semibold self-start sm:self-auto py-1 px-3 shadow-xs">
+              <Lock className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
               {t("settings.restrictedAdmin")}
             </Badge>
           </div>
         </CardHeader>
 
         <CardContent className="p-6 space-y-5">
-          {/* System Color Themed Locked Notice */}
+          {/* System Color Themed Locked Notice with Red Lock Accent */}
           <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-card p-4 space-y-2">
-            <div className="flex items-center gap-2 text-primary font-semibold text-xs sm:text-sm">
-              <Lock className="h-4 w-4 shrink-0 text-primary" />
-              <span>Locked System Function — Administrator Permission Required</span>
+            <div className="flex items-center gap-2 text-foreground font-semibold text-xs sm:text-sm">
+              <Lock className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+              <span>Locked System Function — Midwife Administrator Permission Required</span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Database backup creation, automated schedules, and data recovery functions are locked for health worker accounts. Full configuration, export, and execution details are exclusively available in the Administrator section.
@@ -174,8 +174,9 @@ const SettingsPage = () => {
               <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
               Database Backup Engine: <strong className="text-foreground font-semibold">Active & Protected</strong>
             </span>
-            <span className="italic text-[11px]">
-              Access restricted to Midwife Administrator / Supervisor
+            <span className="flex items-center gap-1 text-red-600 dark:text-red-400 font-medium italic text-[11px]">
+              <Lock className="h-3 w-3 text-red-600 dark:text-red-400" />
+              Access restricted to Midwife Administrator
             </span>
           </div>
         </CardContent>
