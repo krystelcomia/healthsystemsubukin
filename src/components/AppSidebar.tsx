@@ -35,11 +35,12 @@ import {
 } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 export function AppSidebar() {
   const location = useLocation();
-  const { user, userRole, username, signOut } = useAuth();
+  const { user, userRole, username, avatarUrl, signOut } = useAuth();
   const { t } = useSettings();
   const [signOutOpen, setSignOutOpen] = useState(false);
   const [customForms, setCustomForms] = useState<any[]>(() => {
@@ -195,11 +196,12 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
         <NavLink to={isAdmin ? "/admin/profile" : "/profile"} className="flex items-center gap-3 rounded-md p-1 -m-1 transition-colors hover:bg-sidebar-accent" activeClassName="">
-          <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center">
-            <span className="text-xs font-semibold text-sidebar-accent-foreground">
+          <Avatar className="h-8 w-8 rounded-full border border-sidebar-border/70 shrink-0">
+            {avatarUrl && <AvatarImage src={avatarUrl} alt={displayUsername} className="object-cover" />}
+            <AvatarFallback className="text-xs font-semibold bg-sidebar-accent text-sidebar-accent-foreground">
               {isAdmin ? "MW" : (userRole === "bns" ? "BN" : "BH")}
-            </span>
-          </div>
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">{displayUsername}</p>
             <p className="text-xs text-sidebar-foreground/50">

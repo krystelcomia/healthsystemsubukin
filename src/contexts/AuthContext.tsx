@@ -9,11 +9,13 @@ interface AuthContextType {
   userRole: string | null;
   username: string | null;
   fullName: string | null;
+  avatarUrl: string | null;
   loading: boolean;
   signOut: () => Promise<void>;
   setUsername: (name: string | null) => void;
+  setAvatarUrl: (url: string | null) => void;
   refreshProfile: () => Promise<void>;
-  updateProfileState: (data: { username?: string; full_name?: string }) => void;
+  updateProfileState: (data: { username?: string; full_name?: string; avatar_url?: string | null }) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -22,9 +24,11 @@ const AuthContext = createContext<AuthContextType>({
   userRole: null,
   username: null,
   fullName: null,
+  avatarUrl: null,
   loading: true,
   signOut: async () => {},
   setUsername: () => {},
+  setAvatarUrl: () => {},
   refreshProfile: async () => {},
   updateProfileState: () => {},
 });
@@ -37,6 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [fullName, setFullName] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchRole = async (userId: string) => {
@@ -69,9 +74,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { data } = await supabase
         .from("profiles")
-        .select("username, full_name")
+        .select("username, full_name, avatar_url")
         .eq("user_id", userId)
         .maybeSingle();
+
+      let userAvatar: string | null = (data as any)?.avatar_url || null;
+
+      if (!userAvatar) {
+        userAvatar = 
+          localStorage.getItem("bhw_avatar_" + userId) ||
+          (user?.email ? localStorage.getItem("bhw_avatar_" + user.email.toLowerCase().trim()) : null) ||
+          (username ? localStorage.getItem("bhw_avatar_" + username.toLowerCase().trim()) : null);
+      }
+
+      if (userAvatar) {
+        localStorage.setItem("bhw_avatar_" + userId, userAvatar);
+        setAvatarUrl(userAvatar);
+      } else {
+        setAvatarUrl(null);
+      }
+
       if (data) {
         if (data.username) {
           localStorage.setItem("logged_in_username", data.username);
@@ -97,7 +119,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateProfileState = (data: { username?: string; full_name?: string }) => {
+  const updateProfileState = (data: { username?: string; full_name?: string; avatar_url?: string | null }) => {
     if (data.username !== undefined) {
       setUsername(data.username || null);
       if (data.username) localStorage.setItem("logged_in_username", data.username);
@@ -107,6 +129,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setFullName(data.full_name || null);
       if (data.full_name) localStorage.setItem("logged_in_fullname", data.full_name);
       else localStorage.removeItem("logged_in_fullname");
+    }
+    if (data.avatar_url !== undefined) {
+      setAvatarUrl(data.avatar_url);
+      if (user?.id) {
+        if (data.avatar_url) {
+          localStorage.setItem("bhw_avatar_" + user.id, data.avatar_url);
+          if (user.email) localStorage.setItem("bhw_avatar_" + user.email.toLowerCase().trim(), data.avatar_url);
+        } else {
+          localStorage.removeItem("bhw_avatar_" + user.id);
+          if (user.email) localStorage.removeItem("bhw_avatar_" + user.email.toLowerCase().trim());
+        }
+      }
     }
     window.dispatchEvent(new Event("profile-updated"));
   };
@@ -176,6 +210,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserRole(null);
         setUsername(null);
         setFullName(null);
+        setAvatarUrl(null);
         localStorage.removeItem("logged_in_username");
         localStorage.removeItem("logged_in_fullname");
       }
@@ -213,10 +248,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUserRole(null);
     setUsername(null);
     setFullName(null);
+    setAvatarUrl(null);
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, userRole, username, fullName, loading, signOut, setUsername, refreshProfile, updateProfileState }}>
+    <AuthContext.Provider value={{ session, user, userRole, username, fullName, avatarUrl, loading, signOut, setUsername, setAvatarUrl, refreshProfile, updateProfileState }}>
       {children}
     </AuthContext.Provider>
   );

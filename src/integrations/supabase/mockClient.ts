@@ -725,9 +725,75 @@ class MockRealtimeChannel {
   }
 }
 
+class MockStorageBucket {
+  private bucketName: string;
+
+  constructor(bucketName: string) {
+    this.bucketName = bucketName;
+  }
+
+  async upload(path: string, file: File | Blob | any, _options?: any) {
+    try {
+      let dataUrl = "";
+      if (file instanceof Blob || (typeof File !== "undefined" && file instanceof File)) {
+        dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      } else if (typeof file === "string") {
+        dataUrl = file;
+      }
+      
+      const storageKey = `mock_storage_${this.bucketName}_${path}`;
+      try {
+        localStorage.setItem(storageKey, dataUrl);
+      } catch (e) {
+        console.warn("Storage quota warning:", e);
+      }
+      return { data: { path }, error: null };
+    } catch (err: any) {
+      return { data: null, error: err };
+    }
+  }
+
+  getPublicUrl(path: string) {
+    const storageKey = `mock_storage_${this.bucketName}_${path}`;
+    const stored = localStorage.getItem(storageKey);
+    return {
+      data: {
+        publicUrl: stored || (path.startsWith("data:") || path.startsWith("http") ? path : "")
+      }
+    };
+  }
+
+  async remove(paths: string[]) {
+    paths.forEach(p => {
+      localStorage.removeItem(`mock_storage_${this.bucketName}_${p}`);
+    });
+    return { data: paths, error: null };
+  }
+
+  async createSignedUrl(path: string) {
+    return { data: { signedUrl: this.getPublicUrl(path).data.publicUrl }, error: null };
+  }
+
+  async list() {
+    return { data: [], error: null };
+  }
+}
+
+class MockStorage {
+  from(bucketName: string) {
+    return new MockStorageBucket(bucketName);
+  }
+}
+
 export const mockSupabase = {
   auth: new MockAuth(),
   from: (table: string) => new MockQueryBuilder(table),
+  storage: new MockStorage(),
   functions: new MockFunctions(),
   channel: (topic: string) => new MockRealtimeChannel(topic),
   removeChannel: (_channel: any) => Promise.resolve("ok"),

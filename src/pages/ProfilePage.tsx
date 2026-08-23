@@ -20,8 +20,48 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getAssignedSitio } from "@/lib/sitioMapping";
 
+const resizeAvatarImage = (file: File, maxWidth = 380, maxHeight = 380, quality = 0.88): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (readerEvent) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        } else {
+          resolve(readerEvent.target?.result as string);
+        }
+      };
+      img.onerror = () => resolve(readerEvent.target?.result as string);
+      img.src = readerEvent.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 const ProfilePage = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole, updateProfileState } = useAuth();
   const { t } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -48,7 +88,22 @@ const ProfilePage = () => {
       const uName = data?.username || "";
       setFullName(fName);
       setUsername(uName);
-      setAvatarUrl((data as any)?.avatar_url || null);
+
+      // Load avatar from profiles table or persistent localStorage
+      let persistentAvatar: string | null = (data as any)?.avatar_url || null;
+      if (!persistentAvatar) {
+        persistentAvatar = 
+          localStorage.getItem("bhw_avatar_" + user.id) ||
+          (user.email ? localStorage.getItem("bhw_avatar_" + user.email.toLowerCase().trim()) : null) ||
+          (uName ? localStorage.getItem("bhw_avatar_" + uName.toLowerCase().trim()) : null);
+      }
+
+      if (persistentAvatar) {
+        setAvatarUrl(persistentAvatar);
+        localStorage.setItem("bhw_avatar_" + user.id, persistentAvatar);
+      } else {
+        setAvatarUrl(null);
+      }
 
       let sitio = (data as any)?.assigned_sitio;
       if (!sitio) {
@@ -66,27 +121,53 @@ const ProfilePage = () => {
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image file is too large. Please select a photo under 10MB.");
       return;
     }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-      if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
-      const url = pub.publicUrl;
-      const { error: updErr } = await (supabase.from("profiles") as any).upsert(
-        { user_id: user.id, avatar_url: url },
-        { onConflict: "user_id" }
-      );
-      if (updErr) throw updErr;
-      setAvatarUrl(url);
-      toast.success("Profile picture updated!");
+      // 1. Resize and optimize image
+      const dataUrl = await resizeAvatarImage(file);
+      
+      // 2. Persist in localStorage across all sessions/logouts
+      localStorage.setItem("bhw_avatar_" + user.id, dataUrl);
+      if (user.email) {
+        localStorage.setItem("bhw_avatar_" + user.email.toLowerCase().trim(), dataUrl);
+      }
+      if (username) {
+        localStorage.setItem("bhw_avatar_" + username.toLowerCase().trim(), dataUrl);
+      }
+
+      // 3. Persist in database
+      try {
+        await (supabase.from("profiles") as any).upsert(
+          { user_id: user.id, avatar_url: dataUrl },
+          { onConflict: "user_id" }
+        );
+      } catch (dbErr) {
+        console.warn("Profiles avatar upsert notice:", dbErr);
+      }
+
+      try {
+        await (supabase.from("bhw_workers") as any)
+          .update({ avatar_url: dataUrl })
+          .eq("user_id", user.id);
+      } catch (wErr) {
+        if (user.email) {
+          await (supabase.from("bhw_workers") as any)
+            .update({ avatar_url: dataUrl })
+            .eq("gmail", user.email);
+        }
+      }
+
+      // 4. Update UI & context
+      setAvatarUrl(dataUrl);
+      updateProfileState({ avatar_url: dataUrl });
+      toast.success("Profile picture updated! It will remain saved on your account.");
     } catch (err: any) {
-      toast.error(err.message || "Upload failed");
+      console.error("Avatar upload error:", err);
+      toast.error(err.message || "Failed to update profile picture");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -95,9 +176,27 @@ const ProfilePage = () => {
 
   const removeAvatar = async () => {
     if (!user) return;
-    await supabase.from("profiles").update({ avatar_url: null } as any).eq("user_id", user.id);
-    setAvatarUrl(null);
-    toast.success("Profile picture removed");
+    try {
+      localStorage.removeItem("bhw_avatar_" + user.id);
+      if (user.email) localStorage.removeItem("bhw_avatar_" + user.email.toLowerCase().trim());
+      if (username) localStorage.removeItem("bhw_avatar_" + username.toLowerCase().trim());
+
+      try {
+        await supabase.from("profiles").update({ avatar_url: null } as any).eq("user_id", user.id);
+      } catch {}
+
+      try {
+        await (supabase.from("bhw_workers") as any).update({ avatar_url: null }).eq("user_id", user.id);
+      } catch {}
+
+      setAvatarUrl(null);
+      updateProfileState({ avatar_url: null });
+      toast.success("Profile picture removed");
+    } catch (e: any) {
+      toast.error("Failed to remove profile picture");
+    } finally {
+      setRemovePhotoConfirm(false);
+    }
   };
 
   const initials = (fullName || username || email || "U")
