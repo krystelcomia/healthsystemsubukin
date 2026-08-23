@@ -298,8 +298,8 @@ const AdminHealthRecords = () => {
         </div>
 
         <div style="margin-top:48px;display:flex;justify-content:space-between;font-size:11px;color:#000000;">
-          <div>Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
-          <div>Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
+          <div style="text-align:left;">Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
+          <div style="text-align:right;">Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
         </div>
       `;
       triggerInSystemPrint(`Blank Form — ${form.title}`, html, orientation);
@@ -371,8 +371,8 @@ const AdminHealthRecords = () => {
         </table>
 
         <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;">
-          <div>Certified Correct: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Health Worker</span></div>
-          <div>Approved By: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Midwife / Supervisor</span></div>
+          <div style="text-align:left;">Certified Correct: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Health Worker</span></div>
+          <div style="text-align:right;">Approved By: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Midwife / Supervisor</span></div>
         </div>
       `;
       triggerInSystemPrint(`Blank Form — ${form.title}`, html, orientation);
@@ -491,8 +491,8 @@ const AdminHealthRecords = () => {
         </table>
 
         <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;color:#000000;">
-          <div>Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
-          <div>Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
+          <div style="text-align:left;">Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
+          <div style="text-align:right;">Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
         </div>
       `;
       triggerInSystemPrint(`Blank Form — ${form.title}`, html, orientation);
@@ -548,8 +548,8 @@ const AdminHealthRecords = () => {
       </div>
 
       <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;">
-        <div>Certified Correct: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Health Worker</span></div>
-        <div>Approved By: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Midwife / Supervisor</span></div>
+        <div style="text-align:left;">Certified Correct: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Health Worker</span></div>
+        <div style="text-align:right;">Approved By: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Midwife / Supervisor</span></div>
       </div>
     `;
     triggerInSystemPrint(`Blank Form — ${form.title}`, html, orientation);
@@ -674,8 +674,8 @@ const AdminHealthRecords = () => {
         </div>
 
         <div style="margin-top:48px;display:flex;justify-content:space-between;font-size:11px;color:#000000;">
-          <div>Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
-          <div>Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
+          <div style="text-align:left;">Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
+          <div style="text-align:right;">Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
         </div>
       `;
       triggerInSystemPrint(`Filled Record — ${resName}`, html, orientation);
@@ -757,8 +757,8 @@ const AdminHealthRecords = () => {
         </table>
 
         <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;">
-          <div>Certified Correct: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Health Worker</span></div>
-          <div>Approved By: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Midwife / Supervisor</span></div>
+          <div style="text-align:left;">Certified Correct: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Health Worker</span></div>
+          <div style="text-align:right;">Approved By: ______________________<br/><span style="font-size:9px;color:#666;">Barangay Midwife / Supervisor</span></div>
         </div>
       `;
       triggerInSystemPrint(`Filled Record — ${selectedRecord.family_number || "Family Data"}`, html, orientation);
@@ -877,8 +877,8 @@ const AdminHealthRecords = () => {
         </table>
 
         <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;color:#000000;">
-          <div>Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
-          <div>Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
+          <div style="text-align:left;">Certified Correct: ___________________________<br/><span style="font-size:9px;color:#666666;">Attending Barangay Health Worker</span></div>
+          <div style="text-align:right;">Approved By: ___________________________<br/><span style="font-size:9px;color:#666666;">Barangay Health Supervisor / Midwife</span></div>
         </div>
       `;
       triggerInSystemPrint(`Filled Record — ${resName}`, html, orientation);
@@ -915,8 +915,8 @@ const AdminHealthRecords = () => {
       </div>
 
       <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:11px;">
-        <div>Health Worker Inspector: ____________________</div>
-        <div>Barangay Supervisor: ____________________</div>
+        <div style="text-align:left;">Health Worker Inspector: ____________________</div>
+        <div style="text-align:right;">Barangay Supervisor: ____________________</div>
       </div>
     `;
     triggerInSystemPrint(`Filled Record — ${resName}`, html, orientation);

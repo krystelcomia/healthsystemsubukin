@@ -491,7 +491,15 @@ const PhilPenHealthForm = () => {
           select, select * {
             display: none !important;
           }
-          .print-only { display: flex !important; width: 100% !important; flex-direction: column !important; align-items: center !important; }
+          .print-only { display: block !important; visibility: visible !important; width: 100% !important; }
+          .print-signatures,
+          .print-footer-signatures {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: flex-start !important;
+            width: 100% !important;
+          }
           .header-seal { width: 100% !important; }
           .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
           #philpen-print-area table td, #philpen-print-area table th { padding: 3px 5px !important; font-size: 11px !important; }

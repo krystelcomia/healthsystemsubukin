@@ -1131,11 +1131,17 @@ const DenguePreventionForm = () => {
             display: none !important;
           }
           .print-only {
-            display: flex !important;
+            display: block !important;
+            visibility: visible !important;
             width: 100% !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: center !important;
+          }
+          .print-signatures,
+          .print-footer-signatures {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: flex-start !important;
+            width: 100% !important;
           }
           @page {
             size: A4 portrait;
@@ -1343,6 +1349,27 @@ const DenguePreventionForm = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Printable Official Footer Signatures */}
+          <div
+            className="print-only print-footer-signatures pt-8 mt-6 border-t border-slate-300 text-xs text-slate-800 w-full"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              width: "100%",
+            }}
+          >
+            <div style={{ textAlign: "left" }}>
+              Certified Correct: ___________________________<br />
+              <span className="text-[10px] text-slate-600">Attending Barangay Health Worker</span>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              Approved By: ___________________________<br />
+              <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
+            </div>
           </div>
 
           <datalist id="household-heads-list">
@@ -1662,6 +1689,27 @@ const DenguePreventionForm = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Printable Official Footer Signatures */}
+                <div
+                  className="print-only print-footer-signatures pt-8 mt-6 border-t border-slate-300 text-xs text-slate-800 w-full"
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    width: "100%",
+                  }}
+                >
+                  <div style={{ textAlign: "left" }}>
+                    Certified Correct: ___________________________<br />
+                    <span className="text-[10px] text-slate-600">Attending Barangay Health Worker</span>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    Approved By: ___________________________<br />
+                    <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
