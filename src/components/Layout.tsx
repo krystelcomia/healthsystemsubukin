@@ -614,7 +614,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Printable Official Attendance Record (Only rendered when dialog is open and visible strictly during attendance print) */}
       {logsDialogOpen && (
-        <div id="attendance-print-area" className="hidden print:block text-black bg-white w-full min-w-full p-0 m-0">
+        <div id="attendance-print-area" className="hidden print:block text-black bg-white w-full max-w-[680px] mx-auto p-0 m-0">
           <style>{`
             @media print {
               body:not(.printing-attendance) #attendance-print-area {
@@ -631,14 +631,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
               body.printing-attendance #attendance-print-area {
                 position: absolute !important;
                 left: 0 !important;
+                right: 0 !important;
                 top: 0 !important;
                 width: 100% !important;
-                max-width: 100% !important;
-                min-width: 100% !important;
+                max-width: 650px !important;
+                margin: 0 auto !important;
                 background: #ffffff !important;
                 color: #000000 !important;
-                padding: 4mm 0 0 0 !important;
-                margin: 0 !important;
+                padding: 0 !important;
                 display: block !important;
                 box-sizing: border-box !important;
                 page-break-after: avoid !important;
@@ -647,69 +647,73 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 break-inside: avoid !important;
               }
               body.printing-attendance #attendance-print-area .official-barangay-header {
-                padding-bottom: 8px !important;
-                margin-bottom: 8px !important;
-                border-bottom: 3.5px double #000000 !important;
+                padding-bottom: 4px !important;
+                margin-bottom: 4px !important;
+                border-bottom: 2px double #000000 !important;
               }
               body.printing-attendance #attendance-print-area .header-seal img {
-                height: 135px !important;
+                height: 70px !important;
                 width: auto !important;
                 object-fit: contain !important;
                 mix-blend-mode: multiply !important;
               }
               body.printing-attendance #attendance-print-area .document-title-section h2 {
-                font-size: 19px !important;
+                font-size: 13px !important;
                 font-weight: 800 !important;
-                letter-spacing: 0.05em !important;
-                margin-top: 6px !important;
-                margin-bottom: 3px !important;
+                letter-spacing: 0.03em !important;
+                margin-top: 2px !important;
+                margin-bottom: 1px !important;
                 color: #000000 !important;
               }
               body.printing-attendance #attendance-print-area .document-title-section p {
-                font-size: 13px !important;
+                font-size: 9.5px !important;
                 color: #374151 !important;
-                margin-bottom: 10px !important;
+                margin-bottom: 4px !important;
+              }
+              @page {
+                size: A4 portrait;
+                margin: 10mm 15mm;
               }
             }
           `}</style>
           
           {/* Official Header with logos and letterhead */}
-          <div className="w-full mb-3 pt-2">
+          <div className="w-full mb-2 pt-1">
             <OfficialHeader
               title={language === "tl" ? "BARANGAY HEALTH WORKERS OPISYAL NA TALAAN NG ATTENDANCE" : "BARANGAY HEALTH WORKERS OFFICIAL ATTENDANCE RECORD"}
               subtitle={language === "tl" ? "Barangay Subukin, San Juan, Batangas • Opisyal na Talaan ng Oras ng Pagpasok at Paglabas" : "Barangay Subukin Health Center, San Juan, Batangas • Official Time In & Time Out Record"}
               showDoubleBorder={true}
-              logoHeight="135px"
+              logoHeight="70px"
             />
           </div>
 
           {/* Worker Summary Box */}
           {selectedWorker && (
-            <div className="w-full border-2 border-black p-3.5 rounded-md mb-4 text-[14px] leading-relaxed grid grid-cols-2 gap-4 mt-2 box-border bg-slate-50/70">
-              <div className="space-y-1.5">
-                <p><span className="font-bold uppercase tracking-wider text-black">Personnel Name:</span> <span className="font-bold text-black text-[15px]">{selectedWorker.name}</span></p>
+            <div className="w-full border border-black p-2.5 rounded mb-2.5 text-[11px] leading-tight grid grid-cols-2 gap-2 mt-1 box-border bg-slate-50">
+              <div className="space-y-1">
+                <p><span className="font-bold uppercase tracking-wider text-black">Personnel Name:</span> <span className="font-bold text-black text-[12px]">{selectedWorker.name}</span></p>
                 <p><span className="font-bold uppercase tracking-wider text-black">Designation / Role:</span> <span className="font-semibold text-black">{selectedWorker.role === "supervisory" ? "Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
                 <p><span className="font-bold uppercase tracking-wider text-black">Assigned Station / Sitio:</span> <span className="font-semibold text-black">{selectedWorker.sitio || "Subukin Main"}</span></p>
               </div>
-              <div className="text-right space-y-1.5">
+              <div className="text-right space-y-1">
                 <p><span className="font-bold uppercase tracking-wider text-black">Contact Number:</span> <span className="font-semibold text-black">{selectedWorker.phone || "—"}</span></p>
                 <p><span className="font-bold uppercase tracking-wider text-black">Document Type:</span> <span className="font-semibold text-black">Official Time Log & Duty Record</span></p>
-                <p><span className="font-bold uppercase tracking-wider text-black">Date Generated:</span> <span className="text-black font-semibold">{new Date().toLocaleDateString(undefined, { dateStyle: "long" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span></p>
+                <p><span className="font-bold uppercase tracking-wider text-black">Date Generated:</span> <span className="text-black font-semibold">{new Date().toLocaleDateString(undefined, { dateStyle: "medium" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span></p>
               </div>
             </div>
           )}
 
           {/* Official Attendance Log Table */}
-          <div className="w-full mb-5">
-            <table className="w-full min-w-full text-left text-[14px] border-2 border-black border-collapse table-auto">
+          <div className="w-full mb-3">
+            <table className="w-full min-w-full text-left text-[11px] border border-black border-collapse table-auto">
               <thead>
-                <tr className="bg-slate-200/90 border-b-2 border-black font-bold text-black">
-                  <th className="border-2 border-black p-3 text-center w-12 font-bold uppercase text-[13px]">#</th>
-                  <th className="border-2 border-black p-3 text-center font-bold uppercase text-[13px]">Date (Petsa)</th>
-                  <th className="border-2 border-black p-3 text-center font-bold uppercase text-[13px]">Time In (Oras ng Pagpasok)</th>
-                  <th className="border-2 border-black p-3 text-center font-bold uppercase text-[13px]">Time Out (Oras ng Paglabas)</th>
-                  <th className="border-2 border-black p-3 text-center w-36 font-bold uppercase text-[13px]">Duration (Tagal)</th>
-                  <th className="border-2 border-black p-3 text-center w-40 font-bold uppercase text-[13px]">Status (Katayuan)</th>
+                <tr className="bg-slate-100 border-b border-black font-bold text-black">
+                  <th className="border border-black p-1.5 text-center w-8 font-bold uppercase text-[10px]">#</th>
+                  <th className="border border-black p-1.5 text-center font-bold uppercase text-[10px]">Date (Petsa)</th>
+                  <th className="border border-black p-1.5 text-center font-bold uppercase text-[10px]">Time In (Oras ng Pagpasok)</th>
+                  <th className="border border-black p-1.5 text-center font-bold uppercase text-[10px]">Time Out (Oras ng Paglabas)</th>
+                  <th className="border border-black p-1.5 text-center w-28 font-bold uppercase text-[10px]">Duration (Tagal)</th>
+                  <th className="border border-black p-1.5 text-center w-32 font-bold uppercase text-[10px]">Status (Katayuan)</th>
                 </tr>
               </thead>
               <tbody>
@@ -720,15 +724,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       ? formatDuration(new Date(log.loginAt), new Date(log.logoutAt))
                       : (language === "tl" ? "Aktibong Shift" : "Active Shift");
                     return (
-                      <tr key={log.id || idx} className="border-b-2 border-black text-black">
-                        <td className="border-2 border-black p-3 text-center font-mono font-bold text-[14px]">{idx + 1}</td>
-                        <td className="border-2 border-black p-3 text-center font-bold text-[14px]">{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
-                        <td className="border-2 border-black p-3 text-center font-mono font-semibold text-[14px]">{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
-                        <td className="border-2 border-black p-3 text-center font-mono font-semibold text-[14px]">
+                      <tr key={log.id || idx} className="border-b border-black text-black">
+                        <td className="border border-black p-1.5 text-center font-mono font-bold text-[11px]">{idx + 1}</td>
+                        <td className="border border-black p-1.5 text-center font-bold text-[11px]">{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
+                        <td className="border border-black p-1.5 text-center font-mono font-semibold text-[11px]">{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
+                        <td className="border border-black p-1.5 text-center font-mono font-semibold text-[11px]">
                           {log.logoutAt ? new Date(log.logoutAt).toLocaleTimeString(undefined, { timeStyle: "short" }) : "— (Active on Duty)"}
                         </td>
-                        <td className="border-2 border-black p-3 text-center font-mono font-bold text-[14px]">{durationStr}</td>
-                        <td className="border-2 border-black p-3 text-center font-bold text-[14px]">
+                        <td className="border border-black p-1.5 text-center font-mono font-bold text-[11px]">{durationStr}</td>
+                        <td className="border border-black p-1.5 text-center font-bold text-[11px]">
                           {log.logoutAt ? "Completed Shift" : "On Duty (Active)"}
                         </td>
                       </tr>
@@ -736,7 +740,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={6} className="border-2 border-black p-10 text-center italic font-medium text-slate-800 text-[14px]">
+                    <td colSpan={6} className="border border-black p-4 text-center italic font-medium text-slate-800 text-[11px]">
                       No official attendance records logged for this personnel during this period.
                     </td>
                   </tr>
@@ -746,18 +750,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Official Certification and Sign-offs */}
-          <div className="grid grid-cols-2 gap-12 pt-6 mt-3 text-[14px] w-full">
+          <div className="grid grid-cols-2 gap-8 pt-3 mt-2 text-[11px] w-full">
             <div className="text-center">
-              <div className="border-b-2 border-black w-4/5 mx-auto pb-1.5 font-bold text-[16px] text-black uppercase">
+              <div className="border-b border-black w-3/5 mx-auto pb-1 font-bold text-[12px] text-black uppercase">
                 {selectedWorker?.name || "BHW Personnel"}
               </div>
-              <p className="mt-2 text-[12px] text-black font-bold uppercase tracking-wider">Signature over Printed Name / Personnel</p>
+              <p className="mt-1 text-[10px] text-black font-bold uppercase tracking-wider">Signature over Printed Name / Personnel</p>
             </div>
             <div className="text-center">
-              <div className="border-b-2 border-black w-4/5 mx-auto pb-1.5 font-bold text-[16px] text-black uppercase">
+              <div className="border-b border-black w-3/5 mx-auto pb-1 font-bold text-[12px] text-black uppercase">
                 CRISTETA R. LANUZA
               </div>
-              <p className="mt-2 text-[12px] text-black font-bold uppercase tracking-wider">Midwife Administrator / Certified Correct</p>
+              <p className="mt-1 text-[10px] text-black font-bold uppercase tracking-wider">Midwife Administrator / Certified Correct</p>
             </div>
           </div>
         </div>
