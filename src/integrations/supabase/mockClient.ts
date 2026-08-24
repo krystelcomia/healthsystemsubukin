@@ -228,9 +228,15 @@ class MockQueryBuilder {
     // Handle relations (residents, profiles, etc.)
     filtered = filtered.map(item => {
       const newItem = { ...item };
+      const residents = db['residents'] || [];
       if (newItem.resident_id) {
-        const residents = db['residents'] || [];
         newItem.residents = residents.find((r: any) => r.id === newItem.resident_id) || null;
+      }
+      if (!newItem.residents) {
+        const nameToMatch = (newItem.full_name || newItem.patient_name || newItem.child_name || newItem.father_name || newItem.household_name || `${newItem.first_name || ""} ${newItem.surname || ""}`).trim().toLowerCase();
+        if (nameToMatch) {
+          newItem.residents = residents.find((r: any) => r.full_name && r.full_name.trim().toLowerCase() === nameToMatch) || null;
+        }
       }
       if (newItem.user_id) {
         const profiles = db['profiles'] || [];

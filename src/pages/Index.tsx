@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
-import { syncFamilyDataToResidents } from "@/lib/residentLinker";
+import { syncFamilyDataToResidents, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const Index = () => {
@@ -144,21 +144,18 @@ const Index = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      await syncFamilyDataToResidents();
-
-      const [residents, consultations, families, dengue, philpen] = await Promise.all([
-        supabase.from("residents").select("*"),
+      const [familyOnlyResidents, consultations, families, dengue, philpen] = await Promise.all([
+        getFamilyOnlyResidents(),
         supabase.from("consultations").select("id", { count: "exact", head: true }),
         supabase.from("family_data").select("id", { count: "exact", head: true }),
         supabase.from("dengue_prevention").select("id", { count: "exact", head: true }),
         supabase.from("philpen_health").select("id", { count: "exact", head: true }),
       ]);
 
-      const allResidents = (residents.data || []).filter((r: any) => r.full_name && r.full_name.trim());
-      const childrenList = allResidents.filter((r: any) => (Number(r.age) || 0) <= 12);
+      const childrenList = familyOnlyResidents.filter((r: any) => (Number(r.age) || 0) <= 12);
 
       setStats({
-        totalResidents: allResidents.length,
+        totalResidents: familyOnlyResidents.length,
         consultations: consultations.count || 0,
         familyRecords: families.count || 0,
         childVaccinations: childrenList.length,

@@ -218,7 +218,7 @@ const AdminHealthRecords = () => {
   const handlePrintBlankForm = (form: FormMeta) => {
     const orientation = getFormPrintOrientation(form.id);
 
-    if (form.id === "consultation") {
+    if (form.id === "consultations" || form.id === "consultation") {
       const html = `
         <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:10px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
           <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -594,7 +594,7 @@ const AdminHealthRecords = () => {
     const orientation = getFormPrintOrientation(selectedForm.id);
     const resName = selectedRecord.residents?.full_name || selectedRecord.patient_name || (selectedRecord.first_name ? `${selectedRecord.first_name} ${selectedRecord.surname || ""}` : "Unlinked Resident");
 
-    if (selectedForm.id === "consultation") {
+    if (selectedForm.id === "consultations" || selectedForm.id === "consultation") {
       const html = `
         <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:10px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
           <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#000;stroke-width:2;fill:none;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
