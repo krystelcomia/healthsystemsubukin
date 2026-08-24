@@ -373,9 +373,27 @@ class MockAuth {
     const workers = db['bhw_workers'] || [];
     const roles = db['user_roles'] || [];
     
-    const cleanEmail = (email || "").trim().toLowerCase();
-    const userWithEmail = users.find((u: any) => (u.email || "").trim().toLowerCase() === cleanEmail);
-    const workerWithEmail = workers.find((w: any) => (w.gmail || "").trim().toLowerCase() === cleanEmail);
+    const cleanInput = (email || "").trim().toLowerCase();
+    const profiles = db['profiles'] || [];
+
+    // Find matching profile by username
+    const profileMatch = profiles.find((p: any) => (p.username || "").trim().toLowerCase() === cleanInput);
+
+    // Find user by email or by profile's user_id
+    const userWithEmail = users.find((u: any) => 
+      (u.email || "").trim().toLowerCase() === cleanInput || 
+      (profileMatch && u.id === profileMatch.user_id)
+    );
+
+    // Find worker by email, by user_id, or by worker name/username match
+    const workerWithEmail = workers.find((w: any) => 
+      (w.gmail || "").trim().toLowerCase() === cleanInput ||
+      (userWithEmail && (w.user_id === userWithEmail.id || w.id === userWithEmail.id)) ||
+      (profileMatch && (w.user_id === profileMatch.user_id || w.name?.toLowerCase().includes(cleanInput))) ||
+      (w.name || "").toLowerCase().split(" ")[0] === cleanInput
+    );
+
+    const cleanEmail = (workerWithEmail?.gmail || userWithEmail?.email || cleanInput).toLowerCase().trim();
 
     // 1. If user email is not found in the database and not part of BHW
     if (!userWithEmail && !workerWithEmail) {
