@@ -24,6 +24,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { syncFamilyDataToResidents, getFamilyOnlyResidents } from "@/lib/residentLinker";
+import { isWorkerOnline } from "@/lib/presenceTracker";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 interface BHWWorker {
@@ -155,7 +156,17 @@ const AdminDashboard = () => {
       setChartData(monthlyData);
 
       const { data: workersData } = await (supabase.from as any)("bhw_workers").select("id, name, is_online, last_seen, gmail").order("name");
-      setWorkers(workersData || []);
+      const mappedWorkers = (workersData || []).map((w: any) => ({
+        ...w,
+        is_online: isWorkerOnline(w)
+      }));
+      setWorkers(mappedWorkers);
+      const onlineCount = mappedWorkers.filter((w: any) => w.is_online).length;
+      setStats(prev => ({
+        ...prev,
+        onlineWorkers: onlineCount,
+        totalWorkers: mappedWorkers.length
+      }));
 
       const { data: recentConsultations } = await supabase
         .from("consultations").select("consultation_date, consultation_cause, created_at, residents(full_name)")
@@ -176,12 +187,16 @@ const AdminDashboard = () => {
     const refreshWorkersStatus = async () => {
       const { data: workersData } = await (supabase.from as any)("bhw_workers").select("id, name, is_online, last_seen, gmail").order("name");
       if (workersData) {
-        setWorkers(workersData);
-        const onlineCount = workersData.filter((w: any) => w.is_online).length;
+        const mappedWorkers = workersData.map((w: any) => ({
+          ...w,
+          is_online: isWorkerOnline(w)
+        }));
+        setWorkers(mappedWorkers);
+        const onlineCount = mappedWorkers.filter((w: any) => w.is_online).length;
         setStats(prev => ({
           ...prev,
           onlineWorkers: onlineCount,
-          totalWorkers: workersData.length
+          totalWorkers: mappedWorkers.length
         }));
       }
     };

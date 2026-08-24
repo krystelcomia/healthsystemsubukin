@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { startSession, endSession, logActivity } from "@/lib/activityLogger";
+import { recordWorkerPresence } from "@/lib/presenceTracker";
 
 interface AuthContextType {
   session: Session | null;
@@ -147,25 +148,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateOnlineStatus = async (userId: string, online: boolean, userEmail?: string | null) => {
     try {
-      const now = new Date().toISOString();
-      await (supabase.from as any)("bhw_workers")
-        .update({ is_online: online, last_seen: now })
-        .eq("user_id", userId);
-
-      const emailToMatch = userEmail || user?.email;
-      if (emailToMatch) {
-        await (supabase.from as any)("bhw_workers")
-          .update({ is_online: online, last_seen: now, user_id: userId })
-          .eq("gmail", emailToMatch);
-      }
-
-      window.dispatchEvent(new CustomEvent("bhw-worker-status-changed", { detail: { userId, online } }));
+      await recordWorkerPresence(userEmail || user?.email, userId, fullName || username, online);
     } catch (e) {
       console.error("Error updating online status:", e);
     }
   };
 
-  // Heartbeat to keep active online status synced across devices
+  // Heartbeat to keep active online status synced across devices and tabs
   useEffect(() => {
     if (!user) return;
 
@@ -173,7 +162,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const interval = setInterval(() => {
       updateOnlineStatus(user.id, true, user.email);
-    }, 20000);
+    }, 12000);
 
     const handleBeforeUnload = () => {
       updateOnlineStatus(user.id, false, user.email);

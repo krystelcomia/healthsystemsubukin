@@ -18,6 +18,7 @@ import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
+import { isWorkerOnline } from "@/lib/presenceTracker";
 
 interface BHWWorker {
   id: string; name: string; age: number; address: string; gmail: string; number: string; is_online: boolean; last_seen: string | null; user_id: string | null; created_at: string; assigned_sitio?: string;
@@ -86,7 +87,12 @@ const AdminWorkers = () => {
     getDatabaseSitios().then(sits => setSitioOptions(sits));
     const { data, error } = await (supabase.from as any)("bhw_workers").select("*").order("name");
     if (error) { toast.error("Failed to load workers"); return; }
-    setWorkers(data || []); setLoading(false);
+    const mapped = (data || []).map((w: any) => ({
+      ...w,
+      is_online: isWorkerOnline(w)
+    }));
+    setWorkers(mapped);
+    setLoading(false);
   };
 
   const handleAddWorker = async () => {

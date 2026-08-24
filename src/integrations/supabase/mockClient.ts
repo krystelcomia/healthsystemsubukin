@@ -370,14 +370,59 @@ class MockAuth {
       }
     };
 
+    // Mark worker as online immediately in database
+    if (db['bhw_workers']) {
+      const now = new Date().toISOString();
+      db['bhw_workers'] = db['bhw_workers'].map((w: any) => {
+        if ((w.gmail && w.gmail.toLowerCase().trim() === cleanEmail) || (w.user_id === user.id)) {
+          return { ...w, is_online: true, last_seen: now, user_id: user.id };
+        }
+        return w;
+      });
+      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+    }
+
     localStorage.setItem('supabase_mock_session', JSON.stringify(session));
     this.triggerListeners("SIGNED_IN", session);
+    window.dispatchEvent(new CustomEvent("bhw-worker-status-changed", { detail: { email: cleanEmail, userId: user.id, isOnline: true } }));
+    window.dispatchEvent(new Event("storage"));
     return { data: { user: session.user, session }, error: null };
   }
 
   async signOut() {
+    let emailToSignOut = "";
+    let userIdToSignOut = "";
+    try {
+      const sessionStr = localStorage.getItem('supabase_mock_session');
+      if (sessionStr) {
+        const sess = JSON.parse(sessionStr);
+        emailToSignOut = (sess?.user?.email || "").toLowerCase().trim();
+        userIdToSignOut = sess?.user?.id || "";
+      }
+    } catch {}
+
     localStorage.removeItem('supabase_mock_session');
+
+    const dbStr = localStorage.getItem('supabase_mock_db');
+    if (dbStr) {
+      try {
+        const db = JSON.parse(dbStr);
+        if (db['bhw_workers']) {
+          const now = new Date().toISOString();
+          db['bhw_workers'] = db['bhw_workers'].map((w: any) => {
+            if ((emailToSignOut && w.gmail && w.gmail.toLowerCase().trim() === emailToSignOut) || (userIdToSignOut && w.user_id === userIdToSignOut)) {
+              return { ...w, is_online: false, last_seen: now };
+            }
+            return w;
+          });
+          localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+        }
+      } catch {}
+    }
+
     this.triggerListeners("SIGNED_OUT", null);
+    window.dispatchEvent(new CustomEvent("bhw-worker-status-changed", { detail: { email: emailToSignOut, userId: userIdToSignOut, isOnline: false } }));
+    window.dispatchEvent(new Event("storage"));
     return { error: null };
   }
 
@@ -683,25 +728,44 @@ export function seedMockDatabase() {
     db['is_initialized'] = true;
   }
 
-  // Ensure any worker not currently signed in is marked offline
+  // Sync online status for any worker currently signed in or present
   if (db['bhw_workers']) {
     let currentEmail = "";
+    let currentUserId = "";
     try {
       const sessionStr = localStorage.getItem('supabase_mock_session');
       if (sessionStr) {
         const session = JSON.parse(sessionStr);
         currentEmail = (session?.user?.email || "").toLowerCase().trim();
+        currentUserId = session?.user?.id || "";
       }
     } catch {}
 
+    let presences: Record<string, any> = {};
+    try {
+      const pStr = localStorage.getItem('bhw_active_presence');
+      if (pStr) presences = JSON.parse(pStr);
+    } catch {}
+
+    const now = Date.now();
+    const THRESHOLD = 60 * 1000;
+
     db['bhw_workers'] = db['bhw_workers'].map((w: any) => {
-      const isCurrentlyLoggedIn = currentEmail && (
-        (w.gmail && w.gmail.toLowerCase().trim() === currentEmail)
-      );
-      if (!isCurrentlyLoggedIn && w.is_online) {
-        return { ...w, is_online: false };
-      }
-      return w;
+      const email = (w.gmail || "").toLowerCase().trim();
+      const uid = w.user_id;
+
+      const isSessMatch = (currentEmail && email === currentEmail) || (currentUserId && uid === currentUserId);
+      const isPresenceMatch = 
+        (email && presences[email] && presences[email].isOnline && (now - new Date(presences[email].lastSeen).getTime() < THRESHOLD)) ||
+        (uid && presences[uid] && presences[uid].isOnline && (now - new Date(presences[uid].lastSeen).getTime() < THRESHOLD));
+
+      const isOnline = Boolean(isSessMatch || isPresenceMatch);
+
+      return {
+        ...w,
+        is_online: isOnline,
+        last_seen: isOnline ? new Date().toISOString() : w.last_seen
+      };
     });
   }
 
