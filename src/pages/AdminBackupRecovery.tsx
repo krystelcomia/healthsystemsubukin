@@ -690,7 +690,8 @@ const AdminBackupRecovery = () => {
             }
           }
 
-          localStorage.setItem("supabase_mock_db", JSON.stringify(db));
+          const { saveAndBroadcastMockDb } = await import("@/integrations/supabase/mockClient");
+          saveAndBroadcastMockDb(db);
         }
       } catch (e) {
         console.warn("Error restoring worker credentials:", e);

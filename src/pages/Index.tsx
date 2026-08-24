@@ -310,6 +310,13 @@ const Index = () => {
     };
 
     fetchStats();
+    const handleDbUpdate = () => fetchStats();
+    window.addEventListener("storage", handleDbUpdate);
+    window.addEventListener("bhw-db-updated", handleDbUpdate);
+    return () => {
+      window.removeEventListener("storage", handleDbUpdate);
+      window.removeEventListener("bhw-db-updated", handleDbUpdate);
+    };
   }, []);
 
   const buildMonthlyChart = (formData: Record<string, { created_at: string }[]>) => {

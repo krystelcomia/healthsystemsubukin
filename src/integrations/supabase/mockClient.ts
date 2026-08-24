@@ -1,4 +1,88 @@
 import { Database } from './types';
+import { CANONICAL_INITIAL_DATABASE } from '@/lib/canonicalDataset';
+
+let isCrossBrowserSyncStarted = false;
+
+export function saveAndBroadcastMockDb(db: any) {
+  try {
+    const serialized = JSON.stringify(db);
+    localStorage.setItem('supabase_mock_db', serialized);
+
+    // 1. Post to local Vite dev server sync endpoint so other browsers (Chrome, Firefox, Edge) get it
+    if (typeof fetch === 'function') {
+      fetch('/__db_sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: serialized,
+      }).catch(() => {});
+    }
+
+    // 2. Broadcast across tabs of current browser
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel('bhw_db_cross_tab_sync');
+        bc.postMessage({ type: 'db_update', timestamp: Date.now() });
+        bc.close();
+      } catch {}
+    }
+
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: db }));
+  } catch (e) {
+    console.error('Failed to save mock db:', e);
+  }
+}
+
+export function initCrossBrowserSync() {
+  if (isCrossBrowserSyncStarted || typeof window === 'undefined') return;
+  isCrossBrowserSyncStarted = true;
+
+  // 1. Initial pull from shared backend file if available
+  if (typeof fetch === 'function') {
+    fetch('/__db_sync')
+      .then((res) => res.json())
+      .then((remoteDb) => {
+        if (remoteDb && remoteDb.is_initialized) {
+          localStorage.setItem('supabase_mock_db', JSON.stringify(remoteDb));
+          window.dispatchEvent(new Event('storage'));
+          window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: remoteDb }));
+          window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
+        }
+      })
+      .catch(() => {});
+  }
+
+  // 2. Realtime SSE push from other browsers (Chrome <-> Firefox <-> Edge)
+  if (typeof EventSource !== 'undefined') {
+    try {
+      const evtSource = new EventSource('/__db_sync/events');
+      evtSource.addEventListener('db_update', (event: any) => {
+        if (event.data) {
+          try {
+            const parsed = JSON.parse(event.data);
+            if (parsed && parsed.is_initialized) {
+              localStorage.setItem('supabase_mock_db', event.data);
+              window.dispatchEvent(new Event('storage'));
+              window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: parsed }));
+              window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
+            }
+          } catch {}
+        }
+      });
+    } catch {}
+  }
+
+  // 3. BroadcastChannel listener for local browser tabs
+  if (typeof BroadcastChannel !== 'undefined') {
+    try {
+      const bc = new BroadcastChannel('bhw_db_cross_tab_sync');
+      bc.onmessage = () => {
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
+      };
+    } catch {}
+  }
+}
 
 // Mock Query Builder mimicking Supabase's JS library behavior
 class MockQueryBuilder {
@@ -154,7 +238,7 @@ class MockQueryBuilder {
           return newItem;
         }
       });
-      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+      saveAndBroadcastMockDb(db);
       return { data: Array.isArray(this.upsertData) ? results : results[0], error: null };
     }
 
@@ -170,7 +254,7 @@ class MockQueryBuilder {
         db[this.tableName].push(newItem);
         return newItem;
       });
-      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+      saveAndBroadcastMockDb(db);
       return { data: Array.isArray(this.insertData) ? inserted : inserted[0], error: null };
     }
 
@@ -191,7 +275,7 @@ class MockQueryBuilder {
         }
         return item;
       });
-      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+      saveAndBroadcastMockDb(db);
       return { data: updatedData, error: null, count: updatedCount };
     }
 
@@ -202,7 +286,7 @@ class MockQueryBuilder {
         return !matches;
       });
       const deletedCount = initialLength - db[this.tableName].length;
-      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+      saveAndBroadcastMockDb(db);
       return { data: null, error: null, count: deletedCount };
     }
 
@@ -346,10 +430,10 @@ class MockAuth {
       };
       users.push(user);
       db['auth_users'] = users;
-      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+      saveAndBroadcastMockDb(db);
     } else if (user && user.password !== password) {
       user.password = password;
-      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+      saveAndBroadcastMockDb(db);
     }
 
     const session = {
@@ -379,7 +463,7 @@ class MockAuth {
         }
         return w;
       });
-      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+      saveAndBroadcastMockDb(db);
     }
 
     localStorage.setItem('supabase_mock_session', JSON.stringify(session));
@@ -415,7 +499,7 @@ class MockAuth {
             }
             return w;
           });
-          localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+          saveAndBroadcastMockDb(db);
         }
       } catch {}
     }
@@ -526,14 +610,11 @@ class MockFunctions {
         updated_at: new Date().toISOString()
       });
       
-      localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+      saveAndBroadcastMockDb(db);
       return { data: { success: true }, error: null };
     }
     
     if (name === "scan-form") {
-      // In mock mode the Supabase edge function isn't deployed, so we call the
-      // Lovable AI gateway directly from the browser. This replicates the exact
-      // same logic that supabase/functions/scan-form/index.ts performs.
       try {
         const lovableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const { image, hint } = options?.body || {};
@@ -629,6 +710,8 @@ Rules:
 
 // Global seeding function
 export function seedMockDatabase() {
+  initCrossBrowserSync();
+
   const dbStr = localStorage.getItem('supabase_mock_db');
   let db: any = {};
   if (dbStr) {
@@ -637,6 +720,12 @@ export function seedMockDatabase() {
     } catch {
       db = {};
     }
+  }
+
+  // If not initialized or missing core tables, populate with canonical dataset
+  if (!db['is_initialized'] || !db['family_data'] || db['family_data'].length === 0) {
+    db = JSON.parse(JSON.stringify(CANONICAL_INITIAL_DATABASE));
+    db['is_initialized'] = true;
   }
 
   // Ensure default table arrays exist
@@ -649,84 +738,11 @@ export function seedMockDatabase() {
   if (!db['family_data']) db['family_data'] = [];
   if (!db['philpen_health']) db['philpen_health'] = [];
   if (!db['dengue_prevention']) db['dengue_prevention'] = [];
+  if (!db['maternal_care']) db['maternal_care'] = [];
+  if (!db['child_health']) db['child_health'] = [];
+  if (!db['family_planning']) db['family_planning'] = [];
   if (!db['user_sessions']) db['user_sessions'] = [];
   if (!db['user_activity_logs']) db['user_activity_logs'] = [];
-
-  // Only seed initial default data once on fresh setup
-  if (!db['is_initialized']) {
-    const defaultUsers = [
-      { id: "user-1", email: "krystelcomia@gmail.com", password: "krystel123", user_metadata: { full_name: "Krystel Comia" } },
-      { id: "user-admin", email: "adminsubukin@gmail.com", password: "adminmidwife", user_metadata: { full_name: "Admin Midwife" } },
-      { id: "user-cristeta", email: "cristetalanuzaBHW@gmail.com", password: "bhwcristeta", user_metadata: { full_name: "Cristeta R. Lanuza" } },
-      { id: "user-evelyn", email: "evelynilaoBHW@gmail.com", password: "bhwevelyn", user_metadata: { full_name: "Evelyn T. Ilao" } },
-      { id: "user-cecilia", email: "ceciliabenosaBHW@gmail.com", password: "bhwcecilia", user_metadata: { full_name: "Cecilia G. Benosa" } },
-      { id: "user-merlita", email: "merlitaalonzoBHW@gmail.com", password: "bhwmerlita", user_metadata: { full_name: "Merlita R. Alonzo" } },
-      { id: "user-suzette", email: "suzettelopezBHW@gmail.com", password: "bhwsuzette", user_metadata: { full_name: "Suzette B. Lopez" } },
-      { id: "user-amelita", email: "amelitasayatBHW@gmail.com", password: "bhwamelita", user_metadata: { full_name: "Amelita R. Sayat" } },
-      { id: "user-wilma", email: "wilmatanyagBHW@gmail.com", password: "bhwawilma", user_metadata: { full_name: "Wilma D. Tanyag" } },
-      { id: "user-nenita", email: "nenitadimaculanganBHW@gmail.com", password: "bhwanenita", user_metadata: { full_name: "Nenita M. Dimaculangan" } },
-      { id: "user-mercy", email: "mercyabanillaBHW@gmail.com", password: "bhwmercy", user_metadata: { full_name: "Mercy O. Abanilla" } },
-      { id: "user-renchie", email: "renchieilaoBHW@gmail.com", password: "bhwrenchie", user_metadata: { full_name: "Renchie V. Ilao" } },
-      { id: "user-renalyn", email: "renalynlauranteBHW@gmail.com", password: "bhwrenalyn", user_metadata: { full_name: "Renalyn D. Laurante" } },
-      { id: "user-maribel", email: "maribelabayonBNS@gmail.com", password: "bnsmaribel", user_metadata: { full_name: "Maribel M. Abayon" } }
-    ];
-
-    const defaultRoles = [
-      { id: "role-1", user_id: "user-1", role: "bhw" },
-      { id: "role-admin", user_id: "user-admin", role: "supervisor" },
-      { id: "role-cristeta", user_id: "user-cristeta", role: "supervisory" },
-      { id: "role-evelyn", user_id: "user-evelyn", role: "bhw" },
-      { id: "role-cecilia", user_id: "user-cecilia", role: "bhw" },
-      { id: "role-merlita", user_id: "user-merlita", role: "bhw" },
-      { id: "role-suzette", user_id: "user-suzette", role: "bhw" },
-      { id: "role-amelita", user_id: "user-amelita", role: "bhw" },
-      { id: "role-wilma", user_id: "user-wilma", role: "bhw" },
-      { id: "role-nenita", user_id: "user-nenita", role: "bhw" },
-      { id: "role-mercy", user_id: "user-mercy", role: "bhw" },
-      { id: "role-renchie", user_id: "user-renchie", role: "bhw" },
-      { id: "role-renalyn", user_id: "user-renalyn", role: "bhw" },
-      { id: "role-maribel", user_id: "user-maribel", role: "bns" }
-    ];
-
-    const defaultProfiles = [
-      { id: "profile-1", user_id: "user-1", full_name: "Krystel Comia", username: "krystel", assigned_sitio: "Maligaya" },
-      { id: "profile-admin", user_id: "user-admin", full_name: "Admin Midwife", username: "admin", assigned_sitio: "Subukin Main" },
-      { id: "profile-cristeta", user_id: "user-cristeta", full_name: "Cristeta R. Lanuza", username: "Cristeta", assigned_sitio: "Masigla" },
-      { id: "profile-evelyn", user_id: "user-evelyn", full_name: "Evelyn T. Ilao", username: "Evelyn", assigned_sitio: "Manggahan 1" },
-      { id: "profile-cecilia", user_id: "user-cecilia", full_name: "Cecilia G. Benosa", username: "Cecilia", assigned_sitio: "Maligaya" },
-      { id: "profile-merlita", user_id: "user-merlita", full_name: "Merlita R. Alonzo", username: "Merlita", assigned_sitio: "Matahimik / Punta" },
-      { id: "profile-suzette", user_id: "user-suzette", full_name: "Suzette B. Lopez", username: "Suzette", assigned_sitio: "Makalintal 1" },
-      { id: "profile-amelita", user_id: "user-amelita", full_name: "Amelita R. Sayat", username: "Amelita", assigned_sitio: "Puntor" },
-      { id: "profile-wilma", user_id: "user-wilma", full_name: "Wilma D. Tanyag", username: "Wilma", assigned_sitio: "Masaya" },
-      { id: "profile-nenita", user_id: "user-nenita", full_name: "Nenita M. Dimaculangan", username: "Nenita", assigned_sitio: "Manggahan 2" },
-      { id: "profile-mercy", user_id: "user-mercy", full_name: "Mercy O. Abanilla", username: "Mercy", assigned_sitio: "Cama" },
-      { id: "profile-renchie", user_id: "user-renchie", full_name: "Renchie V. Ilao", username: "Renchie", assigned_sitio: "Makalintal 2" },
-      { id: "profile-renalyn", user_id: "user-renalyn", full_name: "Renalyn D. Laurante", username: "Renalyn", assigned_sitio: "Matahimik / Burol" },
-      { id: "profile-maribel", user_id: "user-maribel", full_name: "Maribel M. Abayon", username: "Maribel", assigned_sitio: "Masigla" }
-    ];
-
-    const defaultWorkers = [
-      { id: "worker-1", name: "Krystel Comia", age: 28, address: "Subukin", gmail: "krystelcomia@gmail.com", number: "09123456789", is_online: false, user_id: "user-1", assigned_sitio: "Maligaya", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-cristeta", name: "Cristeta R. Lanuza", age: 0, address: "Masigla", gmail: "cristetalanuzaBHW@gmail.com", number: "0919-6980-712", is_online: false, user_id: "user-cristeta", assigned_sitio: "Masigla", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-evelyn", name: "Evelyn T. Ilao", age: 0, address: "Manggahan 1", gmail: "evelynilaoBHW@gmail.com", number: "0935-5638-247", is_online: false, user_id: "user-evelyn", assigned_sitio: "Manggahan 1", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-cecilia", name: "Cecilia G. Benosa", age: 0, address: "Maligaya", gmail: "ceciliabenosaBHW@gmail.com", number: "0921-8509-320", is_online: false, user_id: "user-cecilia", assigned_sitio: "Maligaya", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-merlita", name: "Merlita R. Alonzo", age: 0, address: "Matahimik / Punta", gmail: "merlitaalonzoBHW@gmail.com", number: "0930-9085-713", is_online: false, user_id: "user-merlita", assigned_sitio: "Matahimik / Punta", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-suzette", name: "Suzette B. Lopez", age: 0, address: "Makalintal 1", gmail: "suzettelopezBHW@gmail.com", number: "0935-2008-942", is_online: false, user_id: "user-suzette", assigned_sitio: "Makalintal 1", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-amelita", name: "Amelita R. Sayat", age: 0, address: "Puntor", gmail: "amelitasayatBHW@gmail.com", number: "0931-0232-973", is_online: false, user_id: "user-amelita", assigned_sitio: "Puntor", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-wilma", name: "Wilma D. Tanyag", age: 0, address: "Masaya", gmail: "wilmatanyagBHW@gmail.com", number: "0997-4971-138", is_online: false, user_id: "user-wilma", assigned_sitio: "Masaya", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-nenita", name: "Nenita M. Dimaculangan", age: 0, address: "Manggahan 2", gmail: "nenitadimaculanganBHW@gmail.com", number: "0985-1225-857", is_online: false, user_id: "user-nenita", assigned_sitio: "Manggahan 2", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-mercy", name: "Mercy O. Abanilla", age: 0, address: "Cama", gmail: "mercyabanillaBHW@gmail.com", number: "0949-7768-394", is_online: false, user_id: "user-mercy", assigned_sitio: "Cama", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-renchie", name: "Renchie V. Ilao", age: 0, address: "Makalintal 2", gmail: "renchieilaoBHW@gmail.com", number: "0965-6627-031", is_online: false, user_id: "user-renchie", assigned_sitio: "Makalintal 2", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-renalyn", name: "Renalyn D. Laurante", age: 0, address: "Matahimik / Burol", gmail: "renalynlauranteBHW@gmail.com", number: "0985-1086-472", is_online: false, user_id: "user-renalyn", assigned_sitio: "Matahimik / Burol", created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "worker-maribel", name: "Maribel M. Abayon", age: 0, address: "Masigla", gmail: "maribelabayonBNS@gmail.com", number: "0922-6722-134", is_online: false, user_id: "user-maribel", assigned_sitio: "Masigla", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
-    ];
-
-    db['auth_users'] = defaultUsers;
-    db['user_roles'] = defaultRoles;
-    db['profiles'] = defaultProfiles;
-    db['bhw_workers'] = defaultWorkers;
-    db['is_initialized'] = true;
-  }
 
   // Sync online status for any worker currently signed in or present
   if (db['bhw_workers']) {
@@ -769,7 +785,7 @@ export function seedMockDatabase() {
     });
   }
 
-  localStorage.setItem('supabase_mock_db', JSON.stringify(db));
+  saveAndBroadcastMockDb(db);
 }
 
 class MockRealtimeChannel {

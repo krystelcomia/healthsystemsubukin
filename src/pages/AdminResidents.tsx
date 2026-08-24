@@ -34,7 +34,16 @@ const AdminResidents = () => {
   const [healthRecords, setHealthRecords] = useState<HealthRecords | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => { fetchResidents(); }, []);
+  useEffect(() => { 
+    fetchResidents(); 
+    const handleUpdate = () => fetchResidents();
+    window.addEventListener("storage", handleUpdate);
+    window.addEventListener("bhw-db-updated", handleUpdate);
+    return () => {
+      window.removeEventListener("storage", handleUpdate);
+      window.removeEventListener("bhw-db-updated", handleUpdate);
+    };
+  }, []);
 
   const fetchResidents = async () => {
     setLoading(true);

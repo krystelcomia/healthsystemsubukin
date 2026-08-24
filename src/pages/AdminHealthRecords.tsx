@@ -156,7 +156,20 @@ const AdminHealthRecords = () => {
       setCustomForms([]);
     }
     fetchFormCounts();
-  }, []);
+
+    const handleUpdate = () => {
+      fetchFormCounts();
+      if (selectedForm) {
+        handleOpenFormRecords(selectedForm);
+      }
+    };
+    window.addEventListener("storage", handleUpdate);
+    window.addEventListener("bhw-db-updated", handleUpdate);
+    return () => {
+      window.removeEventListener("storage", handleUpdate);
+      window.removeEventListener("bhw-db-updated", handleUpdate);
+    };
+  }, [selectedForm]);
 
   const fetchFormCounts = async () => {
     setLoadingCounts(true);

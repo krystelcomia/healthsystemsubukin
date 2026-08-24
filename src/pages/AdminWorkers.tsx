@@ -70,6 +70,7 @@ const AdminWorkers = () => {
     const handleWorkerStatusEvent = () => fetchWorkers();
     window.addEventListener("bhw-worker-status-changed", handleWorkerStatusEvent);
     window.addEventListener("storage", handleWorkerStatusEvent);
+    window.addEventListener("bhw-db-updated", handleWorkerStatusEvent);
 
     return () => {
       clearInterval(interval);
@@ -80,6 +81,7 @@ const AdminWorkers = () => {
       }
       window.removeEventListener("bhw-worker-status-changed", handleWorkerStatusEvent);
       window.removeEventListener("storage", handleWorkerStatusEvent);
+      window.removeEventListener("bhw-db-updated", handleWorkerStatusEvent);
     };
   }, []);
 
@@ -143,7 +145,8 @@ const AdminWorkers = () => {
               (u.email || "").toLowerCase().trim() !== cleanEmail
             );
           }
-          localStorage.setItem("supabase_mock_db", JSON.stringify(db));
+          const { saveAndBroadcastMockDb } = await import("@/integrations/supabase/mockClient");
+          saveAndBroadcastMockDb(db);
         }
       } catch (e) {
         console.warn("Error revoking deleted worker credentials:", e);

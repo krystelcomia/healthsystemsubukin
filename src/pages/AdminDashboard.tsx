@@ -202,9 +202,13 @@ const AdminDashboard = () => {
     };
 
     const interval = setInterval(refreshWorkersStatus, 3000);
-    const handleStatusEvent = () => refreshWorkersStatus();
+    const handleStatusEvent = () => {
+      refreshWorkersStatus();
+      fetchAll();
+    };
     window.addEventListener("bhw-worker-status-changed", handleStatusEvent);
     window.addEventListener("storage", handleStatusEvent);
+    window.addEventListener("bhw-db-updated", handleStatusEvent);
 
     // Realtime channel subscription for instant worker status change detection across all devices
     let channel: any = null;
@@ -234,6 +238,7 @@ const AdminDashboard = () => {
       }
       window.removeEventListener("bhw-worker-status-changed", handleStatusEvent);
       window.removeEventListener("storage", handleStatusEvent);
+      window.removeEventListener("bhw-db-updated", handleStatusEvent);
     };
   }, []);
 

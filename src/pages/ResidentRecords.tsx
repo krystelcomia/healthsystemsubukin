@@ -110,7 +110,16 @@ const ResidentRecords = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchResidents(); }, []);
+  useEffect(() => { 
+    fetchResidents(); 
+    const handleUpdate = () => fetchResidents();
+    window.addEventListener("storage", handleUpdate);
+    window.addEventListener("bhw-db-updated", handleUpdate);
+    return () => {
+      window.removeEventListener("storage", handleUpdate);
+      window.removeEventListener("bhw-db-updated", handleUpdate);
+    };
+  }, []);
 
   const handleAddResident = async () => {
     const cleanName = newResident.full_name.trim();
