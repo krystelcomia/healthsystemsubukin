@@ -201,13 +201,37 @@ const AdminDashboard = () => {
       }
     };
 
-    const interval = setInterval(refreshWorkersStatus, 4000);
+    const interval = setInterval(refreshWorkersStatus, 3000);
     const handleStatusEvent = () => refreshWorkersStatus();
     window.addEventListener("bhw-worker-status-changed", handleStatusEvent);
     window.addEventListener("storage", handleStatusEvent);
 
+    // Realtime channel subscription for instant worker status change detection across all devices
+    let channel: any = null;
+    if (typeof (supabase as any)?.channel === "function") {
+      try {
+        channel = (supabase as any)
+          .channel("realtime-admin-dashboard-workers")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "bhw_workers" },
+            () => {
+              refreshWorkersStatus();
+            }
+          )
+          .subscribe();
+      } catch (e) {
+        console.warn("Realtime subscription fallback to polling:", e);
+      }
+    }
+
     return () => {
       clearInterval(interval);
+      if (channel && typeof (supabase as any)?.removeChannel === "function") {
+        try {
+          (supabase as any).removeChannel(channel);
+        } catch {}
+      }
       window.removeEventListener("bhw-worker-status-changed", handleStatusEvent);
       window.removeEventListener("storage", handleStatusEvent);
     };

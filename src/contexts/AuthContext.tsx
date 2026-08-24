@@ -154,25 +154,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Heartbeat to keep active online status synced across devices and tabs
+  // Heartbeat to keep active online status synced across devices, browsers, and sites
   useEffect(() => {
     if (!user) return;
 
+    let lastPing = Date.now();
     updateOnlineStatus(user.id, true, user.email);
 
+    // Regular background interval
     const interval = setInterval(() => {
+      lastPing = Date.now();
       updateOnlineStatus(user.id, true, user.email);
-    }, 12000);
+    }, 15000);
+
+    // Trigger immediate refresh when returning to tab or unlocking screen on phone/tablet
+    const handleActiveWakeup = () => {
+      if (document.visibilityState === "visible" || document.hasFocus()) {
+        const now = Date.now();
+        if (now - lastPing > 5000) {
+          lastPing = now;
+          updateOnlineStatus(user.id, true, user.email);
+        }
+      }
+    };
 
     const handleBeforeUnload = () => {
       updateOnlineStatus(user.id, false, user.email);
     };
 
+    window.addEventListener("focus", handleActiveWakeup);
+    document.addEventListener("visibilitychange", handleActiveWakeup);
     window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("pagehide", handleBeforeUnload);
 
     return () => {
       clearInterval(interval);
+      window.removeEventListener("focus", handleActiveWakeup);
+      document.removeEventListener("visibilitychange", handleActiveWakeup);
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("pagehide", handleBeforeUnload);
     };
   }, [user]);
 
