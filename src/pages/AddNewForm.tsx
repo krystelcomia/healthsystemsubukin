@@ -1235,6 +1235,14 @@ const AddNewForm = () => {
                 />
               </div>
 
+              {/* Header Bar with Barangay Subukin note (Hidden when printing) */}
+              <div className="flex items-center justify-between gap-2 no-print pb-2 border-b border-border/40">
+                <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                  BRGY: <strong className="text-foreground">SUBUKIN</strong>
+                </span>
+              </div>
+
               {/* Form Title Banner & Resident Linker */}
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-3 border-b border-border/50 no-print">
                 <div className="flex-1">

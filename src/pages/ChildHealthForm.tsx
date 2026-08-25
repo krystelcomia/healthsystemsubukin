@@ -1467,7 +1467,7 @@ const ChildHealthForm = () => {
               {/* Action Bar & Barangay note */}
               <div className="flex items-center justify-between gap-2 pb-1 border-b border-border/30">
                 <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                  <span className="inline-block w-2 h-2 rounded-full bg-sky-500"></span>
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
                   BRGY: <strong className="text-foreground">SUBUKIN</strong>
                 </span>
               </div>

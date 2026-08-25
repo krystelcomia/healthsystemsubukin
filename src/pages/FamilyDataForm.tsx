@@ -965,8 +965,14 @@ const FamilyDataForm = () => {
       </div>
 
       {/* Control Toolbar */}
-      <div className="flex flex-col md:flex-row items-center justify-end gap-4 bg-card border border-border/60 p-4 rounded-xl shadow-xs">
-        <div className="flex items-center gap-2 w-full md:w-auto">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-card border border-border/60 p-4 rounded-xl shadow-xs">
+        <div className="flex items-center gap-2 no-print">
+          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+            BRGY: <strong className="text-foreground">SUBUKIN</strong>
+          </span>
+        </div>
+        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
           {!isAdmin && (
             <Button
               onClick={handleOpenCreateModal}
