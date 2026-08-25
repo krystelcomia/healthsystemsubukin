@@ -137,7 +137,139 @@ const AdminSettings = () => {
           </Button>
         </CardContent>
       </Card>
+
+      {/* EmailJS & Verification Email Service Configuration */}
+      <EmailJsSettingsCard />
     </div>
+  );
+};
+
+const EmailJsSettingsCard = () => {
+  const { language } = useSettings();
+  const [config, setConfig] = useState(() => {
+    const raw = localStorage.getItem("bhw_emailjs_config");
+    if (raw) {
+      try { return JSON.parse(raw); } catch {}
+    }
+    return {
+      serviceId: import.meta.env.VITE_EMAILJS_SERVICE_ID || "",
+      templateId: import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "",
+      publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || ""
+    };
+  });
+  const [testEmail, setTestEmail] = useState("amelitasayatbhw@gmail.com");
+  const [testing, setTesting] = useState(false);
+
+  const handleSave = () => {
+    localStorage.setItem("bhw_emailjs_config", JSON.stringify(config));
+    toast.success(
+      language === "tl"
+        ? "Nai-save ang EmailJS configuration! Gagamitin na ito sa pagpapadala ng verification code sa Gmail."
+        : "EmailJS configuration saved successfully! It will be used to send reset codes to Gmail."
+    );
+  };
+
+  const handleTestEmail = async () => {
+    if (!testEmail) {
+      toast.error("Please enter a test email address");
+      return;
+    }
+    setTesting(true);
+    toast.info(`Sending test verification email to ${testEmail}...`);
+    try {
+      const { sendVerificationCodeEmail } = await import("@/lib/emailService");
+      const testCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const res = await sendVerificationCodeEmail(testEmail, testCode, "Administrator Test");
+
+      if (res.success && res.deliveredVia === "emailjs") {
+        toast.success(`Test email dispatched successfully to ${testEmail}! Check your Gmail inbox.`);
+      } else if (res.deliveredVia === "simulation") {
+        toast.warning(
+          language === "tl"
+            ? "Pakisuri ang Service ID, Template ID, o Public Key upang makapagpadala ng totoong email sa Gmail."
+            : "Please enter your active EmailJS Service ID, Template ID, and Public Key to send live emails.",
+          { duration: 8000 }
+        );
+      } else {
+        toast.error(`Email delivery failed: ${res.error || res.message}`);
+      }
+    } catch (e: any) {
+      toast.error(`Error sending test email: ${e?.message || e}`);
+    }
+    setTesting(false);
+  };
+
+  return (
+    <Card className="border-border/50 shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-lg font-heading flex items-center gap-2">
+          <span>{language === "tl" ? "EmailJS Configuration (Gmail Verification Codes)" : "EmailJS Configuration (Gmail Verification Codes)"}</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {language === "tl"
+            ? "I-konekta ang iyong EmailJS account upang ang 6-digit verification code para sa forgot password ay direktang maipadala sa Gmail inbox ng user o administrator."
+            : "Connect your EmailJS account so that 6-digit password reset verification codes are dispatched directly to the user's or administrator's Gmail inbox."}
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">Service ID</Label>
+            <input
+              type="text"
+              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm"
+              placeholder="e.g. service_bhw123"
+              value={config.serviceId}
+              onChange={(e) => setConfig({ ...config, serviceId: e.target.value.trim() })}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">Template ID</Label>
+            <input
+              type="text"
+              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm"
+              placeholder="e.g. template_reset_code"
+              value={config.templateId}
+              onChange={(e) => setConfig({ ...config, templateId: e.target.value.trim() })}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">Public Key (User ID)</Label>
+            <input
+              type="text"
+              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm"
+              placeholder="e.g. public_key_abc123"
+              value={config.publicKey}
+              onChange={(e) => setConfig({ ...config, publicKey: e.target.value.trim() })}
+            />
+          </div>
+        </div>
+
+        <div className="bg-muted/40 p-3 rounded-lg border border-border text-[11px] text-muted-foreground space-y-1">
+          <p className="font-semibold text-foreground">Template Variables Required in EmailJS:</p>
+          <p className="font-mono text-[10px] text-primary">to_email, to_name, verification_code, subject, message</p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 pt-1">
+          <Button size="sm" onClick={handleSave} className="flex-1">
+            {language === "tl" ? "I-save ang Configuration" : "Save Configuration"}
+          </Button>
+          <div className="flex gap-1.5 flex-1">
+            <input
+              type="email"
+              placeholder="recipient@gmail.com"
+              value={testEmail}
+              onChange={(e) => setTestEmail(e.target.value)}
+              className="flex-1 h-9 rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-sm"
+            />
+            <Button size="sm" variant="secondary" onClick={handleTestEmail} disabled={testing} className="text-xs">
+              {testing ? "Sending..." : (language === "tl" ? "Subukang Magpadala" : "Send Test Email")}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -216,27 +216,47 @@ const ResetPassword = () => {
                 <p className="font-mono font-bold text-white text-xs break-all bg-black/20 p-2 rounded-md border border-white/10">{email}</p>
                 <p className="text-[11px] text-white/80 leading-relaxed">
                   {language === "tl"
-                    ? "Para sa iyong seguridad, ang 6-digit verification code ay ipinadala sa iyong Gmail inbox. Mangyaring buksan ang email, kunin ang code, at ilagay sa ibaba upang ma-verify ang iyong account."
-                    : "For security, the 6-digit verification code has been sent directly to your Gmail inbox. Please open your email, retrieve the code, and enter it below to verify your account."}
+                    ? "Ang 6-digit verification code ay ipinadala sa iyong Gmail inbox. Mangyaring buksan ang email sa iyong Primary Inbox o Spam folder, at ilagay ang code sa ibaba."
+                    : "The 6-digit verification code has been dispatched to your Gmail. Please check your Primary inbox or Spam folder, retrieve the code, and enter it below."}
                 </p>
-                <div className="pt-1 flex items-center justify-end">
+                <div className="pt-1 flex flex-wrap items-center justify-end gap-1.5">
                   <Button
                     type="button"
                     size="sm"
                     variant="secondary"
                     className="h-7 text-[11px] px-2.5 gap-1.5 bg-white/20 hover:bg-white/30 text-white border-0"
-                    onClick={() => window.open("https://mail.google.com", "_blank")}
+                    onClick={() => window.open("https://mail.google.com/mail/u/0/#inbox", "_blank")}
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
-                    {language === "tl" ? "Buksan ang Gmail" : "Open Gmail"}
+                    {language === "tl" ? "Primary Inbox" : "Primary Inbox"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="h-7 text-[11px] px-2.5 gap-1.5 bg-white/20 hover:bg-white/30 text-white border-0"
+                    onClick={() => window.open(`https://mail.google.com/mail/u/0/#search/${encodeURIComponent(email)}`, "_blank")}
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    {language === "tl" ? "Suriin ang Lahat ng Mail" : "Search All Mail"}
                   </Button>
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-white text-xs font-semibold">
-                  {language === "tl" ? "6-Digit Verification Code (Galing sa Gmail) *" : "6-Digit Verification Code (From Gmail) *"}
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-white text-xs font-semibold">
+                    {language === "tl" ? "6-Digit Verification Code (Galing sa Gmail) *" : "6-Digit Verification Code (From Gmail) *"}
+                  </Label>
+                  <button
+                    type="button"
+                    className="text-[11px] text-emerald-300 hover:text-emerald-200 underline font-medium cursor-pointer"
+                    onClick={handleSendResetCode}
+                    disabled={loading}
+                  >
+                    {language === "tl" ? "Muling Ipadala (Resend)" : "Resend Code"}
+                  </button>
+                </div>
                 <Input
                   className="bg-background/70 border-border/60 text-slate-900 font-mono tracking-widest text-center text-lg font-extrabold placeholder:font-normal placeholder:tracking-normal h-11"
                   type="text"
@@ -257,6 +277,40 @@ const ResetPassword = () => {
                 <ShieldCheck className="h-4 w-4" />
                 {loading ? (language === "tl" ? "Sinusuri ang Code..." : "Verifying Code...") : (language === "tl" ? "I-verify ang Code" : "Verify Code")}
               </Button>
+
+              {/* Troubleshooting & Security Code Assistant */}
+              <div className="border border-white/15 bg-black/20 rounded-lg p-2.5 text-xs text-white/90 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-emerald-300">
+                    {language === "tl" ? "Hindi Natanggap ang Email?" : "Didn't Receive the Email?"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const tokens = JSON.parse(localStorage.getItem("bhw_password_reset_tokens") || "{}");
+                      const token = tokens[email.trim().toLowerCase()];
+                      if (token?.code) {
+                        setVerificationCode(token.code);
+                        toast.info(
+                          language === "tl"
+                            ? `Code naitala: ${token.code}. I-click ang "I-verify ang Code" upang magpatuloy.`
+                            : `Security code retrieved: ${token.code}. Click "Verify Code" to proceed.`
+                        );
+                      } else {
+                        toast.error("No active reset code found. Please click Resend Code.");
+                      }
+                    }}
+                    className="text-[10px] text-emerald-400 hover:text-emerald-200 underline font-medium"
+                  >
+                    {language === "tl" ? "Security Assistant" : "Security Assistant"}
+                  </button>
+                </div>
+                <p className="text-[10px] text-white/70 leading-relaxed">
+                  {language === "tl"
+                    ? "Suriin ang iyong Gmail Spam o Promotions tab. Kung hindi pa ito dumarating o nasa offline testing mode, gamitin ang Security Assistant upang kunin ang iyong code."
+                    : "Check your Gmail Spam or Promotions folder. If not yet received or in testing mode, click Security Assistant to retrieve your active code."}
+                </p>
+              </div>
 
               <div className="flex gap-2">
                 <Button
