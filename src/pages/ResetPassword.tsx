@@ -278,40 +278,6 @@ const ResetPassword = () => {
                 {loading ? (language === "tl" ? "Sinusuri ang Code..." : "Verifying Code...") : (language === "tl" ? "I-verify ang Code" : "Verify Code")}
               </Button>
 
-              {/* Troubleshooting & Security Code Assistant */}
-              <div className="border border-white/15 bg-black/20 rounded-lg p-2.5 text-xs text-white/90 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-emerald-300">
-                    {language === "tl" ? "Hindi Natanggap ang Email?" : "Didn't Receive the Email?"}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const tokens = JSON.parse(localStorage.getItem("bhw_password_reset_tokens") || "{}");
-                      const token = tokens[email.trim().toLowerCase()];
-                      if (token?.code) {
-                        setVerificationCode(token.code);
-                        toast.info(
-                          language === "tl"
-                            ? `Code naitala: ${token.code}. I-click ang "I-verify ang Code" upang magpatuloy.`
-                            : `Security code retrieved: ${token.code}. Click "Verify Code" to proceed.`
-                        );
-                      } else {
-                        toast.error("No active reset code found. Please click Resend Code.");
-                      }
-                    }}
-                    className="text-[10px] text-emerald-400 hover:text-emerald-200 underline font-medium"
-                  >
-                    {language === "tl" ? "Security Assistant" : "Security Assistant"}
-                  </button>
-                </div>
-                <p className="text-[10px] text-white/70 leading-relaxed">
-                  {language === "tl"
-                    ? "Suriin ang iyong Gmail Spam o Promotions tab. Kung hindi pa ito dumarating o nasa offline testing mode, gamitin ang Security Assistant upang kunin ang iyong code."
-                    : "Check your Gmail Spam or Promotions folder. If not yet received or in testing mode, click Security Assistant to retrieve your active code."}
-                </p>
-              </div>
-
               <div className="flex gap-2">
                 <Button
                   type="button"
