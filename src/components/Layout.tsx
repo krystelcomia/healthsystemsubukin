@@ -16,10 +16,10 @@ import { toast } from "sonner";
 import OfficialHeader from "@/components/OfficialHeader";
 
 const getHeaderLinks = (t: (key: string) => string) => [
-  { label: t("nav.dashboard"), to: "/", Icon: Home },
-  { label: t("nav.about"), to: "/about", Icon: Info },
-  { label: t("nav.calendar"), to: "/calendar", Icon: Calendar },
-  { label: t("nav.contact"), to: "/contact", Icon: Phone },
+  { label: t("nav.dashboard"), to: "/", Icon: Home, isCalendar: false },
+  { label: t("nav.about"), to: "/about", Icon: Info, isCalendar: false },
+  { label: t("nav.calendar"), to: "/calendar", Icon: Calendar, isCalendar: true },
+  { label: t("nav.contact"), to: "/contact", Icon: Phone, isCalendar: false },
 ];
 
 const BHW_WORKERS = [
@@ -40,6 +40,7 @@ const BHW_WORKERS = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, userRole, username, fullName } = useAuth();
   const { t, language } = useSettings();
+  const [showAlertBadge, setShowAlertBadge] = useState(false);
   const [activeBhw, setActiveBhw] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState("00:00:00");
   const [logsDialogOpen, setLogsDialogOpen] = useState(false);
@@ -73,6 +74,67 @@ export function Layout({ children }: { children: React.ReactNode }) {
       window.removeEventListener("storage", updateBhwState);
     };
   }, [logsDialogOpen]);
+
+  useEffect(() => {
+    const checkUpcomingEvents = () => {
+      try {
+        const storedEvents = localStorage.getItem("subukin_calendar_events");
+        const storedRead = localStorage.getItem("subukin_read_events");
+        const readIds: string[] = storedRead ? JSON.parse(storedRead) : [];
+        
+        if (!storedEvents) {
+          setShowAlertBadge(false);
+          return;
+        }
+        const events = JSON.parse(storedEvents);
+        if (!Array.isArray(events)) {
+          setShowAlertBadge(false);
+          return;
+        }
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let hasUnread = false;
+
+        events.forEach((event: any) => {
+          if (event.status !== "scheduled" && event.status !== "rescheduled") {
+            return;
+          }
+          
+          const eventDate = new Date(event.date);
+          eventDate.setHours(0, 0, 0, 0);
+
+          const diffTime = eventDate.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+          // Alert triggers if the event starts in the next 3 days (0 to 3 days) and has not been marked as read
+          if (diffDays >= 0 && diffDays <= 3) {
+            if (!readIds.includes(event.id)) {
+              hasUnread = true;
+            }
+          }
+        });
+
+        setShowAlertBadge(hasUnread);
+      } catch (e) {
+        console.error("Error checking upcoming events:", e);
+        setShowAlertBadge(false);
+      }
+    };
+
+    checkUpcomingEvents();
+    const interval = setInterval(checkUpcomingEvents, 10000);
+
+    const handleEventsUpdate = () => checkUpcomingEvents();
+    window.addEventListener("calendar-events-updated", handleEventsUpdate);
+    window.addEventListener("storage", handleEventsUpdate);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("calendar-events-updated", handleEventsUpdate);
+      window.removeEventListener("storage", handleEventsUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     if (user && !activeBhw && !noticeDismissed) {
@@ -188,11 +250,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-4 ml-auto">
               <TooltipProvider delayDuration={100}>
                 <nav className="flex items-center gap-2">
-                  {getHeaderLinks(t).map(({ label, to, Icon }) => {
+                  {getHeaderLinks(t).map(({ label, to, Icon, isCalendar }) => {
                     const isAdminMode = userRole === "supervisor";
                     const resolvedTo = isAdminMode ? (to === "/" ? "/admin" : `/admin${to}`) : to;
                     return (
-                      <Tooltip key={label}>
+                      <Tooltip key={to}>
                         <TooltipTrigger asChild>
                           <NavLink
                             to={resolvedTo}
@@ -200,7 +262,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             className="flex items-center justify-center px-3 py-1.5 rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                             activeClassName="bg-sidebar-accent text-sidebar-primary"
                           >
-                            <Icon className="h-5 w-5" aria-label={label} />
+                            <div className="relative">
+                              <Icon className="h-5 w-5" aria-label={label} />
+                              {isCalendar && showAlertBadge && (
+                                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 ring-2 ring-sidebar"></span>
+                                </span>
+                              )}
+                            </div>
                           </NavLink>
                         </TooltipTrigger>
                         <TooltipContent>{label}</TooltipContent>
