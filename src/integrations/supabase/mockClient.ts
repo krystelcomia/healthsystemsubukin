@@ -591,10 +591,13 @@ class MockAuth {
     localStorage.setItem('bhw_password_reset_tokens', JSON.stringify(resetTokens));
     localStorage.setItem('bhw_last_reset_email', resolvedEmail);
 
+    // Simulate sending email to Gmail inbox (Logged securely to console/logs only)
+    console.info(`[Email Service Simulation] Security verification code dispatched to ${resolvedEmail}: ${resetCode}`);
+
     return {
       data: {
         email: resolvedEmail,
-        code: resetCode,
+        message: "Verification code sent to your registered Gmail address.",
         redirectTo: options?.redirectTo || `/reset-password?email=${encodeURIComponent(resolvedEmail)}`
       },
       error: null
@@ -603,21 +606,27 @@ class MockAuth {
 
   async verifyResetCode(email: string, code: string) {
     const cleanEmail = (email || "").trim().toLowerCase();
+    const cleanCode = (code || "").trim();
+
+    if (!cleanCode) {
+      return { data: null, error: { message: "Please enter the 6-digit verification code." } };
+    }
+
     const resetTokensStr = localStorage.getItem('bhw_password_reset_tokens') || '{}';
     let resetTokens: Record<string, any> = {};
     try { resetTokens = JSON.parse(resetTokensStr); } catch {}
     const tokenInfo = resetTokens[cleanEmail];
 
     if (!tokenInfo) {
-      return { data: null, error: { message: "No active password reset request found. Please request a new code." } };
+      return { data: null, error: { message: "No active password reset request found. Please request a new verification code." } };
     }
 
     if (Date.now() > tokenInfo.expiresAt) {
-      return { data: null, error: { message: "Reset code has expired. Please request a new code." } };
+      return { data: null, error: { message: "Verification code has expired. Please request a new code." } };
     }
 
-    if (tokenInfo.code !== (code || "").trim()) {
-      return { data: null, error: { message: "Invalid verification code. Please enter the correct 6-digit code." } };
+    if (tokenInfo.code !== cleanCode) {
+      return { data: null, error: { message: "Incorrect verification code. Please check the code sent to your Gmail inbox and try again." } };
     }
 
     return { data: { verified: true, email: cleanEmail }, error: null };
@@ -635,8 +644,16 @@ class MockAuth {
     const workers = db['bhw_workers'] || [];
     const cleanEmail = (email || "").trim().toLowerCase();
 
-    // Verify code if provided
-    if (code) {
+    // Verify code if required or provided
+    const resetTokensStr = localStorage.getItem('bhw_password_reset_tokens') || '{}';
+    let resetTokens: Record<string, any> = {};
+    try { resetTokens = JSON.parse(resetTokensStr); } catch {}
+    const hasActiveToken = Boolean(resetTokens[cleanEmail]);
+
+    if (code || hasActiveToken) {
+      if (!code) {
+        return { data: null, error: { message: "6-digit verification code is required to reset password." } };
+      }
       const verifyRes = await this.verifyResetCode(cleanEmail, code);
       if (verifyRes.error) return verifyRes;
     }

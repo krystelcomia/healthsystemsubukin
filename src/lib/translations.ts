@@ -213,8 +213,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "auth.saveNewPassword": "Save New Password",
     "auth.sending": "Sending...",
     "auth.backToSignIn": "Back to Sign In",
-    "auth.codeSent": "Verification Code Ready",
-    "auth.codeSentDesc": "Enter the 6-digit recovery code and your new password below to reset.",
+    "auth.codeSent": "Verification Code Sent to Gmail",
+    "auth.codeSentDesc": "A 6-digit verification code has been sent to your Gmail inbox. Please check your email, enter the code below, and set your new password.",
     "auth.resetSuccess": "Password updated successfully! Please sign in with your new password.",
     // Reset Password
     "reset.title": "Reset Password",
@@ -606,8 +606,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "auth.saveNewPassword": "I-save ang Bagong Password",
     "auth.sending": "Ipinapadala...",
     "auth.backToSignIn": "Bumalik sa Sign In",
-    "auth.codeSent": "Handa na ang Verification Code",
-    "auth.codeSentDesc": "Ilagay ang 6-digit recovery code at ang iyong bagong password sa ibaba upang ma-reset.",
+    "auth.codeSent": "Naipadala ang Verification Code sa Gmail",
+    "auth.codeSentDesc": "Ang 6-digit verification code ay naipadala sa iyong Gmail inbox. Mangyaring buksan ang iyong email, ilagay ang code sa ibaba, at magtakda ng bagong password.",
     "auth.resetSuccess": "Matagumpay na na-update ang password! Maaari ka nang mag-sign in gamit ang bagong password.",
     // Reset Password
     "reset.title": "I-reset ang Password",

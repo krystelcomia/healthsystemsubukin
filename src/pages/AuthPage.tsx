@@ -24,7 +24,6 @@ const AuthPage = () => {
   
   // Forgot password state
   const [verificationCode, setVerificationCode] = useState("");
-  const [generatedCode, setGeneratedCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -53,7 +52,7 @@ const AuthPage = () => {
       return;
     }
     setLoading(true);
-    const { data, error } = await (supabase.auth as any).resetPasswordForEmail(cleanEmail, {
+    const { error } = await (supabase.auth as any).resetPasswordForEmail(cleanEmail, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     
@@ -63,14 +62,12 @@ const AuthPage = () => {
       return;
     }
 
-    const code = data?.code || "";
-    setGeneratedCode(code);
-    setVerificationCode(code); // Pre-fill for ease of use
+    setVerificationCode(""); // Strictly empty, retrieved only from user's email inbox
     setForgotStep(2);
     toast.success(
       language === "tl" 
-        ? `Naipadala ang verification code sa ${cleanEmail}!`
-        : `Verification code sent to ${cleanEmail}!`,
+        ? `Ang 6-digit verification code ay ipinadala sa iyong Gmail (${cleanEmail}). Mangyaring tingnan ang iyong inbox.`
+        : `A 6-digit verification code has been sent to your Gmail (${cleanEmail}). Please check your inbox.`,
       { duration: 8000 }
     );
     setLoading(false);
@@ -78,25 +75,57 @@ const AuthPage = () => {
 
   const handleConfirmPasswordReset = async () => {
     const cleanEmail = email.trim();
+    const cleanCode = verificationCode.trim();
+
     if (!cleanEmail) {
       toast.error("Please enter your email address");
       return;
     }
-    if (!verificationCode.trim()) {
-      toast.error(language === "tl" ? "Ilagay ang 6-digit verification code" : "Please enter the 6-digit verification code");
+    if (!cleanCode) {
+      toast.error(
+        language === "tl" 
+          ? "Mangyaring ilagay ang 6-digit verification code na ipinadala sa iyong Gmail" 
+          : "Please enter the 6-digit verification code sent to your Gmail"
+      );
       return;
     }
+    if (cleanCode.length !== 6) {
+      toast.error(
+        language === "tl" 
+          ? "Ang verification code ay dapat 6 na numero" 
+          : "The verification code must be exactly 6 digits"
+      );
+      return;
+    }
+
+    // Step 1: Validate verification code immediately before submitting new password
+    setLoading(true);
+    const verifyRes = await (supabase.auth as any).verifyResetCode(cleanEmail, cleanCode);
+    if (verifyRes?.error) {
+      toast.error(
+        language === "tl"
+          ? "Maling verification code. Mangyaring suriin ang code sa iyong Gmail inbox at subukan muli."
+          : "Incorrect verification code. Please check the code sent to your Gmail inbox and try again.",
+        { duration: 6000 }
+      );
+      setLoading(false);
+      return;
+    }
+
+    // Step 2: Validate password requirements
     if (!newPassword || newPassword.length < 6) {
       toast.error(language === "tl" ? "Ang password ay dapat hindi bababa sa 6 na karakter" : "Password must be at least 6 characters");
+      setLoading(false);
       return;
     }
     if (newPassword !== confirmPassword) {
       toast.error(language === "tl" ? "Hindi nagtutugma ang mga password" : "Passwords do not match");
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    const { error } = await (supabase.auth as any).resetUserPassword(cleanEmail, newPassword, verificationCode);
+    // Step 3: Commit password update to database
+    const { error } = await (supabase.auth as any).resetUserPassword(cleanEmail, newPassword, cleanCode);
 
     if (error) {
       toast.error(error.message, { duration: 6000 });
@@ -106,7 +135,7 @@ const AuthPage = () => {
 
     toast.success(
       language === "tl"
-        ? "Matagumpay na na-update ang password! Maaari ka nang mag-sign in."
+        ? "Matagumpay na na-update ang password! Maaari ka nang mag-sign in gamit ang bagong password."
         : "Password reset successful! You can now log in with your new password.",
       { duration: 7000 }
     );
@@ -204,8 +233,8 @@ const AuthPage = () => {
                     />
                     <p className="text-[11px] text-white/70">
                       {language === "tl" 
-                        ? "Ipasok ang iyong opisyal na BHW o Admin email address upang makatanggap ng security code."
-                        : "Enter your registered BHW or Admin email address to generate a recovery code."}
+                        ? "Ipasok ang iyong nakatalagang Gmail address. Ang 6-digit verification code ay direktang ipapadala sa iyong inbox."
+                        : "Enter your registered Gmail address. A 6-digit verification code will be sent directly to your inbox."}
                     </p>
                   </div>
 
@@ -227,27 +256,24 @@ const AuthPage = () => {
               ) : (
                 /* Step 2: Verification Code + New Password */
                 <form onSubmit={(e) => { e.preventDefault(); handleConfirmPasswordReset(); }} className="space-y-4" autoComplete="off">
-                  {/* Informational Guidance Box */}
+                  {/* Secure Informational Guidance Box */}
                   <div className="bg-emerald-500/20 border border-emerald-500/40 rounded-xl p-3 text-xs text-white space-y-2">
                     <div className="flex items-center gap-2 text-emerald-300 font-semibold">
-                      <ShieldCheck className="h-4 w-4" />
-                      <span>{language === "tl" ? "Account Recovery para sa:" : "Account Recovery for:"}</span>
+                      <Mail className="h-4 w-4" />
+                      <span>{language === "tl" ? "Naipadala ang Code sa Gmail:" : "Verification Code Sent to Gmail:"}</span>
                     </div>
-                    <p className="font-mono font-bold text-white text-xs break-all">{email}</p>
-                    <p className="text-[11px] text-white/80">
+                    <p className="font-mono font-bold text-white text-xs break-all bg-black/20 p-1.5 rounded-md">{email}</p>
+                    <p className="text-[11px] text-white/80 leading-relaxed">
                       {language === "tl" 
-                        ? "Ang 6-digit verification code ay na-generate na para sa iyong account."
-                        : "The 6-digit recovery verification code has been issued for your account."}
+                        ? "Para sa seguridad, ang 6-digit verification code ay ipinadala sa iyong Gmail inbox. Mangyaring buksan ang iyong email, kopyahin ang code, at ilagay ito sa ibaba."
+                        : "For security, the 6-digit verification code has been sent directly to your Gmail inbox. Please check your email, retrieve the code, and enter it below."}
                     </p>
-                    <div className="pt-1 flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-emerald-200">
-                        Code: <strong className="font-mono text-white text-xs tracking-widest">{generatedCode || "123456"}</strong>
-                      </span>
+                    <div className="pt-1 flex items-center justify-end">
                       <Button
                         type="button"
                         size="sm"
                         variant="secondary"
-                        className="h-7 text-[11px] px-2 gap-1 bg-white/20 hover:bg-white/30 text-white border-0"
+                        className="h-7 text-[11px] px-2.5 gap-1.5 bg-white/20 hover:bg-white/30 text-white border-0"
                         onClick={() => window.open("https://mail.google.com", "_blank")}
                       >
                         <ExternalLink className="h-3 w-3" />
@@ -256,19 +282,25 @@ const AuthPage = () => {
                     </div>
                   </div>
 
-                  {/* 6-Digit Code Input */}
+                  {/* 6-Digit Code Input - MUST BE ENTERED MANUALLY FROM GMAIL */}
                   <div className="space-y-1.5">
                     <Label className="text-white text-xs font-semibold">
-                      {language === "tl" ? "6-Digit Verification Code" : "6-Digit Verification Code"}
+                      {language === "tl" ? "6-Digit Verification Code (Galing sa Gmail) *" : "6-Digit Verification Code (From Gmail) *"}
                     </Label>
                     <Input
-                      className="bg-background/70 border-border/60 text-slate-900 font-mono tracking-widest text-center text-base"
+                      className="bg-background/70 border-border/60 text-slate-900 font-mono tracking-widest text-center text-base font-bold placeholder:font-normal placeholder:tracking-normal"
                       type="text"
                       maxLength={6}
                       value={verificationCode}
                       onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, ""))}
-                      placeholder="123456"
+                      placeholder="••••••"
+                      autoFocus
                     />
+                    <p className="text-[10px] text-white/70">
+                      {language === "tl" 
+                        ? "Hindi mababago ang password kapag mali ang inilagay na code."
+                        : "The password cannot be changed if an incorrect code is entered."}
+                    </p>
                   </div>
 
                   {/* New Password */}
@@ -323,7 +355,7 @@ const AuthPage = () => {
                       type="button"
                       variant="outline"
                       className="flex-1 bg-white/10 hover:bg-white/20 text-white border-white/30 text-xs"
-                      onClick={() => setForgotStep(1)}
+                      onClick={() => { setForgotStep(1); setVerificationCode(""); }}
                     >
                       {language === "tl" ? "Palitan ang Email" : "Change Email"}
                     </Button>
@@ -331,7 +363,7 @@ const AuthPage = () => {
                       type="button"
                       variant="ghost"
                       className="flex-1 text-white/90 hover:text-white hover:bg-white/10 text-xs"
-                      onClick={() => { setMode("login"); setForgotStep(1); }}
+                      onClick={() => { setMode("login"); setForgotStep(1); setVerificationCode(""); }}
                     >
                       {t("auth.backToSignIn")}
                     </Button>
@@ -347,4 +379,5 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
+
 
