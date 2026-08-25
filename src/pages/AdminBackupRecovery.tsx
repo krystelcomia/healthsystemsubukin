@@ -53,6 +53,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { KNOWN_DEFAULT_CREDENTIALS } from "@/integrations/supabase/mockClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { logActivity } from "@/lib/activityLogger";
 import { syncFamilyDataToResidents } from "@/lib/residentLinker";
@@ -658,8 +659,7 @@ const AdminBackupRecovery = () => {
           const allWorkers = db["bhw_workers"] || [];
           for (const w of allWorkers) {
             const cleanEmail = (w.gmail || "").toLowerCase().trim();
-            const firstName = (w.name.split(" ")[0] || "worker").toLowerCase();
-            const defaultPass = cleanEmail.includes("wilma") ? "bhwawilma" : cleanEmail.includes("nenita") ? "bhwanenita" : cleanEmail.includes("maribel") ? "bnsmaribel" : `bhw${firstName}`;
+            const defaultPass = KNOWN_DEFAULT_CREDENTIALS[cleanEmail] || w.password || "bhwsubukin2026";
 
             if (cleanEmail && !db["auth_users"].some((u: any) => (u.email || "").toLowerCase().trim() === cleanEmail)) {
               db["auth_users"].push({

@@ -344,22 +344,21 @@ class MockQueryBuilder {
   }
 }
 
-export const KNOWN_DEFAULT_CREDENTIALS: Record<string, string[]> = {
-  "krystelcomia@gmail.com": ["krystel123"],
-  "maryjanelandichoadmin@gmail.com": ["adminsubukinmaryjane2026"],
-  "adminsubukin@gmail.com": ["adminsubukinmaryjane2026", "adminmidwife"],
-  "cristetalanuzabhw@gmail.com": ["bhwsubukincristeta2026", "bhwcristeta"],
-  "evelynilaobhw@gmail.com": ["bhwsubukinevelyn2026", "bhwevelyn"],
-  "ceciliabenosabhw@gmail.com": ["bhwsubukincecilia2026", "bhwcecilia"],
-  "merlitaalonzobhw@gmail.com": ["bhwsubukinmerlita2026", "bhwmerlita"],
-  "suzettelopezbhw@gmail.com": ["bhwsubukinsuzette2026", "bhwsuzette"],
-  "amelitasayatbhw@gmail.com": ["bhwsubukinamelita2026", "bhwamelita"],
-  "wilmatanyagbhw@gmail.com": ["bhwsubukinwilma2026", "bhwawilma", "bhwwilma"],
-  "nenitadimaculanganbhw@gmail.com": ["bhwsubukinnenita2026", "bhwanenita", "bhwnenita"],
-  "mercyabanillabhw@gmail.com": ["bhwsubukinmercy2026", "bhwmercy"],
-  "renchieilaobhw@gmail.com": ["bhwsubukinrenchie2026", "bhwrenchie"],
-  "renalynlaurantebhw@gmail.com": ["bhwsubukinrenalyn2026", "bhwrenalyn"],
-  "maribelabayonbns@gmail.com": ["bnssubukinmaribel2026", "bnsmaribel"]
+export const KNOWN_DEFAULT_CREDENTIALS: Record<string, string> = {
+  "krystelcomia@gmail.com": "krystel123",
+  "maryjanelandichoadmin@gmail.com": "adminsubukinmaryjane2026",
+  "cristetalanuzabhw@gmail.com": "bhwsubukincristeta2026",
+  "evelynilaobhw@gmail.com": "bhwsubukinevelyn2026",
+  "ceciliabenosabhw@gmail.com": "bhwsubukincecilia2026",
+  "merlitaalonzobhw@gmail.com": "bhwsubukinmerlita2026",
+  "suzettelopezbhw@gmail.com": "bhwsubukinsuzette2026",
+  "amelitasayatbhw@gmail.com": "bhwsubukinamelita2026",
+  "wilmatanyagbhw@gmail.com": "bhwsubukinwilma2026",
+  "nenitadimaculanganbhw@gmail.com": "bhwsubukinnenita2026",
+  "mercyabanillabhw@gmail.com": "bhwsubukinmercy2026",
+  "renchieilaobhw@gmail.com": "bhwsubukinrenchie2026",
+  "renalynlaurantebhw@gmail.com": "bhwsubukinrenalyn2026",
+  "maribelabayonbns@gmail.com": "bnssubukinmaribel2026"
 };
 
 // Mock Auth system
@@ -419,17 +418,14 @@ class MockAuth {
       };
     }
 
-    // 3. Verify password with support for stored password, known defaults, and standard prefixes
-    const validPasswords = KNOWN_DEFAULT_CREDENTIALS[cleanEmail] || [];
-    const firstName = workerWithEmail?.name?.split(" ")[0]?.toLowerCase() || "";
-    const computedBhwPass = firstName ? `bhw${firstName}` : "";
-    const computedBnsPass = firstName ? `bns${firstName}` : "";
+    // 3. Strict security check: Only the exact assigned password for the account is accepted
+    const expectedPassword = KNOWN_DEFAULT_CREDENTIALS[cleanEmail] || userWithEmail?.password;
 
-    const isPasswordValid = 
-      (userWithEmail && userWithEmail.password === password) ||
-      validPasswords.includes(password) ||
-      (computedBhwPass && password.toLowerCase() === computedBhwPass) ||
-      (computedBnsPass && password.toLowerCase() === computedBnsPass);
+    const isPasswordValid = Boolean(
+      password &&
+      expectedPassword &&
+      password === expectedPassword
+    );
 
     if (!isPasswordValid) {
       return {
