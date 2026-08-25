@@ -591,8 +591,17 @@ class MockAuth {
     localStorage.setItem('bhw_password_reset_tokens', JSON.stringify(resetTokens));
     localStorage.setItem('bhw_last_reset_email', resolvedEmail);
 
-    // Simulate sending email to Gmail inbox (Logged securely to console/logs only)
-    console.info(`[Email Service Simulation] Security verification code dispatched to ${resolvedEmail}: ${resetCode}`);
+    // Dispatch verification code to user's Gmail inbox via EmailJS
+    try {
+      const { sendVerificationCodeEmail } = await import('@/lib/emailService');
+      await sendVerificationCodeEmail(
+        resolvedEmail,
+        resetCode,
+        workerMatch?.name || userMatch?.user_metadata?.full_name || 'BHW Health Worker'
+      );
+    } catch (e) {
+      console.warn('[EmailJS] Dispatch call note:', e);
+    }
 
     return {
       data: {

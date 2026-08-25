@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, ArrowLeft, KeyRound, Mail, CheckCircle2, ExternalLink, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, KeyRound, Mail, CheckCircle2, ExternalLink, ShieldCheck, LockKeyhole } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
 import loginBg from "@/assets/login-bg.jpg";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +16,7 @@ const AuthPage = () => {
   const { session, userRole, loading: authLoading } = useAuth();
   const { t, language } = useSettings();
   const [mode, setMode] = useState<"login" | "forgot">("login");
-  const [forgotStep, setForgotStep] = useState<1 | 2>(1);
+  const [forgotStep, setForgotStep] = useState<1 | 2 | 3>(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -24,6 +24,7 @@ const AuthPage = () => {
   
   // Forgot password state
   const [verificationCode, setVerificationCode] = useState("");
+  const [verifiedCode, setVerifiedCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -45,6 +46,7 @@ const AuthPage = () => {
     setLoading(false);
   };
 
+  // Step 1: Send verification code to user's Gmail via EmailJS
   const handleSendResetCode = async () => {
     const cleanEmail = email.trim();
     if (!cleanEmail) {
@@ -62,7 +64,8 @@ const AuthPage = () => {
       return;
     }
 
-    setVerificationCode(""); // Strictly empty, retrieved only from user's email inbox
+    setVerificationCode("");
+    setVerifiedCode("");
     setForgotStep(2);
     toast.success(
       language === "tl" 
@@ -73,7 +76,8 @@ const AuthPage = () => {
     setLoading(false);
   };
 
-  const handleConfirmPasswordReset = async () => {
+  // Step 2: Strictly validate verification code before allowing password input
+  const handleVerifyCode = async () => {
     const cleanEmail = email.trim();
     const cleanCode = verificationCode.trim();
 
@@ -84,8 +88,8 @@ const AuthPage = () => {
     if (!cleanCode) {
       toast.error(
         language === "tl" 
-          ? "Mangyaring ilagay ang 6-digit verification code na ipinadala sa iyong Gmail" 
-          : "Please enter the 6-digit verification code sent to your Gmail"
+          ? "Mangyaring ilagay ang 6-digit verification code na natanggap sa iyong Gmail" 
+          : "Please enter the 6-digit verification code received in your Gmail"
       );
       return;
     }
@@ -98,7 +102,6 @@ const AuthPage = () => {
       return;
     }
 
-    // Step 1: Validate verification code immediately before submitting new password
     setLoading(true);
     const verifyRes = await (supabase.auth as any).verifyResetCode(cleanEmail, cleanCode);
     if (verifyRes?.error) {
@@ -112,19 +115,43 @@ const AuthPage = () => {
       return;
     }
 
-    // Step 2: Validate password requirements
+    // Code is 100% verified! Move to Step 3 (Set New Password)
+    setVerifiedCode(cleanCode);
+    setForgotStep(3);
+    toast.success(
+      language === "tl"
+        ? "Matagumpay na na-verify ang code! Maaari mo nang ilagay ang iyong bagong password."
+        : "Code verified successfully! You may now enter your new password.",
+      { duration: 6000 }
+    );
+    setLoading(false);
+  };
+
+  // Step 3: Commit new password to database after code verification
+  const handleConfirmPasswordReset = async () => {
+    const cleanEmail = email.trim();
+    const cleanCode = verifiedCode.trim() || verificationCode.trim();
+
+    if (!cleanEmail) {
+      toast.error("Please enter your email address");
+      return;
+    }
+    if (!cleanCode) {
+      toast.error("Verification code missing. Please verify your code first.");
+      setForgotStep(2);
+      return;
+    }
+
     if (!newPassword || newPassword.length < 6) {
       toast.error(language === "tl" ? "Ang password ay dapat hindi bababa sa 6 na karakter" : "Password must be at least 6 characters");
-      setLoading(false);
       return;
     }
     if (newPassword !== confirmPassword) {
       toast.error(language === "tl" ? "Hindi nagtutugma ang mga password" : "Passwords do not match");
-      setLoading(false);
       return;
     }
 
-    // Step 3: Commit password update to database
+    setLoading(true);
     const { error } = await (supabase.auth as any).resetUserPassword(cleanEmail, newPassword, cleanCode);
 
     if (error) {
@@ -145,6 +172,7 @@ const AuthPage = () => {
     setNewPassword("");
     setConfirmPassword("");
     setVerificationCode("");
+    setVerifiedCode("");
     setForgotStep(1);
     setMode("login");
     setLoading(false);
@@ -217,8 +245,10 @@ const AuthPage = () => {
             </form>
           ) : (
             <div className="space-y-4">
-              {forgotStep === 1 ? (
-                /* Step 1: Input Email */
+              {/* ═══════════════════════════════════════════════════════
+                  FORGOT STEP 1: Enter Registered Email Address
+                  ═══════════════════════════════════════════════════════ */}
+              {forgotStep === 1 && (
                 <form onSubmit={(e) => { e.preventDefault(); handleSendResetCode(); }} className="space-y-4" autoComplete="off">
                   <div className="space-y-2">
                     <Label className="text-white">{t("auth.email")}</Label>
@@ -231,10 +261,10 @@ const AuthPage = () => {
                       autoComplete="off"
                       autoFocus
                     />
-                    <p className="text-[11px] text-white/70">
+                    <p className="text-[11px] text-white/70 leading-relaxed">
                       {language === "tl" 
-                        ? "Ipasok ang iyong nakatalagang Gmail address. Ang 6-digit verification code ay direktang ipapadala sa iyong inbox."
-                        : "Enter your registered Gmail address. A 6-digit verification code will be sent directly to your inbox."}
+                        ? "Ipasok ang iyong nakatalagang Gmail address. Ang 6-digit verification code ay direktang ipapadala sa iyong inbox gamit ang EmailJS."
+                        : "Enter your registered Gmail address. A 6-digit verification code will be sent directly to your inbox via EmailJS."}
                     </p>
                   </div>
 
@@ -253,20 +283,25 @@ const AuthPage = () => {
                     {t("auth.backToSignIn")}
                   </Button>
                 </form>
-              ) : (
-                /* Step 2: Verification Code + New Password */
-                <form onSubmit={(e) => { e.preventDefault(); handleConfirmPasswordReset(); }} className="space-y-4" autoComplete="off">
+              )}
+
+              {/* ═══════════════════════════════════════════════════════
+                  FORGOT STEP 2: Enter & Validate Verification Code
+                  (Password fields are completely hidden until validated!)
+                  ═══════════════════════════════════════════════════════ */}
+              {forgotStep === 2 && (
+                <form onSubmit={(e) => { e.preventDefault(); handleVerifyCode(); }} className="space-y-4" autoComplete="off">
                   {/* Secure Informational Guidance Box */}
-                  <div className="bg-emerald-500/20 border border-emerald-500/40 rounded-xl p-3 text-xs text-white space-y-2">
+                  <div className="bg-emerald-500/20 border border-emerald-500/40 rounded-xl p-3.5 text-xs text-white space-y-2">
                     <div className="flex items-center gap-2 text-emerald-300 font-semibold">
                       <Mail className="h-4 w-4" />
                       <span>{language === "tl" ? "Naipadala ang Code sa Gmail:" : "Verification Code Sent to Gmail:"}</span>
                     </div>
-                    <p className="font-mono font-bold text-white text-xs break-all bg-black/20 p-1.5 rounded-md">{email}</p>
+                    <p className="font-mono font-bold text-white text-xs break-all bg-black/20 p-2 rounded-md border border-white/10">{email}</p>
                     <p className="text-[11px] text-white/80 leading-relaxed">
                       {language === "tl" 
-                        ? "Para sa seguridad, ang 6-digit verification code ay ipinadala sa iyong Gmail inbox. Mangyaring buksan ang iyong email, kopyahin ang code, at ilagay ito sa ibaba."
-                        : "For security, the 6-digit verification code has been sent directly to your Gmail inbox. Please check your email, retrieve the code, and enter it below."}
+                        ? "Para sa iyong seguridad, ang 6-digit verification code ay ipinadala sa iyong Gmail inbox. Mangyaring buksan ang email, kunin ang code, at ilagay sa ibaba upang ma-verify ang iyong account."
+                        : "For security, the 6-digit verification code has been sent directly to your Gmail inbox. Please open your email, retrieve the code, and enter it below to verify your account."}
                     </p>
                     <div className="pt-1 flex items-center justify-end">
                       <Button
@@ -276,7 +311,7 @@ const AuthPage = () => {
                         className="h-7 text-[11px] px-2.5 gap-1.5 bg-white/20 hover:bg-white/30 text-white border-0"
                         onClick={() => window.open("https://mail.google.com", "_blank")}
                       >
-                        <ExternalLink className="h-3 w-3" />
+                        <ExternalLink className="h-3.5 w-3.5" />
                         {language === "tl" ? "Buksan ang Gmail" : "Open Gmail"}
                       </Button>
                     </div>
@@ -288,7 +323,7 @@ const AuthPage = () => {
                       {language === "tl" ? "6-Digit Verification Code (Galing sa Gmail) *" : "6-Digit Verification Code (From Gmail) *"}
                     </Label>
                     <Input
-                      className="bg-background/70 border-border/60 text-slate-900 font-mono tracking-widest text-center text-base font-bold placeholder:font-normal placeholder:tracking-normal"
+                      className="bg-background/70 border-border/60 text-slate-900 font-mono tracking-widest text-center text-lg font-extrabold placeholder:font-normal placeholder:tracking-normal h-11"
                       type="text"
                       maxLength={6}
                       value={verificationCode}
@@ -298,8 +333,54 @@ const AuthPage = () => {
                     />
                     <p className="text-[10px] text-white/70">
                       {language === "tl" 
-                        ? "Hindi mababago ang password kapag mali ang inilagay na code."
-                        : "The password cannot be changed if an incorrect code is entered."}
+                        ? "Kailangang ma-verify ang tamang code bago payagang magpalit ng password."
+                        : "The correct code must be verified before new password fields are unlocked."}
+                    </p>
+                  </div>
+
+                  <Button type="submit" className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold" disabled={loading}>
+                    <ShieldCheck className="h-4 w-4" />
+                    {loading ? (language === "tl" ? "Sinusuri ang Code..." : "Verifying Code...") : (language === "tl" ? "I-verify ang Code" : "Verify Code")}
+                  </Button>
+
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 bg-white/10 hover:bg-white/20 text-white border-white/30 text-xs"
+                      onClick={() => { setForgotStep(1); setVerificationCode(""); }}
+                    >
+                      {language === "tl" ? "Palitan ang Email" : "Change Email"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="flex-1 text-white/90 hover:text-white hover:bg-white/10 text-xs"
+                      onClick={() => { setMode("login"); setForgotStep(1); setVerificationCode(""); }}
+                    >
+                      {t("auth.backToSignIn")}
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              {/* ═══════════════════════════════════════════════════════
+                  FORGOT STEP 3: Set New Password
+                  (Only accessible AFTER code is verified!)
+                  ═══════════════════════════════════════════════════════ */}
+              {forgotStep === 3 && (
+                <form onSubmit={(e) => { e.preventDefault(); handleConfirmPasswordReset(); }} className="space-y-4" autoComplete="off">
+                  {/* Verified Confirmation Badge */}
+                  <div className="bg-emerald-500/20 border border-emerald-500/40 rounded-xl p-3 text-xs text-white space-y-1">
+                    <div className="flex items-center gap-2 text-emerald-300 font-semibold">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                      <span>{language === "tl" ? "Code Na-verify Nang Matagumpay!" : "Code Verified Successfully!"}</span>
+                    </div>
+                    <p className="font-mono text-white/90 text-xs break-all">{email}</p>
+                    <p className="text-[11px] text-white/80">
+                      {language === "tl" 
+                        ? "Maaari mo nang itakda ang iyong bagong password sa ibaba."
+                        : "You may now set and confirm your new account password below."}
                     </p>
                   </div>
 
@@ -312,7 +393,8 @@ const AuthPage = () => {
                         type={showNewPassword ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="••••••••"
+                        placeholder="•••••••• (Min 6 characters)"
+                        autoFocus
                       />
                       <button
                         type="button"
@@ -345,25 +427,17 @@ const AuthPage = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white" disabled={loading}>
-                    <CheckCircle2 className="h-4 w-4" />
+                  <Button type="submit" className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold" disabled={loading}>
+                    <LockKeyhole className="h-4 w-4" />
                     {loading ? t("reset.updating") : (language === "tl" ? "I-save ang Bagong Password" : "Save New Password")}
                   </Button>
 
                   <div className="flex gap-2">
                     <Button
                       type="button"
-                      variant="outline"
-                      className="flex-1 bg-white/10 hover:bg-white/20 text-white border-white/30 text-xs"
-                      onClick={() => { setForgotStep(1); setVerificationCode(""); }}
-                    >
-                      {language === "tl" ? "Palitan ang Email" : "Change Email"}
-                    </Button>
-                    <Button
-                      type="button"
                       variant="ghost"
-                      className="flex-1 text-white/90 hover:text-white hover:bg-white/10 text-xs"
-                      onClick={() => { setMode("login"); setForgotStep(1); setVerificationCode(""); }}
+                      className="w-full text-white/90 hover:text-white hover:bg-white/10 text-xs"
+                      onClick={() => { setMode("login"); setForgotStep(1); setVerificationCode(""); setVerifiedCode(""); }}
                     >
                       {t("auth.backToSignIn")}
                     </Button>
@@ -379,5 +453,6 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
+
 
 
