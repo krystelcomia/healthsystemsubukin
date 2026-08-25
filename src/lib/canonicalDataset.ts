@@ -1,19 +1,19 @@
 export const CANONICAL_INITIAL_DATABASE: Record<string, any[]> = {
   auth_users: [
     { id: "user-1", email: "krystelcomia@gmail.com", password: "krystel123", user_metadata: { full_name: "Krystel Comia" } },
-    { id: "user-admin", email: "adminsubukin@gmail.com", password: "adminmidwife", user_metadata: { full_name: "Admin Midwife" } },
-    { id: "user-cristeta", email: "cristetalanuzaBHW@gmail.com", password: "bhwcristeta", user_metadata: { full_name: "Cristeta R. Lanuza" } },
-    { id: "user-evelyn", email: "evelynilaoBHW@gmail.com", password: "bhwevelyn", user_metadata: { full_name: "Evelyn T. Ilao" } },
-    { id: "user-cecilia", email: "ceciliabenosaBHW@gmail.com", password: "bhwcecilia", user_metadata: { full_name: "Cecilia G. Benosa" } },
-    { id: "user-merlita", email: "merlitaalonzoBHW@gmail.com", password: "bhwmerlita", user_metadata: { full_name: "Merlita R. Alonzo" } },
-    { id: "user-suzette", email: "suzettelopezBHW@gmail.com", password: "bhwsuzette", user_metadata: { full_name: "Suzette B. Lopez" } },
-    { id: "user-amelita", email: "amelitasayatBHW@gmail.com", password: "bhwamelita", user_metadata: { full_name: "Amelita R. Sayat" } },
-    { id: "user-wilma", email: "wilmatanyagBHW@gmail.com", password: "bhwawilma", user_metadata: { full_name: "Wilma D. Tanyag" } },
-    { id: "user-nenita", email: "nenitadimaculanganBHW@gmail.com", password: "bhwanenita", user_metadata: { full_name: "Nenita M. Dimaculangan" } },
-    { id: "user-mercy", email: "mercyabanillaBHW@gmail.com", password: "bhwmercy", user_metadata: { full_name: "Mercy O. Abanilla" } },
-    { id: "user-renchie", email: "renchieilaoBHW@gmail.com", password: "bhwrenchie", user_metadata: { full_name: "Renchie V. Ilao" } },
-    { id: "user-renalyn", email: "renalynlauranteBHW@gmail.com", password: "bhwrenalyn", user_metadata: { full_name: "Renalyn D. Laurante" } },
-    { id: "user-maribel", email: "maribelabayonBNS@gmail.com", password: "bnsmaribel", user_metadata: { full_name: "Maribel M. Abayon" } }
+    { id: "user-admin", email: "maryjanelandichoADMIN@gmail.com", password: "adminsubukinmaryjane2026", user_metadata: { full_name: "Mary Jane Landicho" } },
+    { id: "user-cristeta", email: "cristetalanuzaBHW@gmail.com", password: "bhwsubukincristeta2026", user_metadata: { full_name: "Cristeta R. Lanuza" } },
+    { id: "user-evelyn", email: "evelynilaoBHW@gmail.com", password: "bhwsubukinevelyn2026", user_metadata: { full_name: "Evelyn T. Ilao" } },
+    { id: "user-cecilia", email: "ceciliabenosaBHW@gmail.com", password: "bhwsubukincecilia2026", user_metadata: { full_name: "Cecilia G. Benosa" } },
+    { id: "user-merlita", email: "merlitaalonzoBHW@gmail.com", password: "bhwsubukinmerlita2026", user_metadata: { full_name: "Merlita R. Alonzo" } },
+    { id: "user-suzette", email: "suzettelopezBHW@gmail.com", password: "bhwsubukinsuzette2026", user_metadata: { full_name: "Suzette B. Lopez" } },
+    { id: "user-amelita", email: "amelitasayatBHW@gmail.com", password: "bhwsubukinamelita2026", user_metadata: { full_name: "Amelita R. Sayat" } },
+    { id: "user-wilma", email: "wilmatanyagBHW@gmail.com", password: "bhwsubukinwilma2026", user_metadata: { full_name: "Wilma D. Tanyag" } },
+    { id: "user-nenita", email: "nenitadimaculanganBHW@gmail.com", password: "bhwsubukinnenita2026", user_metadata: { full_name: "Nenita M. Dimaculangan" } },
+    { id: "user-mercy", email: "mercyabanillaBHW@gmail.com", password: "bhwsubukinmercy2026", user_metadata: { full_name: "Mercy O. Abanilla" } },
+    { id: "user-renchie", email: "renchieilaoBHW@gmail.com", password: "bhwsubukinrenchie2026", user_metadata: { full_name: "Renchie V. Ilao" } },
+    { id: "user-renalyn", email: "renalynlauranteBHW@gmail.com", password: "bhwsubukinrenalyn2026", user_metadata: { full_name: "Renalyn D. Laurante" } },
+    { id: "user-maribel", email: "maribelabayonBNS@gmail.com", password: "bnssubukinmaribel2026", user_metadata: { full_name: "Maribel M. Abayon" } }
   ],
   user_roles: [
     { id: "role-1", user_id: "user-1", role: "bhw" },
@@ -33,7 +33,7 @@ export const CANONICAL_INITIAL_DATABASE: Record<string, any[]> = {
   ],
   profiles: [
     { id: "profile-1", user_id: "user-1", full_name: "Krystel Comia", username: "krystel", assigned_sitio: "Maligaya" },
-    { id: "profile-admin", user_id: "user-admin", full_name: "Admin Midwife", username: "admin", assigned_sitio: "Subukin Main" },
+    { id: "profile-admin", user_id: "user-admin", full_name: "Mary Jane Landicho", username: "Mary Jane", assigned_sitio: "Subukin Main" },
     { id: "profile-cristeta", user_id: "user-cristeta", full_name: "Cristeta R. Lanuza", username: "Cristeta", assigned_sitio: "Masigla" },
     { id: "profile-evelyn", user_id: "user-evelyn", full_name: "Evelyn T. Ilao", username: "Evelyn", assigned_sitio: "Manggahan 1" },
     { id: "profile-cecilia", user_id: "user-cecilia", full_name: "Cecilia G. Benosa", username: "Cecilia", assigned_sitio: "Maligaya" },
@@ -49,6 +49,7 @@ export const CANONICAL_INITIAL_DATABASE: Record<string, any[]> = {
   ],
   bhw_workers: [
     { id: "worker-1", name: "Krystel Comia", age: 28, address: "Subukin", gmail: "krystelcomia@gmail.com", number: "09123456789", is_online: false, user_id: "user-1", assigned_sitio: "Maligaya", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
+    { id: "worker-admin", name: "Mary Jane Landicho", age: 40, address: "Subukin Main", gmail: "maryjanelandichoADMIN@gmail.com", number: "0912-345-6789", is_online: false, user_id: "user-admin", assigned_sitio: "Subukin Main", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
     { id: "worker-cristeta", name: "Cristeta R. Lanuza", age: 45, address: "Masigla", gmail: "cristetalanuzaBHW@gmail.com", number: "0919-6980-712", is_online: false, user_id: "user-cristeta", assigned_sitio: "Masigla", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
     { id: "worker-evelyn", name: "Evelyn T. Ilao", age: 42, address: "Manggahan 1", gmail: "evelynilaoBHW@gmail.com", number: "0935-5638-247", is_online: false, user_id: "user-evelyn", assigned_sitio: "Manggahan 1", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
     { id: "worker-cecilia", name: "Cecilia G. Benosa", age: 39, address: "Maligaya", gmail: "ceciliabenosaBHW@gmail.com", number: "0921-8509-320", is_online: false, user_id: "user-cecilia", assigned_sitio: "Maligaya", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },

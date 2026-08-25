@@ -225,6 +225,8 @@ export interface SIARow {
 }
 
 const BHW_FULL_NAMES: Record<string, string> = {
+  "mary jane": "Mary Jane Landicho",
+  "maryjane": "Mary Jane Landicho",
   "cristeta": "Cristeta R. Lanuza",
   "evelyn": "Evelyn T. Ilao",
   "cecilia": "Cecilia G. Benosa",
@@ -235,7 +237,7 @@ const BHW_FULL_NAMES: Record<string, string> = {
   "nenita": "Nenita M. Dimaculangan",
   "mercy": "Mercy O. Abanilla",
   "renchie": "Renchie V. Ilao",
-  "renalyn": "Renalyn D. Laurente",
+  "renalyn": "Renalyn D. Laurante",
   "maribel": "Maribel M. Abayon",
   "krystel": "Krystel Comia",
 };

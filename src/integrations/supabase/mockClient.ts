@@ -346,19 +346,20 @@ class MockQueryBuilder {
 
 export const KNOWN_DEFAULT_CREDENTIALS: Record<string, string[]> = {
   "krystelcomia@gmail.com": ["krystel123"],
-  "adminsubukin@gmail.com": ["adminmidwife"],
-  "cristetalanuzabhw@gmail.com": ["bhwcristeta"],
-  "evelynilaobhw@gmail.com": ["bhwevelyn"],
-  "ceciliabenosabhw@gmail.com": ["bhwcecilia"],
-  "merlitaalonzobhw@gmail.com": ["bhwmerlita"],
-  "suzettelopezbhw@gmail.com": ["bhwsuzette"],
-  "amelitasayatbhw@gmail.com": ["bhwamelita"],
-  "wilmatanyagbhw@gmail.com": ["bhwawilma", "bhwwilma"],
-  "nenitadimaculanganbhw@gmail.com": ["bhwanenita", "bhwnenita"],
-  "mercyabanillabhw@gmail.com": ["bhwmercy"],
-  "renchieilaobhw@gmail.com": ["bhwrenchie"],
-  "renalynlaurantebhw@gmail.com": ["bhwrenalyn"],
-  "maribelabayonbns@gmail.com": ["bnsmaribel"]
+  "maryjanelandichoadmin@gmail.com": ["adminsubukinmaryjane2026"],
+  "adminsubukin@gmail.com": ["adminsubukinmaryjane2026", "adminmidwife"],
+  "cristetalanuzabhw@gmail.com": ["bhwsubukincristeta2026", "bhwcristeta"],
+  "evelynilaobhw@gmail.com": ["bhwsubukinevelyn2026", "bhwevelyn"],
+  "ceciliabenosabhw@gmail.com": ["bhwsubukincecilia2026", "bhwcecilia"],
+  "merlitaalonzobhw@gmail.com": ["bhwsubukinmerlita2026", "bhwmerlita"],
+  "suzettelopezbhw@gmail.com": ["bhwsubukinsuzette2026", "bhwsuzette"],
+  "amelitasayatbhw@gmail.com": ["bhwsubukinamelita2026", "bhwamelita"],
+  "wilmatanyagbhw@gmail.com": ["bhwsubukinwilma2026", "bhwawilma", "bhwwilma"],
+  "nenitadimaculanganbhw@gmail.com": ["bhwsubukinnenita2026", "bhwanenita", "bhwnenita"],
+  "mercyabanillabhw@gmail.com": ["bhwsubukinmercy2026", "bhwmercy"],
+  "renchieilaobhw@gmail.com": ["bhwsubukinrenchie2026", "bhwrenchie"],
+  "renalynlaurantebhw@gmail.com": ["bhwsubukinrenalyn2026", "bhwrenalyn"],
+  "maribelabayonbns@gmail.com": ["bnssubukinmaribel2026", "bnsmaribel"]
 };
 
 // Mock Auth system
@@ -406,7 +407,7 @@ class MockAuth {
     }
 
     // 2. If user exists in auth_users but worker account was deleted from active bhw_workers
-    const isSupervisor = cleanEmail.includes("adminsubukin") || 
+    const isSupervisor = cleanEmail.includes("admin") || cleanEmail.includes("maryjanelandicho") ||
       roles.some((r: any) => r.user_id === userWithEmail?.id && r.role === "supervisor");
 
     if (!isSupervisor && !workerWithEmail) {
@@ -761,6 +762,59 @@ export function seedMockDatabase() {
   if (!db['family_planning']) db['family_planning'] = [];
   if (!db['user_sessions']) db['user_sessions'] = [];
   if (!db['user_activity_logs']) db['user_activity_logs'] = [];
+
+  // Upsert canonical default accounts, passwords, and workers into active db
+  const canonicalUsers = CANONICAL_INITIAL_DATABASE.auth_users || [];
+  const canonicalRoles = CANONICAL_INITIAL_DATABASE.user_roles || [];
+  const canonicalProfiles = CANONICAL_INITIAL_DATABASE.profiles || [];
+  const canonicalWorkers = CANONICAL_INITIAL_DATABASE.bhw_workers || [];
+
+  for (const cu of canonicalUsers) {
+    const existingIndex = db['auth_users'].findIndex((u: any) => 
+      (u.email || "").toLowerCase().trim() === cu.email.toLowerCase().trim() || u.id === cu.id
+    );
+    if (existingIndex >= 0) {
+      db['auth_users'][existingIndex] = { ...db['auth_users'][existingIndex], ...cu };
+    } else {
+      db['auth_users'].push(cu);
+    }
+  }
+
+  for (const cr of canonicalRoles) {
+    const existingIndex = db['user_roles'].findIndex((r: any) => r.user_id === cr.user_id || r.id === cr.id);
+    if (existingIndex >= 0) {
+      db['user_roles'][existingIndex] = { ...db['user_roles'][existingIndex], ...cr };
+    } else {
+      db['user_roles'].push(cr);
+    }
+  }
+
+  for (const cp of canonicalProfiles) {
+    const existingIndex = db['profiles'].findIndex((p: any) => p.user_id === cp.user_id || p.id === cp.id);
+    if (existingIndex >= 0) {
+      db['profiles'][existingIndex] = { ...db['profiles'][existingIndex], ...cp };
+    } else {
+      db['profiles'].push(cp);
+    }
+  }
+
+  for (const cw of canonicalWorkers) {
+    const existingIndex = db['bhw_workers'].findIndex((w: any) => 
+      (w.gmail || "").toLowerCase().trim() === cw.gmail.toLowerCase().trim() || w.id === cw.id
+    );
+    if (existingIndex >= 0) {
+      db['bhw_workers'][existingIndex] = { 
+        ...db['bhw_workers'][existingIndex], 
+        name: cw.name, 
+        gmail: cw.gmail, 
+        assigned_sitio: cw.assigned_sitio, 
+        number: cw.number, 
+        user_id: cw.user_id 
+      };
+    } else {
+      db['bhw_workers'].push(cw);
+    }
+  }
 
   // Sync online status for any worker currently signed in or present
   if (db['bhw_workers']) {

@@ -23,6 +23,7 @@ const getHeaderLinks = (t: (key: string) => string) => [
 ];
 
 const BHW_WORKERS = [
+  { name: "Mary Jane Landicho", phone: "0912-345-6789", role: "supervisory", sitio: "Subukin Main" },
   { name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisory", sitio: "Masigla" },
   { name: "Evelyn T. Ilao", phone: "0935-5638-247", role: "worker", sitio: "Manggahan 1" },
   { name: "Cecilia G. Benosa", phone: "0921-8509-320", role: "worker", sitio: "Maligaya" },
@@ -33,7 +34,7 @@ const BHW_WORKERS = [
   { name: "Nenita M. Dimaculangan", phone: "0985-1225-857", role: "worker", sitio: "Manggahan 2" },
   { name: "Mercy O. Abanilla", phone: "0949-7768-394", role: "worker", sitio: "Cama" },
   { name: "Renchie V. Ilao", phone: "0965-6627-031", role: "worker", sitio: "Makalintal 2" },
-  { name: "Renalyn D. Laurente", phone: "0985-1086-472", role: "worker", sitio: "Matahimik / Burol" },
+  { name: "Renalyn D. Laurante", phone: "0985-1086-472", role: "worker", sitio: "Matahimik / Burol" },
   { name: "Maribel M. Abayon", phone: "0922-6722-134", role: "bns", sitio: "Masigla" }
 ];
 
@@ -829,7 +830,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
             <div className="text-center">
               <div className="border-b border-black w-3/5 mx-auto pb-1 font-bold text-[12px] text-black uppercase">
-                CRISTETA R. LANUZA
+                MARY JANE LANDICHO
               </div>
               <p className="mt-1 text-[10px] text-black font-bold uppercase tracking-wider">Midwife Administrator / Certified Correct</p>
             </div>

@@ -60,8 +60,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Fallback role detection if user_roles entry is missing
       const { data: userData } = await supabase.auth.getUser();
-      const email = userData?.user?.email || "";
-      const fallbackRole = (email === "adminsubukin@gmail.com" || email.includes("admin")) ? "supervisor" : "bhw";
+      const email = (userData?.user?.email || "").toLowerCase();
+      const fallbackRole = (email.includes("maryjanelandicho") || email.includes("admin") || email === "adminsubukin@gmail.com") ? "supervisor" : "bhw";
       setUserRole(fallbackRole);
       return fallbackRole;
     } catch (e) {

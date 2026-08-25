@@ -15,7 +15,9 @@ export const SUBUKIN_SITIOS: string[] = [
 ];
 
 export const BHW_SITIO_MAPPING: Record<string, string> = {
+  "mary jane landicho": "Subukin Main",
   "merlita r. alonzo": "Matahimik / Punta",
+  "renalyn d. laurante": "Matahimik / Burol",
   "renalyn d. laurente": "Matahimik / Burol",
   "cecilia g. benosa": "Maligaya",
   "cristeta r. lanuza": "Masigla",
@@ -34,8 +36,9 @@ export const getAssignedSitio = (name: string): string => {
   if (!name) return "";
   const lower = name.toLowerCase().trim();
 
+  if (lower.includes("landicho")) return "Subukin Main";
   if (lower.includes("alonzo")) return "Matahimik / Punta";
-  if (lower.includes("laurente")) return "Matahimik / Burol";
+  if (lower.includes("laurante") || lower.includes("laurente")) return "Matahimik / Burol";
   if (lower.includes("benosa")) return "Maligaya";
   if (lower.includes("lanuza")) return "Masigla";
   if (lower.includes("ilao") || lower.includes("ilad")) {

@@ -34,6 +34,7 @@ interface HospitalContact {
 }
 
 const BHW_CONTACTS: Contact[] = [
+  { id: 0, name: "Mary Jane Landicho", phone: "0912-345-6789", role: "supervisory", sitio: "Subukin Main" },
   { id: 1, name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisory", sitio: "Masigla" },
   { id: 2, name: "Evelyn T. Ilao", phone: "0935-5638-247", role: "worker", sitio: "Manggahan 1" },
   { id: 3, name: "Cecilia G. Benosa", phone: "0921-8509-320", role: "worker", sitio: "Maligaya" },
@@ -44,7 +45,7 @@ const BHW_CONTACTS: Contact[] = [
   { id: 8, name: "Nenita M. Dimaculangan", phone: "0985-1225-857", role: "worker", sitio: "Manggahan 2" },
   { id: 9, name: "Mercy O. Abanilla", phone: "0949-7768-394", role: "worker", sitio: "Cama" },
   { id: 10, name: "Renchie V. Ilao", phone: "0965-6627-031", role: "worker", sitio: "Makalintal 2" },
-  { id: 11, name: "Renalyn D. Laurente", phone: "0985-1086-472", role: "worker", sitio: "Matahimik / Burol" },
+  { id: 11, name: "Renalyn D. Laurante", phone: "0985-1086-472", role: "worker", sitio: "Matahimik / Burol" },
   { id: 12, name: "Maribel M. Abayon", phone: "0922-6722-134", role: "bns", sitio: "Masigla" }
 ];
 
