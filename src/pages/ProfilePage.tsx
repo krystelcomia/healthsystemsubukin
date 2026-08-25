@@ -272,8 +272,10 @@ const ProfilePage = () => {
             <div>
               <p className="text-xs text-muted-foreground">{t("profile.role")}</p>
               <p className="font-semibold text-foreground">
-                {userRole === "supervisor" || userRole === "supervisory" 
-                  ? t("profile.midwife") 
+                {userRole === "supervisor"
+                  ? t("profile.midwife")
+                  : userRole === "supervisory"
+                  ? (t("profile.bhwSupervisory") || "BHW Supervisory")
                   : userRole === "bns" 
                   ? t("profile.bns") 
                   : t("profile.bhwWorker")}

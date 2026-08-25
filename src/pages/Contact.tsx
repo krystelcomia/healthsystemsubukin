@@ -14,7 +14,7 @@ interface Contact {
   id: number;
   name: string;
   phone: string;
-  role: "supervisory" | "bns" | "worker";
+  role: "supervisor" | "supervisory" | "bns" | "worker";
   sitio?: string;
 }
 
@@ -22,9 +22,9 @@ interface EmergencyContact {
   id: number;
   service: string;
   phone: string;
-  hasDirectCall: boolean;
+  hasDirectCall?: boolean;
   notes?: string;
-  icon: "AlertTriangle" | "Shield" | "HeartPulse" | "Building" | "Flame" | "Activity";
+  icon?: string;
 }
 
 interface HospitalContact {
@@ -34,7 +34,7 @@ interface HospitalContact {
 }
 
 const BHW_CONTACTS: Contact[] = [
-  { id: 0, name: "Mary Jane Landicho", phone: "0912-345-6789", role: "supervisory", sitio: "Subukin Main" },
+  { id: 0, name: "Mary Jane Landicho", phone: "0912-345-6789", role: "supervisor", sitio: "Subukin Main" },
   { id: 1, name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisory", sitio: "Masigla" },
   { id: 2, name: "Evelyn T. Ilao", phone: "0935-5638-247", role: "worker", sitio: "Manggahan 1" },
   { id: 3, name: "Cecilia G. Benosa", phone: "0921-8509-320", role: "worker", sitio: "Maligaya" },
@@ -82,11 +82,9 @@ const ContactPage = () => {
           const mapped: Contact[] = dbWorkers.map((w: any, idx: number) => {
             const userRoleObj = dbRoles?.find((r: any) => r.user_id === w.user_id);
             let role: Contact["role"] = "worker";
-            if (
-              userRoleObj?.role === "supervisory" ||
-              userRoleObj?.role === "supervisor" ||
-              w.name?.toLowerCase().includes("lanuza")
-            ) {
+            if (userRoleObj?.role === "supervisor" || w.name?.toLowerCase().includes("landicho")) {
+              role = "supervisor";
+            } else if (userRoleObj?.role === "supervisory" || w.name?.toLowerCase().includes("lanuza")) {
               role = "supervisory";
             } else if (userRoleObj?.role === "bns" || w.name?.toLowerCase().includes("abayon")) {
               role = "bns";
@@ -124,6 +122,12 @@ const ContactPage = () => {
 
   const getRoleBadge = (role: Contact["role"]) => {
     switch (role) {
+      case "supervisor":
+        return (
+          <Badge className="bg-purple-600 dark:bg-purple-700 hover:bg-purple-600 text-white">
+            {t("contact.role.supervisor")}
+          </Badge>
+        );
       case "supervisory":
         return (
           <Badge className="bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-600 text-white">

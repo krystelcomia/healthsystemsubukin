@@ -23,7 +23,7 @@ const getHeaderLinks = (t: (key: string) => string) => [
 ];
 
 const BHW_WORKERS = [
-  { name: "Mary Jane Landicho", phone: "0912-345-6789", role: "supervisory", sitio: "Subukin Main" },
+  { name: "Mary Jane Landicho", phone: "0912-345-6789", role: "supervisor", sitio: "Subukin Main" },
   { name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisory", sitio: "Masigla" },
   { name: "Evelyn T. Ilao", phone: "0935-5638-247", role: "worker", sitio: "Manggahan 1" },
   { name: "Cecilia G. Benosa", phone: "0921-8509-320", role: "worker", sitio: "Maligaya" },
@@ -148,7 +148,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     if (workerDisplayName) {
       setSelectedWorker({
         name: workerDisplayName,
-        role: (userRole === "supervisor" || userRole === "supervisory") ? "supervisory" : userRole === "bns" ? "bns" : "worker",
+        role: userRole === "supervisor" ? "supervisor" : userRole === "supervisory" ? "supervisory" : userRole === "bns" ? "bns" : "worker",
         phone: user?.email ?? "—"
       });
     }
@@ -298,8 +298,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <span className="text-xs font-semibold max-w-[120px] truncate">
                       {activeBhw 
                         ? activeBhw 
-                        : (userRole === "supervisor" || userRole === "supervisory")
-                        ? (language === "tl" ? "Mag-Clock In" : "Midwife Sign In")
+                        : userRole === "supervisor"
+                        ? (language === "tl" ? "Mag-Clock In (Midwife)" : "Midwife Sign In")
+                        : userRole === "supervisory"
+                        ? (language === "tl" ? "Mag-Clock In (Supervisory)" : "BHW Supervisory Sign In")
                         : (language === "tl" ? "Mag-Clock In" : "BHW Sign In")}
                     </span>
                     {activeBhw && (
@@ -313,8 +315,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       <div className="space-y-1">
                         <h4 className="font-heading font-semibold text-sm text-foreground flex items-center gap-1.5">
                           <Fingerprint className="h-4 w-4 text-primary" />
-                          {userRole === "supervisory" || userRole === "supervisor"
+                          {userRole === "supervisor"
                             ? (language === "tl" ? "Aktibong Shift ng Midwife" : "Midwife Active Shift") 
+                            : userRole === "supervisory"
+                            ? (language === "tl" ? "Aktibong Shift ng BHW Supervisory" : "BHW Supervisory Active Shift")
                             : userRole === "bns" 
                             ? (language === "tl" ? "Aktibong Shift ng BNS Scholar" : "BNS Scholar Active Shift") 
                             : (language === "tl" ? "Aktibong Shift ng BHW" : "BHW Active Shift")}
@@ -479,7 +483,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             {worker.name}
                           </p>
                           <p className="text-[10px] text-muted-foreground capitalize truncate">
-                            {worker.role === "supervisory" ? (language === "tl" ? "Midwife" : "Midwife") : worker.role === "bns" ? "BNS Scholar" : "BHW Worker"}
+                            {worker.role === "supervisor"
+                              ? (language === "tl" ? "Midwife" : "Midwife")
+                              : worker.role === "supervisory"
+                              ? (language === "tl" ? "BHW Supervisory" : "BHW Supervisory")
+                              : worker.role === "bns"
+                              ? "BNS Scholar"
+                              : "BHW Worker"}
                           </p>
                         </div>
                       </div>
@@ -502,7 +512,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       <div>
                         <h3 className="text-base font-bold text-foreground">{selectedWorker.name}</h3>
                         <p className="text-[10px] text-muted-foreground capitalize">
-                          {selectedWorker.role === "supervisory" ? (language === "tl" ? "Midwife" : "Midwife") : selectedWorker.role === "bns" ? (language === "tl" ? "Barangay Nutrition Scholar" : "Barangay Nutrition Scholar") : (language === "tl" ? "Barangay Health Worker" : "Barangay Health Worker")}
+                          {selectedWorker.role === "supervisor"
+                            ? (language === "tl" ? "Midwife" : "Midwife")
+                            : selectedWorker.role === "supervisory"
+                            ? (language === "tl" ? "BHW Supervisory" : "BHW Supervisory")
+                            : selectedWorker.role === "bns"
+                            ? (language === "tl" ? "Barangay Nutrition Scholar" : "Barangay Nutrition Scholar")
+                            : (language === "tl" ? "Barangay Health Worker" : "Barangay Health Worker")}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -763,7 +779,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="w-full border border-black p-2.5 rounded mb-2.5 text-[11px] leading-tight grid grid-cols-2 gap-2 mt-1 box-border bg-slate-50">
               <div className="space-y-1">
                 <p><span className="font-bold uppercase tracking-wider text-black">Personnel Name:</span> <span className="font-bold text-black text-[12px]">{selectedWorker.name}</span></p>
-                <p><span className="font-bold uppercase tracking-wider text-black">Designation / Role:</span> <span className="font-semibold text-black">{selectedWorker.role === "supervisory" ? "Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
+                <p><span className="font-bold uppercase tracking-wider text-black">Designation / Role:</span> <span className="font-semibold text-black">{selectedWorker.role === "supervisor" ? "Midwife" : selectedWorker.role === "supervisory" ? "BHW Supervisory" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
                 <p><span className="font-bold uppercase tracking-wider text-black">Assigned Station / Sitio:</span> <span className="font-semibold text-black">{selectedWorker.sitio || "Subukin Main"}</span></p>
               </div>
               <div className="text-right space-y-1">
