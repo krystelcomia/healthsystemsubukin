@@ -3,16 +3,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, KeyRound, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
 import loginBg from "@/assets/login-bg.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSettings } from "@/contexts/SettingsContext";
 
 const ResetPassword = () => {
-  const { t } = useSettings();
+  const { t, language } = useSettings();
+  const [searchParams] = useSearchParams();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -21,22 +23,39 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const hash = window.location.hash;
-    // Check if recovery token or hash is present
-    if (hash && !hash.includes("type=recovery") && !hash.includes("access_token")) {
-      toast.error("Invalid or expired reset link");
+    const emailParam = searchParams.get("email");
+    if (emailParam) {
+      setEmail(emailParam);
+    } else {
+      const lastEmail = localStorage.getItem("bhw_last_reset_email");
+      if (lastEmail) setEmail(lastEmail);
     }
-  }, [navigate]);
+  }, [searchParams]);
 
   const handleReset = async () => {
-    if (password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
-    if (password !== confirmPassword) { toast.error("Passwords do not match"); return; }
+    const cleanEmail = email.trim();
+    if (!cleanEmail) {
+      toast.error(language === "tl" ? "Mangyaring ilagay ang iyong email address" : "Please enter your email address");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error(language === "tl" ? "Ang password ay dapat hindi bababa sa 6 na karakter" : "Password must be at least 6 characters");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error(language === "tl" ? "Hindi nagtutugma ang mga password" : "Passwords do not match");
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await (supabase.auth as any).resetUserPassword(cleanEmail, password);
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Password updated successfully! Please sign in with your new password.");
+      toast.success(
+        language === "tl"
+          ? "Matagumpay na na-update ang password! Mangyaring mag-sign in."
+          : "Password updated successfully! Please sign in with your new password."
+      );
       navigate("/auth");
     }
     setLoading(false);
@@ -54,6 +73,17 @@ const ResetPassword = () => {
           <CardDescription className="text-white/80">{t("reset.desc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-white">{t("auth.email")}</Label>
+            <Input
+              className="bg-background/70 border-border/60 text-slate-900"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+            />
+          </div>
+
           <div className="space-y-2">
             <Label className="text-white">{t("reset.newPassword")}</Label>
             <div className="relative">
@@ -94,8 +124,8 @@ const ResetPassword = () => {
             </div>
           </div>
 
-          <Button className="w-full gap-2" onClick={handleReset} disabled={loading}>
-            <KeyRound className="h-4 w-4" />
+          <Button className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleReset} disabled={loading}>
+            <CheckCircle2 className="h-4 w-4" />
             {loading ? t("reset.updating") : t("reset.updatePassword")}
           </Button>
 

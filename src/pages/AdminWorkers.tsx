@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Users, Plus, Printer, Pencil, Trash2, UserCheck, UserX, Eye, EyeOff } from "lucide-react";
+import { Users, Plus, Printer, Pencil, Trash2, UserCheck, UserX, Eye, EyeOff, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -31,6 +31,8 @@ const AdminWorkers = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editWorker, setEditWorker] = useState<BHWWorker | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editNewPassword, setEditNewPassword] = useState("");
+  const [showEditPassword, setShowEditPassword] = useState(false);
   const [viewWorker, setViewWorker] = useState<BHWWorker | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -119,9 +121,36 @@ const AdminWorkers = () => {
 
   const handleEditWorker = async () => {
     if (!editWorker) return;
-    const { error } = await (supabase.from as any)("bhw_workers").update({ name: editWorker.name, age: editWorker.age, address: editWorker.address, gmail: editWorker.gmail, number: editWorker.number, assigned_sitio: editWorker.assigned_sitio }).eq("id", editWorker.id);
+    const { error } = await (supabase.from as any)("bhw_workers").update({ 
+      name: editWorker.name, 
+      age: editWorker.age, 
+      address: editWorker.address, 
+      gmail: editWorker.gmail, 
+      number: editWorker.number, 
+      assigned_sitio: editWorker.assigned_sitio 
+    }).eq("id", editWorker.id);
+
     if (error) { toast.error("Failed to update worker"); return; }
-    toast.success("Worker updated!"); setEditDialogOpen(false); setEditWorker(null); fetchWorkers();
+
+    if (editNewPassword.trim()) {
+      if (editNewPassword.trim().length < 6) {
+        toast.error("Password must be at least 6 characters long.");
+        return;
+      }
+      const resetRes = await (supabase.auth as any).resetUserPassword(editWorker.gmail, editNewPassword.trim());
+      if (resetRes?.error) {
+        toast.error(`Worker updated, but password reset failed: ${resetRes.error.message}`);
+      } else {
+        toast.success(`Worker updated and password reset successfully for ${editWorker.name}!`);
+      }
+    } else {
+      toast.success("Worker updated!");
+    }
+
+    setEditDialogOpen(false); 
+    setEditWorker(null); 
+    setEditNewPassword("");
+    fetchWorkers();
   };
 
   const handleDeleteWorker = async (id: string) => {
@@ -296,7 +325,7 @@ const AdminWorkers = () => {
                 </div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setViewWorker(w); setViewDialogOpen(true); }}><Eye className="h-4 w-4 text-muted-foreground" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditWorker(w); setEditDialogOpen(true); }}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditWorker(w); setEditNewPassword(""); setShowEditPassword(false); setEditDialogOpen(true); }}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirmId(w.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
               </CardContent>
@@ -390,6 +419,32 @@ const AdminWorkers = () => {
                   <SelectTrigger><SelectValue placeholder="Select Sitio" /></SelectTrigger>
                   <SelectContent>{sitioOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select>
+              </div>
+
+              {/* Optional Admin Password Reset for Worker */}
+              <div className="space-y-1 pt-2 border-t border-border">
+                <Label className="text-xs font-semibold flex items-center gap-1.5 text-primary">
+                  <KeyRound className="h-3.5 w-3.5" /> Reset System Password (Optional)
+                </Label>
+                <div className="relative">
+                  <Input
+                    type={showEditPassword ? "text" : "password"}
+                    value={editNewPassword}
+                    onChange={e => setEditNewPassword(e.target.value)}
+                    placeholder="Enter new password (min 6 characters)"
+                    className="text-xs pr-9"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowEditPassword(!showEditPassword)}
+                  >
+                    {showEditPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Enter a new password to immediately reset this worker's login credentials in the system database. Leave blank to keep existing password.
+                </p>
               </div>
             </div>
           )}

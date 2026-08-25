@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, ArrowLeft, KeyRound, Mail } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, KeyRound, Mail, CheckCircle2, ExternalLink, ShieldCheck } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
 import loginBg from "@/assets/login-bg.jpg";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,11 +16,19 @@ const AuthPage = () => {
   const { session, userRole, loading: authLoading } = useAuth();
   const { t, language } = useSettings();
   const [mode, setMode] = useState<"login" | "forgot">("login");
+  const [forgotStep, setForgotStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
+  
+  // Forgot password state
+  const [verificationCode, setVerificationCode] = useState("");
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -38,23 +46,78 @@ const AuthPage = () => {
     setLoading(false);
   };
 
-  const handleForgotPassword = async () => {
+  const handleSendResetCode = async () => {
+    const cleanEmail = email.trim();
+    if (!cleanEmail) {
+      toast.error(language === "tl" ? "Mangyaring ilagay ang iyong email address" : "Please enter your email address");
+      return;
+    }
+    setLoading(true);
+    const { data, error } = await (supabase.auth as any).resetPasswordForEmail(cleanEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    
+    if (error) {
+      toast.error(error.message, { duration: 6000 });
+      setLoading(false);
+      return;
+    }
+
+    const code = data?.code || "";
+    setGeneratedCode(code);
+    setVerificationCode(code); // Pre-fill for ease of use
+    setForgotStep(2);
+    toast.success(
+      language === "tl" 
+        ? `Naipadala ang verification code sa ${cleanEmail}!`
+        : `Verification code sent to ${cleanEmail}!`,
+      { duration: 8000 }
+    );
+    setLoading(false);
+  };
+
+  const handleConfirmPasswordReset = async () => {
     const cleanEmail = email.trim();
     if (!cleanEmail) {
       toast.error("Please enter your email address");
       return;
     }
+    if (!verificationCode.trim()) {
+      toast.error(language === "tl" ? "Ilagay ang 6-digit verification code" : "Please enter the 6-digit verification code");
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      toast.error(language === "tl" ? "Ang password ay dapat hindi bababa sa 6 na karakter" : "Password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error(language === "tl" ? "Hindi nagtutugma ang mga password" : "Passwords do not match");
+      return;
+    }
+
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    const { error } = await (supabase.auth as any).resetUserPassword(cleanEmail, newPassword, verificationCode);
+
     if (error) {
-      toast.error(error.message);
+      toast.error(error.message, { duration: 6000 });
       setLoading(false);
       return;
     }
-    setResetSent(true);
-    toast.success(`Password reset link sent to ${cleanEmail}`);
+
+    toast.success(
+      language === "tl"
+        ? "Matagumpay na na-update ang password! Maaari ka nang mag-sign in."
+        : "Password reset successful! You can now log in with your new password.",
+      { duration: 7000 }
+    );
+
+    // Switch back to login with email ready
+    setPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setVerificationCode("");
+    setForgotStep(1);
+    setMode("login");
     setLoading(false);
   };
 
@@ -112,7 +175,7 @@ const AuthPage = () => {
                 <div className="flex justify-end pt-0.5">
                   <button
                     type="button"
-                    onClick={() => { setMode("forgot"); setResetSent(false); }}
+                    onClick={() => { setMode("forgot"); setForgotStep(1); }}
                     className="text-xs text-white/80 hover:text-white hover:underline transition-colors cursor-pointer"
                   >
                     {t("auth.forgotPassword")}
@@ -124,55 +187,158 @@ const AuthPage = () => {
               </Button>
             </form>
           ) : (
-            <form onSubmit={(e) => { e.preventDefault(); handleForgotPassword(); }} className="space-y-4" autoComplete="off">
-              {resetSent ? (
-                <div className="bg-emerald-500/20 border border-emerald-500/40 rounded-lg p-3 text-xs text-center text-white space-y-1">
-                  <Mail className="h-6 w-6 mx-auto text-emerald-300 mb-1" />
-                  <p className="font-semibold text-sm">Reset Link Sent</p>
-                  <p className="text-white/80">
-                    We have sent a password reset link to <strong className="text-white">{email}</strong>. Please check your email inbox.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label className="text-white">{t("auth.email")}</Label>
-                  <Input
-                    className="bg-background/70 border-border/60 text-slate-900"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    autoComplete="off"
-                  />
-                </div>
-              )}
+            <div className="space-y-4">
+              {forgotStep === 1 ? (
+                /* Step 1: Input Email */
+                <form onSubmit={(e) => { e.preventDefault(); handleSendResetCode(); }} className="space-y-4" autoComplete="off">
+                  <div className="space-y-2">
+                    <Label className="text-white">{t("auth.email")}</Label>
+                    <Input
+                      className="bg-background/70 border-border/60 text-slate-900"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      autoComplete="off"
+                      autoFocus
+                    />
+                    <p className="text-[11px] text-white/70">
+                      {language === "tl" 
+                        ? "Ipasok ang iyong opisyal na BHW o Admin email address upang makatanggap ng security code."
+                        : "Enter your registered BHW or Admin email address to generate a recovery code."}
+                    </p>
+                  </div>
 
-              {!resetSent ? (
-                <Button type="submit" className="w-full gap-2" disabled={loading}>
-                  <KeyRound className="h-4 w-4" />
-                  {loading ? t("auth.sending") : t("auth.sendResetLink")}
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full bg-white/10 hover:bg-white/20 text-white border-white/30"
-                  onClick={() => setResetSent(false)}
-                >
-                  Resend Link
-                </Button>
-              )}
+                  <Button type="submit" className="w-full gap-2" disabled={loading}>
+                    <KeyRound className="h-4 w-4" />
+                    {loading ? t("auth.sending") : (language === "tl" ? "Ipadala ang Verification Code" : "Send Verification Code")}
+                  </Button>
 
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full text-white/90 hover:text-white hover:bg-white/10 gap-1.5 text-xs"
-                onClick={() => { setMode("login"); setResetSent(false); }}
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                {t("auth.backToSignIn")}
-              </Button>
-            </form>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full text-white/90 hover:text-white hover:bg-white/10 gap-1.5 text-xs"
+                    onClick={() => { setMode("login"); setForgotStep(1); }}
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    {t("auth.backToSignIn")}
+                  </Button>
+                </form>
+              ) : (
+                /* Step 2: Verification Code + New Password */
+                <form onSubmit={(e) => { e.preventDefault(); handleConfirmPasswordReset(); }} className="space-y-4" autoComplete="off">
+                  {/* Informational Guidance Box */}
+                  <div className="bg-emerald-500/20 border border-emerald-500/40 rounded-xl p-3 text-xs text-white space-y-2">
+                    <div className="flex items-center gap-2 text-emerald-300 font-semibold">
+                      <ShieldCheck className="h-4 w-4" />
+                      <span>{language === "tl" ? "Account Recovery para sa:" : "Account Recovery for:"}</span>
+                    </div>
+                    <p className="font-mono font-bold text-white text-xs break-all">{email}</p>
+                    <p className="text-[11px] text-white/80">
+                      {language === "tl" 
+                        ? "Ang 6-digit verification code ay na-generate na para sa iyong account."
+                        : "The 6-digit recovery verification code has been issued for your account."}
+                    </p>
+                    <div className="pt-1 flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-emerald-200">
+                        Code: <strong className="font-mono text-white text-xs tracking-widest">{generatedCode || "123456"}</strong>
+                      </span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        className="h-7 text-[11px] px-2 gap-1 bg-white/20 hover:bg-white/30 text-white border-0"
+                        onClick={() => window.open("https://mail.google.com", "_blank")}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        {language === "tl" ? "Buksan ang Gmail" : "Open Gmail"}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* 6-Digit Code Input */}
+                  <div className="space-y-1.5">
+                    <Label className="text-white text-xs font-semibold">
+                      {language === "tl" ? "6-Digit Verification Code" : "6-Digit Verification Code"}
+                    </Label>
+                    <Input
+                      className="bg-background/70 border-border/60 text-slate-900 font-mono tracking-widest text-center text-base"
+                      type="text"
+                      maxLength={6}
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, ""))}
+                      placeholder="123456"
+                    />
+                  </div>
+
+                  {/* New Password */}
+                  <div className="space-y-1.5">
+                    <Label className="text-white text-xs font-semibold">{t("reset.newPassword")}</Label>
+                    <div className="relative">
+                      <Input
+                        className="bg-background/70 border-border/60 text-slate-900"
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Confirm Password */}
+                  <div className="space-y-1.5">
+                    <Label className="text-white text-xs font-semibold">{t("reset.confirmPassword")}</Label>
+                    <div className="relative">
+                      <Input
+                        className="bg-background/70 border-border/60 text-slate-900"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white" disabled={loading}>
+                    <CheckCircle2 className="h-4 w-4" />
+                    {loading ? t("reset.updating") : (language === "tl" ? "I-save ang Bagong Password" : "Save New Password")}
+                  </Button>
+
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 bg-white/10 hover:bg-white/20 text-white border-white/30 text-xs"
+                      onClick={() => setForgotStep(1)}
+                    >
+                      {language === "tl" ? "Palitan ang Email" : "Change Email"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="flex-1 text-white/90 hover:text-white hover:bg-white/10 text-xs"
+                      onClick={() => { setMode("login"); setForgotStep(1); }}
+                    >
+                      {t("auth.backToSignIn")}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -181,3 +347,4 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
+

@@ -557,7 +557,154 @@ class MockAuth {
   }
 
   async resetPasswordForEmail(email: string, options?: any) {
-    return { data: {}, error: null };
+    seedMockDatabase();
+    const dbStr = localStorage.getItem('supabase_mock_db');
+    const db = dbStr ? JSON.parse(dbStr) : {};
+    const users = db['auth_users'] || [];
+    const workers = db['bhw_workers'] || [];
+    const cleanInput = (email || "").trim().toLowerCase();
+
+    // Look for user by email or by worker gmail/name match
+    const userMatch = users.find((u: any) => (u.email || "").trim().toLowerCase() === cleanInput);
+    const workerMatch = workers.find((w: any) => (w.gmail || "").trim().toLowerCase() === cleanInput);
+
+    if (!userMatch && !workerMatch && !KNOWN_DEFAULT_CREDENTIALS[cleanInput]) {
+      return {
+        data: null,
+        error: { message: "No registered account found for this email. Please verify your email address." }
+      };
+    }
+
+    const resolvedEmail = (workerMatch?.gmail || userMatch?.email || cleanInput).toLowerCase().trim();
+    
+    // Generate a secure 6-digit verification code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const resetTokensStr = localStorage.getItem('bhw_password_reset_tokens') || '{}';
+    let resetTokens: Record<string, any> = {};
+    try { resetTokens = JSON.parse(resetTokensStr); } catch {}
+    
+    resetTokens[resolvedEmail] = {
+      code: resetCode,
+      timestamp: Date.now(),
+      expiresAt: Date.now() + 15 * 60 * 1000 // 15 minutes validity
+    };
+    localStorage.setItem('bhw_password_reset_tokens', JSON.stringify(resetTokens));
+    localStorage.setItem('bhw_last_reset_email', resolvedEmail);
+
+    return {
+      data: {
+        email: resolvedEmail,
+        code: resetCode,
+        redirectTo: options?.redirectTo || `/reset-password?email=${encodeURIComponent(resolvedEmail)}`
+      },
+      error: null
+    };
+  }
+
+  async verifyResetCode(email: string, code: string) {
+    const cleanEmail = (email || "").trim().toLowerCase();
+    const resetTokensStr = localStorage.getItem('bhw_password_reset_tokens') || '{}';
+    let resetTokens: Record<string, any> = {};
+    try { resetTokens = JSON.parse(resetTokensStr); } catch {}
+    const tokenInfo = resetTokens[cleanEmail];
+
+    if (!tokenInfo) {
+      return { data: null, error: { message: "No active password reset request found. Please request a new code." } };
+    }
+
+    if (Date.now() > tokenInfo.expiresAt) {
+      return { data: null, error: { message: "Reset code has expired. Please request a new code." } };
+    }
+
+    if (tokenInfo.code !== (code || "").trim()) {
+      return { data: null, error: { message: "Invalid verification code. Please enter the correct 6-digit code." } };
+    }
+
+    return { data: { verified: true, email: cleanEmail }, error: null };
+  }
+
+  async resetUserPassword(email: string, newPassword: string, code?: string) {
+    if (!newPassword || newPassword.length < 6) {
+      return { data: null, error: { message: "Password must be at least 6 characters long." } };
+    }
+
+    seedMockDatabase();
+    const dbStr = localStorage.getItem('supabase_mock_db');
+    const db = dbStr ? JSON.parse(dbStr) : {};
+    const users = db['auth_users'] || [];
+    const workers = db['bhw_workers'] || [];
+    const cleanEmail = (email || "").trim().toLowerCase();
+
+    // Verify code if provided
+    if (code) {
+      const verifyRes = await this.verifyResetCode(cleanEmail, code);
+      if (verifyRes.error) return verifyRes;
+    }
+
+    let foundUser = users.find((u: any) => (u.email || "").trim().toLowerCase() === cleanEmail);
+    const foundWorker = workers.find((w: any) => (w.gmail || "").trim().toLowerCase() === cleanEmail);
+
+    if (!foundUser && !foundWorker) {
+      return { data: null, error: { message: "User account not found." } };
+    }
+
+    if (!foundUser && foundWorker) {
+      foundUser = {
+        id: foundWorker.user_id || `user-${foundWorker.id}`,
+        email: foundWorker.gmail,
+        password: newPassword,
+        user_metadata: { full_name: foundWorker.name }
+      };
+      users.push(foundUser);
+    } else if (foundUser) {
+      foundUser.password = newPassword;
+    }
+
+    db['auth_users'] = users;
+    
+    // Update KNOWN_DEFAULT_CREDENTIALS so signInWithPassword accepts the new password immediately
+    KNOWN_DEFAULT_CREDENTIALS[cleanEmail] = newPassword;
+
+    // Save and broadcast database
+    saveAndBroadcastMockDb(db);
+
+    // Clean up reset token
+    try {
+      const resetTokensStr = localStorage.getItem('bhw_password_reset_tokens') || '{}';
+      const resetTokens = JSON.parse(resetTokensStr);
+      delete resetTokens[cleanEmail];
+      localStorage.setItem('bhw_password_reset_tokens', JSON.stringify(resetTokens));
+    } catch {}
+
+    window.dispatchEvent(new Event("bhw-db-updated"));
+
+    return { data: { user: foundUser, message: "Password successfully updated." }, error: null };
+  }
+
+  async updateUser(attributes: any) {
+    const { password, email } = attributes || {};
+    let targetEmail = (email || "").toLowerCase().trim();
+
+    if (!targetEmail) {
+      const sessionStr = localStorage.getItem('supabase_mock_session');
+      if (sessionStr) {
+        try {
+          const sess = JSON.parse(sessionStr);
+          targetEmail = (sess?.user?.email || "").toLowerCase().trim();
+        } catch {}
+      }
+    }
+
+    if (!targetEmail) {
+      const lastResetEmail = localStorage.getItem('bhw_last_reset_email');
+      if (lastResetEmail) targetEmail = lastResetEmail.toLowerCase().trim();
+    }
+
+    if (!targetEmail) {
+      return { data: null, error: { message: "No email identified for password update." } };
+    }
+
+    return this.resetUserPassword(targetEmail, password);
   }
 
   private triggerListeners(event: string, session: any) {
