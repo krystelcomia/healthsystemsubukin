@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // All 13 BHW Subukin staff accounts
 const ACCOUNTS = [
-  { email: "cristetalanuzaADMIN@gmail.com",    password: "bhwsubukincristeta2026",   username: "Cristeta",   fullName: "Cristeta R. Lanuza",      role: "supervisor" },
+  { email: "cristetalanuzaADMIN@gmail.com",    password: "adminsubukincristeta2026", username: "Cristeta",   fullName: "Cristeta R. Lanuza",      role: "supervisor" },
   { email: "evelynilaoBHW@gmail.com",           password: "bhwsubukinevelyn2026",     username: "Evelyn",     fullName: "Evelyn T. Ilao",           role: "bhw" },
   { email: "ceciliabenosaBHW@gmail.com",        password: "bhwsubukincecilia2026",    username: "Cecilia",    fullName: "Cecilia G. Benosa",        role: "bhw" },
   { email: "merlitaalonzoBHW@gmail.com",        password: "bhwsubukinmerlita2026",    username: "Merlita",    fullName: "Merlita R. Alonzo",        role: "bhw" },
@@ -17,7 +17,7 @@ const ACCOUNTS = [
   { email: "renchieilaoBHW@gmail.com",          password: "bhwsubukinrenchie2026",    username: "Renchie",    fullName: "Renchie V. Ilao",          role: "bhw" },
   { email: "renalynlauranteBHW@gmail.com",      password: "bhwsubukinrenalyn2026",    username: "Renalyn",    fullName: "Renalyn D. Laurante",      role: "bhw" },
   { email: "maribelabayonBNS@gmail.com",        password: "bnssubukinmaribel2026",    username: "Maribel",    fullName: "Maribel M. Abayon",        role: "bns" },
-  { email: "maryjanelandichoMIDWIFE@gmail.com", password: "adminsubukinmaryjane2026", username: "Mary Jane",  fullName: "Mary Jane Landicho",       role: "midwife" },
+  { email: "maryjanelandichoMIDWIFE@gmail.com", password: "midwifesubukinmaryjane2026", username: "Mary Jane", fullName: "Mary Jane Landicho",     role: "midwife" },
 ];
 
 Deno.serve(async (_req: Request) => {

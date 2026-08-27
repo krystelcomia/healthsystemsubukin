@@ -31,19 +31,19 @@ const AuthPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const OFFICIAL_SYSTEM_ACCOUNTS: Record<string, { username: string; fullName: string; role: string; defaultPassword?: string }> = {
-    "cristetalanuzaadmin@gmail.com": { username: "Cristeta", fullName: "Cristeta R. Lanuza", role: "supervisor" },
-    "evelynilaobhw@gmail.com": { username: "Evelyn", fullName: "Evelyn T. Ilao", role: "bhw" },
-    "ceciliabenosabhw@gmail.com": { username: "Cecilia", fullName: "Cecilia G. Benosa", role: "bhw" },
-    "merlitaalonzobhw@gmail.com": { username: "Merlita", fullName: "Merlita R. Alonzo", role: "bhw" },
-    "suzettelopezbhw@gmail.com": { username: "Suzette", fullName: "Suzette B. Lopez", role: "bhw" },
-    "amelitasayatbhw@gmail.com": { username: "Amelita", fullName: "Amelita R. Sayat", role: "bhw" },
-    "wilmatanyagbhw@gmail.com": { username: "Wilma", fullName: "Wilma D. Tanyag", role: "bhw" },
-    "nenitadimaculanganbhw@gmail.com": { username: "Nenita", fullName: "Nenita M. Dimaculangan", role: "bhw" },
-    "mercyabanillabhw@gmail.com": { username: "Mercy", fullName: "Mercy O. Abanilla", role: "bhw" },
-    "renchieilaobhw@gmail.com": { username: "Renchie", fullName: "Renchie V. Ilao", role: "bhw" },
-    "renalynlaurantebhw@gmail.com": { username: "Renalyn", fullName: "Renalyn D. Laurante", role: "bhw" },
-    "maribelabayonbns@gmail.com": { username: "Maribel", fullName: "Maribel M. Abayon", role: "bns" },
-    "maryjanelandichomidwife@gmail.com": { username: "Mary Jane", fullName: "Mary Jane Landicho", role: "midwife" },
+    "cristetalanuzaadmin@gmail.com": { username: "Cristeta", fullName: "Cristeta R. Lanuza", role: "supervisor", defaultPassword: "adminsubukincristeta2026" },
+    "evelynilaobhw@gmail.com": { username: "Evelyn", fullName: "Evelyn T. Ilao", role: "bhw", defaultPassword: "bhwsubukinevelyn2026" },
+    "ceciliabenosabhw@gmail.com": { username: "Cecilia", fullName: "Cecilia G. Benosa", role: "bhw", defaultPassword: "bhwsubukincecilia2026" },
+    "merlitaalonzobhw@gmail.com": { username: "Merlita", fullName: "Merlita R. Alonzo", role: "bhw", defaultPassword: "bhwsubukinmerlita2026" },
+    "suzettelopezbhw@gmail.com": { username: "Suzette", fullName: "Suzette B. Lopez", role: "bhw", defaultPassword: "bhwsubukinsuzette2026" },
+    "amelitasayatbhw@gmail.com": { username: "Amelita", fullName: "Amelita R. Sayat", role: "bhw", defaultPassword: "bhwsubukinamelita2026" },
+    "wilmatanyagbhw@gmail.com": { username: "Wilma", fullName: "Wilma D. Tanyag", role: "bhw", defaultPassword: "bhwsubukinwilma2026" },
+    "nenitadimaculanganbhw@gmail.com": { username: "Nenita", fullName: "Nenita M. Dimaculangan", role: "bhw", defaultPassword: "bhwsubukinnenita2026" },
+    "mercyabanillabhw@gmail.com": { username: "Mercy", fullName: "Mercy O. Abanilla", role: "bhw", defaultPassword: "bhwsubukinmercy2026" },
+    "renchieilaobhw@gmail.com": { username: "Renchie", fullName: "Renchie V. Ilao", role: "bhw", defaultPassword: "bhwsubukinrenchie2026" },
+    "renalynlaurantebhw@gmail.com": { username: "Renalyn", fullName: "Renalyn D. Laurante", role: "bhw", defaultPassword: "bhwsubukinrenalyn2026" },
+    "maribelabayonbns@gmail.com": { username: "Maribel", fullName: "Maribel M. Abayon", role: "bns", defaultPassword: "bnssubukinmaribel2026" },
+    "maryjanelandichomidwife@gmail.com": { username: "Mary Jane", fullName: "Mary Jane Landicho", role: "midwife", defaultPassword: "midwifesubukinmaryjane2026" },
   };
 
   const handleLogin = async () => {

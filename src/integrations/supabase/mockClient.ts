@@ -346,8 +346,8 @@ class MockQueryBuilder {
 
 export const KNOWN_DEFAULT_CREDENTIALS: Record<string, string> = {
   "krystelcomia@gmail.com": "krystel123",
-  "maryjanelandichoadmin@gmail.com": "adminsubukinmaryjane2026",
-  "cristetalanuzabhw@gmail.com": "bhwsubukincristeta2026",
+  "cristetalanuzaadmin@gmail.com": "adminsubukincristeta2026",
+  "maryjanelandichomidwife@gmail.com": "midwifesubukinmaryjane2026",
   "evelynilaobhw@gmail.com": "bhwsubukinevelyn2026",
   "ceciliabenosabhw@gmail.com": "bhwsubukincecilia2026",
   "merlitaalonzobhw@gmail.com": "bhwsubukinmerlita2026",
@@ -396,7 +396,7 @@ class MockAuth {
     const cleanEmail = (workerWithEmail?.gmail || userWithEmail?.email || cleanInput).toLowerCase().trim();
 
     // 1. If user email is not found in the database and not part of BHW
-    if (!userWithEmail && !workerWithEmail) {
+    if (!userWithEmail && !workerWithEmail && !KNOWN_DEFAULT_CREDENTIALS[cleanEmail]) {
       return {
         data: { user: null, session: null },
         error: {
@@ -405,11 +405,13 @@ class MockAuth {
       };
     }
 
-    // 2. If user exists in auth_users but worker account was deleted from active bhw_workers
-    const isSupervisor = cleanEmail.includes("admin") || cleanEmail.includes("maryjanelandicho") ||
+    // 2. Check supervisor and midwife roles
+    const isSupervisor = cleanEmail.includes("cristetalanuza") || cleanEmail.includes("admin") ||
       roles.some((r: any) => r.user_id === userWithEmail?.id && r.role === "supervisor");
+    const isMidwife = cleanEmail.includes("maryjanelandicho") ||
+      roles.some((r: any) => r.user_id === userWithEmail?.id && r.role === "midwife");
 
-    if (!isSupervisor && !workerWithEmail) {
+    if (!isSupervisor && !isMidwife && !workerWithEmail && !KNOWN_DEFAULT_CREDENTIALS[cleanEmail]) {
       return {
         data: { user: null, session: null },
         error: {

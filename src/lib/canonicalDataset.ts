@@ -1,8 +1,8 @@
 export const CANONICAL_INITIAL_DATABASE: Record<string, any[]> = {
   auth_users: [
     { id: "user-1", email: "krystelcomia@gmail.com", password: "krystel123", user_metadata: { full_name: "Krystel Comia" } },
-    { id: "user-admin", email: "maryjanelandichoADMIN@gmail.com", password: "adminsubukinmaryjane2026", user_metadata: { full_name: "Mary Jane Landicho" } },
-    { id: "user-cristeta", email: "cristetalanuzaBHW@gmail.com", password: "bhwsubukincristeta2026", user_metadata: { full_name: "Cristeta R. Lanuza" } },
+    { id: "user-cristeta", email: "cristetalanuzaADMIN@gmail.com", password: "adminsubukincristeta2026", user_metadata: { full_name: "Cristeta R. Lanuza" } },
+    { id: "user-midwife", email: "maryjanelandichoMIDWIFE@gmail.com", password: "midwifesubukinmaryjane2026", user_metadata: { full_name: "Mary Jane Landicho" } },
     { id: "user-evelyn", email: "evelynilaoBHW@gmail.com", password: "bhwsubukinevelyn2026", user_metadata: { full_name: "Evelyn T. Ilao" } },
     { id: "user-cecilia", email: "ceciliabenosaBHW@gmail.com", password: "bhwsubukincecilia2026", user_metadata: { full_name: "Cecilia G. Benosa" } },
     { id: "user-merlita", email: "merlitaalonzoBHW@gmail.com", password: "bhwsubukinmerlita2026", user_metadata: { full_name: "Merlita R. Alonzo" } },
@@ -17,8 +17,8 @@ export const CANONICAL_INITIAL_DATABASE: Record<string, any[]> = {
   ],
   user_roles: [
     { id: "role-1", user_id: "user-1", role: "bhw" },
-    { id: "role-admin", user_id: "user-admin", role: "supervisor" },
-    { id: "role-cristeta", user_id: "user-cristeta", role: "supervisory" },
+    { id: "role-cristeta", user_id: "user-cristeta", role: "supervisor" },
+    { id: "role-midwife", user_id: "user-midwife", role: "midwife" },
     { id: "role-evelyn", user_id: "user-evelyn", role: "bhw" },
     { id: "role-cecilia", user_id: "user-cecilia", role: "bhw" },
     { id: "role-merlita", user_id: "user-merlita", role: "bhw" },
@@ -33,8 +33,8 @@ export const CANONICAL_INITIAL_DATABASE: Record<string, any[]> = {
   ],
   profiles: [
     { id: "profile-1", user_id: "user-1", full_name: "Krystel Comia", username: "krystel", assigned_sitio: "Maligaya" },
-    { id: "profile-admin", user_id: "user-admin", full_name: "Mary Jane Landicho", username: "Mary Jane", assigned_sitio: "Subukin Main" },
     { id: "profile-cristeta", user_id: "user-cristeta", full_name: "Cristeta R. Lanuza", username: "Cristeta", assigned_sitio: "Masigla" },
+    { id: "profile-midwife", user_id: "user-midwife", full_name: "Mary Jane Landicho", username: "Mary Jane", assigned_sitio: "Subukin Main" },
     { id: "profile-evelyn", user_id: "user-evelyn", full_name: "Evelyn T. Ilao", username: "Evelyn", assigned_sitio: "Manggahan 1" },
     { id: "profile-cecilia", user_id: "user-cecilia", full_name: "Cecilia G. Benosa", username: "Cecilia", assigned_sitio: "Maligaya" },
     { id: "profile-merlita", user_id: "user-merlita", full_name: "Merlita R. Alonzo", username: "Merlita", assigned_sitio: "Matahimik / Punta" },
@@ -49,8 +49,7 @@ export const CANONICAL_INITIAL_DATABASE: Record<string, any[]> = {
   ],
   bhw_workers: [
     { id: "worker-1", name: "Krystel Comia", age: 28, address: "Subukin", gmail: "krystelcomia@gmail.com", number: "09123456789", is_online: false, user_id: "user-1", assigned_sitio: "Maligaya", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
-    { id: "worker-admin", name: "Mary Jane Landicho", age: 40, address: "Subukin Main", gmail: "maryjanelandichoADMIN@gmail.com", number: "0912-345-6789", is_online: false, user_id: "user-admin", assigned_sitio: "Subukin Main", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
-    { id: "worker-cristeta", name: "Cristeta R. Lanuza", age: 45, address: "Masigla", gmail: "cristetalanuzaBHW@gmail.com", number: "0919-6980-712", is_online: false, user_id: "user-cristeta", assigned_sitio: "Masigla", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
+    { id: "worker-cristeta", name: "Cristeta R. Lanuza", age: 45, address: "Masigla", gmail: "cristetalanuzaADMIN@gmail.com", number: "0919-6980-712", is_online: false, user_id: "user-cristeta", assigned_sitio: "Masigla", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
     { id: "worker-evelyn", name: "Evelyn T. Ilao", age: 42, address: "Manggahan 1", gmail: "evelynilaoBHW@gmail.com", number: "0935-5638-247", is_online: false, user_id: "user-evelyn", assigned_sitio: "Manggahan 1", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
     { id: "worker-cecilia", name: "Cecilia G. Benosa", age: 39, address: "Maligaya", gmail: "ceciliabenosaBHW@gmail.com", number: "0921-8509-320", is_online: false, user_id: "user-cecilia", assigned_sitio: "Maligaya", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
     { id: "worker-merlita", name: "Merlita R. Alonzo", age: 48, address: "Matahimik / Punta", gmail: "merlitaalonzoBHW@gmail.com", number: "0930-9085-713", is_online: false, user_id: "user-merlita", assigned_sitio: "Matahimik / Punta", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
