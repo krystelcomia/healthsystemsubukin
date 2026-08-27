@@ -23,6 +23,7 @@ import {
   FileText,
   UserCheck,
   Plus,
+  Eye,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
