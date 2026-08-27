@@ -1419,24 +1419,21 @@ const DenguePreventionForm = () => {
         </CardContent>
       </Card>
 
-      {/* Saved Dengue Prevention Forms Section */}
-      <div className="no-print mt-8 space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between flex-wrap gap-3 pb-1 border-b border-border/40">
-          <div className="flex items-center gap-2">
-            <History className="h-5 w-5 text-primary" />
-            <div>
-              <h3 className="text-lg font-heading font-bold text-foreground">
-                Saved Dengue Prevention Forms
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Forms saved via "Print Form" appear here for viewing and re-printing.
-              </p>
-            </div>
+      {/* SAVED DENGUE FORMS HISTORY LIST */}
+      <div className="no-print space-y-4 pt-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-border/40">
+          <div>
+            <h3 className="text-base font-bold font-heading flex items-center gap-2">
+              <FileCheck className="h-5 w-5 text-primary" />
+              Saved Dengue Prevention Checklist History
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Review and re-print previously completed and signed Search & Destroy monitoring forms.
+            </p>
           </div>
+
+          {/* Filter Bar */}
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-            <Badge variant="secondary" className="bg-primary/10 text-primary font-bold shrink-0">
-              {filteredSavedForms.length} Form(s)
-            </Badge>
             <div className="relative w-full sm:w-56">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -1529,15 +1526,17 @@ const DenguePreventionForm = () => {
                       >
                         <Printer className="h-4.5 w-4.5" />
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => setDeleteSavedFormConfirmId(sf.id)}
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        title="Delete Form"
-                      >
-                        <Trash2 className="h-4.5 w-4.5 text-destructive" />
-                      </Button>
+                      {!isMidwife && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setDeleteSavedFormConfirmId(sf.id)}
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Delete Form"
+                        >
+                          <Trash2 className="h-4.5 w-4.5 text-destructive" />
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

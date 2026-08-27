@@ -1363,7 +1363,7 @@ const FamilyDataForm = () => {
                 </div>
 
                 <div className="flex items-center gap-2 no-print self-end md:self-auto">
-                  {!isAdmin && (
+                  {!isAdmin && !isMidwife && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -1511,7 +1511,7 @@ const FamilyDataForm = () => {
                     </h3>
                   </div>
 
-                  {!isAdmin && (
+                  {!isAdmin && !isMidwife && (
                     <Button
                       size="sm"
                       onClick={() => setAddMemberDialogOpen(true)}
@@ -1533,7 +1533,7 @@ const FamilyDataForm = () => {
                         <th className="p-3 font-semibold text-center">Age</th>
                         <th className="p-3 font-semibold">Role</th>
                         <th className="p-3 font-semibold text-center">Gender</th>
-                        {!isAdmin && <th className="p-3 font-semibold text-center no-print">Action</th>}
+                        {!isAdmin && !isMidwife && <th className="p-3 font-semibold text-center no-print">Action</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -1545,14 +1545,14 @@ const FamilyDataForm = () => {
                         </tr>
                       ) : (
                         activeMembers.map((m, idx) => (
-                          <tr key={m.id} className="border-b border-border/40">
-                            <td className="p-3 text-center text-muted-foreground font-mono">{idx + 1}</td>
+                          <tr key={m.id || idx} className="border-b border-border/40 hover:bg-muted/20">
+                            <td className="p-3 text-center text-muted-foreground text-xs">{idx + 1}</td>
                             <td className="p-3 font-medium">{m.full_name}</td>
                             <td className="p-3 text-center">{m.birthday || "—"}</td>
                             <td className="p-3 text-center">{m.age || "—"}</td>
                             <td className="p-3">{m.relationship}</td>
                             <td className="p-3 text-center">{m.gender}</td>
-                            {!isAdmin && (
+                            {!isAdmin && !isMidwife && (
                               <td className="p-3 text-center no-print">
                                 <Button
                                   onClick={() => setRemoveMemberConfirm({ id: m.id, name: m.full_name })}
@@ -1606,7 +1606,7 @@ const FamilyDataForm = () => {
 
               {/* Dialog Footer Actions */}
               <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border/50 no-print">
-                {!isAdmin && (
+                {!isAdmin && !isMidwife && (
                   <Button
                     type="button"
                     variant="outline"
@@ -1627,7 +1627,7 @@ const FamilyDataForm = () => {
                   >
                     Close
                   </Button>
-                  {!isAdmin && (
+                  {!isAdmin && !isMidwife && (
                     <Button
                       type="button"
                       size="sm"

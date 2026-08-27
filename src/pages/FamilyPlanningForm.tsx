@@ -21,6 +21,8 @@ import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
+import { useAuth } from "@/contexts/AuthContext";
+import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import {
   allowOnlyNumbers,
   allowNumbersAndDecimal,
@@ -336,6 +338,8 @@ const sanitizeDraftState = (parsed: any): FPFullFormState => {
 };
 
 const FamilyPlanningForm = () => {
+  const { userRole } = useAuth();
+  const isMidwife = userRole === "midwife";
   const { t } = useSettings();
   const [fpState, setFpState] = useState<FPFullFormState>(() => {
     try {
@@ -444,6 +448,10 @@ const FamilyPlanningForm = () => {
 
   // Save Record
   const handleSaveFPRecord = async () => {
+    if (isMidwife) {
+      toast.error("View-only access: Midwife cannot save records.");
+      return;
+    }
     const sideA = fpState.sideA;
     const clientFullName = `${sideA.client_given_name} ${sideA.client_mi} ${sideA.client_last_name}`.trim();
 
@@ -496,6 +504,7 @@ const FamilyPlanningForm = () => {
 
   // Add Row to Side B Visit Table
   const handleAddVisitRow = () => {
+    if (isMidwife) return;
     setFpState((prev) => ({
       ...prev,
       sideBVisits: [
@@ -513,6 +522,7 @@ const FamilyPlanningForm = () => {
   };
 
   const handleRemoveVisitRow = (id: string) => {
+    if (isMidwife) return;
     setFpState((prev) => ({
       ...prev,
       sideBVisits: prev.sideBVisits.filter((v) => v.id !== id),
@@ -521,6 +531,10 @@ const FamilyPlanningForm = () => {
 
   // Delete Record from Supabase
   const handleDeleteRecord = async () => {
+    if (isMidwife) {
+      toast.error("View-only access: Midwife cannot delete records.");
+      return;
+    }
     if (!deleteConfirmId) return;
     try {
       const { error } = await supabase.from("family_planning").delete().eq("id", deleteConfirmId);
@@ -733,6 +747,8 @@ const FamilyPlanningForm = () => {
         </div>
       </div>
 
+      {isMidwife && <ReadOnlyBanner />}
+
       {/* Action Toolbar & Resident Selector Bar */}
       <Card className="border-border/50 shadow-xs no-print">
         <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -743,7 +759,7 @@ const FamilyPlanningForm = () => {
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap shrink-0">
             <div className="w-56 shrink-0">
-              <Select value={selectedResidentId} onValueChange={handleSelectResident}>
+              <Select value={selectedResidentId} onValueChange={handleSelectResident} disabled={isMidwife}>
                 <SelectTrigger className="h-9 text-xs bg-background">
                   <SelectValue placeholder="Pumili ng Residente..." />
                 </SelectTrigger>
@@ -760,8 +776,9 @@ const FamilyPlanningForm = () => {
         </CardContent>
       </Card>
 
-      {/* Main Linked Form (Side A & Side B in Continuous Official Layout) */}
-      <div id="fp-print-area" className="space-y-6">
+      {/* DOH FP FORM 1 PAPER REPLICA CONTAINER */}
+      <div id="fp-print-area" className="bg-card text-card-foreground border border-border/80 rounded-lg p-6 md:p-8 space-y-6 shadow-md text-xs relative">
+        <fieldset disabled={isMidwife} className="contents border-0 p-0 m-0 min-w-0">
         
         {/* SECTION 1: SIDE A - Assessment Record Replica */}
         <div className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 border border-slate-300 dark:border-slate-700 rounded-md shadow-xs text-xs space-y-3 font-sans">
@@ -1657,17 +1674,21 @@ const FamilyPlanningForm = () => {
               Please review all entries in Side A & Side B before saving or printing.
             </p>
             <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-              <Button type="button" size="sm" onClick={handleSaveFPRecord} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground shrink-0 whitespace-nowrap font-bold px-5">
-                <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save FP Record"}
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setResetConfirmOpen(true)} 
-                className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
-              >
-                <RefreshCw className="h-4 w-4" /> Reset
-              </Button>
+              {!isMidwife && (
+                <>
+                  <Button type="button" size="sm" onClick={handleSaveFPRecord} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground shrink-0 whitespace-nowrap font-bold px-5">
+                    <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save FP Record"}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setResetConfirmOpen(true)} 
+                    className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
+                  >
+                    <RefreshCw className="h-4 w-4" /> Reset
+                  </Button>
+                </>
+              )}
               <Button 
                 type="button" 
                 variant="outline" 
@@ -1678,7 +1699,7 @@ const FamilyPlanningForm = () => {
               </Button>
             </div>
           </div>
-
+        </fieldset>
         </div>
 
       </div>
@@ -1790,32 +1811,36 @@ const FamilyPlanningForm = () => {
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  if (parsed) {
-                                    setFpState(parsed);
-                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    toast.info(`Loaded ${clientName}'s record into form.`);
-                                  } else {
-                                    toast.warning("Standard legacy record loaded.");
-                                  }
-                                }}
-                                title="Edit Record"
-                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setDeleteConfirmId(rec.id)}
-                                title="Delete Record"
-                                className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
+                              {!isMidwife && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      if (parsed) {
+                                        setFpState(parsed);
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        toast.info(`Loaded ${clientName}'s record into form.`);
+                                      } else {
+                                        toast.warning("Standard legacy record loaded.");
+                                      }
+                                    }}
+                                    title="Edit Record"
+                                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setDeleteConfirmId(rec.id)}
+                                    title="Delete Record"
+                                    className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>

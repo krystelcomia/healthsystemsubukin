@@ -36,6 +36,8 @@ import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
+import { useAuth } from "@/contexts/AuthContext";
+import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 
 export const RISK_FACTORS_COLUMN_1 = [
   "Abnormal presentation",
@@ -128,6 +130,8 @@ export interface MaternalCareRecord {
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-8 text-sm";
 
 const MaternalCareForm = () => {
+  const { userRole } = useAuth();
+  const isMidwife = userRole === "midwife";
   const { t } = useSettings();
   const [residents, setResidents] = useState<any[]>([]);
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
@@ -276,10 +280,12 @@ const MaternalCareForm = () => {
   };
 
   const handleFormChange = (field: string, value: any) => {
+    if (isMidwife) return;
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
   const toggleRiskFactor = (factor: string) => {
+    if (isMidwife) return;
     setForm(prev => {
       const exists = prev.risk_factors.includes(factor);
       if (exists) {
@@ -292,6 +298,7 @@ const MaternalCareForm = () => {
 
   // Prenatal Visits Handlers
   const handleAddVisit = () => {
+    if (isMidwife) return;
     const newVisitNum = String(form.prenatal_visits.length + 1);
     const newVisit: PrenatalVisit = {
       id: `visit-${Date.now()}`,
@@ -310,6 +317,7 @@ const MaternalCareForm = () => {
   };
 
   const handleUpdateVisit = (index: number, field: keyof PrenatalVisit, value: string) => {
+    if (isMidwife) return;
     setForm(prev => {
       const updated = [...prev.prenatal_visits];
       updated[index] = { ...updated[index], [field]: value };
@@ -318,6 +326,7 @@ const MaternalCareForm = () => {
   };
 
   const handleRemoveVisit = (index: number) => {
+    if (isMidwife) return;
     setForm(prev => {
       const updated = [...prev.prenatal_visits];
       updated.splice(index, 1);
@@ -357,6 +366,10 @@ const MaternalCareForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isMidwife) {
+      toast.error("View-only access: Midwife cannot save records.");
+      return;
+    }
     const fullName = `${form.patient_last_name}, ${form.patient_first_name} ${form.patient_middle_name}`.trim();
     const cleanName = fullName.replace(/^,\s*/, "").replace(/\s+,/, "").trim();
 
@@ -464,6 +477,7 @@ const MaternalCareForm = () => {
   };
 
   const handleEdit = (record: MaternalCareRecord) => {
+    if (isMidwife) return;
     let parsedRisks: string[] = [];
     if (Array.isArray(record.risk_factors)) {
       parsedRisks = record.risk_factors;
@@ -508,6 +522,10 @@ const MaternalCareForm = () => {
   };
 
   const handleDelete = async (recordId: string) => {
+    if (isMidwife) {
+      toast.error("View-only access: Midwife cannot delete records.");
+      return;
+    }
     const { error } = await supabase
       .from("maternal_care" as any)
       .delete()
@@ -774,6 +792,8 @@ const MaternalCareForm = () => {
         </div>
       </div>
 
+      {isMidwife && <ReadOnlyBanner />}
+
       {/* Main Card Container */}
       <Card id="maternal-print-area" className="border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden">
         <CardContent className="p-6 md:p-8 space-y-6">
@@ -797,6 +817,7 @@ const MaternalCareForm = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
+            <fieldset disabled={isMidwife} className="space-y-8 border-0 p-0 m-0 min-w-0">
             
             {/* Patient General Details Grid */}
             <div className="space-y-4 bg-muted/20 p-4 md:p-5 rounded-lg border border-border/60">
@@ -1093,6 +1114,7 @@ const MaternalCareForm = () => {
             </div>
 
             {/* PRENATAL VISITS SECTION */}
+            <fieldset disabled={isMidwife}>
             <div className="space-y-4 bg-muted/20 p-4 md:p-5 rounded-lg border border-border/60">
               <div className="flex items-center justify-between border-b border-border/60 pb-2">
                 <div>
@@ -1101,9 +1123,11 @@ const MaternalCareForm = () => {
                   </h3>
                   <p className="text-[11px] text-muted-foreground no-print">Record prenatal checkup dates, vital signs, AOG, and notes.</p>
                 </div>
-                <Button type="button" onClick={handleAddVisit} size="sm" className="gap-1 text-xs no-print bg-secondary text-secondary-foreground hover:bg-secondary/80">
-                  <Plus className="h-3.5 w-3.5" /> Add Prenatal Visit
-                </Button>
+                {!isMidwife && (
+                  <Button type="button" onClick={handleAddVisit} size="sm" className="gap-1 text-xs no-print bg-secondary text-secondary-foreground hover:bg-secondary/80">
+                    <Plus className="h-3.5 w-3.5" /> Add Prenatal Visit
+                  </Button>
+                )}
               </div>
 
               {form.prenatal_visits.length === 0 ? (
@@ -1118,15 +1142,17 @@ const MaternalCareForm = () => {
                         <span className="font-bold text-foreground flex items-center gap-1">
                           Prenatal Visit #{index + 1}
                         </span>
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => handleRemoveVisit(index)} 
-                          className="h-6 w-6 text-muted-foreground hover:text-destructive no-print"
-                        >
-                          <Trash className="h-3.5 w-3.5" />
-                        </Button>
+                        {!isMidwife && (
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handleRemoveVisit(index)} 
+                            className="h-6 w-6 text-muted-foreground hover:text-destructive no-print"
+                          >
+                            <Trash className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
@@ -1233,6 +1259,7 @@ const MaternalCareForm = () => {
                 </div>
               )}
             </div>
+            </fieldset>
 
             {/* Printable Official Footer Signatures */}
             <div
@@ -1257,22 +1284,26 @@ const MaternalCareForm = () => {
 
             {/* Submit Action Buttons */}
             <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
-              {editRecordId && (
+              {!isMidwife && editRecordId && (
                 <Button type="button" variant="outline" onClick={handleResetForm} className="text-xs">
                   Cancel Edit
                 </Button>
               )}
-              <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
-                <Save className="h-4 w-4" /> {saving ? "Saving..." : editRecordId ? "Update Record" : "Save Record"}
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setResetConfirmOpen(true)} 
-                className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
-              >
-                <RefreshCw className="h-4 w-4" /> Reset
-              </Button>
+              {!isMidwife && (
+                <>
+                  <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Save className="h-4 w-4" /> {saving ? "Saving..." : editRecordId ? "Update Record" : "Save Record"}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setResetConfirmOpen(true)} 
+                    className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
+                  >
+                    <RefreshCw className="h-4 w-4" /> Reset
+                  </Button>
+                </>
+              )}
               <Button 
                 type="button" 
                 variant="outline" 
@@ -1395,24 +1426,28 @@ const MaternalCareForm = () => {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          onClick={() => handleEdit(rec)} 
-                          title="Edit Record"
-                          className="h-7 w-7 text-muted-foreground hover:text-primary"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          onClick={() => setDeleteConfirmId(rec.id)} 
-                          title="Delete Record"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
+                        {!isMidwife && (
+                          <>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              onClick={() => handleEdit(rec)} 
+                              title="Edit Record"
+                              className="h-7 w-7 text-muted-foreground hover:text-primary"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              onClick={() => setDeleteConfirmId(rec.id)} 
+                              title="Delete Record"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </td>
                     </tr>
                   );

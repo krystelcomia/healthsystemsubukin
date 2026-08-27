@@ -823,15 +823,17 @@ const ChildHealthForm = () => {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          onClick={() => setDeleteConfirmId(rec.id)} 
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          title="Delete record"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
+                        {!isMidwife && (
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            onClick={() => setDeleteConfirmId(rec.id)} 
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                            title="Delete record"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   );

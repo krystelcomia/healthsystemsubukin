@@ -43,6 +43,8 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
+import { useAuth } from "@/contexts/AuthContext";
+import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 
 interface Resident {
   id: string; 
@@ -69,6 +71,8 @@ interface HealthRecords {
 
 const ResidentRecords = () => {
   const { t } = useSettings();
+  const { userRole } = useAuth();
+  const isMidwife = userRole === "midwife";
   const [search, setSearch] = useState("");
   const [residents, setResidents] = useState<Resident[]>([]);
   const [loading, setLoading] = useState(true);
@@ -706,36 +710,38 @@ const ResidentRecords = () => {
         </div>
 
         {/* Edit Dialog inside detail view */}
-        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader><DialogTitle>{t("residents.editResident")}</DialogTitle><DialogDescription>{t("residents.editResidentDesc")}</DialogDescription></DialogHeader>
-            {editResident && (
-              <div className="space-y-3">
-                <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={editResident.full_name} onKeyDown={allowOnlyLetters} onChange={(e) => setEditResident({ ...editResident, full_name: sanitizeLetters(e.target.value) })} /></div>
-                <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={editResident.birthday || ""} onChange={(e) => {
-                  const bday = e.target.value;
-                  const computed = calculateAge(bday);
-                  setEditResident({ ...editResident, birthday: bday, age: computed > 0 ? computed : editResident.age });
-                }} /></div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={editResident.gender} onValueChange={(v) => setEditResident({ ...editResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
-                  <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={editResident.age} onKeyDown={allowOnlyNumbers} onChange={(e) => setEditResident({ ...editResident, age: Number(sanitizeNumbers(e.target.value)) })} /></div>
+        {!isMidwife && (
+          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader><DialogTitle>{t("residents.editResident")}</DialogTitle><DialogDescription>{t("residents.editResidentDesc")}</DialogDescription></DialogHeader>
+              {editResident && (
+                <div className="space-y-3">
+                  <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={editResident.full_name} onKeyDown={allowOnlyLetters} onChange={(e) => setEditResident({ ...editResident, full_name: sanitizeLetters(e.target.value) })} /></div>
+                  <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={editResident.birthday || ""} onChange={(e) => {
+                    const bday = e.target.value;
+                    const computed = calculateAge(bday);
+                    setEditResident({ ...editResident, birthday: bday, age: computed > 0 ? computed : editResident.age });
+                  }} /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1"><Label>{t("residents.gender")}</Label><Select value={editResident.gender} onValueChange={(v) => setEditResident({ ...editResident, gender: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">{t("residents.male")}</SelectItem><SelectItem value="Female">{t("residents.female")}</SelectItem></SelectContent></Select></div>
+                    <div className="space-y-1"><Label>{t("residents.age")}</Label><Input type="number" value={editResident.age} onKeyDown={allowOnlyNumbers} onChange={(e) => setEditResident({ ...editResident, age: Number(sanitizeNumbers(e.target.value)) })} /></div>
+                  </div>
+                  <div className="space-y-1"><Label>{t("residents.civilStatus")}</Label><Select value={editResident.status} onValueChange={(v) => setEditResident({ ...editResident, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">{t("residents.single")}</SelectItem><SelectItem value="Married">{t("residents.married")}</SelectItem><SelectItem value="Widowed">{t("residents.widowed")}</SelectItem><SelectItem value="Separated">{t("residents.separated")}</SelectItem></SelectContent></Select></div>
+                  <div className="space-y-1">
+                    <Label>{t("residents.sitio")}</Label>
+                    <Select value={editResident.sitio || ""} onValueChange={(v) => setEditResident({ ...editResident, sitio: v })}>
+                      <SelectTrigger><SelectValue placeholder="Select Sitio" /></SelectTrigger>
+                      <SelectContent>
+                        {SUBUKIN_SITIOS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="space-y-1"><Label>{t("residents.civilStatus")}</Label><Select value={editResident.status} onValueChange={(v) => setEditResident({ ...editResident, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">{t("residents.single")}</SelectItem><SelectItem value="Married">{t("residents.married")}</SelectItem><SelectItem value="Widowed">{t("residents.widowed")}</SelectItem><SelectItem value="Separated">{t("residents.separated")}</SelectItem></SelectContent></Select></div>
-                <div className="space-y-1">
-                  <Label>{t("residents.sitio")}</Label>
-                  <Select value={editResident.sitio || ""} onValueChange={(v) => setEditResident({ ...editResident, sitio: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select Sitio" /></SelectTrigger>
-                    <SelectContent>
-                      {SUBUKIN_SITIOS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
-            <DialogFooter><Button variant="outline" onClick={() => setEditDialogOpen(false)}>{t("common.cancel")}</Button><Button onClick={handleEditResident}>{t("common.saveChanges")}</Button></DialogFooter>
-          </DialogContent>
-        </Dialog>
+              )}
+              <DialogFooter><Button variant="outline" onClick={() => setEditDialogOpen(false)}>{t("common.cancel")}</Button><Button onClick={handleEditResident}>{t("common.saveChanges")}</Button></DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     );
   }
@@ -790,6 +796,8 @@ const ResidentRecords = () => {
           </div>
         </div>
       </div>
+
+      {isMidwife && <ReadOnlyBanner />}
 
       {/* Clean Search & Sitio Filters Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 no-print">

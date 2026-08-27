@@ -706,40 +706,44 @@ const ConsultationForm = () => {
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setForm({
-                                    resident_id: rec.resident_id || "",
-                                    birthdate: rec.birthdate || "",
-                                    age: rec.age ? String(rec.age) : "",
-                                    sitio: rec.sitio || "",
-                                    date: rec.consultation_date || getTodayDate(),
-                                    temperature: rec.temperature || "",
-                                    pulseRate: rec.pulse_rate || "",
-                                    respirationRate: rec.respiration_rate || "",
-                                    height: rec.height || "",
-                                    weight: rec.weight || "",
-                                    consultationCause: rec.consultation_cause || "",
-                                  });
-                                  window.scrollTo({ top: 0, behavior: "smooth" });
-                                  toast.info(`Loaded consultation record for ${resName}`);
-                                }}
-                                title="Load into Form"
-                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setDeleteConfirmId(rec.id)}
-                                title="Delete Record"
-                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
+                              {!isMidwife && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      setForm({
+                                        resident_id: rec.resident_id || "",
+                                        birthdate: rec.birthdate || "",
+                                        age: rec.age ? String(rec.age) : "",
+                                        sitio: rec.sitio || "",
+                                        date: rec.consultation_date || getTodayDate(),
+                                        temperature: rec.temperature || "",
+                                        pulseRate: rec.pulse_rate || "",
+                                        respirationRate: rec.respiration_rate || "",
+                                        height: rec.height || "",
+                                        weight: rec.weight || "",
+                                        consultationCause: rec.consultation_cause || "",
+                                      });
+                                      window.scrollTo({ top: 0, behavior: "smooth" });
+                                      toast.info(`Loaded consultation record for ${resName}`);
+                                    }}
+                                    title="Load into Form"
+                                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setDeleteConfirmId(rec.id)}
+                                    title="Delete Record"
+                                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>

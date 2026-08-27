@@ -1113,59 +1113,63 @@ const PhilPenHealthForm = () => {
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setForm({
-                                    resident_id: rec.resident_id || "",
-                                    address: rec.address_sitio || "",
-                                    age: rec.age ? String(rec.age) : "",
-                                    birthdate: rec.birthdate || "",
-                                    currentDate: rec.record_date || getTodayDate(),
-                                    bp: rec.bp || "",
-                                    height: rec.height || "",
-                                    weight: rec.weight || "",
-                                    smokes: !!rec.smokes,
-                                    smokes_no: !rec.smokes,
-                                    smokes_remarks: rec.smokes_remarks || "",
-                                    drinks_alcohol: !!rec.drinks_alcohol,
-                                    drinks_alcohol_no: !rec.drinks_alcohol,
-                                    drinks_remarks: rec.drinks_remarks || "",
-                                    high_bp: !!rec.high_blood_pressure,
-                                    high_bp_no: !rec.high_blood_pressure,
-                                    bp_remarks_bp: rec.bp_remarks_bp || "",
-                                    bp_remarks_meds: rec.bp_remarks_meds || "",
-                                    bp_remarks_chest: rec.bp_remarks_chest || "",
-                                    diabetes: !!rec.diabetes_symptoms,
-                                    diabetes_no: !rec.diabetes_symptoms,
-                                    diabetes_palakain: !!rec.diabetes_palakain,
-                                    diabetes_palakain_no: !rec.diabetes_palakain,
-                                    diabetes_palaging_gutom: !!rec.diabetes_palaging_gutom,
-                                    diabetes_palaging_gutom_no: !rec.diabetes_palaging_gutom,
-                                    diabetes_madalas_umihi: !!rec.diabetes_madalas_umihi,
-                                    diabetes_madalas_umihi_no: !rec.diabetes_madalas_umihi,
-                                    diabetes_laging_uhaw: !!rec.diabetes_laging_uhaw,
-                                    diabetes_laging_uhaw_no: !rec.diabetes_laging_uhaw,
-                                    diabetes_remarks: rec.diabetes_remarks || ""
-                                  });
-                                  window.scrollTo({ top: 0, behavior: "smooth" });
-                                  toast.info(`Loaded PhilPen checklist for ${resName}`);
-                                }}
-                                title="Load into Form"
-                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setDeleteConfirmId(rec.id)}
-                                title="Delete Record"
-                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
+                              {!isMidwife && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      setForm({
+                                        resident_id: rec.resident_id || "",
+                                        address: rec.address_sitio || "",
+                                        age: rec.age ? String(rec.age) : "",
+                                        birthdate: rec.birthdate || "",
+                                        currentDate: rec.record_date || getTodayDate(),
+                                        bp: rec.bp || "",
+                                        height: rec.height || "",
+                                        weight: rec.weight || "",
+                                        smokes: !!rec.smokes,
+                                        smokes_no: !rec.smokes,
+                                        smokes_remarks: rec.smokes_remarks || "",
+                                        drinks_alcohol: !!rec.drinks_alcohol,
+                                        drinks_alcohol_no: !rec.drinks_alcohol,
+                                        drinks_remarks: rec.drinks_remarks || "",
+                                        high_bp: !!rec.high_blood_pressure,
+                                        high_bp_no: !rec.high_blood_pressure,
+                                        bp_remarks_bp: rec.bp_remarks_bp || "",
+                                        bp_remarks_meds: rec.bp_remarks_meds || "",
+                                        bp_remarks_chest: rec.bp_remarks_chest || "",
+                                        diabetes: !!rec.diabetes_symptoms,
+                                        diabetes_no: !rec.diabetes_symptoms,
+                                        diabetes_palakain: !!rec.diabetes_palakain,
+                                        diabetes_palakain_no: !rec.diabetes_palakain,
+                                        diabetes_palaging_gutom: !!rec.diabetes_palaging_gutom,
+                                        diabetes_palaging_gutom_no: !rec.diabetes_palaging_gutom,
+                                        diabetes_madalas_umihi: !!rec.diabetes_madalas_umihi,
+                                        diabetes_madalas_umihi_no: !rec.diabetes_madalas_umihi,
+                                        diabetes_laging_uhaw: !!rec.diabetes_laging_uhaw,
+                                        diabetes_laging_uhaw_no: !rec.diabetes_laging_uhaw,
+                                        diabetes_remarks: rec.diabetes_remarks || ""
+                                      });
+                                      window.scrollTo({ top: 0, behavior: "smooth" });
+                                      toast.info(`Loaded PhilPen checklist for ${resName}`);
+                                    }}
+                                    title="Load into Form"
+                                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setDeleteConfirmId(rec.id)}
+                                    title="Delete Record"
+                                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>

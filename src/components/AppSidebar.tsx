@@ -85,6 +85,8 @@ export function AppSidebar() {
     icon: FileText,
   }));
 
+  const isMidwife = userRole === "midwife";
+
   const bhwFormItems = [
     { title: t("nav.familyData"), url: "/forms/family-data", icon: ClipboardList },
     { title: t("nav.consultation"), url: "/forms/consultation", icon: Stethoscope },
@@ -94,7 +96,7 @@ export function AppSidebar() {
     { title: t("nav.childHealth"), url: "/forms/child-health", icon: Baby },
     { title: t("nav.familyPlanning"), url: "/forms/family-planning", icon: Syringe },
     ...customBhwItems,
-    { title: t("nav.addNewForm"), url: "/forms/add-new", icon: Plus },
+    ...(!isMidwife ? [{ title: t("nav.addNewForm"), url: "/forms/add-new", icon: Plus }] : []),
   ];
 
   const bhwSystemItems = [

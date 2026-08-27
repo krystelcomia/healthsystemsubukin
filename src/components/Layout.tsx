@@ -40,6 +40,7 @@ const BHW_WORKERS = [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, userRole, username, fullName } = useAuth();
+  const isMidwife = userRole === "midwife";
   const { t, language } = useSettings();
   const [showAlertBadge, setShowAlertBadge] = useState(false);
   const [activeBhw, setActiveBhw] = useState<string | null>(null);
@@ -281,120 +282,115 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </nav>
               </TooltipProvider>
 
-              <div className="border-l border-sidebar-border h-6 shrink-0" />
+              {!isMidwife && (
+                <>
+                  <div className="border-l border-sidebar-border h-6 shrink-0" />
 
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className={`relative flex items-center gap-2 h-9 rounded-full px-3 transition-all shrink-0 ${
-                      !activeBhw
-                        ? "bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/20 animate-pulse" 
-                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    }`}
-                  >
-                    <Fingerprint className={`h-5 w-5 ${!activeBhw ? "text-amber-500 animate-pulse" : "text-primary"}`} />
-                    <span className="text-xs font-semibold max-w-[120px] truncate">
-                      {activeBhw 
-                        ? activeBhw 
-                        : userRole === "supervisor"
-                        ? (language === "tl" ? "Mag-Clock In (Midwife)" : "Midwife Sign In")
-                        : userRole === "supervisory"
-                        ? (language === "tl" ? "Mag-Clock In (Supervisory)" : "BHW Supervisory Sign In")
-                        : (language === "tl" ? "Mag-Clock In" : "BHW Sign In")}
-                    </span>
-                    {activeBhw && (
-                      <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background animate-pulse" />
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-80 p-4 border border-border/50 bg-popover shadow-xl rounded-lg z-50 space-y-4">
-                  {(userRole === "bhw" || userRole === "bns" || userRole === "BNS" || userRole === "supervisor" || userRole === "supervisory") && (
-                    <>
-                      <div className="space-y-1">
-                        <h4 className="font-heading font-semibold text-sm text-foreground flex items-center gap-1.5">
-                          <Fingerprint className="h-4 w-4 text-primary" />
-                          {userRole === "supervisor"
-                            ? (language === "tl" ? "Aktibong Shift ng Midwife" : "Midwife Active Shift") 
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className={`relative flex items-center gap-2 h-9 rounded-full px-3 transition-all shrink-0 ${
+                          !activeBhw
+                            ? "bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/20 animate-pulse" 
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        }`}
+                      >
+                        <Fingerprint className={`h-5 w-5 ${!activeBhw ? "text-amber-500 animate-pulse" : "text-primary"}`} />
+                        <span className="text-xs font-semibold max-w-[120px] truncate">
+                          {activeBhw 
+                            ? activeBhw 
+                            : userRole === "supervisor"
+                            ? (language === "tl" ? "Mag-Clock In (Supervisor)" : "Supervisor Sign In")
                             : userRole === "supervisory"
-                            ? (language === "tl" ? "Aktibong Shift ng BHW Supervisory" : "BHW Supervisory Active Shift")
-                            : userRole === "bns" 
-                            ? (language === "tl" ? "Aktibong Shift ng BNS Scholar" : "BNS Scholar Active Shift") 
-                            : (language === "tl" ? "Aktibong Shift ng BHW" : "BHW Active Shift")}
-                        </h4>
-                        <p className="text-xs text-muted-foreground">
-                          {language === "tl" ? "Tagasubaybay ng shift gamit ang aktibong profile: " : "Shift tracker using your active login profile: "}<span className="font-bold text-foreground">{workerDisplayName}</span>.
-                        </p>
-                      </div>
-
-                      {activeBhw ? (
-                        <div className="p-3 bg-muted/40 border border-border/30 rounded-lg space-y-2 text-xs">
-                          <p className="text-foreground">
-                            {language === "tl" ? "Aktibong Shift: " : "Active Shift: "}<strong>{activeBhw}</strong>
-                          </p>
-                          <p className="text-muted-foreground flex items-center gap-1">
-                            <Clock className="h-3 w-3 text-primary/75" />
-                            {language === "tl" ? "Tagal ng shift: " : "Shift duration: "}<span className="font-mono text-primary font-semibold">{sessionDuration}</span>
-                          </p>
-                          <Button 
-                            variant="destructive" 
-                            size="sm" 
-                            className="w-full text-xs h-8 mt-1 gap-1 font-semibold"
-                            onClick={() => {
-                              bhwCheckOut();
-                              toast.success(language === "tl" ? "Matagumpay na natapos ang shift!" : "Shift ended successfully!");
-                            }}
-                          >
-                            <LogOut className="h-3.5 w-3.5" /> {language === "tl" ? "Tapusin ang Shift / Mag-Check Out" : "End Shift / Check Out"}
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <div className="p-3 bg-muted/20 border border-border/10 rounded-lg space-y-1">
-                            <p className="text-xs text-muted-foreground">{language === "tl" ? "Naka-log in na User Profile:" : "Logged In User Profile:"}</p>
-                            <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                              <User className="h-3.5 w-3.5 text-primary" /> {workerDisplayName}
+                            ? (language === "tl" ? "Mag-Clock In (Supervisory)" : "BHW Supervisory Sign In")
+                            : (language === "tl" ? "Mag-Clock In" : "BHW Sign In")}
+                        </span>
+                        {activeBhw && (
+                          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background animate-pulse" />
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-80 p-4 border border-border/50 bg-popover shadow-xl rounded-lg z-50 space-y-4">
+                      {(userRole === "bhw" || userRole === "bns" || userRole === "BNS" || userRole === "supervisor" || userRole === "supervisory") && (
+                        <>
+                          <div className="space-y-1">
+                            <h4 className="font-heading font-semibold text-sm text-foreground flex items-center gap-1.5">
+                              <Fingerprint className="h-4 w-4 text-primary" />
+                              {userRole === "supervisor"
+                                ? (language === "tl" ? "Aktibong Shift ng Supervisor" : "Supervisor Active Shift") 
+                                : userRole === "supervisory"
+                                ? (language === "tl" ? "Aktibong Shift ng BHW Supervisory" : "BHW Supervisory Active Shift")
+                                : userRole === "bns" 
+                                ? (language === "tl" ? "Aktibong Shift ng BNS Scholar" : "BNS Scholar Active Shift") 
+                                : (language === "tl" ? "Aktibong Shift ng BHW" : "BHW Active Shift")}
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                              {language === "tl" ? "Tagasubaybay ng shift gamit ang aktibong profile: " : "Shift tracker using your active login profile: "}<span className="font-bold text-foreground">{workerDisplayName}</span>.
                             </p>
                           </div>
-                          <Button 
-                            size="sm" 
-                            className="w-full text-xs h-8 gap-1.5 font-semibold"
-                            onClick={() => {
-                              bhwCheckIn(workerDisplayName);
-                              toast.success(language === "tl" ? `Maligayang pagdating, ${workerDisplayName}! Nagsimula na ang iyong shift.` : `Welcome, ${workerDisplayName}! Shift started.`);
-                            }}
-                          >
-                            <UserCheck className="h-3.5 w-3.5" /> {language === "tl" ? "Mag-Clock In / Simulan ang Shift" : "Clock In / Start Shift"}
-                          </Button>
-                        </div>
+
+                          {activeBhw ? (
+                            <div className="p-3 bg-muted/40 border border-border/30 rounded-lg space-y-2 text-xs">
+                              <p className="text-foreground">
+                                {language === "tl" ? "Aktibong Shift: " : "Active Shift: "}<strong>{activeBhw}</strong>
+                              </p>
+                              <p className="text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-3 w-3 text-primary/75" />
+                                {language === "tl" ? "Tagal ng shift: " : "Shift duration: "}<span className="font-mono text-primary font-semibold">{sessionDuration}</span>
+                              </p>
+                              <Button 
+                                variant="destructive" 
+                                size="sm" 
+                                className="w-full text-xs h-8 mt-1 gap-1 font-semibold"
+                                onClick={() => {
+                                  bhwCheckOut();
+                                  toast.success(language === "tl" ? "Matagumpay na natapos ang shift!" : "Shift ended successfully!");
+                                }}
+                              >
+                                <LogOut className="h-3.5 w-3.5" /> {language === "tl" ? "Tapusin ang Shift / Mag-Check Out" : "End Shift / Check Out"}
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <div className="p-3 bg-muted/20 border border-border/10 rounded-lg space-y-1">
+                                <p className="text-xs text-muted-foreground">{language === "tl" ? "Naka-log in na User Profile:" : "Logged In User Profile:"}</p>
+                                <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                  <User className="h-3.5 w-3.5 text-primary" /> {workerDisplayName}
+                                </p>
+                              </div>
+                              <Button 
+                                size="sm" 
+                                className="w-full text-xs h-8 gap-1.5 font-semibold"
+                                onClick={() => {
+                                  bhwCheckIn(workerDisplayName);
+                                  toast.success(language === "tl" ? `Maligayang pagdating, ${workerDisplayName}! Nagsimula na ang iyong shift.` : `Welcome, ${workerDisplayName}! Shift started.`);
+                                }}
+                              >
+                                <UserCheck className="h-3.5 w-3.5" /> {language === "tl" ? "Mag-Clock In / Simulan ang Shift" : "Clock In / Start Shift"}
+                              </Button>
+                            </div>
+                          )}
+                        </>
                       )}
-                    </>
-                  )}
 
-                  {userRole === "supervisor" && (
-                    <div className="space-y-1 p-2 bg-muted/20 border border-border/20 rounded-md">
-                      <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
-                        <Shield className="h-3.5 w-3.5 text-primary" />
-                        {language === "tl" ? "Mode ng Midwife Admin" : "Midwife Admin Mode"}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="border-t border-border/30 pt-3">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full text-xs h-8 gap-1.5 font-semibold"
-                      onClick={() => {
-                        setLogsDialogOpen(true);
-                      }}
-                    >
-                      <List className="h-3.5 w-3.5" /> {language === "tl" ? "Tingnan ang Attendance at Logs" : "View Attendance & Logs"}
-                    </Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+                      <div className="border-t border-border/30 pt-3">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full text-xs h-8 gap-1.5 font-semibold"
+                          onClick={() => {
+                            setLogsDialogOpen(true);
+                          }}
+                        >
+                          <List className="h-3.5 w-3.5" /> {language === "tl" ? "Tingnan ang Attendance at Logs" : "View Attendance & Logs"}
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </>
+              )}
             </div>
           </header>
 
