@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -205,6 +206,8 @@ const StepIndicator = ({ current, onStepClick, canGoTo }: { current: number; onS
 const AddNewForm = () => {
   const navigate = useNavigate();
   const { formId } = useParams<{ formId?: string }>();
+  const { userRole } = useAuth();
+  const isMidwife = userRole === "midwife";
 
   const [imageData, setImageData] = useState<string | null>(null);
   const [hint, setHint] = useState<string>(DEFAULT_CONVERSION_PROMPT);
@@ -380,6 +383,10 @@ const AddNewForm = () => {
 
   /* ── Deploy / delete ── */
   const handleDeployForm = () => {
+    if (isMidwife) {
+      toast.error("View-only access: Midwife cannot deploy or create forms.");
+      return;
+    }
     if (!draftTitle.trim()) {
       toast.error("Please assign a title to the form before deploying.");
       return;
@@ -408,6 +415,10 @@ const AddNewForm = () => {
   };
 
   const handleSaveRecord = async () => {
+    if (isMidwife) {
+      toast.error("View-only access: Midwife cannot save records.");
+      return;
+    }
     // 1. Find resident Name or primary identifier
     const nameField = draftFields.find(f => {
       const l = f.label.toLowerCase();
@@ -501,6 +512,10 @@ const AddNewForm = () => {
   };
 
   const handleDeleteForm = (id: string) => {
+    if (isMidwife) {
+      toast.error("View-only access: Midwife cannot delete forms.");
+      return;
+    }
     const updated = savedForms.filter((f) => f.id !== id);
     saveForms(updated);
     setSavedForms(updated);
@@ -511,6 +526,10 @@ const AddNewForm = () => {
   };
 
   const deleteSaved = (id: string) => {
+    if (isMidwife) {
+      toast.error("View-only access: Midwife cannot delete forms.");
+      return;
+    }
     const updated = savedForms.filter((f) => f.id !== id);
     saveForms(updated);
     setSavedForms(updated);
@@ -1381,14 +1400,16 @@ const AddNewForm = () => {
                         <Printer className="h-3.5 w-3.5" /> Print
                       </Button>
 
-                      <Button
-                        type="button"
-                        onClick={handleSaveRecord}
-                        size="sm"
-                        className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm px-6"
-                      >
-                        <Save className="h-4 w-4" /> Save
-                      </Button>
+                      {!isMidwife && (
+                        <Button
+                          type="button"
+                          onClick={handleSaveRecord}
+                          size="sm"
+                          className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm px-6"
+                        >
+                          <Save className="h-4 w-4" /> Save
+                        </Button>
+                      )}
                     </>
                   ) : (
                     <>
@@ -1421,14 +1442,16 @@ const AddNewForm = () => {
                         <Printer className="h-3.5 w-3.5" /> Print
                       </Button>
 
-                      <Button
-                        type="button"
-                        onClick={handleDeployForm}
-                        size="sm"
-                        className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm px-5"
-                      >
-                        <Rocket className="h-4 w-4" /> Deploy Form
-                      </Button>
+                      {!isMidwife && (
+                        <Button
+                          type="button"
+                          onClick={handleDeployForm}
+                          size="sm"
+                          className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm px-5"
+                        >
+                          <Rocket className="h-4 w-4" /> Deploy Form
+                        </Button>
+                      )}
                     </>
                   )}
                 </div>

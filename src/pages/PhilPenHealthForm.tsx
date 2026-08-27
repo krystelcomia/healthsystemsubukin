@@ -11,10 +11,12 @@ import { toast } from "sonner";
 import { Activity, Save, Printer, RefreshCw, HeartPulse, CheckCircle2, Search, Eye, Pencil, History, Calendar, UserCheck, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { logActivity } from "@/lib/activityLogger";
 import { calculateAge, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import barangayLogo from "@/assets/barangay-logo.png";
@@ -54,6 +56,8 @@ interface Resident {
 
 const PhilPenHealthForm = () => {
   const { t } = useSettings();
+  const { userRole } = useAuth();
+  const isMidwife = userRole === "midwife";
   const [residents, setResidents] = useState<Resident[]>([]);
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
 
@@ -527,6 +531,9 @@ const PhilPenHealthForm = () => {
         </div>
       </div>
 
+      {/* Midwife read-only banner */}
+      {isMidwife && <ReadOnlyBanner />}
+
       {/* Printable Sheet Canvas */}
       <Card 
         id="philpen-print-area" 
@@ -941,24 +948,28 @@ const PhilPenHealthForm = () => {
 
             {/* Bottom Form Actions Row - Hidden in Print */}
             <div className="flex flex-wrap items-center justify-end gap-3 pt-6 no-print border-t border-border/40">
-              <Button 
-                type="submit" 
-                disabled={loading} 
-                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all duration-200 px-6"
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                {loading ? "Saving..." : "Save Record"}
-              </Button>
+              {!isMidwife && (
+                <Button 
+                  type="submit" 
+                  disabled={loading} 
+                  className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all duration-200 px-6"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  {loading ? "Saving..." : "Save Record"}
+                </Button>
+              )}
 
-              <Button 
-                type="button" 
-                onClick={() => setResetConfirmOpen(true)}
-                className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
-                variant="outline"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Reset
-              </Button>
+              {!isMidwife && (
+                <Button 
+                  type="button" 
+                  onClick={() => setResetConfirmOpen(true)}
+                  className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
+                  variant="outline"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Reset
+                </Button>
+              )}
               
               <Button 
                 type="button" 

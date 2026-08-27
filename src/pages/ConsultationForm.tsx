@@ -12,10 +12,12 @@ import { toast } from "sonner";
 import { Stethoscope, Printer, RefreshCw, UserCheck, Activity, FileText, CheckCircle2, Search, Eye, Pencil, History, Calendar, HeartPulse, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { ensureResidentExists, getFamilyOnlyResidents, calculateAge } from "@/lib/residentLinker";
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import barangayLogo from "@/assets/barangay-logo.png";
@@ -57,6 +59,8 @@ const getTodayDate = () => {
 };
 
 const ConsultationForm = () => {
+  const { userRole } = useAuth();
+  const isMidwife = userRole === "midwife";
   const { t } = useSettings();
   const [residents, setResidents] = useState<{ id: string; full_name: string; sitio?: string; age?: number; birthday?: string }[]>([]);
   const [form, setForm] = useState({
@@ -394,6 +398,9 @@ const ConsultationForm = () => {
         </div>
       </div>
 
+      {/* Midwife read-only banner */}
+      {isMidwife && <ReadOnlyBanner />}
+
       {/* Main Consultation Form Card */}
       <Card id="consultation-print-area" className="border-border/60 shadow-md bg-card rounded-2xl overflow-hidden">
         <CardContent className="p-6 md:p-8 space-y-6">
@@ -549,23 +556,27 @@ const ConsultationForm = () => {
 
             {/* Form Actions */}
             <div className="pt-6 border-t border-border/40 flex flex-wrap items-center justify-end gap-3 no-print">
-              <Button 
-                type="submit" 
-                className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all duration-200 gap-2 px-6"
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                Save Record
-              </Button>
+              {!isMidwife && (
+                <Button 
+                  type="submit" 
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all duration-200 gap-2 px-6"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  Save Record
+                </Button>
+              )}
 
-              <Button 
-                type="button" 
-                onClick={() => setResetConfirmOpen(true)}
-                variant="outline"
-                className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Reset
-              </Button>
+              {!isMidwife && (
+                <Button 
+                  type="button" 
+                  onClick={() => setResetConfirmOpen(true)}
+                  variant="outline"
+                  className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Reset
+                </Button>
+              )}
               
               <Button 
                 type="button" 

@@ -38,6 +38,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import {
   allowOnlyLetters,
   allowOnlyNumbers,
@@ -373,7 +374,8 @@ const initialSickForm: SickChildFormFull = {
 
 const ChildHealthForm = () => {
   const { t } = useSettings();
-  const { user, fullName, username } = useAuth();
+  const { user, fullName, username, userRole } = useAuth();
+  const isMidwife = userRole === "midwife";
   const [activeTab, setActiveTab] = useState("sick-children");
 
   const loggedInWorkerName = useMemo(() => {

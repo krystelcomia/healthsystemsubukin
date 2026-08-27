@@ -25,11 +25,14 @@ import {
   Plus,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { syncFamilyDataToResidents, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const Index = () => {
+  const { userRole } = useAuth();
+  const isMidwife = userRole === "midwife";
   const { t, colorTheme, language } = useSettings();
   const [stats, setStats] = useState({
     totalResidents: 0,
@@ -447,14 +450,15 @@ const Index = () => {
   const allLaunchpadItems: LaunchpadItem[] = [
     ...standardForms,
     ...deployedCustomLaunchpadItems,
-    {
+    // Hide "Add New Form" deploy item for midwife (view-only)
+    ...(!isMidwife ? [{
       title: language === "tl" ? "Magdagdag ng Bagong Form" : "Add New Form",
       href: "/forms/add-new",
       icon: Plus,
       color: "from-muted/40 to-muted/10 text-muted-foreground border-dashed border-border/80 hover:border-primary/50 hover:text-primary",
       desc: language === "tl" ? "Mag-scan at mag-deploy ng mga bagong digital health form" : "Scan and deploy new digital health forms",
       badge: language === "tl" ? "I-deploy" : "Deploy",
-    },
+    }] : []),
   ];
 
   const statCards = [
@@ -478,6 +482,12 @@ const Index = () => {
               <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
               {language === "tl" ? "Sentro ng Kalusugan ng Barangay Subukin" : "Barangay Subukin Health Center Hub"}
             </div>
+            {isMidwife && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border border-amber-400/50 bg-amber-500/20 text-amber-200 backdrop-blur-md">
+                <Eye className="h-3.5 w-3.5" />
+                {language === "tl" ? "View Only — Midwife" : "View Only — Midwife"}
+              </div>
+            )}
             <h1 className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-white">
               {t("dashboard.title")}
             </h1>
@@ -578,7 +588,13 @@ const Index = () => {
                         <h4 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
                           {item.title}
                         </h4>
-                        {item.badge && (
+                        {isMidwife && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 border-amber-400/40 text-amber-600 dark:text-amber-400 shrink-0">
+                            <Eye className="h-2.5 w-2.5 mr-0.5" />
+                            View
+                          </Badge>
+                        )}
+                        {!isMidwife && item.badge && (
                           <Badge variant="outline" className="text-[9px] px-1 py-0 border-primary/30 text-primary shrink-0">
                             {item.badge}
                           </Badge>

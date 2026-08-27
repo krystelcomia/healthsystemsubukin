@@ -19,12 +19,14 @@ import { toast } from "sonner";
 import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { logActivity } from "@/lib/activityLogger";
 import { ensureResidentExists } from "@/lib/residentLinker";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { allowOnlyLetters, sanitizeLetters } from "@/lib/inputValidation";
 
@@ -119,6 +121,8 @@ const findSignatureForResident = (
 
 const DenguePreventionForm = () => {
   const { t } = useSettings();
+  const { userRole } = useAuth();
+  const isMidwife = userRole === "midwife";
   const [records, setRecords] = useState<any[]>([]);
   const [householdHeads, setHouseholdHeads] = useState<HouseholdHeadOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1167,6 +1171,9 @@ const DenguePreventionForm = () => {
         </div>
       </div>
 
+      {/* Midwife read-only banner */}
+      {isMidwife && <ReadOnlyBanner />}
+
       <Card 
         id="dengue-print-area" 
         className={`border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden ${viewModalOpen ? "no-print" : ""}`}
@@ -1389,14 +1396,16 @@ const DenguePreventionForm = () => {
           </datalist>
 
           <div className="flex items-center justify-end gap-2 mt-4 no-print flex-wrap">
-            <Button 
-              onClick={handleSaveAll} 
-              disabled={saving} 
-              size="sm" 
-              className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md"
-            >
-              <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Progress"}
-            </Button>
+            {!isMidwife && (
+              <Button 
+                onClick={handleSaveAll} 
+                disabled={saving} 
+                size="sm" 
+                className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md"
+              >
+                <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Progress"}
+              </Button>
+            )}
             <Button 
               type="button"
               onClick={handlePrintForm} 

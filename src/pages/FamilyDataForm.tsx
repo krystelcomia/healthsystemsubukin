@@ -45,6 +45,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 
 export interface FamilyMember {
@@ -77,6 +78,7 @@ const FamilyDataForm = () => {
   const { t } = useSettings();
   const { userRole } = useAuth();
   const isAdmin = userRole === "supervisor";
+  const isMidwife = userRole === "midwife";
   const [records, setRecords] = useState<FamilyRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -964,6 +966,9 @@ const FamilyDataForm = () => {
         </div>
       </div>
 
+      {/* Midwife read-only banner */}
+      {isMidwife && <ReadOnlyBanner />}
+
       {/* Control Toolbar */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-card border border-border/60 p-4 rounded-xl shadow-xs">
         <div className="flex items-center gap-2 no-print">
@@ -973,7 +978,7 @@ const FamilyDataForm = () => {
           </span>
         </div>
         <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-          {!isAdmin && (
+          {!isAdmin && !isMidwife && (
             <Button
               onClick={handleOpenCreateModal}
               size="sm"

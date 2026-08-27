@@ -199,13 +199,15 @@ export function AppSidebar() {
           <Avatar className="h-8 w-8 rounded-full border border-sidebar-border/70 shrink-0">
             {avatarUrl && <AvatarImage src={avatarUrl} alt={displayUsername} className="object-cover" />}
             <AvatarFallback className="text-xs font-semibold bg-sidebar-accent text-sidebar-accent-foreground">
-              {isAdmin ? "MW" : (userRole === "bns" ? "BN" : "BH")}
+              {isAdmin ? "SV" : (userRole === "midwife" ? "MW" : userRole === "bns" ? "BN" : "BH")}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">{displayUsername}</p>
             <p className="text-xs text-sidebar-foreground/50">
               {isAdmin || userRole === "supervisor"
+                ? "Supervisor"
+                : userRole === "midwife"
                 ? "Midwife"
                 : userRole === "supervisory"
                 ? "BHW Supervisory"

@@ -19,15 +19,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   const isAdminRoute = location.pathname.startsWith("/admin");
 
+  // Only the 'supervisor' role (Cristeta R. Lanuza) accesses the admin panel
   const isAdmin = userRole === "supervisor";
-  const isNonAdmin = userRole === "bhw" || userRole === "bns" || userRole === "BNS" || userRole === "supervisory";
+  // BHW, BNS, midwife, and other roles use the standard user dashboard
+  const isNonAdmin = userRole === "bhw" || userRole === "bns" || userRole === "BNS" || userRole === "supervisory" || userRole === "midwife";
 
   // Supervisor should always be on /admin routes
   if (isAdmin && !isAdminRoute) {
     return <Navigate to="/admin" replace />;
   }
 
-  // Non-admin users should never access /admin routes
+  // Non-admin users (including midwife) should never access /admin routes
   if (isNonAdmin && isAdminRoute) {
     return <Navigate to="/" replace />;
   }
