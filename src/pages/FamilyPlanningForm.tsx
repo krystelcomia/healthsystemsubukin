@@ -1699,9 +1699,9 @@ const FamilyPlanningForm = () => {
               </Button>
             </div>
           </div>
-        </fieldset>
-        </div>
 
+        </div>
+        </fieldset>
       </div>
 
       {/* SAVED FAMILY PLANNING RECORDS (Positioned at the bottom of the page) */}

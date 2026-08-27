@@ -1114,7 +1114,6 @@ const MaternalCareForm = () => {
             </div>
 
             {/* PRENATAL VISITS SECTION */}
-            <fieldset disabled={isMidwife}>
             <div className="space-y-4 bg-muted/20 p-4 md:p-5 rounded-lg border border-border/60">
               <div className="flex items-center justify-between border-b border-border/60 pb-2">
                 <div>
