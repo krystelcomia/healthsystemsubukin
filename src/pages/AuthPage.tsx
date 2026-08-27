@@ -30,18 +30,101 @@ const AuthPage = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const OFFICIAL_SYSTEM_ACCOUNTS: Record<string, { username: string; fullName: string; role: string; defaultPassword?: string }> = {
+    "cristetalanuzaadmin@gmail.com": { username: "Cristeta", fullName: "Cristeta R. Lanuza", role: "supervisor" },
+    "evelynilaobhw@gmail.com": { username: "Evelyn", fullName: "Evelyn T. Ilao", role: "bhw" },
+    "ceciliabenosabhw@gmail.com": { username: "Cecilia", fullName: "Cecilia G. Benosa", role: "bhw" },
+    "merlitaalonzobhw@gmail.com": { username: "Merlita", fullName: "Merlita R. Alonzo", role: "bhw" },
+    "suzettelopezbhw@gmail.com": { username: "Suzette", fullName: "Suzette B. Lopez", role: "bhw" },
+    "amelitasayatbhw@gmail.com": { username: "Amelita", fullName: "Amelita R. Sayat", role: "bhw" },
+    "wilmatanyagbhw@gmail.com": { username: "Wilma", fullName: "Wilma D. Tanyag", role: "bhw" },
+    "nenitadimaculanganbhw@gmail.com": { username: "Nenita", fullName: "Nenita M. Dimaculangan", role: "bhw" },
+    "mercyabanillabhw@gmail.com": { username: "Mercy", fullName: "Mercy O. Abanilla", role: "bhw" },
+    "renchieilaobhw@gmail.com": { username: "Renchie", fullName: "Renchie V. Ilao", role: "bhw" },
+    "renalynlaurantebhw@gmail.com": { username: "Renalyn", fullName: "Renalyn D. Laurante", role: "bhw" },
+    "maribelabayonbns@gmail.com": { username: "Maribel", fullName: "Maribel M. Abayon", role: "bns" },
+    "maryjanelandichomidwife@gmail.com": { username: "Mary Jane", fullName: "Mary Jane Landicho", role: "midwife" },
+  };
+
   const handleLogin = async () => {
     if (!email || !password) {
       toast.error(language === "tl" ? "Mangyaring ilagay ang email at password" : "Please enter email and password");
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    const cleanEmail = email.trim();
+    let { data: signInData, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+
+    // If account doesn't exist yet in Supabase Auth, check if it's an official staff account and auto-provision it
     if (error) {
+      const emailKey = cleanEmail.toLowerCase();
+      const official = OFFICIAL_SYSTEM_ACCOUNTS[emailKey];
+      const isNotFoundOrInvalid = 
+        error.message.toLowerCase().includes("user not found") || 
+        error.message.toLowerCase().includes("invalid login credentials") ||
+        error.message.toLowerCase().includes("invalid credentials");
+
+      if (official && isNotFoundOrInvalid) {
+        try {
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: cleanEmail,
+            password: password,
+            options: {
+              data: {
+                full_name: official.fullName,
+                username: official.username,
+              }
+            }
+          });
+
+          if (!signUpError && signUpData.user) {
+            const userId = signUpData.user.id;
+
+            // Set localStorage profile cache
+            localStorage.setItem("logged_in_username", official.username);
+            localStorage.setItem("logged_in_fullname", official.fullName);
+
+            // Upsert role & profile
+            try {
+              await supabase.from("user_roles").upsert(
+                { user_id: userId, role: official.role },
+                { onConflict: "user_id" }
+              );
+              await supabase.from("profiles").upsert(
+                { user_id: userId, username: official.username, full_name: official.fullName },
+                { onConflict: "user_id" }
+              );
+              if (official.role !== "midwife") {
+                await supabase.from("bhw_workers").update({ user_id: userId }).eq("gmail", cleanEmail);
+              }
+            } catch (setupErr) {
+              console.warn("Role setup error on initial provisioning:", setupErr);
+            }
+
+            if (signUpData.session) {
+              toast.success(language === "tl" ? "Matagumpay na nakapag-sign in" : "Signed in successfully");
+              setLoading(false);
+              return;
+            }
+
+            // Retry sign in after signup
+            const retryRes = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+            if (!retryRes.error) {
+              toast.success(language === "tl" ? "Matagumpay na nakapag-sign in" : "Signed in successfully");
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (autoErr) {
+          console.error("Auto provisioning error:", autoErr);
+        }
+      }
+
       toast.error(error.message, { duration: 7000 });
       setLoading(false);
       return;
     }
+
     toast.success(language === "tl" ? "Matagumpay na nakapag-sign in" : "Signed in successfully");
     setLoading(false);
   };
