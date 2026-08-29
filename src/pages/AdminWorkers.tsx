@@ -41,6 +41,25 @@ const AdminWorkers = () => {
   const [newWorker, setNewWorker] = useState({ name: "", age: "", address: "", gmail: "", number: "", username: "", password: "", assigned_sitio: "" });
 
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
+  const [userRoles, setUserRoles] = useState<Record<string, string>>({});
+
+  const isSupervisorWorker = (w: BHWWorker) => {
+    const email = (w.gmail || "").toLowerCase().trim();
+    const name = (w.name || "").toLowerCase().trim();
+    const role = w.user_id ? userRoles[w.user_id] : null;
+
+    return (
+      role === "supervisor" ||
+      role === "supervisory" ||
+      email.includes("cristetalanuza") ||
+      email.includes("adminsubukin") ||
+      (email.includes("admin") && !email.includes("midwife")) ||
+      email.includes("supervisor") ||
+      name.includes("cristeta") ||
+      name.includes("lanuza") ||
+      name.includes("supervisor")
+    );
+  };
 
   useEffect(() => {
     fetchWorkers();
@@ -89,14 +108,33 @@ const AdminWorkers = () => {
 
   const fetchWorkers = async () => {
     getDatabaseSitios().then(sits => setSitioOptions(sits));
-    const { data, error } = await (supabase.from as any)("bhw_workers").select("*").order("name");
-    if (error) { toast.error("Failed to load workers"); return; }
-    const mapped = (data || []).map((w: any) => ({
-      ...w,
-      is_online: isWorkerOnline(w)
-    }));
-    setWorkers(mapped);
-    setLoading(false);
+    try {
+      const [workersRes, rolesRes] = await Promise.all([
+        (supabase.from as any)("bhw_workers").select("*").order("name"),
+        (supabase.from as any)("user_roles").select("*"),
+      ]);
+
+      const rolesMap: Record<string, string> = {};
+      if (rolesRes?.data) {
+        rolesRes.data.forEach((r: any) => {
+          if (r.user_id && r.role) {
+            rolesMap[r.user_id] = r.role;
+          }
+        });
+      }
+      setUserRoles(rolesMap);
+
+      if (workersRes.error) { toast.error("Failed to load workers"); return; }
+      const mapped = (workersRes.data || []).map((w: any) => ({
+        ...w,
+        is_online: isWorkerOnline(w)
+      }));
+      setWorkers(mapped);
+      setLoading(false);
+    } catch (e) {
+      console.error("Error loading workers:", e);
+      setLoading(false);
+    }
   };
 
   const handleAddWorker = async () => {
@@ -155,6 +193,12 @@ const AdminWorkers = () => {
 
   const handleDeleteWorker = async (id: string) => {
     const workerToDelete = workers.find(w => w.id === id);
+    if (workerToDelete && isSupervisorWorker(workerToDelete)) {
+      toast.error("Cannot delete supervisor account as they are the system's active administrator.");
+      setDeleteConfirmId(null);
+      return;
+    }
+
     const { error } = await (supabase.from as any)("bhw_workers").delete().eq("id", id);
     if (error) { toast.error("Failed to delete worker"); return; }
 
@@ -326,7 +370,9 @@ const AdminWorkers = () => {
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setViewWorker(w); setViewDialogOpen(true); }}><Eye className="h-4 w-4 text-muted-foreground" /></Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditWorker(w); setEditNewPassword(""); setShowEditPassword(false); setEditDialogOpen(true); }}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirmId(w.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  {!isSupervisorWorker(w) && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirmId(w.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
