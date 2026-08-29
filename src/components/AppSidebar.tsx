@@ -207,12 +207,10 @@ export function AppSidebar() {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">{displayUsername}</p>
             <p className="text-xs text-sidebar-foreground/50">
-              {isAdmin || userRole === "supervisor"
-                ? "Supervisor"
+              {isAdmin || userRole === "supervisor" || userRole === "supervisory"
+                ? "BHW Supervisory"
                 : userRole === "midwife"
                 ? "Midwife"
-                : userRole === "supervisory"
-                ? "BHW Supervisory"
                 : userRole === "bns" 
                 ? "BNS" 
                 : (userRole === "bhw" ? "BHW" : t("common.worker"))}

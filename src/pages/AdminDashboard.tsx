@@ -309,7 +309,7 @@ const AdminDashboard = () => {
           <div className="space-y-2 max-w-2xl">
             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md ${currentStyle.badgeStyle}`}>
               <Shield className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
-              {language === "tl" ? "Supervisory Portal ng Administrator" : "Supervisor Admin Portal"}
+              {language === "tl" ? "Supervisory Portal ng BHW" : "BHW Supervisory Portal"}
             </div>
             <h1 className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-white flex items-center gap-2">
               {t("admin.dashboard.title")}

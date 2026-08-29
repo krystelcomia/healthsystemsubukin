@@ -125,21 +125,16 @@ const ContactPage = () => {
   const getRoleBadge = (role: Contact["role"]) => {
     switch (role) {
       case "supervisor":
+      case "supervisory":
         return (
           <Badge className="bg-purple-600 dark:bg-purple-700 hover:bg-purple-600 text-white">
-            {t("contact.role.supervisor")}
+            {t("contact.role.supervisory") || "BHW Supervisory"}
           </Badge>
         );
       case "midwife":
         return (
           <Badge className="bg-teal-600 dark:bg-teal-700 hover:bg-teal-600 text-white">
-            {language === "tl" ? "Komadrona (Midwife)" : "Midwife"}
-          </Badge>
-        );
-      case "supervisory":
-        return (
-          <Badge className="bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-600 text-white">
-            {t("contact.role.supervisory")}
+            {t("contact.role.midwife") || "Barangay Midwife"}
           </Badge>
         );
       case "bns":
