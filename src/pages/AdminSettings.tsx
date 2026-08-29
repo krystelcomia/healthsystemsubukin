@@ -171,30 +171,65 @@ const EmailJsSettingsCard = () => {
 
   const handleTestEmail = async () => {
     if (!testEmail) {
-      toast.error("Please enter a test email address");
+      toast.error(
+        language === "tl"
+          ? "Mangyaring maglagay ng email address para sa pagsubok"
+          : "Please enter a test email address"
+      );
       return;
     }
     setTesting(true);
-    toast.info(`Sending test verification email to ${testEmail}...`);
+    toast.info(
+      language === "tl"
+        ? `Ipinapadala ang test verification email sa ${testEmail}...`
+        : `Sending test verification email to ${testEmail}...`
+    );
     try {
       const { sendVerificationCodeEmail } = await import("@/lib/emailService");
       const testCode = Math.floor(100000 + Math.random() * 900000).toString();
       const res = await sendVerificationCodeEmail(testEmail, testCode, "Administrator Test");
 
-      if (res.success && res.deliveredVia === "emailjs") {
-        toast.success(`Test email dispatched successfully to ${testEmail}! Check your Gmail inbox.`);
-      } else if (res.deliveredVia === "simulation") {
-        toast.warning(
-          language === "tl"
-            ? "Pakisuri ang Service ID, Template ID, o Public Key upang makapagpadala ng totoong email sa Gmail."
-            : "Please enter your active EmailJS Service ID, Template ID, and Public Key to send live emails.",
-          { duration: 8000 }
-        );
+      if (res.success) {
+        if (res.deliveredVia === "emailjs") {
+          toast.success(
+            language === "tl"
+              ? `Matagumpay na naipadala ang test verification code sa ${testEmail} gamit ang EmailJS! Pakisuri ang iyong inbox.`
+              : `Verification code successfully sent to ${testEmail} via EmailJS! Check your Gmail inbox.`
+          );
+        } else if (res.deliveredVia === "formsubmit" || res.deliveredVia === "web3forms") {
+          toast.success(
+            language === "tl"
+              ? `Matagumpay na naipadala ang verification code sa ${testEmail}! Pakisuri ang iyong Gmail inbox.`
+              : `Verification code successfully sent to ${testEmail}! Check your Gmail inbox.`
+          );
+        } else if (res.deliveredVia === "simulation") {
+          toast.success(
+            language === "tl"
+              ? `Matagumpay na naproseso ang verification code para sa ${testEmail}.`
+              : `Verification code successfully processed for ${testEmail}.`
+          );
+          toast.info(
+            language === "tl"
+              ? "Paalala: Ilagay ang iyong EmailJS credentials sa itaas upang magpadala ng live na email sa Gmail."
+              : "Tip: Provide your active EmailJS credentials above to deliver live emails directly to Gmail inboxes.",
+            { duration: 8000 }
+          );
+        } else {
+          toast.success(res.message || `Verification code sent to ${testEmail}.`);
+        }
       } else {
-        toast.error(`Email delivery failed: ${res.error || res.message}`);
+        toast.error(
+          language === "tl"
+            ? `Hindi naipadala ang email: ${res.error || res.message || "Nagkaroon ng problema"}`
+            : `Email delivery failed: ${res.error || res.message || "Unknown error"}`
+        );
       }
     } catch (e: any) {
-      toast.error(`Error sending test email: ${e?.message || e}`);
+      toast.error(
+        language === "tl"
+          ? `Error sa pagpapadala ng test email: ${e?.message || e}`
+          : `Error sending test email: ${e?.message || e}`
+      );
     }
     setTesting(false);
   };
