@@ -23,8 +23,8 @@ const getHeaderLinks = (t: (key: string) => string) => [
 ];
 
 const BHW_WORKERS = [
-  { name: "Mary Jane Landicho", phone: "0912-345-6789", role: "supervisor", sitio: "Subukin Main" },
-  { name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisory", sitio: "Masigla" },
+  { name: "Mary Jane Landicho", phone: "0912-345-6789", role: "midwife", sitio: "Subukin Main" },
+  { name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisor", sitio: "Masigla" },
   { name: "Evelyn T. Ilao", phone: "0935-5638-247", role: "worker", sitio: "Manggahan 1" },
   { name: "Cecilia G. Benosa", phone: "0921-8509-320", role: "worker", sitio: "Maligaya" },
   { name: "Merlita R. Alonzo", phone: "0930-9085-713", role: "worker", sitio: "Matahimik/Punta" },
@@ -54,7 +54,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
 
   // Get active worker display name (full name, username or email local part)
-  const workerDisplayName = fullName || username || user?.user_metadata?.full_name || (userRole === "supervisor" ? "Admin Midwife" : user?.email?.split("@")[0]) || "Staff";
+  const workerDisplayName = fullName || username || user?.user_metadata?.full_name || (userRole === "supervisor" ? "Cristeta R. Lanuza" : userRole === "midwife" ? "Mary Jane Landicho" : user?.email?.split("@")[0]) || "Staff";
 
   useEffect(() => {
     const updateBhwState = () => {
@@ -844,7 +844,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="border-b border-black w-3/5 mx-auto pb-1 font-bold text-[12px] text-black uppercase">
                 MARY JANE LANDICHO
               </div>
-              <p className="mt-1 text-[10px] text-black font-bold uppercase tracking-wider">Midwife Administrator / Certified Correct</p>
+              <p className="mt-1 text-[10px] text-black font-bold uppercase tracking-wider">Barangay Midwife / Certified Correct</p>
             </div>
           </div>
         </div>

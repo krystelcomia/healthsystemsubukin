@@ -14,7 +14,7 @@ interface Contact {
   id: number;
   name: string;
   phone: string;
-  role: "supervisor" | "supervisory" | "bns" | "worker";
+  role: "supervisor" | "supervisory" | "midwife" | "bns" | "worker";
   sitio?: string;
 }
 
@@ -34,8 +34,8 @@ interface HospitalContact {
 }
 
 const BHW_CONTACTS: Contact[] = [
-  { id: 0, name: "Mary Jane Landicho", phone: "0912-345-6789", role: "supervisor", sitio: "Subukin Main" },
-  { id: 1, name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisory", sitio: "Masigla" },
+  { id: 0, name: "Mary Jane Landicho", phone: "0912-345-6789", role: "midwife", sitio: "Subukin Main" },
+  { id: 1, name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisor", sitio: "Masigla" },
   { id: 2, name: "Evelyn T. Ilao", phone: "0935-5638-247", role: "worker", sitio: "Manggahan 1" },
   { id: 3, name: "Cecilia G. Benosa", phone: "0921-8509-320", role: "worker", sitio: "Maligaya" },
   { id: 4, name: "Merlita R. Alonzo", phone: "0930-9085-713", role: "worker", sitio: "Matahimik/Punta" },
@@ -68,7 +68,7 @@ const HOSPITAL_CONTACTS: HospitalContact[] = [
 ];
 
 const ContactPage = () => {
-  const { t } = useSettings();
+  const { t, language } = useSettings();
   const [searchTerm, setSearchTerm] = useState("");
   const [workersList, setWorkersList] = useState<Contact[]>(BHW_CONTACTS);
 
@@ -82,9 +82,11 @@ const ContactPage = () => {
           const mapped: Contact[] = dbWorkers.map((w: any, idx: number) => {
             const userRoleObj = dbRoles?.find((r: any) => r.user_id === w.user_id);
             let role: Contact["role"] = "worker";
-            if (userRoleObj?.role === "supervisor" || w.name?.toLowerCase().includes("landicho")) {
+            if (userRoleObj?.role === "supervisor" || w.name?.toLowerCase().includes("lanuza") || w.name?.toLowerCase().includes("cristeta")) {
               role = "supervisor";
-            } else if (userRoleObj?.role === "supervisory" || w.name?.toLowerCase().includes("lanuza")) {
+            } else if (userRoleObj?.role === "midwife" || w.name?.toLowerCase().includes("landicho")) {
+              role = "midwife";
+            } else if (userRoleObj?.role === "supervisory") {
               role = "supervisory";
             } else if (userRoleObj?.role === "bns" || w.name?.toLowerCase().includes("abayon")) {
               role = "bns";
@@ -128,6 +130,12 @@ const ContactPage = () => {
             {t("contact.role.supervisor")}
           </Badge>
         );
+      case "midwife":
+        return (
+          <Badge className="bg-teal-600 dark:bg-teal-700 hover:bg-teal-600 text-white">
+            {language === "tl" ? "Komadrona (Midwife)" : "Midwife"}
+          </Badge>
+        );
       case "supervisory":
         return (
           <Badge className="bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-600 text-white">
@@ -143,7 +151,7 @@ const ContactPage = () => {
       case "worker":
       default:
         return (
-          <Badge className="bg-teal-600 dark:bg-teal-700 hover:bg-teal-600 text-white">
+          <Badge className="bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-600 text-white">
             {t("contact.role.worker")}
           </Badge>
         );

@@ -129,7 +129,7 @@ const SettingsPage = () => {
           <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-card p-4 space-y-2">
             <div className="flex items-center gap-2 text-foreground font-semibold text-xs sm:text-sm">
               <Lock className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
-              <span>Locked System Function — Midwife Administrator Permission Required</span>
+              <span>Locked System Function — Supervisor Administrator Permission Required</span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Database backup creation, automated schedules, and data recovery functions are locked for health worker accounts. Full configuration, export, and execution details are exclusively available in the Administrator section.
@@ -176,7 +176,7 @@ const SettingsPage = () => {
             </span>
             <span className="flex items-center gap-1 text-red-600 dark:text-red-400 font-medium italic text-[11px]">
               <Lock className="h-3 w-3 text-red-600 dark:text-red-400" />
-              Access restricted to Midwife Administrator
+              Access restricted to Supervisor Administrator
             </span>
           </div>
         </CardContent>

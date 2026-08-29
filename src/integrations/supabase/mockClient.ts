@@ -406,9 +406,9 @@ class MockAuth {
     }
 
     // 2. Check supervisor and midwife roles
-    const isSupervisor = cleanEmail.includes("cristetalanuza") || cleanEmail.includes("admin") ||
+    const isSupervisor = (cleanEmail.includes("cristetalanuza") || (cleanEmail.includes("admin") && !cleanEmail.includes("maryjane") && !cleanEmail.includes("midwife"))) ||
       roles.some((r: any) => r.user_id === userWithEmail?.id && r.role === "supervisor");
-    const isMidwife = cleanEmail.includes("maryjanelandicho") ||
+    const isMidwife = cleanEmail.includes("maryjanelandicho") || cleanEmail.includes("midwife") ||
       roles.some((r: any) => r.user_id === userWithEmail?.id && r.role === "midwife");
 
     if (!isSupervisor && !isMidwife && !workerWithEmail && !KNOWN_DEFAULT_CREDENTIALS[cleanEmail]) {
@@ -985,6 +985,15 @@ export function seedMockDatabase() {
     } else {
       db['bhw_workers'].push(cw);
     }
+  }
+
+  // Ensure Midwife Mary Jane Landicho is not listed as a BHW worker (she is the Barangay Midwife)
+  if (db['bhw_workers']) {
+    db['bhw_workers'] = db['bhw_workers'].filter((w: any) => {
+      const email = (w.gmail || "").toLowerCase().trim();
+      const name = (w.name || "").toLowerCase().trim();
+      return !email.includes("maryjanelandicho") && !name.includes("landicho");
+    });
   }
 
   // Sync online status for any worker currently signed in or present

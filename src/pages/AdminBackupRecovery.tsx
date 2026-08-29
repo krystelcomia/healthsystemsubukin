@@ -202,7 +202,7 @@ const AdminBackupRecovery = () => {
     username ||
     localStorage.getItem("logged_in_fullname") ||
     user?.email?.split("@")[0] ||
-    "Midwife Administrator";
+    "Supervisor Administrator";
 
   // ── Fetch DB stats ──────────────────────────────────────────────────────────
   const fetchDbStats = async () => {
@@ -530,7 +530,7 @@ const AdminBackupRecovery = () => {
         timestamp: parsed.exported_at,
         type: parsed.backup_type ?? "Manual",
         fileSize: formatBytes(new Blob([text]).size),
-        createdBy: parsed.created_by ?? "Midwife Administrator",
+        createdBy: parsed.created_by ?? "Supervisor Administrator",
         status: "Success",
         filename: file.name,
       });
