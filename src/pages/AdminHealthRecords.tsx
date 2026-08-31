@@ -187,6 +187,20 @@ const AdminHealthRecords = () => {
     setLoadingCounts(false);
   };
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchFormCounts();
+      toast.success(language === "tl" ? "Matagumpay na na-refresh!" : "Refresh successful!");
+    } catch {
+      toast.error(language === "tl" ? "Bigo ang pag-refresh" : "Failed to refresh");
+    } finally {
+      setTimeout(() => setRefreshing(false), 500);
+    }
+  };
+
   const handleOpenFormRecords = async (form: FormMeta) => {
     setSelectedForm(form);
     setRecordsModalOpen(true);
@@ -982,9 +996,22 @@ const AdminHealthRecords = () => {
           )}
         </div>
 
-        <p className="text-xs text-muted-foreground self-start sm:self-center">
-          Showing <strong className="text-foreground">{filteredForms.length}</strong> standard form template(s)
-        </p>
+        <div className="flex items-center gap-3 self-start sm:self-center">
+          <p className="text-xs text-muted-foreground">
+            Showing <strong className="text-foreground">{filteredForms.length}</strong> standard form template(s)
+          </p>
+          <Button 
+            type="button"
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh} 
+            disabled={refreshing}
+            className="gap-1.5 border-border/60 text-foreground hover:bg-muted font-semibold h-8 text-xs shrink-0 transition-all"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-primary" : ""}`} />
+            {language === "tl" ? "I-refresh" : "Refresh"}
+          </Button>
+        </div>
       </div>
 
       {/* Forms Grid Gallery */}

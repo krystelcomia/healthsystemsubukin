@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Users, Plus, Printer, Pencil, Trash2, UserCheck, UserX, Eye, EyeOff, KeyRound, ShieldCheck, Sparkles, MapPin } from "lucide-react";
+import { Users, Plus, Printer, Pencil, Trash2, UserCheck, UserX, Eye, EyeOff, KeyRound, ShieldCheck, Sparkles, MapPin, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -145,6 +145,20 @@ const AdminWorkers = () => {
     } catch (e) {
       console.error("Error loading workers:", e);
       setLoading(false);
+    }
+  };
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchWorkers();
+      toast.success(language === "tl" ? "Matagumpay na na-refresh!" : "Refresh successful!");
+    } catch {
+      toast.error(language === "tl" ? "Bigo ang pag-refresh" : "Failed to refresh");
+    } finally {
+      setTimeout(() => setRefreshing(false), 500);
     }
   };
 
@@ -395,6 +409,16 @@ const AdminWorkers = () => {
           {workers.length} {t("workers.registered")}
         </p>
         <div className="flex items-center gap-2">
+          <Button 
+            type="button"
+            variant="outline" 
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="gap-1.5 border-border/60 text-foreground hover:bg-muted font-semibold h-9 text-xs shadow-xs shrink-0 transition-all"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-primary" : ""}`} /> {language === "tl" ? "I-refresh" : "Refresh"}
+          </Button>
           <Button 
             type="button"
             variant="outline" 

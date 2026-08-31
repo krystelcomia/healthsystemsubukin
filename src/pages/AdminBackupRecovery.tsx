@@ -224,6 +224,20 @@ const AdminBackupRecovery = () => {
     }
   };
 
+  const [refreshingStats, setRefreshingStats] = useState(false);
+
+  const handleManualRefreshStats = async () => {
+    setRefreshingStats(true);
+    try {
+      await fetchDbStats();
+      toast.success("Refresh successful!");
+    } catch {
+      toast.error("Failed to refresh database stats");
+    } finally {
+      setTimeout(() => setRefreshingStats(false), 500);
+    }
+  };
+
   useEffect(() => { fetchDbStats(); }, []);
 
   // ── Auto-backup check ───────────────────────────────────────────────────────
@@ -936,8 +950,12 @@ const AdminBackupRecovery = () => {
                 ) : (
                   <p className="text-sm font-bold text-foreground mt-0.5 leading-snug">{dbSizeStr}</p>
                 )}
-                <button onClick={fetchDbStats} className="text-xs text-primary hover:underline mt-0.5 flex items-center gap-1">
-                  <RefreshCw className="h-3 w-3" /> Refresh
+                <button 
+                  onClick={handleManualRefreshStats} 
+                  disabled={refreshingStats}
+                  className="text-xs text-primary hover:underline mt-0.5 flex items-center gap-1 transition-all"
+                >
+                  <RefreshCw className={`h-3 w-3 ${refreshingStats ? "animate-spin text-primary" : ""}`} /> Refresh
                 </button>
               </div>
             </CardContent>

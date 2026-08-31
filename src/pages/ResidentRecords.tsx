@@ -29,7 +29,8 @@ import {
   Home, 
   Filter, 
   Clock,
-  ChevronRight
+  ChevronRight,
+  RefreshCw,
 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -113,6 +114,20 @@ const ResidentRecords = () => {
 
     setResidents(familyOnlyResidents);
     setLoading(false);
+  };
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchResidents();
+      toast.success(language === "tl" ? "Matagumpay na na-refresh!" : "Refresh successful!");
+    } catch {
+      toast.error(language === "tl" ? "Bigo ang pag-refresh" : "Failed to refresh");
+    } finally {
+      setTimeout(() => setRefreshing(false), 500);
+    }
   };
 
   useEffect(() => { 
@@ -827,6 +842,18 @@ const ResidentRecords = () => {
         </div>
 
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+          <Button 
+            type="button"
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh} 
+            disabled={refreshing}
+            className="gap-1.5 border-border/60 text-foreground hover:bg-muted font-semibold h-8 text-xs shrink-0 transition-all"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-primary" : ""}`} />
+            {language === "tl" ? "I-refresh" : "Refresh"}
+          </Button>
+
           <Button 
             type="button"
             variant="outline" 

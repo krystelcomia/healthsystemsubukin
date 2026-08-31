@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Users, Printer, Eye, MapPin, Filter, Sparkles, Layers } from "lucide-react";
+import { Users, Printer, Eye, MapPin, Filter, Sparkles, Layers, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -219,6 +219,20 @@ const AdminResidents = () => {
     setLoading(false);
   };
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchResidents();
+      toast.success(language === "tl" ? "Matagumpay na na-refresh!" : "Refresh successful!");
+    } catch {
+      toast.error(language === "tl" ? "Bigo ang pag-refresh" : "Failed to refresh");
+    } finally {
+      setTimeout(() => setRefreshing(false), 500);
+    }
+  };
+
   const fetchHealthRecords = async (resident: Resident) => {
     const residentId = resident.id;
     const cleanName = (resident.full_name || "").trim().toLowerCase();
@@ -423,15 +437,27 @@ const AdminResidents = () => {
           </Select>
         </div>
 
-        <Button 
-          type="button"
-          variant="outline" 
-          size="sm"
-          onClick={handlePrint}
-          className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-9 text-xs shadow-xs shrink-0"
-        >
-          <Printer className="h-4 w-4" /> {t("common.print")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            type="button"
+            variant="outline" 
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="gap-1.5 border-border/60 text-foreground hover:bg-muted font-semibold h-9 text-xs shadow-xs shrink-0 transition-all"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-primary" : ""}`} /> {language === "tl" ? "I-refresh" : "Refresh"}
+          </Button>
+          <Button 
+            type="button"
+            variant="outline" 
+            size="sm"
+            onClick={handlePrint}
+            className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-9 text-xs shadow-xs shrink-0"
+          >
+            <Printer className="h-4 w-4" /> {t("common.print")}
+          </Button>
+        </div>
       </div>
 
       {/* On-Screen Cards View */}

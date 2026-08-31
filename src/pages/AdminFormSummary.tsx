@@ -24,6 +24,7 @@ import {
   CalendarRange,
   type LucideIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { getThemeStyle } from "@/lib/themeStyles";
@@ -224,6 +225,20 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
       console.error("Error fetching admin form summary:", err);
     }
     setLoading(false);
+  };
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleManualRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchData();
+      toast.success(language === "tl" ? "Matagumpay na na-refresh!" : "Refresh successful!");
+    } catch {
+      toast.error(language === "tl" ? "Bigo ang pag-refresh" : "Failed to refresh");
+    } finally {
+      setTimeout(() => setRefreshing(false), 500);
+    }
   };
 
   useEffect(() => {
@@ -642,10 +657,11 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={fetchData}
-              className="text-white/80 hover:text-white hover:bg-white/15 gap-1.5 text-xs"
+              onClick={handleManualRefresh}
+              disabled={refreshing}
+              className="text-white/80 hover:text-white hover:bg-white/15 gap-1.5 text-xs transition-all"
             >
-              <RefreshCw className="h-3.5 w-3.5" /> Refresh
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-white" : ""}`} /> Refresh
             </Button>
 
             <Button
