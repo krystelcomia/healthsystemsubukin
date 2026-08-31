@@ -587,33 +587,95 @@ const AdminHealthRecords = () => {
     const orientation = getFormPrintOrientation(selectedForm.id);
     const cols = selectedForm.columns;
 
+    const formatColTitle = (colKey: string) => {
+      const map: Record<string, string> = {
+        consultation_date: "Date",
+        consultation_cause: "Chief Complaint",
+        temperature: "Temp (°C)",
+        pulse_rate: "Pulse",
+        respiration_rate: "Resp",
+        weight: "Weight (kg)",
+        height: "Height (cm)",
+        family_number: "Family #",
+        father_name: "Father (Head)",
+        mother_name: "Mother",
+        num_males: "Males",
+        num_females: "Females",
+        total_members: "Total",
+        sitio: "Sitio",
+        record_date: "Date",
+        bp: "BP",
+        smokes: "Smokes",
+        drinks_alcohol: "Alcohol",
+        high_bp: "High BP",
+        diabetes: "Diabetes",
+        bmi: "BMI",
+        survey_date: "Date",
+        containers_inspected: "Inspected",
+        positive_containers: "Positive (+)",
+        larval_status: "Status",
+        action_taken: "Action Taken",
+        lmp_date: "LMP",
+        edc_date: "EDC",
+        gravida_para: "FPAL",
+        risk_level: "Risk",
+        next_visit_date: "Next Visit",
+        child_name: "Child Name",
+        birth_weight: "Birth Wt",
+        immunization_status: "Immunization",
+        current_method: "Method",
+        client_type: "Client Type",
+        created_at: "Date",
+      };
+      return map[colKey] || colKey.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+    };
+
+    const formatCellValue = (val: any) => {
+      if (val === true) return "Yes";
+      if (val === false) return "No";
+      if (val === null || val === undefined || val === "") return "—";
+      return String(val);
+    };
+
     const html = `
-      <div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin-bottom:16px;">${selectedForm.title} &mdash; Submissions Archive</div>
-      <table style="width:100%;border-collapse:collapse;margin-top:12px;">
-        <thead>
-          <tr>
-            <th style="border:1px solid #000;padding:6px 10px;text-align:left;background:#f5f3ff;">#</th>
-            <th style="border:1px solid #000;padding:6px 10px;text-align:left;background:#f5f3ff;">Resident Name</th>
-            ${cols.map(c => `<th style="border:1px solid #000;padding:6px 10px;text-align:left;background:#f5f3ff;text-transform:capitalize;">${c.replace(/_/g, " ")}</th>`).join("")}
-          </tr>
-        </thead>
-        <tbody>
-          ${filteredFormRecords.map((r, i) => {
-            const name = r.residents?.full_name || r.patient_name || (r.first_name ? `${r.first_name} ${r.surname || ""}` : "—");
-            return `<tr>
-              <td style="border:1px solid #000;padding:6px 10px;">${i + 1}</td>
-              <td style="border:1px solid #000;padding:6px 10px;font-weight:bold;">${name}</td>
-              ${cols.map(c => `<td style="border:1px solid #000;padding:6px 10px;">${r[c] === true ? t("common.yes") : r[c] === false ? t("common.no") : r[c] || "—"}</td>`).join("")}
-            </tr>`;
-          }).join("")}
-        </tbody>
-      </table>
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#6b7280;margin-top:20px;width:100%;">
-        <span style="text-align:left;">Report Generated: ${new Date().toLocaleString()}</span>
-        <span style="text-align:right;font-weight:bold;color:#111827;font-size:11px;">Total Entries: ${filteredFormRecords.length}</span>
+      <div style="font-family: system-ui, -apple-system, sans-serif; color: #0f172a; margin-top: 6px;">
+        <table style="width: 100%; border-collapse: collapse; margin-top: 6px; margin-bottom: 14px; font-size: 10px;">
+          <thead>
+            <tr style="background: #f1f5f9; border-bottom: 2px solid #0f172a;">
+              <th style="border: 1px solid #cbd5e1; padding: 6px 6px; text-align: center; width: 28px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #0f172a;">#</th>
+              <th style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #0f172a; min-width: 110px;">Resident Name / Head</th>
+              ${cols.map(c => `<th style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #0f172a;">${formatColTitle(c)}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredFormRecords.length === 0 ? `
+              <tr>
+                <td colspan="${cols.length + 2}" style="border: 1px solid #e2e8f0; padding: 14px; text-align: center; color: #64748b; font-style: italic;">No records found for this form</td>
+              </tr>
+            ` : filteredFormRecords.map((r, i) => {
+              const name = r.residents?.full_name || r.patient_name || (r.first_name ? `${r.first_name} ${r.surname || ""}` : (r.father_name ? `${r.father_name}` : "—"));
+              const bg = i % 2 === 1 ? "background: #f8fafc;" : "background: #ffffff;";
+              return `<tr style="${bg}">
+                <td style="border: 1px solid #e2e8f0; padding: 5px 6px; text-align: center; color: #64748b; font-weight: 600; font-size: 9.5px;">${i + 1}</td>
+                <td style="border: 1px solid #e2e8f0; padding: 5px 8px; font-weight: 700; color: #0f172a; font-size: 10px;">${name}</td>
+                ${cols.map(c => `<td style="border: 1px solid #e2e8f0; padding: 5px 8px; color: #334155; font-size: 9.5px;">${formatCellValue(r[c])}</td>`).join("")}
+              </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 9.5px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 6px; margin-top: 8px; width: 100%;">
+          <span>Report Generated: ${new Date().toLocaleString()}</span>
+          <span style="font-weight: 700; color: #0f172a; font-size: 10px;">Total Form Records: ${filteredFormRecords.length}</span>
+        </div>
+
+        <div style="margin-top: 32px; display: flex; justify-content: space-between; font-size: 10.5px; color: #0f172a; page-break-inside: avoid;">
+          <div style="text-align: left;">Certified Correct: ___________________________<br/><span style="font-size: 9px; color: #64748b;">Attending Barangay Health Worker</span></div>
+          <div style="text-align: right;">Approved By: ___________________________<br/><span style="font-size: 9px; color: #64748b;">Barangay Health Supervisor / Midwife</span></div>
+        </div>
       </div>
     `;
-    triggerInSystemPrint(`${selectedForm.title} Records`, html, orientation);
+    triggerInSystemPrint(`${selectedForm.title.toUpperCase()} — SUBMISSIONS ARCHIVE`, html, orientation);
   };
 
   const handlePrintSingleFilledRecord = () => {
@@ -1465,12 +1527,12 @@ const AdminHealthRecords = () => {
 
       {/* Hidden In-System Print Container */}
       {printContent && (
-        <div id="admin-in-system-print" className="hidden print:block text-black bg-white p-6">
+        <div id="admin-in-system-print" className="hidden print:block text-black bg-white">
           <OfficialHeader
             title={printContent.title}
             subtitle="Barangay Subukin Health Center • San Juan, Batangas"
             showDoubleBorder={true}
-            logoHeight="95px"
+            logoHeight="75px"
           />
           <div dangerouslySetInnerHTML={{ __html: printContent.html }} />
           <style>{`
@@ -1486,8 +1548,12 @@ const AdminHealthRecords = () => {
                 color: black !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                box-sizing: border-box !important;
               }
-              @page { size: ${printContent.orientation}; margin: 5mm; }
+              @page { 
+                size: ${printContent.orientation}; 
+                margin: 10mm 12mm 10mm 12mm; 
+              }
             }
           `}</style>
         </div>
