@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Download, Clock } from "lucide-react";
+import { Settings, Download, Clock, KeyRound, Mail, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSettings, COLOR_THEMES } from "@/contexts/SettingsContext";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { generateFullReportFolder } from "@/lib/fullReportGenerator";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminSettings = () => {
   const [generating, setGenerating] = useState(false);
@@ -138,170 +139,130 @@ const AdminSettings = () => {
         </CardContent>
       </Card>
 
-      {/* EmailJS & Verification Email Service Configuration */}
-      <EmailJsSettingsCard />
+      {/* Reset Password Card */}
+      <ResetPasswordSettingsCard />
     </div>
   );
 };
 
-const EmailJsSettingsCard = () => {
+const ResetPasswordSettingsCard = () => {
   const { language } = useSettings();
-  const [config, setConfig] = useState(() => {
-    const raw = localStorage.getItem("bhw_emailjs_config");
-    if (raw) {
-      try { return JSON.parse(raw); } catch {}
-    }
-    return {
-      serviceId: import.meta.env.VITE_EMAILJS_SERVICE_ID || "",
-      templateId: import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "",
-      publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || ""
-    };
-  });
-  const [testEmail, setTestEmail] = useState("amelitasayatbhw@gmail.com");
-  const [testing, setTesting] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
+  const [registeredWorkers, setRegisteredWorkers] = useState<any[]>([]);
+  const [sending, setSending] = useState(false);
 
-  const handleSave = () => {
-    localStorage.setItem("bhw_emailjs_config", JSON.stringify(config));
-    toast.success(
-      language === "tl"
-        ? "Nai-save ang EmailJS configuration! Gagamitin na ito sa pagpapadala ng verification code sa Gmail."
-        : "EmailJS configuration saved successfully! It will be used to send reset codes to Gmail."
-    );
-  };
+  useEffect(() => {
+    try {
+      const dbStr = localStorage.getItem("supabase_mock_db");
+      if (dbStr) {
+        const db = JSON.parse(dbStr);
+        const workers = db["bhw_workers"] || [];
+        setRegisteredWorkers(workers);
+      }
+    } catch {}
+  }, []);
 
-  const handleTestEmail = async () => {
-    if (!testEmail) {
-      toast.error(
-        language === "tl"
-          ? "Mangyaring maglagay ng email address para sa pagsubok"
-          : "Please enter a test email address"
-      );
+  const handleSendResetCode = async () => {
+    const cleanFullName = fullName.trim();
+    const cleanUsername = username.trim();
+
+    if (!cleanFullName) {
+      toast.error(language === "tl" ? "Mangyaring ilagay ang buong pangalan ng manggagawa" : "Please enter the worker's Full Name");
       return;
     }
-    setTesting(true);
-    toast.info(
-      language === "tl"
-        ? `Ipinapadala ang test verification email sa ${testEmail}...`
-        : `Sending test verification email to ${testEmail}...`
-    );
-    try {
-      const { sendVerificationCodeEmail } = await import("@/lib/emailService");
-      const testCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const res = await sendVerificationCodeEmail(testEmail, testCode, "Administrator Test");
+    if (!cleanUsername) {
+      toast.error(language === "tl" ? "Mangyaring ilagay ang username" : "Please enter the worker's Username");
+      return;
+    }
 
-      if (res.success) {
-        if (res.deliveredVia === "emailjs") {
-          toast.success(
-            language === "tl"
-              ? `Matagumpay na naipadala ang test verification code sa ${testEmail} gamit ang EmailJS! Pakisuri ang iyong inbox.`
-              : `Verification code successfully sent to ${testEmail} via EmailJS! Check your Gmail inbox.`
-          );
-        } else if (res.deliveredVia === "formsubmit" || res.deliveredVia === "web3forms") {
-          toast.success(
-            language === "tl"
-              ? `Matagumpay na naipadala ang verification code sa ${testEmail}! Pakisuri ang iyong Gmail inbox.`
-              : `Verification code successfully sent to ${testEmail}! Check your Gmail inbox.`
-          );
-        } else if (res.deliveredVia === "simulation") {
-          toast.success(
-            language === "tl"
-              ? `Matagumpay na naproseso ang verification code para sa ${testEmail}.`
-              : `Verification code successfully processed for ${testEmail}.`
-          );
-          toast.info(
-            language === "tl"
-              ? "Paalala: Ilagay ang iyong EmailJS credentials sa itaas upang magpadala ng live na email sa Gmail."
-              : "Tip: Provide your active EmailJS credentials above to deliver live emails directly to Gmail inboxes.",
-            { duration: 8000 }
-          );
-        } else {
-          toast.success(res.message || `Verification code sent to ${testEmail}.`);
-        }
+    setSending(true);
+    try {
+      const { data, error } = await (supabase.auth as any).resetPasswordForEmail({
+        fullName: cleanFullName,
+        username: cleanUsername,
+      });
+
+      if (error) {
+        toast.error(error.message, { duration: 6000 });
       } else {
-        toast.error(
+        const targetEmail = data?.email || "registered Gmail";
+        toast.success(
           language === "tl"
-            ? `Hindi naipadala ang email: ${res.error || res.message || "Nagkaroon ng problema"}`
-            : `Email delivery failed: ${res.error || res.message || "Unknown error"}`
+            ? `Matagumpay na naipadala ang 6-digit verification code sa email (${targetEmail}) para kay ${cleanFullName}!`
+            : `6-digit verification reset code successfully sent to email (${targetEmail}) for ${cleanFullName}!`,
+          { duration: 9000 }
         );
       }
     } catch (e: any) {
-      toast.error(
-        language === "tl"
-          ? `Error sa pagpapadala ng test email: ${e?.message || e}`
-          : `Error sending test email: ${e?.message || e}`
-      );
+      toast.error(e?.message || "Failed to send reset code");
     }
-    setTesting(false);
+    setSending(false);
   };
 
   return (
     <Card className="border-border/50 shadow-sm">
       <CardHeader>
         <CardTitle className="text-lg font-heading flex items-center gap-2">
+          <KeyRound className="h-5 w-5 text-primary" />
           <span>{language === "tl" ? "Reset Password" : "Reset Password"}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-xs text-muted-foreground leading-relaxed">
           {language === "tl"
-            ? "I-konekta ang iyong email service credentials upang ang 6-digit verification code para sa reset password ay direktang maipadala sa nakarehistrong email inbox ng anumang account."
-            : "Connect your email service credentials so that 6-digit password reset verification codes are dispatched directly to the registered email inbox of any account used."}
+            ? "Ilagay lamang ang buong pangalan at username ng manggagawa. Ang 6-digit verification reset code ay awtomatikong ipapadala sa kanyang nakarehistrong email address."
+            : "Only the worker's full name and username need to be entered. The 6-digit password reset verification code will be dispatched directly to their registered email inbox."}
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Service ID</Label>
+            <Label className="text-xs font-semibold text-foreground">
+              {language === "tl" ? "Buong Pangalan ng Manggagawa" : "Worker's Full Name"}
+            </Label>
             <input
               type="text"
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm"
-              placeholder="e.g. service_bhw123"
-              value={config.serviceId}
-              onChange={(e) => setConfig({ ...config, serviceId: e.target.value.trim() })}
+              className="w-full h-10 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus:ring-1 focus:ring-primary"
+              placeholder={language === "tl" ? "hal. Cristeta R. Lanuza" : "e.g. Cristeta R. Lanuza"}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              list="admin-workers-list"
             />
+            {registeredWorkers.length > 0 && (
+              <datalist id="admin-workers-list">
+                {registeredWorkers.map((w) => (
+                  <option key={w.id} value={w.name}>{w.gmail}</option>
+                ))}
+              </datalist>
+            )}
           </div>
+
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Template ID</Label>
+            <Label className="text-xs font-semibold text-foreground">
+              {language === "tl" ? "Username ng Manggagawa" : "Worker's Username"}
+            </Label>
             <input
               type="text"
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm"
-              placeholder="e.g. template_reset_code"
-              value={config.templateId}
-              onChange={(e) => setConfig({ ...config, templateId: e.target.value.trim() })}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Public Key (User ID)</Label>
-            <input
-              type="text"
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm"
-              placeholder="e.g. public_key_abc123"
-              value={config.publicKey}
-              onChange={(e) => setConfig({ ...config, publicKey: e.target.value.trim() })}
+              className="w-full h-10 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus:ring-1 focus:ring-primary"
+              placeholder={language === "tl" ? "hal. cristeta" : "e.g. cristeta"}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="bg-muted/40 p-3 rounded-lg border border-border text-[11px] text-muted-foreground space-y-1">
-          <p className="font-semibold text-foreground">Template Variables Required in EmailJS:</p>
-          <p className="font-mono text-[10px] text-primary">to_email, to_name, verification_code, subject, message</p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-2 pt-1">
-          <Button size="sm" onClick={handleSave} className="flex-1">
-            {language === "tl" ? "I-save ang Configuration" : "Save Configuration"}
+        <div className="pt-2">
+          <Button
+            size="sm"
+            onClick={handleSendResetCode}
+            disabled={sending}
+            className="w-full sm:w-auto px-6 h-9 font-semibold gap-2 shadow-xs"
+          >
+            <KeyRound className="h-4 w-4" />
+            {sending
+              ? (language === "tl" ? "Ipinapadala ang Reset Code..." : "Sending Reset Code...")
+              : (language === "tl" ? "Ipadala ang Reset Code sa Email" : "Send Reset Code via Email")}
           </Button>
-          <div className="flex gap-1.5 flex-1">
-            <input
-              type="email"
-              placeholder="recipient@gmail.com"
-              value={testEmail}
-              onChange={(e) => setTestEmail(e.target.value)}
-              className="flex-1 h-9 rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-sm"
-            />
-            <Button size="sm" variant="secondary" onClick={handleTestEmail} disabled={testing} className="text-xs">
-              {testing ? "Sending..." : (language === "tl" ? "Subukang Magpadala" : "Send Test Email")}
-            </Button>
-          </div>
         </div>
       </CardContent>
     </Card>
