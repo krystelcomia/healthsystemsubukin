@@ -291,19 +291,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className={`relative flex items-center gap-2 h-9 rounded-full px-3 transition-all shrink-0 ${
+                        className={`relative flex items-center gap-2 h-9 rounded-full px-3.5 transition-all shrink-0 ${
                           !activeBhw
                             ? "bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/20 animate-pulse" 
                             : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                         }`}
                       >
-                        <Fingerprint className={`h-5 w-5 ${!activeBhw ? "text-amber-500 animate-pulse" : "text-primary"}`} />
-                        <span className="text-xs font-semibold max-w-[120px] truncate">
+                        <Fingerprint className={`h-5 w-5 shrink-0 ${!activeBhw ? "text-amber-500 animate-pulse" : "text-primary"}`} />
+                        <span className={`text-xs font-semibold ${activeBhw ? "max-w-[150px] truncate" : "whitespace-nowrap"}`}>
                           {activeBhw 
                             ? activeBhw 
                             : userRole === "supervisor" || userRole === "supervisory"
-                            ? (language === "tl" ? "Mag-Clock In (BHW Supervisory)" : "BHW Supervisory Sign In")
-                            : (language === "tl" ? "Mag-Clock In" : "BHW Sign In")}
+                            ? (language === "tl" ? "Supervisory Sign In" : "Supervisory Sign In")
+                            : (language === "tl" ? "Mag-Sign In" : "Sign In")}
                         </span>
                         {activeBhw && (
                           <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background animate-pulse" />
