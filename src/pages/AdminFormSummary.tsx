@@ -115,7 +115,7 @@ interface PrintState {
 }
 
 const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
-  const { t } = useSettings();
+  const { t, colorTheme } = useSettings();
   const config = FORM_CONFIGS[formType] || {
     table: formType,
     title: "Health Records",

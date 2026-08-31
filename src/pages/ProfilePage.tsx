@@ -63,7 +63,7 @@ const resizeAvatarImage = (file: File, maxWidth = 380, maxHeight = 380, quality 
 
 const ProfilePage = () => {
   const { user, userRole, updateProfileState } = useAuth();
-  const { t } = useSettings();
+  const { t, colorTheme } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState("");
