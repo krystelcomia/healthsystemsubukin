@@ -238,7 +238,13 @@ const ProfilePage = () => {
             <div className="space-y-1.5">
               <div className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold border backdrop-blur-md ${getThemeStyle(colorTheme).badgeStyle}`}>
                 <ShieldCheck className="h-3.5 w-3.5" />
-                {role ? role.toUpperCase() : "BHW WORKER"}
+                {userRole === "supervisor" || userRole === "supervisory" 
+                  ? "BHW SUPERVISORY" 
+                  : userRole === "midwife" 
+                  ? "MIDWIFE" 
+                  : userRole === "bns" 
+                  ? "BNS" 
+                  : "BHW WORKER"}
               </div>
               <h1 className="text-2xl md:text-3xl font-heading font-extrabold text-white tracking-tight">
                 {fullName || username || t("profile.title")}
