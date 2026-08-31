@@ -124,6 +124,20 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
     columns: ["created_at"],
     nameColumn: "created_at",
   };
+
+  const FORM_TITLES_TL: Record<string, string> = {
+    consultations: "Mga Tala ng Konsultasyon",
+    family_data: "Mga Tala ng Datos ng Pamilya",
+    philpen_health: "Mga Tala ng PhilPen Health",
+    dengue_prevention: "Mga Tala ng Pag-iwas sa Dengue",
+    maternal_care: "Mga Tala ng Pangangalaga sa Ina",
+    child_health: "Mga Tala ng Kalusugan ng Bata",
+    family_planning: "Mga Tala ng Family Planning",
+  };
+
+  const displayTitle = language === "tl" && FORM_TITLES_TL[formType] 
+    ? FORM_TITLES_TL[formType] 
+    : config.title;
   
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"current" | "history">("current");
@@ -643,13 +657,15 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
           <div className="space-y-2 max-w-2xl">
             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md ${getThemeStyle(colorTheme).badgeStyle}`}>
               <FormIcon className="h-3.5 w-3.5" />
-              Admin Summary &amp; History View
+              {language === "tl" ? "Pangkalahatang Buod at Kasaysayan ng Admin" : "Admin Summary & History View"}
             </div>
             <h1 className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-white">
-              {config.title}
+              {displayTitle}
             </h1>
             <p className="text-sm text-white/80 leading-relaxed">
-              Overview of all {config.title.toLowerCase()} — print weekly reports, view active weekly records, or explore previous history archives.
+              {language === "tl"
+                ? `Pangkalahatang-ideya ng lahat ng ${displayTitle.toLowerCase()} — mag-print ng lingguhang ulat, tingnan ang mga aktibong lingguhang tala, o galugarin ang mga nakaraang archive.`
+                : `Overview of all ${config.title.toLowerCase()} — print weekly reports, view active weekly records, or explore previous history archives.`}
             </p>
           </div>
 
@@ -661,15 +677,15 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
               disabled={refreshing}
               className="text-white/80 hover:text-white hover:bg-white/15 gap-1.5 text-xs transition-all"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-white" : ""}`} /> Refresh
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-white" : ""}`} /> {language === "tl" ? "I-refresh" : "Refresh"}
             </Button>
 
             <Button
               size="sm"
-              onClick={() => handlePrintReport(currentWeekRecords, `Active Weekly ${config.title} Report`)}
+              onClick={() => handlePrintReport(currentWeekRecords, language === "tl" ? `Aktibong Lingguhang Ulat - ${displayTitle}` : `Active Weekly ${config.title} Report`)}
               className="bg-white/20 hover:bg-white/30 text-white font-semibold gap-1.5 text-xs backdrop-blur-sm border border-white/25 shadow-xs"
             >
-              <Printer className="h-3.5 w-3.5" /> Print Active Week
+              <Printer className="h-3.5 w-3.5" /> {language === "tl" ? "I-print ang Aktibong Linggo" : "Print Active Week"}
             </Button>
           </div>
         </div>
@@ -686,7 +702,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
           }`}
         >
           <CalendarDays className="h-4 w-4" />
-          Active (Current Week)
+          {language === "tl" ? "Aktibo (Kasalukuyang Linggo)" : "Active (Current Week)"}
         </button>
         <button
           onClick={() => setActiveTab("history")}
@@ -697,7 +713,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
           }`}
         >
           <History className="h-4 w-4" />
-          History (Previous Weeks)
+          {language === "tl" ? "Kasaysayan (Nakaraang mga Linggo)" : "History (Previous Weeks)"}
         </button>
       </div>
 
@@ -709,7 +725,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  Total Records
+                  {language === "tl" ? "KABUUANG MGA TALA" : "Total Records"}
                 </CardTitle>
                 <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-xs">
                   <Hash className="h-4 w-4" />
@@ -721,7 +737,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                 </div>
                 <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1">
                   <FileText className="h-3 w-3 text-primary" />
-                  All time entries in database
+                  {language === "tl" ? "Lahat ng tala sa database" : "All time entries in database"}
                 </div>
               </CardContent>
             </Card>
@@ -730,7 +746,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  Updated This Week
+                  {language === "tl" ? "NA-UPDATE NGAYONG LINGGO" : "Updated This Week"}
                 </CardTitle>
                 <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-xs">
                   <TrendingUp className="h-4 w-4" />
@@ -742,7 +758,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                 </div>
                 <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1">
                   <ArrowUpRight className="h-3 w-3 text-primary" />
-                  Active weekly record lifecycle
+                  {language === "tl" ? "Siklo ng aktibong lingguhang tala" : "Active weekly record lifecycle"}
                 </div>
               </CardContent>
             </Card>
@@ -751,7 +767,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             <Card className="relative overflow-hidden border bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  Latest Entry
+                  {language === "tl" ? "PINAKABAGONG TALA" : "Latest Entry"}
                 </CardTitle>
                 <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-xs">
                   <Clock className="h-4 w-4" />
@@ -759,7 +775,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
               </CardHeader>
               <CardContent>
                 <div className="text-lg md:text-xl font-heading font-bold text-foreground truncate mt-1">
-                  {loading ? "..." : latestDate ? formatTimeAgo(latestDate) : "No entries"}
+                  {loading ? "..." : latestDate ? formatTimeAgo(latestDate) : (language === "tl" ? "Walang mga tala" : "No entries")}
                 </div>
                 <div className="mt-2 flex items-center text-xs text-muted-foreground font-medium gap-1 truncate">
                   <CalendarDays className="h-3 w-3 text-primary shrink-0" />
@@ -775,21 +791,21 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
               <div>
                 <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
                   <CalendarDays className="h-5 w-5 text-primary" />
-                  Active Week Records
+                  {language === "tl" ? "Mga Tala ng Aktibong Linggo" : "Active Week Records"}
                 </CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Records submitted during the current active calendar week
+                  {language === "tl" ? "Mga talang naisumite sa kasalukuyang aktibong linggo" : "Records submitted during the current active calendar week"}
                 </p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handlePrintReport(currentWeekRecords, `Active Week - ${config.title}`)}
+                onClick={() => handlePrintReport(currentWeekRecords, language === "tl" ? `Aktibong Linggo - ${displayTitle}` : `Active Week - ${config.title}`)}
                 disabled={currentWeekRecords.length === 0}
                 className="gap-1.5 text-xs font-semibold"
               >
                 <Printer className="h-3.5 w-3.5" />
-                Print Week Table ({currentWeekRecords.length})
+                {language === "tl" ? `I-print ang Talaan ng Linggo (${currentWeekRecords.length})` : `Print Week Table (${currentWeekRecords.length})`}
               </Button>
             </CardHeader>
             <CardContent className="p-0">
@@ -798,9 +814,9 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                   <thead>
                     <tr className="bg-muted/40 text-muted-foreground font-semibold border-b border-border/30">
                       <th className="p-3 text-left w-12">#</th>
-                      <th className="p-3 text-left">Resident / Entity</th>
-                      <th className="p-3 text-left">Date</th>
-                      <th className="p-3 text-left">Timestamp</th>
+                      <th className="p-3 text-left">{language === "tl" ? "Residente / Entity" : "Resident / Entity"}</th>
+                      <th className="p-3 text-left">{language === "tl" ? "Petsa" : "Date"}</th>
+                      <th className="p-3 text-left">{language === "tl" ? "Oras / Petsa" : "Timestamp"}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -808,13 +824,13 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                       <tr>
                         <td colSpan={4} className="p-8 text-center text-muted-foreground text-xs">
                           <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2 text-primary" />
-                          Loading active records...
+                          {language === "tl" ? "Ikinakarga ang mga aktibong tala..." : "Loading active records..."}
                         </td>
                       </tr>
                     ) : currentWeekRecords.length === 0 ? (
                       <tr>
                         <td colSpan={4} className="p-8 text-center text-muted-foreground text-xs italic">
-                          No active records logged in this week yet
+                          {language === "tl" ? "Wala pang aktibong tala sa linggong ito" : "No active records logged in this week yet"}
                         </td>
                       </tr>
                     ) : (
@@ -848,9 +864,11 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
               <div>
                 <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
                   <RefreshCw className="h-5 w-5 text-primary" />
-                  Recent Updates Log
+                  {language === "tl" ? "Talaan ng mga Kamakailang Update" : "Recent Updates Log"}
                 </CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">Most recent 10 logs processed by system</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {language === "tl" ? "Pinakahuling 10 log na naproseso ng sistema" : "Most recent 10 logs processed by system"}
+                </p>
               </div>
             </CardHeader>
             <CardContent className="p-4">
@@ -858,11 +876,11 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                 {loading ? (
                   <div className="py-8 text-center text-xs text-muted-foreground">
                     <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2 text-primary" />
-                    Loading recent logs...
+                    {language === "tl" ? "Ikinakarga ang mga huling log..." : "Loading recent logs..."}
                   </div>
                 ) : recentlyUpdated.length === 0 ? (
                   <div className="py-8 text-center text-xs text-muted-foreground italic">
-                    No logs found
+                    {language === "tl" ? "Walang nahanap na log" : "No logs found"}
                   </div>
                 ) : (
                   recentlyUpdated.map((record) => {
@@ -878,10 +896,10 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs font-bold text-foreground truncate">
-                              {record.residents?.full_name || record.patient_name || record.household_name || record.father_name || "Unlinked Record"}
+                              {record.residents?.full_name || record.patient_name || record.household_name || record.father_name || (language === "tl" ? "Hindi Nakalink na Tala" : "Unlinked Record")}
                             </p>
                             <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                              Created: {formatDateTime(record.created_at)}
+                              {language === "tl" ? "Nilikha:" : "Created:"} {formatDateTime(record.created_at)}
                             </p>
                           </div>
                         </div>
@@ -906,21 +924,23 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
           <Card className="border-border/60 shadow-sm bg-card p-4">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-1">
               <History className="h-5 w-5 text-primary" />
-              Historical Weekly Archives
+              {language === "tl" ? "Naka-archive na Lingguhang Kasaysayan" : "Historical Weekly Archives"}
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Whenever a week passes, its health worker logs are automatically archived here. You can expand any past week to inspect details or generate printed reports with the official barangay header for auditing and archiving.
+              {language === "tl"
+                ? "Kapag lumipas ang isang linggo, ang mga tala ng health worker ay awtomatikong nai-archive dito. Maaari mong buksan ang anumang nakaraang linggo upang suriin ang mga detalye o mag-print ng mga opisyal na ulat na may header ng barangay para sa pag-audit at pag-archive."
+                : "Whenever a week passes, its health worker logs are automatically archived here. You can expand any past week to inspect details or generate printed reports with the official barangay header for auditing and archiving."}
             </p>
           </Card>
 
           {loading ? (
             <Card className="p-8 text-center text-xs text-muted-foreground border-border/50">
               <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2 text-primary" />
-              Loading history archives...
+              {language === "tl" ? "Ikinakarga ang mga naka-archive na tala..." : "Loading history archives..."}
             </Card>
           ) : historyGroups.length === 0 ? (
             <Card className="p-8 text-center text-xs text-muted-foreground italic border-border/50">
-              No historical weekly records archived yet.
+              {language === "tl" ? "Wala pang naka-archive na lingguhang tala." : "No historical weekly records archived yet."}
             </Card>
           ) : (
             historyGroups.map((group) => {
@@ -937,7 +957,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                         <h4 className="text-sm font-bold text-foreground">{group.label}</h4>
                         <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
                           <FileText className="h-3.5 w-3.5" />
-                          {group.records.length} record{group.records.length !== 1 ? "s" : ""} recorded in week
+                          {language === "tl" ? `${group.records.length} na tala sa linggong ito` : `${group.records.length} record${group.records.length !== 1 ? "s" : ""} recorded in week`}
                         </p>
                       </div>
                     </div>
@@ -950,21 +970,21 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                       >
                         {isExpanded ? (
                           <>
-                            Collapse <ChevronUp className="h-3.5 w-3.5" />
+                            {language === "tl" ? "Itago" : "Collapse"} <ChevronUp className="h-3.5 w-3.5" />
                           </>
                         ) : (
                           <>
-                            View Records <ChevronDown className="h-3.5 w-3.5" />
+                            {language === "tl" ? "Tingnan ang mga Tala" : "View Records"} <ChevronDown className="h-3.5 w-3.5" />
                           </>
                         )}
                       </Button>
                       <Button
                         size="sm"
-                        onClick={() => handlePrintReport(group.records, `${group.label} — ${config.title}`)}
+                        onClick={() => handlePrintReport(group.records, `${group.label} — ${displayTitle}`)}
                         className="text-xs h-8 gap-1 font-semibold"
                       >
                         <Printer className="h-3.5 w-3.5" />
-                        Print Week Report
+                        {language === "tl" ? "I-print ang Ulat ng Linggo" : "Print Week Report"}
                       </Button>
                     </div>
                   </div>
@@ -976,9 +996,9 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
                           <thead>
                             <tr className="bg-muted/40 text-muted-foreground font-semibold border-b border-border/30">
                               <th className="p-2.5 text-left w-12">#</th>
-                              <th className="p-2.5 text-left">Resident / Entity</th>
-                              <th className="p-2.5 text-left">Date Created</th>
-                              <th className="p-2.5 text-left">Timestamp</th>
+                              <th className="p-2.5 text-left">{language === "tl" ? "Residente / Entity" : "Resident / Entity"}</th>
+                              <th className="p-2.5 text-left">{language === "tl" ? "Petsa ng Paglikha" : "Date Created"}</th>
+                              <th className="p-2.5 text-left">{language === "tl" ? "Oras / Petsa" : "Timestamp"}</th>
                             </tr>
                           </thead>
                           <tbody>
