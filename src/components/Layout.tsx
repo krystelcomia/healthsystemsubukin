@@ -691,7 +691,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </DialogContent>
       </Dialog>
 
-      {/* Printable Official Attendance Record (Only rendered when dialog is open and visible strictly during attendance print) */}
+      {/* Printable Official Attendance Record - patterned after AdminWorkers supervisor print */}
       {logsDialogOpen && (
         <div id="attendance-print-area" className="hidden print:block text-black bg-white w-full mx-auto p-0 m-0">
           <style>{`
@@ -712,106 +712,82 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 left: 0 !important;
                 top: 0 !important;
                 width: 100% !important;
-                min-width: 100% !important;
-                max-width: 100% !important;
+                background: white !important;
+                padding: 20px !important;
                 margin: 0 !important;
-                background: #ffffff !important;
-                color: #000000 !important;
-                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                color: black !important;
                 display: block !important;
                 box-sizing: border-box !important;
-                page-break-after: avoid !important;
-                break-after: avoid !important;
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-              }
-              body.printing-attendance #attendance-print-area .official-barangay-header {
-                padding-bottom: 2px !important;
-                margin-bottom: 4px !important;
-                border-bottom: 3.5px double #000000 !important;
               }
               body.printing-attendance #attendance-print-area .header-seal img {
-                height: 120px !important;
-                width: auto !important;
-                object-fit: contain !important;
+                height: 95px !important;
                 mix-blend-mode: multiply !important;
-              }
-              body.printing-attendance #attendance-print-area .document-title-section h2 {
-                font-size: 15px !important;
-                font-weight: 800 !important;
-                letter-spacing: 0.04em !important;
-                margin-top: 2px !important;
-                margin-bottom: 2px !important;
-                color: #000000 !important;
-              }
-              body.printing-attendance #attendance-print-area .document-title-section p {
-                font-size: 11px !important;
-                color: #4b5563 !important;
-                margin-bottom: 4px !important;
               }
               @page {
                 size: A4 portrait;
-                margin: 10mm 5mm;
+                margin: 6mm;
               }
             }
           `}</style>
-          
+
           {/* Official Header with logos and letterhead */}
-          <div className="w-full mb-2 pt-1">
+          <div style={{ width: "100%", marginBottom: "12px" }}>
             <OfficialHeader
               title={language === "tl" ? "BARANGAY HEALTH WORKERS OPISYAL NA TALAAN NG ATTENDANCE" : "BARANGAY HEALTH WORKERS OFFICIAL ATTENDANCE RECORD"}
               subtitle={language === "tl" ? "Barangay Subukin Health Center, San Juan, Batangas • Opisyal na Talaan ng Oras ng Pagpasok at Paglabas" : "Barangay Subukin Health Center, San Juan, Batangas • Official Time In & Time Out Record"}
               showDoubleBorder={true}
-              logoHeight="120px"
+              logoHeight="95px"
             />
           </div>
 
           {/* Worker Summary Box */}
           {selectedWorker && (
-            <div className="w-full border border-black p-2.5 rounded mb-3 text-[12px] leading-tight grid grid-cols-2 gap-4 box-border bg-slate-50">
-              <div className="space-y-1">
-                <p><span className="font-bold uppercase tracking-wider text-black">Personnel Name:</span> <span className="font-bold text-black text-[13px]">{selectedWorker.name}</span></p>
-                <p><span className="font-bold uppercase tracking-wider text-black">Designation / Role:</span> <span className="font-semibold text-black">{selectedWorker.role === "supervisor" || selectedWorker.role === "supervisory" ? "BHW Supervisory" : selectedWorker.role === "midwife" ? "Barangay Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
-                <p><span className="font-bold uppercase tracking-wider text-black">Assigned Station / Sitio:</span> <span className="font-semibold text-black">{selectedWorker.sitio || "Subukin Main"}</span></p>
+            <div style={{ width: "100%", border: "1px solid #000", padding: "8px 10px", marginBottom: "10px", fontSize: "12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", boxSizing: "border-box", background: "#f8fafc" }}>
+              <div>
+                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Personnel Name:</span> <span style={{ fontWeight: "bold", fontSize: "13px" }}>{selectedWorker.name}</span></p>
+                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Designation / Role:</span> <span style={{ fontWeight: "600" }}>{selectedWorker.role === "supervisor" || selectedWorker.role === "supervisory" ? "BHW Supervisory" : selectedWorker.role === "midwife" ? "Barangay Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
+                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Assigned Station / Sitio:</span> <span style={{ fontWeight: "600" }}>{selectedWorker.sitio || "Subukin Main"}</span></p>
               </div>
-              <div className="text-right space-y-1">
-                <p><span className="font-bold uppercase tracking-wider text-black">Contact Number:</span> <span className="font-semibold text-black">{selectedWorker.phone || "—"}</span></p>
-                <p><span className="font-bold uppercase tracking-wider text-black">Document Type:</span> <span className="font-semibold text-black">Official Time Log & Duty Record</span></p>
-                <p><span className="font-bold uppercase tracking-wider text-black">Date Generated:</span> <span className="text-black font-semibold">{new Date().toLocaleDateString(undefined, { dateStyle: "medium" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span></p>
+              <div style={{ textAlign: "right" }}>
+                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Contact Number:</span> <span style={{ fontWeight: "600" }}>{selectedWorker.phone || "—"}</span></p>
+                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Document Type:</span> <span style={{ fontWeight: "600" }}>Official Time Log & Duty Record</span></p>
+                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Date Generated:</span> <span style={{ fontWeight: "600" }}>{new Date().toLocaleDateString(undefined, { dateStyle: "medium" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span></p>
               </div>
             </div>
           )}
 
-          {/* Official Attendance Log Table - Fits full printable width with evenly distributed columns */}
-          <div className="w-full mb-3 box-border">
-            <table className="w-full table-fixed text-left text-[12px] border border-black border-collapse">
+          {/* Official Attendance Log Table */}
+          <div style={{ width: "100%", marginBottom: "12px" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", tableLayout: "fixed" }}>
               <thead>
-                <tr className="bg-slate-100 border-b border-black font-bold text-black">
-                  <th className="border border-black p-2 text-center w-[6%] font-bold uppercase text-[11px]">#</th>
-                  <th className="border border-black p-2 text-center w-[18%] font-bold uppercase text-[11px]">Date (Petsa)</th>
-                  <th className="border border-black p-2 text-center w-[22%] font-bold uppercase text-[11px]">Time In (Oras ng Pagpasok)</th>
-                  <th className="border border-black p-2 text-center w-[22%] font-bold uppercase text-[11px]">Time Out (Oras ng Paglabas)</th>
-                  <th className="border border-black p-2 text-center w-[16%] font-bold uppercase text-[11px]">Duration (Tagal)</th>
-                  <th className="border border-black p-2 text-center w-[16%] font-bold uppercase text-[11px]">Status (Katayuan)</th>
+                <tr style={{ background: "#f1f5f9", borderBottom: "2px solid #000" }}>
+                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "6%" }}>#</th>
+                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "18%" }}>Date (Petsa)</th>
+                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "22%" }}>Time In (Oras ng Pagpasok)</th>
+                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "22%" }}>Time Out (Oras ng Paglabas)</th>
+                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "16%" }}>Duration (Tagal)</th>
+                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "16%" }}>Status (Katayuan)</th>
                 </tr>
               </thead>
               <tbody>
                 {selectedWorker && getWorkerAttendance(selectedWorker.name).length > 0 ? (
                   getWorkerAttendance(selectedWorker.name).map((log: any, idx: number) => {
                     const loginDate = new Date(log.loginAt);
-                    const durationStr = log.logoutAt 
+                    const durationStr = log.logoutAt
                       ? formatDuration(new Date(log.loginAt), new Date(log.logoutAt))
                       : (language === "tl" ? "Aktibong Shift" : "Active Shift");
                     return (
-                      <tr key={log.id || idx} className="border-b border-black text-black">
-                        <td className="border border-black p-2 text-center font-mono font-bold text-[12px]">{idx + 1}</td>
-                        <td className="border border-black p-2 text-center font-bold text-[12px]">{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
-                        <td className="border border-black p-2 text-center font-mono font-semibold text-[12px]">{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
-                        <td className="border border-black p-2 text-center font-mono font-semibold text-[12px]">
+                      <tr key={log.id || idx} style={{ borderBottom: "1px solid #000" }}>
+                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontFamily: "monospace", fontWeight: "bold" }}>{idx + 1}</td>
+                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontWeight: "bold" }}>{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
+                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontFamily: "monospace", fontWeight: "600" }}>{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
+                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontFamily: "monospace", fontWeight: "600" }}>
                           {log.logoutAt ? new Date(log.logoutAt).toLocaleTimeString(undefined, { timeStyle: "short" }) : "— (Active on Duty)"}
                         </td>
-                        <td className="border border-black p-2 text-center font-mono font-bold text-[12px]">{durationStr}</td>
-                        <td className="border border-black p-2 text-center font-bold text-[12px]">
+                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontFamily: "monospace", fontWeight: "bold" }}>{durationStr}</td>
+                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontWeight: "bold" }}>
                           {log.logoutAt ? "Completed Shift" : "On Duty (Active)"}
                         </td>
                       </tr>
@@ -819,7 +795,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={6} className="border border-black p-4 text-center italic font-medium text-slate-800 text-[12px]">
+                    <td colSpan={6} style={{ border: "1px solid #000", padding: "16px", textAlign: "center", fontStyle: "italic", color: "#475569" }}>
                       No official attendance records logged for this personnel during this period.
                     </td>
                   </tr>
@@ -829,18 +805,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Official Certification and Sign-offs */}
-          <div className="grid grid-cols-2 gap-12 pt-4 mt-3 text-[12px] w-full">
-            <div className="text-center">
-              <div className="border-b border-black w-3/5 mx-auto pb-1 font-bold text-[13px] text-black uppercase">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "48px", paddingTop: "16px", marginTop: "12px", fontSize: "12px", width: "100%" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ borderBottom: "1px solid #000", width: "60%", margin: "0 auto", paddingBottom: "4px", fontWeight: "bold", fontSize: "13px", textTransform: "uppercase" }}>
                 {selectedWorker?.name || "BHW Personnel"}
               </div>
-              <p className="mt-1 text-[11px] text-black font-bold uppercase tracking-wider">Signature over Printed Name / Personnel</p>
+              <p style={{ marginTop: "4px", fontSize: "11px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.05em" }}>Signature over Printed Name / Personnel</p>
             </div>
-            <div className="text-center">
-              <div className="border-b border-black w-3/5 mx-auto pb-1 font-bold text-[13px] text-black uppercase">
+            <div style={{ textAlign: "center" }}>
+              <div style={{ borderBottom: "1px solid #000", width: "60%", margin: "0 auto", paddingBottom: "4px", fontWeight: "bold", fontSize: "13px", textTransform: "uppercase" }}>
                 MARY JANE LANDICHO
               </div>
-              <p className="mt-1 text-[11px] text-black font-bold uppercase tracking-wider">Barangay Midwife / Certified Correct</p>
+              <p style={{ marginTop: "4px", fontSize: "11px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.05em" }}>Barangay Midwife / Certified Correct</p>
             </div>
           </div>
         </div>
