@@ -211,7 +211,22 @@ const AdminHealthRecords = () => {
       const { data } = await (supabase.from as any)(form.table)
         .select("*, residents(full_name)")
         .order("created_at", { ascending: false });
-      setFormRecords(data || []);
+      let records = data || [];
+      if (form.id === "family_data") {
+        records = [...records].sort((a: any, b: any) => {
+          const strA = (a.family_number || "").trim();
+          const strB = (b.family_number || "").trim();
+          const numA = parseInt(strA.replace(/\D/g, ""), 10);
+          const numB = parseInt(strB.replace(/\D/g, ""), 10);
+          const hasA = strA !== "" && !isNaN(numA);
+          const hasB = strB !== "" && !isNaN(numB);
+          if (hasA && !hasB) return -1;
+          if (!hasA && hasB) return 1;
+          if (hasA && hasB && numA !== numB) return numA - numB;
+          return strA.localeCompare(strB, undefined, { numeric: true, sensitivity: "base" });
+        });
+      }
+      setFormRecords(records);
     } catch {
       toast.error("Failed to load form entries");
     }
@@ -772,11 +787,14 @@ const AdminHealthRecords = () => {
     }
 
     if (selectedForm.id === "family_data") {
-      const membersList = Array.isArray(selectedRecord.members_detail)
+      const rawList = Array.isArray(selectedRecord.members_detail)
         ? selectedRecord.members_detail
         : typeof selectedRecord.members_detail === "string"
         ? (JSON.parse(selectedRecord.members_detail || "[]") as any[])
         : [];
+      const membersList = [...rawList].sort((a: any, b: any) =>
+        (a.full_name || "").trim().localeCompare((b.full_name || "").trim())
+      );
 
       const html = `
         <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
@@ -1340,11 +1358,14 @@ const AdminHealthRecords = () => {
                         </thead>
                         <tbody>
                           {(() => {
-                            const mems = Array.isArray(selectedRecord.members_detail)
+                            const rawMems = Array.isArray(selectedRecord.members_detail)
                               ? selectedRecord.members_detail
                               : typeof selectedRecord.members_detail === "string"
                               ? (JSON.parse(selectedRecord.members_detail || "[]") as any[])
                               : [];
+                            const mems = [...rawMems].sort((a: any, b: any) =>
+                              (a.full_name || "").trim().localeCompare((b.full_name || "").trim())
+                            );
                             if (mems.length === 0) {
                               return (
                                 <tr>

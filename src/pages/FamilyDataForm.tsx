@@ -134,6 +134,20 @@ const FamilyDataForm = () => {
     );
   }, [records, selectedFile, editFamNum]);
 
+  const compareFamilyNumbers = (famA?: string | null, famB?: string | null): number => {
+    const strA = (famA || "").trim();
+    const strB = (famB || "").trim();
+    const numA = parseInt(strA.replace(/\D/g, ""), 10);
+    const numB = parseInt(strB.replace(/\D/g, ""), 10);
+    const hasA = strA !== "" && !isNaN(numA);
+    const hasB = strB !== "" && !isNaN(numB);
+
+    if (hasA && !hasB) return -1;
+    if (!hasA && hasB) return 1;
+    if (hasA && hasB && numA !== numB) return numA - numB;
+    return strA.localeCompare(strB, undefined, { numeric: true, sensitivity: "base" });
+  };
+
   const parseMembers = (membersData: any): FamilyMember[] => {
     let list: any[] = [];
     if (!membersData) list = [];
@@ -159,6 +173,7 @@ const FamilyDataForm = () => {
         uniqueList.push(m);
       }
     }
+    uniqueList.sort((a, b) => (a.full_name || "").trim().localeCompare((b.full_name || "").trim()));
     return uniqueList;
   };
 
@@ -275,16 +290,17 @@ const FamilyDataForm = () => {
     getDatabaseSitios().then(sits => setSitioOptions(sits));
     const { data, error } = await supabase
       .from("family_data")
-      .select("*")
-      .order("family_number", { ascending: true });
+      .select("*");
 
     if (error) {
       toast.error("Failed to load family data records");
     } else {
-      const dbRecords = (data || []).map((rec: any) => ({
-        ...rec,
-        members_detail: parseMembers(rec.members_detail)
-      }));
+      const dbRecords = (data || [])
+        .map((rec: any) => ({
+          ...rec,
+          members_detail: parseMembers(rec.members_detail)
+        }))
+        .sort((a: any, b: any) => compareFamilyNumbers(a.family_number, b.family_number));
       
       // Ensure minimum padded rows for ledger mode
       const minRows = 2;
@@ -315,32 +331,35 @@ const FamilyDataForm = () => {
 
   // Real-time search filtering
   const filteredRecords = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return records;
+    let result = records;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = records.filter((rec) => {
+        if (!rec.family_number && !rec.father_name && !rec.mother_name) return false;
+        
+        const famNumMatch = rec.family_number?.toLowerCase().includes(q);
+        const fatherMatch = rec.father_name?.toLowerCase().includes(q);
+        const motherMatch = rec.mother_name?.toLowerCase().includes(q);
+        const sitioMatch = rec.sitio?.toLowerCase().includes(q);
+
+        const membersList = parseMembers(rec.members_detail);
+        const memberNameMatch = membersList.some((m) =>
+          m.full_name?.toLowerCase().includes(q)
+        );
+
+        return famNumMatch || fatherMatch || motherMatch || sitioMatch || memberNameMatch;
+      });
     }
-    const q = searchQuery.toLowerCase().trim();
-    return records.filter((rec) => {
-      if (!rec.family_number && !rec.father_name && !rec.mother_name) return false;
-      
-      const famNumMatch = rec.family_number?.toLowerCase().includes(q);
-      const fatherMatch = rec.father_name?.toLowerCase().includes(q);
-      const motherMatch = rec.mother_name?.toLowerCase().includes(q);
-      const sitioMatch = rec.sitio?.toLowerCase().includes(q);
-
-      const membersList = parseMembers(rec.members_detail);
-      const memberNameMatch = membersList.some((m) =>
-        m.full_name?.toLowerCase().includes(q)
-      );
-
-      return famNumMatch || fatherMatch || motherMatch || sitioMatch || memberNameMatch;
-    });
+    return [...result].sort((a, b) => compareFamilyNumbers(a.family_number, b.family_number));
   }, [records, searchQuery]);
 
   // Non-empty valid records for folder grid view
   const activeFamilyFiles = useMemo(() => {
-    return filteredRecords.filter(
-      (r) => r.family_number?.trim() || r.father_name?.trim() || r.mother_name?.trim()
-    );
+    return filteredRecords
+      .filter(
+        (r) => r.family_number?.trim() || r.father_name?.trim() || r.mother_name?.trim()
+      )
+      .sort((a, b) => compareFamilyNumbers(a.family_number, b.family_number));
   }, [filteredRecords]);
 
 
@@ -436,6 +455,7 @@ const FamilyDataForm = () => {
       seenNew.add(key);
       deduplicatedNewMembers.push({ ...mem, full_name: clean });
     }
+    deduplicatedNewMembers.sort((a, b) => (a.full_name || "").trim().localeCompare((b.full_name || "").trim()));
 
     const malesCount = deduplicatedNewMembers.filter((m) => m.gender === "Male").length;
     const femalesCount = deduplicatedNewMembers.filter((m) => m.gender === "Female").length;
@@ -505,9 +525,11 @@ const FamilyDataForm = () => {
       if (rec.mother_name && rec.mother_name.trim()) {
         defaultMembers.push({ id: `m-${Date.now()}`, full_name: rec.mother_name.trim(), relationship: "Mother", age: "", gender: "Female" });
       }
+      defaultMembers.sort((a, b) => (a.full_name || "").trim().localeCompare((b.full_name || "").trim()));
       setActiveMembers(defaultMembers);
     } else {
-      setActiveMembers(members);
+      const sortedMembers = [...members].sort((a, b) => (a.full_name || "").trim().localeCompare((b.full_name || "").trim()));
+      setActiveMembers(sortedMembers);
     }
 
     setEditFamNum(rec.family_number || "");
@@ -572,6 +594,7 @@ const FamilyDataForm = () => {
       seenActive.add(key);
       deduplicatedActiveMembers.push({ ...mem, full_name: clean });
     }
+    deduplicatedActiveMembers.sort((a, b) => (a.full_name || "").trim().localeCompare((b.full_name || "").trim()));
 
     const malesCount = deduplicatedActiveMembers.filter((m) => m.gender === "Male").length;
     const femalesCount = deduplicatedActiveMembers.filter((m) => m.gender === "Female").length;
@@ -668,7 +691,9 @@ const FamilyDataForm = () => {
       civil_status: memStatus
     };
 
-    const updated = [...activeMembers, newMemObj];
+    const updated = [...activeMembers, newMemObj].sort((a, b) =>
+      (a.full_name || "").trim().localeCompare((b.full_name || "").trim())
+    );
     setActiveMembers(updated);
     setMemName("");
     setMemAge("");
