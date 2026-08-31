@@ -88,30 +88,33 @@ const storeSignatureForResident = (name?: string | null, signature?: string | nu
   localStorage.setItem(STORAGE_KEY_RESIDENT_SIGNATURES, JSON.stringify(stored));
 };
 
+const removeStoredSignatureForResident = (name?: string | null, resId?: string | null) => {
+  const stored = getStoredSignatures();
+  const cleanName = normalizeResidentName(name);
+  let changed = false;
+  if (cleanName && stored[cleanName]) {
+    delete stored[cleanName];
+    changed = true;
+  }
+  if (resId && resId.trim() && stored[resId.trim()]) {
+    delete stored[resId.trim()];
+    changed = true;
+  }
+  if (changed) {
+    localStorage.setItem(STORAGE_KEY_RESIDENT_SIGNATURES, JSON.stringify(stored));
+  }
+};
+
 const findSignatureForResident = (
   name?: string | null,
   resId?: string | null,
-  activeRows?: any[],
   fallbackName?: string | null
 ): string => {
   const cleanName = normalizeResidentName(name);
   const cleanFallbackName = normalizeResidentName(fallbackName);
   const cleanId = (resId || "").trim();
 
-  // 1. Check current active rows in memory
-  if (activeRows && Array.isArray(activeRows)) {
-    const matchedRow = activeRows.find((r) => {
-      if (!r.signature || !r.signature.trim()) return false;
-      const rowName = normalizeResidentName(r.household_name);
-      if (cleanName && rowName && rowName === cleanName) return true;
-      if (cleanFallbackName && rowName && rowName === cleanFallbackName) return true;
-      if (cleanId && r.resident_id && r.resident_id.trim() === cleanId) return true;
-      return false;
-    });
-    if (matchedRow?.signature) return matchedRow.signature;
-  }
-
-  // 2. Check local storage cache
+  // Strictly check local storage cache (only holds signatures where resident checked consent)
   const stored = getStoredSignatures();
   if (cleanName && stored[cleanName]) return stored[cleanName];
   if (cleanFallbackName && stored[cleanFallbackName]) return stored[cleanFallbackName];
@@ -300,20 +303,6 @@ const DenguePreventionForm = () => {
     );
     const unmappedDbRecords = sortedDb.filter((rec: any) => !archivedRecordIds.has(rec.id));
 
-    // Collect and cache all existing resident signatures from database and historical batches
-    dbRecords.forEach((rec: any) => {
-      if (rec.signature && rec.signature.trim()) {
-        storeSignatureForResident(rec.household_name, rec.signature, rec.resident_id);
-      }
-    });
-    Object.values(savedBatchesMap).forEach((batch) => {
-      (batch.records || []).forEach((rec: any) => {
-        if (rec.signature && rec.signature.trim()) {
-          storeSignatureForResident(rec.household_name, rec.signature, rec.resident_id);
-        }
-      });
-    });
-
     const compiledSavedForms: SavedDengueForm[] = Array.from(batchGroupsMap.values())
       .map((b) => {
         const dateObj = new Date(b.timestamp);
@@ -366,7 +355,7 @@ const DenguePreventionForm = () => {
       initialRows = createBlankRows(MAX_ROWS);
     }
 
-    // Auto-populate resident signatures only for active rows that have a household name entered
+    // Auto-populate resident signatures ONLY if authorized via stored consent in localStorage
     initialRows = initialRows.map((r) => {
       if (r.household_name?.trim() && !r.signature) {
         const cleanName = (r.household_name || "").trim();
@@ -376,7 +365,6 @@ const DenguePreventionForm = () => {
         const sig = findSignatureForResident(
           cleanName,
           r.resident_id || matched?.id,
-          initialRows,
           matched?.full_name
         );
         if (sig) {
@@ -546,9 +534,6 @@ const DenguePreventionForm = () => {
           .single();
 
         if (!error && data) {
-          if (data.signature && data.signature.trim()) {
-            storeSignatureForResident(data.household_name, data.signature, data.resident_id);
-          }
           setRecords((prev) => {
             const updated = prev.map((r) => (r.id === row.id ? { ...data } : r));
             localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(updated));
@@ -557,18 +542,12 @@ const DenguePreventionForm = () => {
         }
       }
 
-      if (row.signature && row.signature.trim()) {
-        storeSignatureForResident(row.household_name, row.signature, resId || row.resident_id);
-      }
-
       window.dispatchEvent(new Event("dengue-records-updated"));
       window.dispatchEvent(new Event("resident-records-updated"));
     } catch (err) {
       console.error("Dengue row auto-save error:", err);
     }
   };
-
-
 
   const queueAutoSaveRow = (row: any) => {
     if (!row || !row.id) return;
@@ -588,9 +567,9 @@ const DenguePreventionForm = () => {
       (h) => normalizeResidentName(h.full_name) === normInput
     );
 
-    // Look up if this resident has an existing signature recorded from initial or past entry
+    // Look up if this resident has an authorized signature in stored consent cache
     const existingSig = cleanName
-      ? findSignatureForResident(value, matched?.id, records, matched?.full_name)
+      ? findSignatureForResident(value, matched?.id, matched?.full_name)
       : "";
 
     setRecords((prev) => {
@@ -600,7 +579,7 @@ const DenguePreventionForm = () => {
             ...r,
             household_name: value,
             resident_id: matched?.id || (matched ? r.resident_id : null),
-            // Automatically populate signature if previously provided, or clear if name was cleared
+            // Automatically populate signature ONLY if authorized with stored consent, or clear if blank
             signature: existingSig || (cleanName ? r.signature : "") || "",
           };
           queueAutoSaveRow(updatedRow);
@@ -643,7 +622,8 @@ const DenguePreventionForm = () => {
     });
   };
 
-  // Signature is stored, cached for the resident, and auto-populated for any matching rows
+  // Signature is saved: if consented, it is stored in persistent cache and auto-applied.
+  // If not consented, it is ONLY applied to the active row and never saved for future auto-use.
   const saveSignature = () => {
     const canvas = canvasRef.current;
     if (!canvas || !activeSignRecordId) return;
@@ -664,11 +644,17 @@ const DenguePreventionForm = () => {
     const normMatchedHeadName = matchedHead ? normalizeResidentName(matchedHead.full_name) : "";
 
     if (targetName || targetResId) {
-      // Only persist the signature to storage if the resident has given consent
       if (consentChecked) {
+        // Resident checked "I allow" -> persist signature for future automated use
         storeSignatureForResident(targetName, dataUrl, targetResId);
         if (matchedHead?.full_name && matchedHead.full_name !== targetName) {
           storeSignatureForResident(matchedHead.full_name, dataUrl, targetResId);
+        }
+      } else {
+        // Resident did NOT check the box -> purge any stored signature so they will sign again next time
+        removeStoredSignatureForResident(targetName, targetResId);
+        if (matchedHead?.full_name) {
+          removeStoredSignatureForResident(matchedHead.full_name, targetResId);
         }
       }
     }
@@ -678,21 +664,24 @@ const DenguePreventionForm = () => {
         if (r.id === activeSignRecordId) {
           return { ...r, signature: dataUrl, resident_id: targetResId || r.resident_id };
         }
-        const rowNormName = normalizeResidentName(r.household_name);
-        const matchesName =
-          (normTargetName && rowNormName === normTargetName) ||
-          (normMatchedHeadName && rowNormName === normMatchedHeadName);
-        const matchesId = Boolean(targetResId && r.resident_id && r.resident_id === targetResId);
 
-        // Auto-populate for any other row with the same resident name/id currently lacking a signature
-        if (!r.signature && (matchesName || matchesId)) {
-          const autoSignedRow = {
-            ...r,
-            signature: dataUrl,
-            resident_id: targetResId || r.resident_id,
-          };
-          autoSaveRowToDb(autoSignedRow);
-          return autoSignedRow;
+        // Only auto-populate other rows if resident explicitly checked the consent box
+        if (consentChecked) {
+          const rowNormName = normalizeResidentName(r.household_name);
+          const matchesName =
+            (normTargetName && rowNormName === normTargetName) ||
+            (normMatchedHeadName && rowNormName === normMatchedHeadName);
+          const matchesId = Boolean(targetResId && r.resident_id && r.resident_id === targetResId);
+
+          if (!r.signature && (matchesName || matchesId)) {
+            const autoSignedRow = {
+              ...r,
+              signature: dataUrl,
+              resident_id: targetResId || r.resident_id,
+            };
+            autoSaveRowToDb(autoSignedRow);
+            return autoSignedRow;
+          }
         }
         return r;
       });
