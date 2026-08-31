@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Activity, Save, Printer, RefreshCw, HeartPulse, CheckCircle2, Search, Eye, Pencil, History, Calendar, UserCheck, Trash2 } from "lucide-react";
+import { Activity, Save, Printer, RefreshCw, HeartPulse, CheckCircle2, Search, Eye, Pencil, History, Calendar, UserCheck, Trash2, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
