@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Users, Printer, Eye, MapPin } from "lucide-react";
+import { Users, Printer, Eye, MapPin, Filter, Sparkles, Layers } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -24,8 +24,154 @@ interface HealthRecords {
   consultations: any[]; family_data: any[]; philpen_health: any[]; dengue_prevention: any[]; maternal_care: any[]; child_health: any[]; family_planning: any[]; custom_forms: any[];
 }
 
+const SITIO_COLOR_PALETTES: Record<string, {
+  border: string;
+  headerBg: string;
+  accentBar: string;
+  iconBg: string;
+  iconColor: string;
+  titleColor: string;
+  badge: string;
+}> = {
+  "Cama": {
+    border: "border-emerald-500/30 dark:border-emerald-500/20",
+    headerBg: "bg-gradient-to-r from-emerald-500/15 via-emerald-500/5 to-transparent",
+    accentBar: "border-l-4 border-l-emerald-500",
+    iconBg: "bg-emerald-500/20",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    titleColor: "text-emerald-700 dark:text-emerald-300",
+    badge: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+  },
+  "Makalintal 1": {
+    border: "border-blue-500/30 dark:border-blue-500/20",
+    headerBg: "bg-gradient-to-r from-blue-500/15 via-blue-500/5 to-transparent",
+    accentBar: "border-l-4 border-l-blue-500",
+    iconBg: "bg-blue-500/20",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    titleColor: "text-blue-700 dark:text-blue-300",
+    badge: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30",
+  },
+  "Makalintal 2": {
+    border: "border-cyan-500/30 dark:border-cyan-500/20",
+    headerBg: "bg-gradient-to-r from-cyan-500/15 via-cyan-500/5 to-transparent",
+    accentBar: "border-l-4 border-l-cyan-500",
+    iconBg: "bg-cyan-500/20",
+    iconColor: "text-cyan-600 dark:text-cyan-400",
+    titleColor: "text-cyan-700 dark:text-cyan-300",
+    badge: "bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30",
+  },
+  "Maligaya": {
+    border: "border-amber-500/30 dark:border-amber-500/20",
+    headerBg: "bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent",
+    accentBar: "border-l-4 border-l-amber-500",
+    iconBg: "bg-amber-500/20",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    titleColor: "text-amber-700 dark:text-amber-300",
+    badge: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+  },
+  "Manggahan 1": {
+    border: "border-purple-500/30 dark:border-purple-500/20",
+    headerBg: "bg-gradient-to-r from-purple-500/15 via-purple-500/5 to-transparent",
+    accentBar: "border-l-4 border-l-purple-500",
+    iconBg: "bg-purple-500/20",
+    iconColor: "text-purple-600 dark:text-purple-400",
+    titleColor: "text-purple-700 dark:text-purple-300",
+    badge: "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30",
+  },
+  "Manggahan 2": {
+    border: "border-indigo-500/30 dark:border-indigo-500/20",
+    headerBg: "bg-gradient-to-r from-indigo-500/15 via-indigo-500/5 to-transparent",
+    accentBar: "border-l-4 border-l-indigo-500",
+    iconBg: "bg-indigo-500/20",
+    iconColor: "text-indigo-600 dark:text-indigo-400",
+    titleColor: "text-indigo-700 dark:text-indigo-300",
+    badge: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30",
+  },
+  "Masaya": {
+    border: "border-rose-500/30 dark:border-rose-500/20",
+    headerBg: "bg-gradient-to-r from-rose-500/15 via-rose-500/5 to-transparent",
+    accentBar: "border-l-4 border-l-rose-500",
+    iconBg: "bg-rose-500/20",
+    iconColor: "text-rose-600 dark:text-rose-400",
+    titleColor: "text-rose-700 dark:text-rose-300",
+    badge: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
+  },
+  "Masigla": {
+    border: "border-orange-500/30 dark:border-orange-500/20",
+    headerBg: "bg-gradient-to-r from-orange-500/15 via-orange-500/5 to-transparent",
+    accentBar: "border-l-4 border-l-orange-500",
+    iconBg: "bg-orange-500/20",
+    iconColor: "text-orange-600 dark:text-orange-400",
+    titleColor: "text-orange-700 dark:text-orange-300",
+    badge: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
+  },
+  "Matahimik / Burol": {
+    border: "border-teal-500/30 dark:border-teal-500/20",
+    headerBg: "bg-gradient-to-r from-teal-500/15 via-teal-500/5 to-transparent",
+    accentBar: "border-l-4 border-l-teal-500",
+    iconBg: "bg-teal-500/20",
+    iconColor: "text-teal-600 dark:text-teal-400",
+    titleColor: "text-teal-700 dark:text-teal-300",
+    badge: "bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30",
+  },
+  "Matahimik / Punta": {
+    border: "border-sky-500/30 dark:border-sky-500/20",
+    headerBg: "bg-gradient-to-r from-sky-500/15 via-sky-500/5 to-transparent",
+    accentBar: "border-l-4 border-l-sky-500",
+    iconBg: "bg-sky-500/20",
+    iconColor: "text-sky-600 dark:text-sky-400",
+    titleColor: "text-sky-700 dark:text-sky-300",
+    badge: "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30",
+  },
+  "Puntor": {
+    border: "border-pink-500/30 dark:border-pink-500/20",
+    headerBg: "bg-gradient-to-r from-pink-500/15 via-pink-500/5 to-transparent",
+    accentBar: "border-l-4 border-l-pink-500",
+    iconBg: "bg-pink-500/20",
+    iconColor: "text-pink-600 dark:text-pink-400",
+    titleColor: "text-pink-700 dark:text-pink-300",
+    badge: "bg-pink-500/15 text-pink-700 dark:text-pink-300 border-pink-500/30",
+  },
+  "Subukin Main": {
+    border: "border-emerald-600/30 dark:border-emerald-600/20",
+    headerBg: "bg-gradient-to-r from-emerald-600/15 via-emerald-600/5 to-transparent",
+    accentBar: "border-l-4 border-l-emerald-600",
+    iconBg: "bg-emerald-600/20",
+    iconColor: "text-emerald-700 dark:text-emerald-300",
+    titleColor: "text-emerald-800 dark:text-emerald-200",
+    badge: "bg-emerald-600/15 text-emerald-800 dark:text-emerald-200 border-emerald-600/30",
+  }
+};
+
+const DEFAULT_PALETTES = [
+  SITIO_COLOR_PALETTES["Cama"],
+  SITIO_COLOR_PALETTES["Makalintal 1"],
+  SITIO_COLOR_PALETTES["Makalintal 2"],
+  SITIO_COLOR_PALETTES["Maligaya"],
+  SITIO_COLOR_PALETTES["Manggahan 1"],
+  SITIO_COLOR_PALETTES["Manggahan 2"],
+  SITIO_COLOR_PALETTES["Masaya"],
+  SITIO_COLOR_PALETTES["Masigla"],
+  SITIO_COLOR_PALETTES["Matahimik / Burol"],
+  SITIO_COLOR_PALETTES["Matahimik / Punta"],
+  SITIO_COLOR_PALETTES["Puntor"],
+];
+
+const getSitioStyle = (sitioName: string) => {
+  if (SITIO_COLOR_PALETTES[sitioName]) {
+    return SITIO_COLOR_PALETTES[sitioName];
+  }
+  let hash = 0;
+  for (let i = 0; i < sitioName.length; i++) {
+    hash = (hash << 5) - hash + sitioName.charCodeAt(i);
+    hash |= 0;
+  }
+  const index = Math.abs(hash) % DEFAULT_PALETTES.length;
+  return DEFAULT_PALETTES[index];
+};
+
 const AdminResidents = () => {
-  const { t } = useSettings();
+  const { t, language } = useSettings();
   const [residents, setResidents] = useState<Resident[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSitio, setSelectedSitio] = useState("all");
@@ -232,22 +378,76 @@ const AdminResidents = () => {
         }
       `}</style>
 
-      <div className="flex items-center justify-between gap-4 no-print">
-        <div className="flex items-center gap-3">
-          <Label className="text-sm whitespace-nowrap">{t("admin.residents.filterBySitio")}</Label>
+      {/* Dynamic Creative Theme Banner Header */}
+      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+            <Users className="h-6 w-6" />
+          </div>
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-primary/30 text-primary font-semibold uppercase tracking-wider bg-primary/5">
+                {language === "tl" ? "Direktoryo ng Residente" : "Resident Master Registry"}
+              </Badge>
+            </div>
+            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight flex items-center gap-2">
+              {t("admin.residents.title")}
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground max-w-2xl leading-relaxed">
+              {t("admin.residents.desc")} {language === "tl" ? "Talaan ng mga residente na naka-grupo at naka-filter ayon sa sitio sa buong Barangay Subukin." : "Master resident records categorized, filtered, and organized by sitio across Barangay Subukin."}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto shrink-0 justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-border/40">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-background/80 dark:bg-slate-900/80 border border-border/50 text-xs shadow-xs">
+            <Users className="h-4 w-4 text-primary" />
+            <span className="text-muted-foreground font-medium">{language === "tl" ? "Kabuuan:" : "Total:"}</span>
+            <strong className="text-foreground">{residents.length}</strong>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-background/80 dark:bg-slate-900/80 border border-border/50 text-xs shadow-xs">
+            <MapPin className="h-4 w-4 text-emerald-600" />
+            <span className="text-muted-foreground font-medium">{language === "tl" ? "Mga Sitio:" : "Sitios:"}</span>
+            <strong className="text-foreground">{sitios.length}</strong>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter and Print Toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-xl border border-border/50 bg-card shadow-xs no-print">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            <Filter className="h-3.5 w-3.5 text-primary" />
+            <span>{t("admin.residents.filterBySitio")}</span>
+          </div>
           <Select value={selectedSitio} onValueChange={setSelectedSitio}>
-            <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="all">{t("admin.residents.allSitios")}</SelectItem>{sitios.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+            <SelectTrigger className="w-56 h-9 text-xs font-semibold bg-background border-border/60">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" className="text-xs font-semibold">
+                🌐 {t("admin.residents.allSitios")} ({residents.length})
+              </SelectItem>
+              {sitios.map(s => {
+                const count = residents.filter(r => r.sitio === s).length;
+                return (
+                  <SelectItem key={s} value={s} className="text-xs">
+                    📍 Sitio {s} ({count})
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
           </Select>
         </div>
+
         <Button 
           type="button"
           variant="outline" 
           size="sm"
           onClick={handlePrint}
-          className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
+          className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-9 text-xs shadow-xs shrink-0"
         >
-          <Printer className="h-3.5 w-3.5" /> {t("common.print")}
+          <Printer className="h-4 w-4" /> {t("common.print")}
         </Button>
       </div>
 
@@ -269,14 +469,21 @@ const AdminResidents = () => {
         ) : (
           sortedSitioNames.map(sitioName => {
             const residentsInSitio = groupedBySitio[sitioName];
+            const style = getSitioStyle(sitioName);
             return (
-              <Card key={sitioName} className="border-border/50 shadow-sm overflow-hidden">
-                <CardHeader className="bg-muted/40 border-b border-border/40 py-3.5 px-4 flex flex-row items-center justify-between">
-                  <CardTitle className="text-sm font-heading font-bold text-foreground flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    Sitio {sitioName}
-                  </CardTitle>
-                  <Badge variant="secondary" className="text-[11px] font-semibold">
+              <Card key={sitioName} className={`border ${style.border} ${style.accentBar} shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md bg-card`}>
+                <CardHeader className={`${style.headerBg} border-b border-border/40 py-3.5 px-4 flex flex-row items-center justify-between`}>
+                  <div className="flex items-center gap-2.5">
+                    <div className={`h-8 w-8 rounded-lg ${style.iconBg} ${style.iconColor} flex items-center justify-center shrink-0 shadow-xs`}>
+                      <MapPin className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <CardTitle className={`text-base font-heading font-extrabold ${style.titleColor}`}>
+                        Sitio {sitioName}
+                      </CardTitle>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={`text-xs px-2.5 py-0.5 font-bold ${style.badge}`}>
                     {residentsInSitio.length} resident{residentsInSitio.length !== 1 ? "s" : ""}
                   </Badge>
                 </CardHeader>
