@@ -349,10 +349,6 @@ const AdminResidents = () => {
     <div className="w-full space-y-6">
       <style>{`
         .print-only { display: none !important; }
-        .print-only-table { display: none !important; }
-        #admin-residents-print-area { background-color: #ffffff !important; color: #000000 !important; }
-        #admin-residents-print-area table, #admin-residents-print-area th, #admin-residents-print-area td { color: #000000 !important; border-color: #000000 !important; }
-        #admin-residents-print-area h2, #admin-residents-print-area p, #admin-residents-print-area span, #admin-residents-print-area strong { color: #000000 !important; }
         @media print {
           body * { visibility: hidden !important; }
           #admin-residents-print-area, #admin-residents-print-area * { visibility: visible !important; }
@@ -361,20 +357,20 @@ const AdminResidents = () => {
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            background: white !important;
-            padding: 20px !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            padding: 8px 12px !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            color: black !important;
+            display: block !important;
           }
           .no-print { display: none !important; }
           .print-only { display: block !important; visibility: visible !important; width: 100% !important; }
-          .print-footer-info { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; }
-          .header-seal { width: 100% !important; }
-          .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
-          #admin-residents-print-area table td, #admin-residents-print-area table th { padding: 3px 6px !important; font-size: 11px !important; }
-          @page { size: A4 portrait; margin: 5mm; }
+          .sitio-print-block { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 12px !important; }
+          .print-footer-signatures { display: flex !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+          .header-seal img { height: 80px !important; mix-blend-mode: multiply !important; }
+          @page { size: A4 portrait; margin: 6mm 8mm; }
         }
       `}</style>
 
@@ -451,21 +447,12 @@ const AdminResidents = () => {
         </Button>
       </div>
 
-      <div id="admin-residents-print-area" className="space-y-6">
-        {/* Printable Official Header Seal */}
-        <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
-          <OfficialHeader
-            title={`${t("residents.title")} — ${selectedSitio === "all" ? t("admin.residents.allSitios") : selectedSitio}`}
-            subtitle="Barangay Subukin Health Center • San Juan, Batangas"
-            showDoubleBorder={true}
-            logoHeight="95px"
-          />
-        </div>
-
+      {/* On-Screen Cards View */}
+      <div className="space-y-6 no-print">
         {loading ? (
-          <Card className="border-border/50 p-6 text-center text-muted-foreground">{t("common.loading")}</Card>
+          <Card className="border-border/50 p-8 text-center text-muted-foreground">{t("common.loading")}</Card>
         ) : filtered.length === 0 ? (
-          <Card className="border-border/50 p-6 text-center text-muted-foreground">{t("residents.noResidents")}</Card>
+          <Card className="border-border/50 p-8 text-center text-muted-foreground">{t("residents.noResidents")}</Card>
         ) : (
           sortedSitioNames.map(sitioName => {
             const residentsInSitio = groupedBySitio[sitioName];
@@ -492,23 +479,23 @@ const AdminResidents = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border bg-muted/20">
-                          <th className="p-3 text-left font-medium text-muted-foreground w-12">#</th>
-                          <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.fullName")}</th>
-                          <th className="p-3 text-left font-medium text-muted-foreground">Family #</th>
-                          <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.gender")}</th>
-                          <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.age")}</th>
-                          <th className="p-3 text-left font-medium text-muted-foreground">{t("residents.birthday")}</th>
-                          <th className="p-3 text-center font-medium text-muted-foreground w-40">Actions</th>
+                          <th className="p-3 text-left font-semibold text-muted-foreground w-12">#</th>
+                          <th className="p-3 text-left font-semibold text-muted-foreground">{t("residents.fullName")}</th>
+                          <th className="p-3 text-left font-semibold text-muted-foreground">Family #</th>
+                          <th className="p-3 text-left font-semibold text-muted-foreground">{t("residents.gender")}</th>
+                          <th className="p-3 text-left font-semibold text-muted-foreground">{t("residents.age")}</th>
+                          <th className="p-3 text-left font-semibold text-muted-foreground">{t("residents.birthday")}</th>
+                          <th className="p-3 text-center font-semibold text-muted-foreground w-44">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {residentsInSitio.map((r, i) => (
-                          <tr key={r.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                          <tr key={r.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
                             <td className="p-3 text-muted-foreground font-mono text-xs">{i + 1}</td>
                             <td className="p-3 font-medium text-foreground">
                               <button 
                                 onClick={() => handleOpenResidentRecords(r)}
-                                className="hover:underline hover:text-primary text-left font-semibold flex items-center gap-1.5"
+                                className="hover:underline hover:text-primary text-left font-bold flex items-center gap-1.5 transition-colors"
                                 title="Click to view associated health records"
                               >
                                 {r.full_name}
@@ -516,23 +503,23 @@ const AdminResidents = () => {
                             </td>
                             <td className="p-3 font-mono text-xs">
                               {r.family_number ? (
-                                <Badge variant="outline" className="font-mono text-[11px] bg-primary/5 text-primary border-primary/20">
+                                <Badge variant="outline" className="font-mono text-[11px] bg-primary/5 text-primary border-primary/20 font-semibold">
                                   {r.family_number}
                                 </Badge>
                               ) : "—"}
                             </td>
                             <td className="p-3 text-foreground">{r.gender}</td>
-                            <td className="p-3 text-foreground">{r.age}</td>
+                            <td className="p-3 text-foreground font-medium">{r.age}</td>
                             <td className="p-3 text-foreground">{r.birthday || "—"}</td>
                             <td className="p-3 text-center">
                               <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="h-8 text-xs gap-1 hover:bg-primary/10 hover:text-primary"
+                                className="h-8 text-xs gap-1.5 border-primary/20 hover:bg-primary/10 hover:text-primary text-foreground/80 font-medium"
                                 onClick={() => handleOpenResidentRecords(r)}
                               >
-                                <Eye className="h-3.5 w-3.5" />
-                                View Health Records
+                                <Eye className="h-3.5 w-3.5 text-primary" />
+                                View Records
                               </Button>
                             </td>
                           </tr>
@@ -545,14 +532,119 @@ const AdminResidents = () => {
             );
           })
         )}
-
-        <div className="print-only print-footer-info flex justify-between items-center mt-4 w-full">
-          <p className="print-date text-left" style={{ fontSize: 10, color: "#6b7280", margin: 0 }}>{new Date().toLocaleString()}</p>
-          <p className="print-total text-right font-semibold" style={{ fontSize: 12, color: "#111827", margin: 0 }}>{t("common.total")}: {filtered.length}</p>
-        </div>
+        <p className="text-sm text-muted-foreground">{t("common.showing")} {filtered.length} {t("common.of")} {residents.length}</p>
       </div>
 
-    <p className="text-sm text-muted-foreground no-print">{t("common.showing")} {filtered.length} {t("common.of")} {residents.length}</p>
+      {/* Dedicated Printable Professional Supervisory Master Table (Prints Only) */}
+      <div id="admin-residents-print-area" className="hidden print:block text-black bg-white w-full space-y-4">
+        {/* Printable Official Header Seal */}
+        <div className="w-full">
+          <OfficialHeader
+            title={language === "tl" ? `OPISYAL NA TALAAN NG MGA RESIDENTE — ${selectedSitio === "all" ? "LAHAT NG SITIO" : `SITIO ${selectedSitio.toUpperCase()}`}` : `OFFICIAL RESIDENT RECORDS MASTER LIST — ${selectedSitio === "all" ? "ALL SITIOS" : `SITIO ${selectedSitio.toUpperCase()}`}`}
+            subtitle="Barangay Subukin Health Center • San Juan, Batangas • Office of the BHW Supervisory"
+            showDoubleBorder={true}
+            logoHeight="85px"
+          />
+        </div>
+
+        {/* Report Metadata Summary Box */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          border: "1.5px solid #000000",
+          backgroundColor: "#f8fafc",
+          padding: "5px 10px",
+          marginBottom: "12px",
+          fontSize: "10px",
+          fontWeight: "600",
+          color: "#000000",
+          boxSizing: "border-box"
+        }}>
+          <span><strong>Coverage / Scope:</strong> {selectedSitio === "all" ? `All Sitios (${sortedSitioNames.length} Sitios)` : `Sitio ${selectedSitio}`}</span>
+          <span><strong>Total Residents:</strong> {filtered.length}</span>
+          <span><strong>Date Printed:</strong> {new Date().toLocaleDateString(undefined, { dateStyle: "medium" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span>
+        </div>
+
+        {/* Formatted Tables by Sitio */}
+        {sortedSitioNames.map((sitioName) => {
+          const residentsInSitio = groupedBySitio[sitioName];
+          return (
+            <div key={`print-${sitioName}`} className="sitio-print-block" style={{ marginBottom: "14px", pageBreakInside: "avoid" }}>
+              <div style={{
+                background: "#f1f5f9",
+                border: "1.5px solid #000000",
+                borderBottom: "none",
+                padding: "4px 8px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                boxSizing: "border-box"
+              }}>
+                <span style={{ fontSize: "11px", fontWeight: "bold", textTransform: "uppercase", color: "#000000", letterSpacing: "0.03em" }}>
+                  SITIO {sitioName.toUpperCase()}
+                </span>
+                <span style={{ fontSize: "10px", fontWeight: "bold", color: "#000000" }}>
+                  {residentsInSitio.length} Resident{residentsInSitio.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px", color: "#000000", border: "1.5px solid #000000" }}>
+                <thead>
+                  <tr style={{ background: "#e2e8f0", borderBottom: "1.5px solid #000000" }}>
+                    <th style={{ border: "1px solid #000000", padding: "4px 6px", width: "26px", textAlign: "center", fontWeight: "bold", textTransform: "uppercase", fontSize: "9.5px" }}>#</th>
+                    <th style={{ border: "1px solid #000000", padding: "4px 6px", textAlign: "left", fontWeight: "bold", textTransform: "uppercase", fontSize: "9.5px" }}>Full Name</th>
+                    <th style={{ border: "1px solid #000000", padding: "4px 6px", textAlign: "center", width: "75px", fontWeight: "bold", textTransform: "uppercase", fontSize: "9.5px" }}>Family #</th>
+                    <th style={{ border: "1px solid #000000", padding: "4px 6px", textAlign: "center", width: "55px", fontWeight: "bold", textTransform: "uppercase", fontSize: "9.5px" }}>Gender</th>
+                    <th style={{ border: "1px solid #000000", padding: "4px 6px", textAlign: "center", width: "35px", fontWeight: "bold", textTransform: "uppercase", fontSize: "9.5px" }}>Age</th>
+                    <th style={{ border: "1px solid #000000", padding: "4px 6px", textAlign: "center", width: "80px", fontWeight: "bold", textTransform: "uppercase", fontSize: "9.5px" }}>Birthday</th>
+                    <th style={{ border: "1px solid #000000", padding: "4px 6px", textAlign: "center", width: "70px", fontWeight: "bold", textTransform: "uppercase", fontSize: "9.5px" }}>Civil Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {residentsInSitio.map((r, idx) => (
+                    <tr key={`print-row-${r.id}`} style={{ borderBottom: "1px solid #94a3b8" }}>
+                      <td style={{ border: "1px solid #94a3b8", padding: "3.5px 6px", textAlign: "center", fontFamily: "monospace", fontSize: "9.5px" }}>{idx + 1}</td>
+                      <td style={{ border: "1px solid #94a3b8", padding: "3.5px 6px", fontWeight: "bold", fontSize: "10.5px" }}>{r.full_name}</td>
+                      <td style={{ border: "1px solid #94a3b8", padding: "3.5px 6px", textAlign: "center", fontFamily: "monospace", fontSize: "9.5px" }}>{r.family_number || "—"}</td>
+                      <td style={{ border: "1px solid #94a3b8", padding: "3.5px 6px", textAlign: "center" }}>{r.gender || "—"}</td>
+                      <td style={{ border: "1px solid #94a3b8", padding: "3.5px 6px", textAlign: "center", fontWeight: "600" }}>{r.age ?? "—"}</td>
+                      <td style={{ border: "1px solid #94a3b8", padding: "3.5px 6px", textAlign: "center" }}>{r.birthday || "—"}</td>
+                      <td style={{ border: "1px solid #94a3b8", padding: "3.5px 6px", textAlign: "center" }}>{r.status || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })}
+
+        {/* Printable Official Footer and Signatures */}
+        <div className="print-footer-signatures" style={{ marginTop: "28px", paddingTop: "14px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", width: "100%", pageBreakInside: "avoid" }}>
+          <div style={{ textAlign: "center", width: "190px" }}>
+            <p style={{ margin: "0 0 28px 0", fontSize: "10px", color: "#475569" }}>Prepared by:</p>
+            <div style={{ borderBottom: "1.5px solid #000000", marginBottom: "3px" }}>
+              <p style={{ margin: "0 0 2px 0", fontSize: "11px", fontWeight: "bold", color: "#000000" }}>CRISTETA R. LANUZA</p>
+            </div>
+            <p style={{ margin: 0, fontSize: "9px", color: "#475569" }}>BHW Supervisory</p>
+          </div>
+
+          <div style={{ textAlign: "center", width: "190px" }}>
+            <p style={{ margin: "0 0 28px 0", fontSize: "10px", color: "#475569" }}>Attested by:</p>
+            <div style={{ borderBottom: "1.5px solid #000000", marginBottom: "3px" }}>
+              <p style={{ margin: "0 0 2px 0", fontSize: "11px", fontWeight: "bold", color: "#000000" }}>MARY JANE LANDICHO</p>
+            </div>
+            <p style={{ margin: 0, fontSize: "9px", color: "#475569" }}>Barangay Midwife</p>
+          </div>
+
+          <div style={{ textAlign: "center", width: "190px" }}>
+            <p style={{ margin: "0 0 28px 0", fontSize: "10px", color: "#475569" }}>Approved by:</p>
+            <div style={{ borderBottom: "1.5px solid #000000", marginBottom: "3px" }}>
+              <p style={{ margin: "0 0 2px 0", fontSize: "11px", fontWeight: "bold", color: "#000000" }}>HON. BARANGAY CAPTAIN</p>
+            </div>
+            <p style={{ margin: 0, fontSize: "9px", color: "#475569" }}>Punong Barangay</p>
+          </div>
+        </div>
+      </div>
 
       {/* Dialog showing selected resident's health records */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
