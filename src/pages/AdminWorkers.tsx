@@ -472,26 +472,22 @@ const AdminWorkers = () => {
             return (
               <Card 
                 key={w.id} 
-                className={`border shadow-sm transition-all duration-200 hover:shadow-md ${
-                  isSupervisor 
-                    ? "border-primary/50 bg-gradient-to-r from-primary/10 via-card to-card ring-1 ring-primary/30" 
-                    : "border-border/50 bg-card"
-                }`}
+                className="border border-border/50 bg-card shadow-xs transition-all duration-200 hover:shadow-md"
               >
                 <CardContent className="flex items-center justify-between py-4">
                   <div className="flex items-center gap-4 flex-1">
-                    <div className={`h-11 w-11 rounded-full ${isSupervisor ? "bg-primary/20 text-primary ring-2 ring-primary/40 shadow-xs" : "bg-primary/10 text-primary"} flex items-center justify-center relative shrink-0`}>
+                    <div className="h-11 w-11 rounded-full bg-primary/10 text-primary flex items-center justify-center relative shrink-0">
                       <span className="text-sm font-bold">{w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
                       <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card ${w.is_online ? "bg-emerald-500 shadow-sm shadow-emerald-500/50 ring-2 ring-emerald-500/30 animate-pulse" : "bg-slate-400/60 dark:bg-slate-600"}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className={`font-bold ${isSupervisor ? "text-base text-primary dark:text-primary-foreground" : "text-foreground"}`}>
+                        <p className="font-bold text-foreground">
                           {w.name}
                         </p>
                         {isSupervisor && (
-                          <Badge variant="outline" className="text-[11px] font-bold bg-primary/15 text-primary border-primary/40 shadow-xs gap-1 py-0.5 px-2">
-                            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                          <Badge variant="outline" className="text-[11px] font-semibold text-muted-foreground bg-muted/50 border-border/60 gap-1 py-0.5 px-2">
+                            <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground" />
                             BHW Supervisory
                           </Badge>
                         )}
