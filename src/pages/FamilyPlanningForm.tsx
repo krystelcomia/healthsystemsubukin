@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Heart, Plus, Pencil, Trash2, Printer, RefreshCw, Save, Search, Eye, Stethoscope, Calendar, UserCheck, History } from "lucide-react";
+import { Heart, Plus, Pencil, Trash2, Printer, RefreshCw, Save, Search, Eye, Stethoscope, Calendar, UserCheck, History, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -354,6 +354,7 @@ const FamilyPlanningForm = () => {
   });
 
   const [residents, setResidents] = useState<any[]>([]);
+  const [activeView, setActiveView] = useState<"form" | "history">("form");
   const [selectedResidentId, setSelectedResidentId] = useState<string>("");
   const [savedRecords, setSavedRecords] = useState<any[]>([]);
   const [historySearch, setHistorySearch] = useState<string>("");
@@ -739,10 +740,45 @@ const FamilyPlanningForm = () => {
         badge={language === "tl" ? "Talaan ng Family Planning" : "Family Planning Assessment"}
         title={t("nav.familyPlanning")}
         description={language === "tl" ? "Opisyal na digital replica ng DOH FP Form 1 (Side A at Side B) – Pagtatasa sa klinikal ng kliyente, pagsusuri ng kasaysayan sa medisina, at pagsubaybay sa paraan." : "Official Digital Replica of Department of Health FP Form 1 (Side A & Side B) – Client clinical assessment, medical history evaluation, method tracking, and follow-up records."}
+        rightContent={
+          <div className="flex items-center gap-1.5 p-1 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xs">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("form")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "form"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Form
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("history")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "history"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <History className="h-3.5 w-3.5 mr-1.5" />
+              History
+            </Button>
+          </div>
+        }
       />
 
       {isMidwife && <ReadOnlyBanner />}
 
+      {/* Main Form View (Toolbar + DOH FP Form 1 Replica) */}
+      {activeView === "form" && (
+      <>
       {/* Action Toolbar & Resident Selector Bar */}
       <Card className="border-border/50 shadow-xs no-print">
         <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1697,8 +1733,11 @@ const FamilyPlanningForm = () => {
         </div>
         </fieldset>
       </div>
+      </>
+      )}
 
-      {/* SAVED FAMILY PLANNING RECORDS (Positioned at the bottom of the page) */}
+      {/* SAVED FAMILY PLANNING RECORDS (History View) */}
+      {activeView === "history" && (
       <div className="no-print pt-4">
         <Card className="border-border/50 shadow-xs">
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 gap-3">
@@ -1813,6 +1852,7 @@ const FamilyPlanningForm = () => {
                                     onClick={() => {
                                       if (parsed) {
                                         setFpState(parsed);
+                                        setActiveView("form");
                                         window.scrollTo({ top: 0, behavior: 'smooth' });
                                         toast.info(`Loaded ${clientName}'s record into form.`);
                                       } else {
@@ -1847,6 +1887,7 @@ const FamilyPlanningForm = () => {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* PRINTABLE FAMILY PLANNING HISTORY REPORT */}
       <div id="fp-history-print-area" className="hidden print:block" style={{ display: "none" }}>
@@ -2117,6 +2158,7 @@ const FamilyPlanningForm = () => {
                         size="sm"
                         onClick={() => {
                           if (parsed) setFpState(parsed);
+                          setActiveView("form");
                           setViewModalOpen(false);
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                           toast.info("Record loaded into main editor.");

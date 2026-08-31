@@ -25,7 +25,8 @@ import {
   UserCheck,
   Check,
   AlertCircle,
-  FileText
+  FileText,
+  History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -378,6 +379,7 @@ const ChildHealthForm = () => {
   const { user, fullName, username, userRole } = useAuth();
   const isMidwife = userRole === "midwife";
   const [activeTab, setActiveTab] = useState("sick-children");
+  const [activeView, setActiveView] = useState<"form" | "history">("form");
 
   const loggedInWorkerName = useMemo(() => {
     const raw = 
@@ -1441,9 +1443,42 @@ const ChildHealthForm = () => {
         badge={language === "tl" ? "Talaan ng Kalusugan ng Bata" : "Child Health & Immunization"}
         title={t("child.title") || (language === "tl" ? "Kalusugan ng Bata at Rehistro ng Pagbabakuna" : "Child Health & Immunization Registry")}
         description={language === "tl" ? "Pangangalaga sa may sakit na bata (2 buwan–5 taon), pamamahagi ng Bitamina A at pampurga, at masterlist ng bakuna sa SIA para sa Barangay Subukin." : "Comprehensive pediatric clinical management (Care for Sick Children 2m–5y), routine Vitamin A & Deworming distribution, and SIA vaccine masterlisting for Barangay Subukin."}
+        rightContent={
+          <div className="flex items-center gap-1.5 p-1 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xs">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("form")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "form"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Form
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("history")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "history"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <History className="h-3.5 w-3.5 mr-1.5" />
+              History
+            </Button>
+          </div>
+        }
       />
 
-      {/* Main Container Card */}
+      {/* Main Container Card (Form View) */}
+      {activeView === "form" && (
       <Card id="child-print-area" className="border border-border/50 shadow-md bg-card text-card-foreground overflow-visible">
         <CardContent className="p-4 md:p-6 space-y-5 overflow-visible">
           
@@ -2542,8 +2577,6 @@ const ChildHealthForm = () => {
                     <Printer className="h-4 w-4" /> Print
                   </Button>
                 </div>
-
-                {renderHistoryCard("sick-children")}
               </form>
 
             </TabsContent>
@@ -2717,8 +2750,6 @@ const ChildHealthForm = () => {
                   <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Vitamin A Master List"}
                 </Button>
               </div>
-
-              {renderHistoryCard("vitamin-a")}
             </TabsContent>
 
             {/* TAB 3: Supplemental Immunization Activity (SIA) Master List (Official Paper Form Replica) */}
@@ -2857,13 +2888,66 @@ const ChildHealthForm = () => {
                   <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save SIA Master List"}
                 </Button>
               </div>
-
-              {renderHistoryCard("sia-masterlist")}
             </TabsContent>
           </Tabs>
 
         </CardContent>
       </Card>
+      )}
+
+      {/* HISTORY VIEW IN CENTRAL AREA (History View) */}
+      {activeView === "history" && (
+        <div className="space-y-4 no-print">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-border/40">
+            <div className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              <div>
+                <h3 className="text-base font-bold font-heading">
+                  Child Health Records History
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Select a category below to view and print past pediatric health, Vitamin A, or SIA records.
+                </p>
+              </div>
+            </div>
+            {/* Category Selector for History */}
+            <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-lg border border-border/40">
+              <Button
+                type="button"
+                variant={activeTab === "sick-children" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveTab("sick-children")}
+                className="h-8 text-xs font-semibold"
+              >
+                <Stethoscope className="h-3.5 w-3.5 mr-1" />
+                Sick Children
+              </Button>
+              <Button
+                type="button"
+                variant={activeTab === "vitamin-a" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveTab("vitamin-a")}
+                className="h-8 text-xs font-semibold"
+              >
+                <Pill className="h-3.5 w-3.5 mr-1" />
+                Vitamin A
+              </Button>
+              <Button
+                type="button"
+                variant={activeTab === "sia-masterlist" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveTab("sia-masterlist")}
+                className="h-8 text-xs font-semibold"
+              >
+                <Syringe className="h-3.5 w-3.5 mr-1" />
+                SIA Masterlist
+              </Button>
+            </div>
+          </div>
+
+          {renderHistoryCard(activeTab as any)}
+        </div>
+      )}
 
       {/* VIEW RECORD DETAIL DIALOG */}
       <Dialog open={viewRecordModalOpen} onOpenChange={setViewRecordModalOpen}>

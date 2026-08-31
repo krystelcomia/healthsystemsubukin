@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar, Search } from "lucide-react";
+import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar, Search, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -171,6 +171,7 @@ const DenguePreventionForm = () => {
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
   const [activeSignRecordId, setActiveSignRecordId] = useState<string | null>(null);
   const [consentChecked, setConsentChecked] = useState(false);
+  const [activeView, setActiveView] = useState<"form" | "history">("form");
 
   const createBlankRows = (count: number) => {
     const rows = [];
@@ -1165,11 +1166,45 @@ const DenguePreventionForm = () => {
         badge={language === "tl" ? "Talaan ng Dengue Prevention" : "Dengue Prevention Record"}
         title={language === "tl" ? "Dengue Prevention — Search & Destroy 2026" : "Dengue Prevention — Search & Destroy 2026"}
         description={language === "tl" ? "Pagsubaybay sa kiti-kiti, inspeksyon ng lalagyan ng tubig, at pagsubaybay sa plano ng pagkilos sa Barangay Subukin." : "Household larvae monitoring, breeding container inspection, and action plan tracking for Barangay Subukin."}
+        rightContent={
+          <div className="flex items-center gap-1.5 p-1 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xs">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("form")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "form"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Form
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("history")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "history"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <History className="h-3.5 w-3.5 mr-1.5" />
+              History
+            </Button>
+          </div>
+        }
       />
 
       {/* Midwife read-only banner */}
       {isMidwife && <ReadOnlyBanner />}
 
+      {/* Main Form Card (Form View) */}
+      {activeView === "form" && (
       <Card 
         id="dengue-print-area" 
         className={`border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden ${viewModalOpen ? "no-print" : ""}`}
@@ -1403,10 +1438,9 @@ const DenguePreventionForm = () => {
               </Button>
             )}
             <Button 
-              type="button"
+              type="button" 
+              variant="outline" 
               onClick={handlePrintForm} 
-              disabled={saving}
-              variant="outline"
               className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
             >
               <Printer className="h-4 w-4" /> Print
@@ -1414,135 +1448,136 @@ const DenguePreventionForm = () => {
           </div>
         </CardContent>
       </Card>
+      )}
 
-      {/* SAVED DENGUE FORMS HISTORY LIST */}
-      <div className="no-print space-y-4 pt-2">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-border/40">
-          <div>
-            <h3 className="text-base font-bold font-heading flex items-center gap-2">
-              <FileCheck className="h-5 w-5 text-primary" />
-              Saved Dengue Prevention Checklist History
-            </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Review and re-print previously completed and signed Search & Destroy monitoring forms.
-            </p>
-          </div>
-
-          {/* Filter Bar */}
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-            <div className="relative w-full sm:w-56">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search date or household..."
-                value={historySearch}
-                onChange={(e) => setHistorySearch(e.target.value)}
-                className="pl-9 h-9 text-xs"
-              />
-            </div>
-            <Select value={historySitio} onValueChange={setHistorySitio}>
-              <SelectTrigger className="h-9 text-xs w-36">
-                <SelectValue placeholder="All Sitios" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Sitios</SelectItem>
-                {sitioOptions.map(s => (
-                  <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {savedForms.length === 0 ? (
-          <Card className="border border-dashed border-border/70 p-8 text-center bg-muted/20">
-            <CardContent className="p-0 flex flex-col items-center justify-center">
-              <FileCheck className="h-10 w-10 text-muted-foreground/60 mb-2" />
-              <p className="text-sm font-medium text-foreground">No saved forms yet.</p>
-              <p className="text-xs text-muted-foreground mt-1 max-w-md">
-                When you fill out the checklist and click "Print Form", the completed form will be saved and listed here so you can view or re-print it anytime.
+      {/* SAVED DENGUE FORMS HISTORY LIST (History View) */}
+      {activeView === "history" && (
+        <div className="no-print space-y-4 pt-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-border/40">
+            <div>
+              <h3 className="text-base font-bold font-heading flex items-center gap-2">
+                <FileCheck className="h-5 w-5 text-primary" />
+                Saved Dengue Prevention Checklist History
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Review and re-print previously completed and signed Search & Destroy monitoring forms.
               </p>
-            </CardContent>
-          </Card>
-        ) : filteredSavedForms.length === 0 ? (
-          <div className="p-8 text-center text-xs text-muted-foreground italic bg-muted/20 rounded-lg border border-border/40">
-            No saved dengue forms match "{historySearch}".
+            </div>
+
+            {/* Filter Bar */}
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+              <div className="relative w-full sm:w-56">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search date or household..."
+                  value={historySearch}
+                  onChange={(e) => setHistorySearch(e.target.value)}
+                  className="pl-9 h-9 text-xs"
+                />
+              </div>
+              <Select value={historySitio} onValueChange={setHistorySitio}>
+                <SelectTrigger className="h-9 text-xs w-36">
+                  <SelectValue placeholder="All Sitios" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sitios</SelectItem>
+                  {sitioOptions.map(s => (
+                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-3">
-            {filteredSavedForms.map((sf, index) => {
-              const positiveCount = sf.records.filter(r => r.has_larvae === true).length;
-              return (
-                <Card key={sf.id} className="border border-border/60 hover:border-primary/40 transition-colors shadow-xs">
-                  <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-heading font-bold text-foreground text-base">
-                          Form #{savedForms.length - index}: Search & Destroy Form
-                        </span>
-                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-xs">
-                          {sf.records.length} {sf.records.length === 1 ? "Household" : "Households"}
-                        </Badge>
-                        {positiveCount > 0 ? (
-                          <Badge variant="destructive" className="text-xs">
-                            {positiveCount} Larvae Positive
+
+          {savedForms.length === 0 ? (
+            <Card className="border border-dashed border-border/70 p-8 text-center bg-muted/20">
+              <CardContent className="p-0 flex flex-col items-center justify-center">
+                <FileCheck className="h-10 w-10 text-muted-foreground/60 mb-2" />
+                <p className="text-sm font-medium text-foreground">No saved forms yet.</p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-md">
+                  When you fill out the checklist and click "Print Form", the completed form will be saved and listed here so you can view or re-print it anytime.
+                </p>
+              </CardContent>
+            </Card>
+          ) : filteredSavedForms.length === 0 ? (
+            <div className="p-8 text-center text-xs text-muted-foreground italic bg-muted/20 rounded-lg border border-border/40">
+              No saved dengue forms match "{historySearch}".
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {filteredSavedForms.map((sf, index) => {
+                const positiveCount = sf.records.filter(r => r.has_larvae === true).length;
+                return (
+                  <Card key={sf.id} className="border border-border/60 hover:border-primary/40 transition-colors shadow-xs">
+                    <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-heading font-bold text-foreground text-base">
+                            Form #{savedForms.length - index}: Search & Destroy Form
+                          </span>
+                          <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-xs">
+                            {sf.records.length} {sf.records.length === 1 ? "Household" : "Households"}
                           </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs">
-                            0 Larvae Detected
-                          </Badge>
-                        )}
+                          {positiveCount > 0 ? (
+                            <Badge variant="destructive" className="text-xs">
+                              {positiveCount} Larvae Positive
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs">
+                              0 Larvae Detected
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5 text-primary/70" />
+                            {sf.formattedDate}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3.5 w-3.5 text-primary/70" />
-                          {sf.formattedDate}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0 justify-end">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => {
-                          setViewingSavedForm(sf);
-                          setViewModalOpen(true);
-                        }}
-                        className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                        title="View Form"
-                      >
-                        <Eye className="h-4.5 w-4.5" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handlePrintSavedForm(sf)}
-                        className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                        title="Re-Print Form"
-                      >
-                        <Printer className="h-4.5 w-4.5" />
-                      </Button>
-                      {!isMidwife && (
+                      <div className="flex items-center gap-1 shrink-0 justify-end">
                         <Button
                           size="icon"
                           variant="ghost"
-                          onClick={() => setDeleteSavedFormConfirmId(sf.id)}
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          title="Delete Form"
+                          onClick={() => {
+                            setViewingSavedForm(sf);
+                            setViewModalOpen(true);
+                          }}
+                          className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                          title="View Form"
                         >
-                          <Trash2 className="h-4.5 w-4.5 text-destructive" />
+                          <Eye className="h-4.5 w-4.5" />
                         </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handlePrintSavedForm(sf)}
+                          className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                          title="Re-Print Form"
+                        >
+                          <Printer className="h-4.5 w-4.5" />
+                        </Button>
+                        {!isMidwife && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => setDeleteSavedFormConfirmId(sf.id)}
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            title="Delete Form"
+                          >
+                            <Trash2 className="h-4.5 w-4.5 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Signature Modal */}
       <Dialog open={signatureModalOpen} onOpenChange={(open) => { setSignatureModalOpen(open); if (!open) setConsentChecked(false); }}>

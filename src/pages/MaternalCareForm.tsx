@@ -23,6 +23,7 @@ import {
   AlertTriangle,
   Calendar as CalendarIcon,
   FileText,
+  History,
   Check
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -137,6 +138,7 @@ const MaternalCareForm = () => {
   const [residents, setResidents] = useState<any[]>([]);
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
   const [savedRecords, setSavedRecords] = useState<MaternalCareRecord[]>([]);
+  const [activeView, setActiveView] = useState<"form" | "history">("form");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -519,6 +521,7 @@ const MaternalCareForm = () => {
     });
 
     setEditRecordId(record.id);
+    setActiveView("form");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -784,12 +787,45 @@ const MaternalCareForm = () => {
         badge={language === "tl" ? "Talaan ng Pangangalaga sa Ina" : "Maternal Care Record"}
         title={t("nav.maternalCare")}
         description={language === "tl" ? "Komprehensibong pagsubaybay sa prenatal checkup, milestones sa obstetrics (FPAL), at pagtatasa ng panganib sa pagbubuntis." : "Comprehensive prenatal checkup tracking, obstetric milestones (FPAL), EDC/LMP calculation, and pregnancy risk factor assessment for mothers of Barangay Subukin."}
+        rightContent={
+          <div className="flex items-center gap-1.5 p-1 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xs">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("form")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "form"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Form
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("history")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "history"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <History className="h-3.5 w-3.5 mr-1.5" />
+              History
+            </Button>
+          </div>
+        }
       />
 
       {isMidwife && <ReadOnlyBanner />}
 
-      {/* Main Card Container */}
-      <Card id="maternal-print-area" className="border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden">
+      {/* Main Card Container (Form View) */}
+      {activeView === "form" && (
+        <Card id="maternal-print-area" className="border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden">
         <CardContent className="p-6 md:p-8 space-y-6">
           
           {/* Header Seal Layout - Visible ONLY when printing */}
@@ -1309,8 +1345,10 @@ const MaternalCareForm = () => {
           </form>
         </CardContent>
       </Card>
+      )}
 
-      {/* SAVED MATERNAL CARE RECORDS TABLE HISTORY */}
+      {/* SAVED MATERNAL CARE RECORDS TABLE HISTORY (History View) */}
+      {activeView === "history" && (
       <Card className="border border-border/50 shadow-md bg-card text-card-foreground no-print">
         <CardHeader className="pb-3 border-b">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1450,6 +1488,7 @@ const MaternalCareForm = () => {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* PRINTABLE MATERNAL CARE HISTORY REPORT */}
       <div id="maternal-history-print-area" className="hidden print:block" style={{ display: "none" }}>

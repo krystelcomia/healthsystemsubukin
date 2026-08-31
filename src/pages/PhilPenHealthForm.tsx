@@ -63,6 +63,7 @@ const PhilPenHealthForm = () => {
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
 
   // History state
+  const [activeView, setActiveView] = useState<"form" | "history">("form");
   const [historyRecords, setHistoryRecords] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
@@ -521,12 +522,45 @@ const PhilPenHealthForm = () => {
         badge={language === "tl" ? "Talaan ng PhilPen" : "PhilPen Risk Assessment"}
         title={t("nav.philpenHealth")}
         description={language === "tl" ? "Pagtatasa ng panganib sa kalusugan at pamumuhay para sa rehistro ng Barangay Subukin." : "PhilPEN Risk Assessment & Lifestyle Health Checklist for Barangay Subukin registry."}
+        rightContent={
+          <div className="flex items-center gap-1.5 p-1 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xs">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("form")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "form"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Form
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("history")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "history"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <History className="h-3.5 w-3.5 mr-1.5" />
+              History
+            </Button>
+          </div>
+        }
       />
 
       {/* Midwife read-only banner */}
       {isMidwife && <ReadOnlyBanner />}
 
-      {/* Printable Sheet Canvas */}
+      {/* Printable Sheet Canvas (Form View) */}
+      {activeView === "form" && (
       <Card 
         id="philpen-print-area" 
         className="border border-border/60 shadow-md bg-card text-card-foreground rounded-2xl overflow-hidden w-full"
@@ -977,8 +1011,10 @@ const PhilPenHealthForm = () => {
           </form>
         </CardContent>
       </Card>
+      )}
 
-      {/* SAVED PHILPEN HEALTH RECORDS HISTORY */}
+      {/* SAVED PHILPEN HEALTH RECORDS HISTORY (History View) */}
+      {activeView === "history" && (
       <div className="no-print pt-2">
         <Card className="border-border/50 shadow-sm">
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 gap-3">
@@ -1143,6 +1179,7 @@ const PhilPenHealthForm = () => {
                                         diabetes_laging_uhaw_no: !rec.diabetes_laging_uhaw,
                                         diabetes_remarks: rec.diabetes_remarks || ""
                                       });
+                                      setActiveView("form");
                                       window.scrollTo({ top: 0, behavior: "smooth" });
                                       toast.info(`Loaded PhilPen checklist for ${resName}`);
                                     }}
@@ -1174,6 +1211,7 @@ const PhilPenHealthForm = () => {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* PRINTABLE PHILPEN HISTORY REPORT */}
       <div id="philpen-history-print-area" className="hidden print:block" style={{ display: "none" }}>

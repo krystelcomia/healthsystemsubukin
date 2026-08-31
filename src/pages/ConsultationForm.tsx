@@ -70,6 +70,7 @@ const ConsultationForm = () => {
   });
 
   // History & past records state
+  const [activeView, setActiveView] = useState<"form" | "history">("form");
   const [historyRecords, setHistoryRecords] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
@@ -390,12 +391,45 @@ const ConsultationForm = () => {
         badge={language === "tl" ? "Talaan ng Konsultasyon" : "Patient Consultation Record"}
         title={t("consultation.title")}
         description={t("consultation.desc")}
+        rightContent={
+          <div className="flex items-center gap-1.5 p-1 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xs">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("form")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "form"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Form
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveView("history")}
+              className={`h-8 px-4 text-xs font-bold rounded-lg transition-all ${
+                activeView === "history"
+                  ? "bg-white text-slate-900 shadow-md font-extrabold hover:bg-white"
+                  : "text-white/90 hover:text-white hover:bg-white/15"
+              }`}
+            >
+              <History className="h-3.5 w-3.5 mr-1.5" />
+              History
+            </Button>
+          </div>
+        }
       />
 
       {/* Midwife read-only banner */}
       {isMidwife && <ReadOnlyBanner />}
 
-      {/* Main Consultation Form Card */}
+      {/* Main Consultation Form Card (Form View) */}
+      {activeView === "form" && (
       <Card id="consultation-print-area" className="border-border/60 shadow-md bg-card rounded-2xl overflow-hidden">
         <CardContent className="p-6 md:p-8 space-y-6">
           
@@ -585,8 +619,10 @@ const ConsultationForm = () => {
           </form>
         </CardContent>
       </Card>
+      )}
 
-      {/* SAVED CONSULTATION RECORDS HISTORY */}
+      {/* SAVED CONSULTATION RECORDS HISTORY (History View) */}
+      {activeView === "history" && (
       <div className="no-print pt-2">
         <Card className="border-border/50 shadow-sm">
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 gap-3">
@@ -719,6 +755,7 @@ const ConsultationForm = () => {
                                         weight: rec.weight || "",
                                         consultationCause: rec.consultation_cause || "",
                                       });
+                                      setActiveView("form");
                                       window.scrollTo({ top: 0, behavior: "smooth" });
                                       toast.info(`Loaded consultation record for ${resName}`);
                                     }}
@@ -750,6 +787,7 @@ const ConsultationForm = () => {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* PRINTABLE CONSULTATION HISTORY REPORT */}
       <div id="consultation-history-print-area" className="hidden print:block" style={{ display: "none" }}>
