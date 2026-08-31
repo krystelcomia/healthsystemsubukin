@@ -53,6 +53,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { KNOWN_DEFAULT_CREDENTIALS } from "@/integrations/supabase/mockClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { logActivity } from "@/lib/activityLogger";
@@ -823,35 +824,27 @@ const AdminBackupRecovery = () => {
     <TooltipProvider>
       <div className="w-full space-y-6 pb-6">
 
-        {/* ── Page Header ── */}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-              <Shield className="h-3.5 w-3.5" />
-              Settings → Security &amp; Data
-            </div>
-            <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
-              <DatabaseBackup className="h-6 w-6 text-primary" />
-              Backup &amp; Data Recovery
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Create complete database backups, configure automatic schedules, and restore from previous backup files.
-              All activities are logged for security and accountability.
-            </p>
-          </div>
-          <Button
-            id="btn-backup-now"
-            onClick={() => performBackup("Manual")}
-            disabled={backingUp || restoring}
-            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md px-5"
-          >
-            {backingUp ? (
-              <><RefreshCw className="h-4 w-4 animate-spin" /> Creating Backup…</>
-            ) : (
-              <><DatabaseBackup className="h-4 w-4" /> Backup Now</>
-            )}
-          </Button>
-        </div>
+        {/* ── Page Header Banner matching Dashboard ── */}
+        <PageHeaderBanner
+          icon={DatabaseBackup}
+          badge="Seguridad at Pag-backup ng Database"
+          title="Backup & Data Recovery"
+          description="Lumikha ng kumpletong backup ng database, mag-restore mula sa nakaraang backup file, at subaybayan ang seguridad ng talaan."
+          rightContent={
+            <Button
+              id="btn-backup-now"
+              onClick={() => performBackup("Manual")}
+              disabled={backingUp || restoring}
+              className="gap-2 bg-white text-slate-900 hover:bg-white/90 font-bold shadow-md px-5 text-xs"
+            >
+              {backingUp ? (
+                <><RefreshCw className="h-4 w-4 animate-spin text-primary" /> Creating Backup…</>
+              ) : (
+                <><DatabaseBackup className="h-4 w-4 text-primary" /> Backup Now</>
+              )}
+            </Button>
+          }
+        />
 
         {/* ── Progress Bars ── */}
         {backingUp && backupProgress > 0 && (

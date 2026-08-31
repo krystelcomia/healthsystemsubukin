@@ -26,6 +26,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { allowOnlyLetters, sanitizeLetters } from "@/lib/inputValidation";
@@ -1154,22 +1155,13 @@ const DenguePreventionForm = () => {
         }
       `}</style>
 
-      {/* Dynamic Theme Banner */}
-      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-            <Bug className="h-6 w-6" />
-          </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-              Dengue Prevention — Search & Destroy 2026
-            </h2>
-            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-              Household larvae monitoring, breeding container inspection, and action plan tracking for Barangay Subukin.
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Dynamic Theme Banner Header matching Dashboard */}
+      <PageHeaderBanner
+        icon={Bug}
+        badge={language === "tl" ? "Talaan ng Dengue Prevention" : "Dengue Prevention Record"}
+        title={language === "tl" ? "Dengue Prevention — Search & Destroy 2026" : "Dengue Prevention — Search & Destroy 2026"}
+        description={language === "tl" ? "Pagsubaybay sa kiti-kiti, inspeksyon ng lalagyan ng tubig, at pagsubaybay sa plano ng pagkilos sa Barangay Subukin." : "Household larvae monitoring, breeding container inspection, and action plan tracking for Barangay Subukin."}
+      />
 
       {/* Midwife read-only banner */}
       {isMidwife && <ReadOnlyBanner />}

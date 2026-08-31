@@ -45,6 +45,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 
@@ -949,22 +950,13 @@ const FamilyDataForm = () => {
         }
       `}</style>
 
-      {/* Dynamic Theme Banner */}
-      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-            <Users className="h-6 w-6" />
-          </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-              Family Data & Demographics Directory
-            </h2>
-            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-              Household census registry, family folder files, and resident demographics database for Barangay Subukin.
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Dynamic Theme Banner Header matching Dashboard */}
+      <PageHeaderBanner
+        icon={Users}
+        badge={language === "tl" ? "Talaan ng Sambahayan" : "Family Data & Demographics"}
+        title={language === "tl" ? "Talaan ng Datos ng Pamilya" : "Family Data & Demographics Directory"}
+        description={language === "tl" ? "Rehistro ng senso ng sambahayan, mga folder ng pamilya, at database ng demograpiko ng residente sa Barangay Subukin." : "Household census registry, family folder files, and resident demographics database for Barangay Subukin."}
+      />
 
       {/* Midwife read-only banner */}
       {isMidwife && <ReadOnlyBanner />}

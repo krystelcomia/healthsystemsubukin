@@ -33,8 +33,8 @@ import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
-import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 
 interface FormMeta {
   id: string;
@@ -949,31 +949,20 @@ const AdminHealthRecords = () => {
 
   return (
     <div className="w-full space-y-6">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/95 to-sidebar-background p-6 md:p-8 text-white shadow-xl">
-        <div className="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md bg-white/10 text-white border-white/20">
-              <Layers className="h-3.5 w-3.5" />
-              System Forms Gallery
-            </div>
-            <h1 className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-white">
-              View Forms & Templates
-            </h1>
-            <p className="text-sm text-white/80 leading-relaxed">
-              Browse all official barangay health forms. You can inspect and manage submitted entries in read-only mode.
-            </p>
+      {/* Hero Header matching Dashboard */}
+      <PageHeaderBanner
+        icon={Layers}
+        badge="System Forms Gallery"
+        title="View Forms & Templates"
+        description="Browse all official barangay health forms. You can inspect and manage submitted entries in read-only mode."
+        rightContent={
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-xs shadow-xs">
+            <FileCheck className="h-4 w-4 text-emerald-300" />
+            <span className="text-white/80 font-medium">Aktibong Form:</span>
+            <strong className="text-white font-bold">{BASE_FORM_GALLERY.length + customForms.length}</strong>
           </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <Badge variant="outline" className="bg-white/10 text-white border-white/20 px-3.5 py-1.5 text-xs font-semibold">
-              <FileCheck className="h-3.5 w-3.5 mr-1.5" />
-              {BASE_FORM_GALLERY.length + customForms.length} Active Forms
-            </Badge>
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

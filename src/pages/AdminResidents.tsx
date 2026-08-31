@@ -13,8 +13,8 @@ import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { syncFamilyDataToResidents } from "@/lib/residentLinker";
 import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
-import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 
 interface Resident {
   id: string; full_name: string; gender: string; age: number; status: string; sitio: string; birthday: string | null; family_number?: string | null; created_at: string;
@@ -374,40 +374,27 @@ const AdminResidents = () => {
         }
       `}</style>
 
-      {/* Dynamic Creative Theme Banner Header */}
-      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-            <Users className="h-6 w-6" />
-          </div>
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-primary/30 text-primary font-semibold uppercase tracking-wider bg-primary/5">
-                {language === "tl" ? "Direktoryo ng Residente" : "Resident Master Registry"}
-              </Badge>
+      {/* Dynamic Theme Banner Header matching Dashboard */}
+      <PageHeaderBanner
+        icon={Users}
+        badge={language === "tl" ? "Direktoryo ng Residente" : "Resident Master Registry"}
+        title={t("admin.residents.title")}
+        description={`${t("admin.residents.desc")} ${language === "tl" ? "Talaan ng mga residente na naka-grupo at naka-filter ayon sa sitio sa buong Barangay Subukin." : "Master resident records categorized, filtered, and organized by sitio across Barangay Subukin."}`}
+        rightContent={
+          <>
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-xs shadow-xs">
+              <Users className="h-4 w-4 text-white/90" />
+              <span className="text-white/80 font-medium">{language === "tl" ? "Kabuuan:" : "Total:"}</span>
+              <strong className="text-white font-bold">{residents.length}</strong>
             </div>
-            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight flex items-center gap-2">
-              {t("admin.residents.title")}
-            </h2>
-            <p className="text-xs md:text-sm text-muted-foreground max-w-2xl leading-relaxed">
-              {t("admin.residents.desc")} {language === "tl" ? "Talaan ng mga residente na naka-grupo at naka-filter ayon sa sitio sa buong Barangay Subukin." : "Master resident records categorized, filtered, and organized by sitio across Barangay Subukin."}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 w-full md:w-auto shrink-0 justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-border/40">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-background/80 dark:bg-slate-900/80 border border-border/50 text-xs shadow-xs">
-            <Users className="h-4 w-4 text-primary" />
-            <span className="text-muted-foreground font-medium">{language === "tl" ? "Kabuuan:" : "Total:"}</span>
-            <strong className="text-foreground">{residents.length}</strong>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-background/80 dark:bg-slate-900/80 border border-border/50 text-xs shadow-xs">
-            <MapPin className="h-4 w-4 text-emerald-600" />
-            <span className="text-muted-foreground font-medium">{language === "tl" ? "Mga Sitio:" : "Sitios:"}</span>
-            <strong className="text-foreground">{sitios.length}</strong>
-          </div>
-        </div>
-      </div>
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-xs shadow-xs">
+              <MapPin className="h-4 w-4 text-emerald-300" />
+              <span className="text-white/80 font-medium">{language === "tl" ? "Mga Sitio:" : "Sitios:"}</span>
+              <strong className="text-white font-bold">{sitios.length}</strong>
+            </div>
+          </>
+        }
+      />
 
       {/* Filter and Print Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-xl border border-border/50 bg-card shadow-xs no-print">

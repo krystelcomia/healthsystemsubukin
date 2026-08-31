@@ -23,6 +23,7 @@ import {
   Bell,
 } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -512,77 +513,64 @@ const CalendarPage = () => {
 
   return (
     <div className="space-y-6 w-full animate-fade-in">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
-            <CalendarIcon className="h-6 w-6 text-primary" />
-            {t("calendar.title")}
-          </h1>
-          <p className="text-muted-foreground mt-1">{t("calendar.subtitle")}</p>
-        </div>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="relative flex items-center gap-2 shadow-sm bg-card border-border/50 hover:bg-muted/30">
-              <Bell className="h-4 w-4 text-primary" />
-              <span className="font-medium text-xs">{t("calendar.notifications")}</span>
-              {unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-background animate-pulse">
-                  {unreadCount}
+      <PageHeaderBanner
+        icon={CalendarIcon}
+        badge={language === "tl" ? "Iskedyul at Pagpupulong" : "Schedule & Events"}
+        title={t("calendar.title")}
+        description={t("calendar.subtitle")}
+        rightContent={
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="relative flex items-center gap-2 shadow-sm bg-white/10 text-white border-white/20 hover:bg-white/20">
+                <Bell className="h-4 w-4 text-amber-300" />
+                <span className="font-medium text-xs">{t("calendar.notifications")}</span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-background animate-pulse">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 p-0 border border-border/50 bg-popover shadow-xl rounded-lg overflow-hidden z-50">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40 bg-muted/40">
+                <span className="font-heading font-semibold text-sm text-foreground flex items-center gap-1.5">
+                  <Bell className="h-4 w-4 text-primary" />
+                  {t("calendar.notifications")}
                 </span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-80 p-0 border border-border/50 bg-popover shadow-xl rounded-lg overflow-hidden z-50">
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40 bg-muted/40">
-              <span className="font-heading font-semibold text-sm text-foreground flex items-center gap-1.5">
-                <Bell className="h-4 w-4 text-primary" />
-                {t("calendar.notifications")}
-              </span>
-              {unreadCount > 0 && (
-                <button onClick={markAllAsRead} className="text-xs text-primary hover:underline font-medium">
-                  {t("calendar.markAllAsRead")}
-                </button>
-              )}
-            </div>
-            <div className="max-h-64 overflow-y-auto divide-y divide-border/20">
-              {notifications.length > 0 ? (
-                notifications.map((n) => {
-                  const isUnread = !readEventIds.includes(n.id);
-                  return (
-                    <div 
-                      key={n.id} 
-                      onClick={() => isUnread && markAsRead(n.id)}
-                      className={`p-3 text-left transition-colors cursor-pointer flex items-start gap-3 hover:bg-muted/50 ${
-                        isUnread ? "bg-primary/5 dark:bg-primary/10" : ""
-                      }`}
-                    >
-                      <div className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${
-                        isUnread ? "bg-primary animate-pulse" : "bg-transparent"
-                      }`} />
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-xs leading-normal ${
-                          isUnread ? "text-foreground font-semibold" : "text-muted-foreground"
-                        }`}>
-                          {n.title}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                          <Clock className="h-3 w-3 text-primary/75" />
-                          <span>{n.dayLabel} at {n.timeStr}</span>
-                        </p>
+                {unreadCount > 0 && (
+                  <button onClick={markAllAsRead} className="text-xs text-primary hover:underline font-medium">
+                    {t("calendar.markAllAsRead")}
+                  </button>
+                )}
+              </div>
+              <div className="max-h-64 overflow-y-auto divide-y divide-border/20">
+                {notifications.length > 0 ? (
+                  notifications.map((n) => {
+                    const isRead = readEventIds.includes(n.id);
+                    return (
+                      <div
+                        key={n.id}
+                        onClick={() => markAsRead(n.id)}
+                        className={`p-3 text-xs transition-colors cursor-pointer ${isRead ? "bg-background/50 opacity-60" : "bg-primary/5 hover:bg-primary/10"}`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="font-bold text-foreground">{n.title}</span>
+                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">{n.time}</span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{n.description || n.location}</p>
                       </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="p-6 text-center text-xs text-muted-foreground">
-                  {t("calendar.noUpcomingReminders")}
-                </div>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-4 text-center text-xs text-muted-foreground italic">
+                    {t("calendar.noNotifications")}
+                  </div>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar Grid Section */}

@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import { getThemeStyle } from "@/lib/themeStyles";
 import { OfficialHeader } from "@/components/OfficialHeader";
 
 interface FormConfig {
@@ -618,14 +619,14 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
         }
       `}</style>
 
-      {/* Week Navigation Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/95 to-sidebar-background p-6 md:p-8 text-white shadow-xl no-print">
+      {/* Week Navigation Header matching Dashboard */}
+      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${getThemeStyle(colorTheme).heroGradient} p-6 md:p-8 text-white shadow-xl border ${getThemeStyle(colorTheme).heroBorder} no-print`}>
         <div className="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
         <div className="absolute left-1/3 bottom-0 h-48 w-48 rounded-full bg-white/5 blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md bg-white/10 text-white border-white/20">
+            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md ${getThemeStyle(colorTheme).badgeStyle}`}>
               <FormIcon className="h-3.5 w-3.5" />
               Admin Summary &amp; History View
             </div>
@@ -650,7 +651,7 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             <Button
               size="sm"
               onClick={() => handlePrintReport(currentWeekRecords, `Active Weekly ${config.title} Report`)}
-              className="bg-white/25 hover:bg-white/35 text-white font-semibold gap-1.5 text-xs backdrop-blur-sm border border-white/30 shadow-xs"
+              className="bg-white/20 hover:bg-white/30 text-white font-semibold gap-1.5 text-xs backdrop-blur-sm border border-white/25 shadow-xs"
             >
               <Printer className="h-3.5 w-3.5" /> Print Active Week
             </Button>

@@ -51,6 +51,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { getFamilyOnlyResidents, calculateAge, ensureResidentExists } from "@/lib/residentLinker";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { 
   allowOnlyNumbers, 
   allowNumbersAndDecimal, 
@@ -960,24 +961,17 @@ const AddNewForm = () => {
         }
       `}</style>
 
-      {/* ─── Header Banner ─── */}
-      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-            {formId ? <FileText className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
-          </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-              {formId ? draftTitle : "Manual-to-Digital Form Converter & Deployer"}
-            </h2>
-            <p className="text-xs md:text-sm text-muted-foreground mt-0.5 max-w-2xl">
-              {formId
-                ? (draftDesc || "Official digital record for Barangay Subukin health registry.")
-                : "Scan any paper form to convert it into an accurate digital format. Assign custom titles, model layout after existing system forms, and deploy directly to Health Forms."}
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* ─── Header Banner matching Dashboard ─── */}
+      <PageHeaderBanner
+        icon={formId ? FileText : Sparkles}
+        badge={formId ? "Naka-deploy na Custom Form" : "AI Form Digitizer & Converter"}
+        title={formId ? draftTitle : "Manual-to-Digital Form Converter & Deployer"}
+        description={
+          formId
+            ? (draftDesc || "Opisyal na digital record para sa health registry ng Barangay Subukin.")
+            : "Mag-scan at mag-convert ng anumang papel na form patungo sa digital format, i-deploy nang direkta sa mga form ng kalusugan."
+        }
+      />
 
       {/* ─── Wizard Step Indicator ─── */}
       {!formId && (

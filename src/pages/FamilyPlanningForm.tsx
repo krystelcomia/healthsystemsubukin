@@ -20,6 +20,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { useAuth } from "@/contexts/AuthContext";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
@@ -732,20 +733,13 @@ const FamilyPlanningForm = () => {
         }
       `}</style>
 
-      {/* Dynamic Theme Banner */}
-      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex items-center gap-4">
-        <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-          <Heart className="h-6 w-6" />
-        </div>
-        <div>
-          <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-            {t("fp.title") || "Family Planning Client Assessment Record"}
-          </h2>
-          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-            Official Digital Replica of Department of Health FP Form 1 (Side A & Side B) – Client clinical assessment, medical history evaluation, method tracking, and follow-up records.
-          </p>
-        </div>
-      </div>
+      {/* Dynamic Theme Banner Header matching Dashboard */}
+      <PageHeaderBanner
+        icon={Heart}
+        badge={language === "tl" ? "Talaan ng Family Planning" : "Family Planning Assessment"}
+        title={t("nav.familyPlanning")}
+        description={language === "tl" ? "Opisyal na digital replica ng DOH FP Form 1 (Side A at Side B) – Pagtatasa sa klinikal ng kliyente, pagsusuri ng kasaysayan sa medisina, at pagsubaybay sa paraan." : "Official Digital Replica of Department of Health FP Form 1 (Side A & Side B) – Client clinical assessment, medical history evaluation, method tracking, and follow-up records."}
+      />
 
       {isMidwife && <ReadOnlyBanner />}
 

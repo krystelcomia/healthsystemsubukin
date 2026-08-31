@@ -3,6 +3,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, Rocket, Target, MapPin, TrendingUp, Users, Home as HomeIcon, Info } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 
 const About = () => {
   const { t } = useSettings();
@@ -45,19 +46,27 @@ const About = () => {
         }
       }
 
-      const L = (window as any).L;
-      if (L && mapContainerRef.current && !mapRef.current) {
-        // Barangay Subukin coordinates: [13.7252, 121.4381]
-        mapRef.current = L.map(mapContainerRef.current).setView([13.7252, 121.4381], 14);
+      if ((window as any).L && mapContainerRef.current && !mapRef.current) {
+        const L = (window as any).L;
+        // Coordinates for Barangay Subukin, San Juan, Batangas (Approx 13.7554° N, 121.4116° E)
+        const subukinCoords: [number, number] = [13.7554, 121.4116];
         
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        mapRef.current = L.map(mapContainerRef.current).setView(subukinCoords, 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 18,
         }).addTo(mapRef.current);
 
-        L.marker([13.7252, 121.4381])
-          .addTo(mapRef.current)
-          .bindPopup(`<b>Barangay Subukin</b><br>San Juan, Batangas, Philippines`)
-          .openPopup();
+        // Custom marker with popup
+        const marker = L.marker(subukinCoords).addTo(mapRef.current);
+        marker.bindPopup(`
+          <div style="font-family: inherit; font-size: 13px; line-height: 1.4;">
+            <strong style="color: #047857; font-size: 14px;">Barangay Subukin</strong><br/>
+            San Juan, Batangas<br/>
+            <em>Health Center & Barangay Hall</em>
+          </div>
+        `).openPopup();
       }
     };
 
@@ -73,24 +82,14 @@ const About = () => {
 
   return (
     <div className="space-y-8 w-full animate-fade-in">
-      {/* Hero Header Section */}
-      <div className="relative rounded-2xl bg-gradient-to-r from-primary/95 to-primary/80 text-primary-foreground p-8 md:p-12 shadow-lg overflow-hidden">
-        <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-y-1/4 translate-x-1/4">
-          <Info className="w-96 h-96" />
-        </div>
-        <div className="relative z-10 space-y-4 max-w-3xl">
-          <div className="inline-flex items-center gap-2 bg-primary-foreground/15 border border-primary-foreground/20 rounded-full px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
-            <MapPin className="h-4 w-4" />
-            San Juan, Batangas, Philippines
-          </div>
-          <h1 className="text-3xl md:text-5xl font-heading font-extrabold tracking-tight">
-            {t("about.title")}
-          </h1>
-          <p className="text-lg md:text-xl text-primary-foreground/90 font-medium leading-relaxed">
-            {t("about.description")}
-          </p>
-        </div>
-      </div>
+      {/* Hero Header Section matching Dashboard */}
+      <PageHeaderBanner
+        icon={Info}
+        badge="San Juan, Batangas, Philippines"
+        title={t("about.title")}
+        description={t("about.description")}
+        className="p-8 md:p-10"
+      />
 
       {/* Vision, Mission, and Goal Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

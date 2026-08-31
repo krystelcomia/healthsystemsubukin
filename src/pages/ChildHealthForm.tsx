@@ -38,6 +38,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import {
   allowOnlyLetters,
@@ -1434,20 +1435,13 @@ const ChildHealthForm = () => {
         }
       `}</style>
 
-      {/* Dynamic Theme Banner */}
-      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex items-center gap-4">
-        <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-          <Baby className="h-6 w-6" />
-        </div>
-        <div>
-          <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-            {t("child.title") || "Child Health & Immunization Registry"}
-          </h2>
-          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-            Comprehensive pediatric clinical management (Care for Sick Children 2m–5y), routine Vitamin A & Deworming distribution, and SIA vaccine masterlisting for Barangay Subukin.
-          </p>
-        </div>
-      </div>
+      {/* Dynamic Theme Banner Header matching Dashboard */}
+      <PageHeaderBanner
+        icon={Baby}
+        badge={language === "tl" ? "Talaan ng Kalusugan ng Bata" : "Child Health & Immunization"}
+        title={t("child.title") || (language === "tl" ? "Kalusugan ng Bata at Rehistro ng Pagbabakuna" : "Child Health & Immunization Registry")}
+        description={language === "tl" ? "Pangangalaga sa may sakit na bata (2 buwan–5 taon), pamamahagi ng Bitamina A at pampurga, at masterlist ng bakuna sa SIA para sa Barangay Subukin." : "Comprehensive pediatric clinical management (Care for Sick Children 2m–5y), routine Vitamin A & Deworming distribution, and SIA vaccine masterlisting for Barangay Subukin."}
+      />
 
       {/* Main Container Card */}
       <Card id="child-print-area" className="border border-border/50 shadow-md bg-card text-card-foreground overflow-visible">

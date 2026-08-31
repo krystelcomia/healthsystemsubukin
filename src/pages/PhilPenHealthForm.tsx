@@ -16,6 +16,7 @@ import { logActivity } from "@/lib/activityLogger";
 import { calculateAge, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -514,22 +515,13 @@ const PhilPenHealthForm = () => {
         }
       `}</style>
 
-      {/* Dynamic Theme Banner */}
-      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-            <HeartPulse className="h-6 w-6" />
-          </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-              PhilPen Health Assessment Form
-            </h2>
-            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-              PhilPEN Risk Assessment & Lifestyle Health Checklist for Barangay Subukin registry.
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Dynamic Theme Banner Header matching Dashboard */}
+      <PageHeaderBanner
+        icon={HeartPulse}
+        badge={language === "tl" ? "Talaan ng PhilPen" : "PhilPen Risk Assessment"}
+        title={t("nav.philpenHealth")}
+        description={language === "tl" ? "Pagtatasa ng panganib sa kalusugan at pamumuhay para sa rehistro ng Barangay Subukin." : "PhilPEN Risk Assessment & Lifestyle Health Checklist for Barangay Subukin registry."}
+      />
 
       {/* Midwife read-only banner */}
       {isMidwife && <ReadOnlyBanner />}

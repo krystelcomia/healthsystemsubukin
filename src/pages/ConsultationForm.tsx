@@ -17,6 +17,7 @@ import { ensureResidentExists, getFamilyOnlyResidents, calculateAge } from "@/li
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -383,20 +384,13 @@ const ConsultationForm = () => {
         }
       `}</style>
 
-      {/* Dynamic Theme Banner */}
-      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex items-center gap-4">
-        <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-          <Stethoscope className="h-6 w-6" />
-        </div>
-        <div>
-          <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-            {t("consultation.title")}
-          </h2>
-          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-            {t("consultation.desc")}
-          </p>
-        </div>
-      </div>
+      {/* Dynamic Theme Banner Header matching Dashboard */}
+      <PageHeaderBanner
+        icon={Stethoscope}
+        badge={language === "tl" ? "Talaan ng Konsultasyon" : "Patient Consultation Record"}
+        title={t("consultation.title")}
+        description={t("consultation.desc")}
+      />
 
       {/* Midwife read-only banner */}
       {isMidwife && <ReadOnlyBanner />}

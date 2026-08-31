@@ -12,19 +12,19 @@ import {
   Server
 } from "lucide-react";
 import { useSettings, COLOR_THEMES } from "@/contexts/SettingsContext";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 
 const SettingsPage = () => {
   const { darkMode, setDarkMode, fontSize, setFontSize, fontStyle, setFontStyle, language, setLanguage, colorTheme, setColorTheme, t } = useSettings();
 
   return (
     <div className="w-full space-y-6">
-      <div>
-        <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
-          <SettingsIcon className="h-6 w-6 text-primary" />
-          {t("settings.title")}
-        </h1>
-        <p className="text-muted-foreground mt-1">{t("settings.description")}</p>
-      </div>
+      <PageHeaderBanner
+        icon={SettingsIcon}
+        badge={language === "tl" ? "Mga Kagustuhan sa Sistema" : "System Preferences"}
+        title={t("settings.title")}
+        description={t("settings.description")}
+      />
 
       {/* 1. Display Settings Card */}
       <Card className="border-border/50 shadow-sm">

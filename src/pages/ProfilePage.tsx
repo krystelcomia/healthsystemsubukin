@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
+import { getThemeStyle } from "@/lib/themeStyles";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -204,63 +205,68 @@ const ProfilePage = () => {
 
   return (
     <div className="w-full space-y-6">
-      {/* Header */}
-      <Card className="w-full overflow-hidden border-border/50 shadow-sm">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
-              <div className="relative group">
-                <Avatar className="h-32 w-32 ring-4 ring-background shadow-xl">
-                  {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName || "avatar"} />}
-                  <AvatarFallback className="text-3xl font-heading bg-secondary text-secondary-foreground">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="absolute bottom-1 right-1 h-9 w-9 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-60"
-                  aria-label="Change profile picture"
-                >
-                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                />
-              </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-heading font-bold text-foreground">
-                  {fullName || username || t("profile.title")}
-                </h1>
-                <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1"><AtSign className="h-3.5 w-3.5" />{username || "—"}</span>
-                  <span className="hidden md:inline">•</span>
-                  <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{email}</span>
-                  {assignedSitio && (
-                    <>
-                      <span className="hidden md:inline">•</span>
-                      <span className="flex items-center gap-1 text-primary font-semibold">
-                        <MapPin className="h-3.5 w-3.5" />{t("profile.assignedSitio")}: {assignedSitio}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
+      {/* Dynamic Theme Banner Header matching Dashboard */}
+      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${getThemeStyle(colorTheme).heroGradient} p-6 md:p-8 text-white shadow-xl border ${getThemeStyle(colorTheme).heroBorder}`}>
+        <div className="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 bottom-0 h-48 w-48 rounded-full bg-white/5 blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-5">
+            <div className="relative group shrink-0">
+              <Avatar className="h-28 w-28 ring-4 ring-white/20 shadow-xl">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName || "avatar"} />}
+                <AvatarFallback className="text-2xl font-heading bg-white/20 text-white font-bold backdrop-blur-md">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-white text-slate-900 shadow-lg flex items-center justify-center hover:scale-110 transition-transform disabled:opacity-60"
+                aria-label="Change profile picture"
+              >
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Camera className="h-4 w-4 text-slate-900" />}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
             </div>
-            <div className="flex gap-2">
-              {avatarUrl && (
-                <Button variant="outline" size="sm" onClick={() => setRemovePhotoConfirm(true)}>
-                  <X className="h-4 w-4 mr-1" /> {t("profile.removePhoto")}
-                </Button>
-              )}
+            <div className="space-y-1.5">
+              <div className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold border backdrop-blur-md ${getThemeStyle(colorTheme).badgeStyle}`}>
+                <ShieldCheck className="h-3.5 w-3.5" />
+                {role ? role.toUpperCase() : "BHW WORKER"}
+              </div>
+              <h1 className="text-2xl md:text-3xl font-heading font-extrabold text-white tracking-tight">
+                {fullName || username || t("profile.title")}
+              </h1>
+              <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm text-white/80">
+                <span className="flex items-center gap-1"><AtSign className="h-3.5 w-3.5" />{username || "—"}</span>
+                <span className="hidden md:inline text-white/40">•</span>
+                <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{email}</span>
+                {assignedSitio && (
+                  <>
+                    <span className="hidden md:inline text-white/40">•</span>
+                    <span className="flex items-center gap-1 text-emerald-300 font-semibold">
+                      <MapPin className="h-3.5 w-3.5" />{t("profile.assignedSitio")}: {assignedSitio}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex gap-2 shrink-0">
+            {avatarUrl && (
+              <Button variant="outline" size="sm" onClick={() => setRemovePhotoConfirm(true)} className="bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs">
+                <X className="h-3.5 w-3.5 mr-1" /> {t("profile.removePhoto")}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Stats / Quick info row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Phone, Search, Users, PhoneCall, User, Shield, AlertTriangle, Building, Activity, Flame, Heart, HeartPulse, MapPin, ExternalLink } from "lucide-react";
 import { getAssignedSitio } from "@/lib/sitioMapping";
 import { logActivity } from "@/lib/activityLogger";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 
 interface Contact {
   id: number;
@@ -173,13 +174,12 @@ const ContactPage = () => {
 
   return (
     <div className="space-y-6 w-full animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
-          <Phone className="h-6 w-6 text-primary" />
-          {t("contact.title")}
-        </h1>
-        <p className="text-muted-foreground mt-1">{t("contact.desc")}</p>
-      </div>
+      <PageHeaderBanner
+        icon={Phone}
+        badge={language === "tl" ? "Direktoryo ng Kontak" : "Contact & Emergency Directory"}
+        title={t("contact.title")}
+        description={t("contact.desc")}
+      />
 
       <Tabs defaultValue="bhw" className="w-full">
         <TabsList className="grid w-full md:w-[400px] grid-cols-2 mb-6">

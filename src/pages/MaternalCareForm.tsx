@@ -35,6 +35,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
@@ -777,20 +778,13 @@ const MaternalCareForm = () => {
         }
       `}</style>
 
-      {/* Dynamic Theme Banner */}
-      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex items-center gap-4">
-        <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-          <Heart className="h-6 w-6" />
-        </div>
-        <div>
-          <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-            {t("maternal.title") || "Maternal Care & Prenatal Health Record"}
-          </h2>
-          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-            Comprehensive prenatal checkup tracking, obstetric milestones (FPAL), EDC/LMP calculation, and pregnancy risk factor assessment for mothers of Barangay Subukin.
-          </p>
-        </div>
-      </div>
+      {/* Dynamic Theme Banner Header matching Dashboard */}
+      <PageHeaderBanner
+        icon={Heart}
+        badge={language === "tl" ? "Talaan ng Pangangalaga sa Ina" : "Maternal Care Record"}
+        title={t("nav.maternalCare")}
+        description={language === "tl" ? "Komprehensibong pagsubaybay sa prenatal checkup, milestones sa obstetrics (FPAL), at pagtatasa ng panganib sa pagbubuntis." : "Comprehensive prenatal checkup tracking, obstetric milestones (FPAL), EDC/LMP calculation, and pregnancy risk factor assessment for mothers of Barangay Subukin."}
+      />
 
       {isMidwife && <ReadOnlyBanner />}
 

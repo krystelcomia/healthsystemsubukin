@@ -42,6 +42,7 @@ import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
@@ -780,22 +781,20 @@ const ResidentRecords = () => {
         }
       `}</style>
 
-      {/* Dynamic Theme Banner */}
-      <div className="no-print bg-gradient-to-r from-primary/15 via-primary/5 to-card border border-primary/20 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-            <Users className="h-6 w-6" />
+      {/* Dynamic Theme Banner Header matching Dashboard */}
+      <PageHeaderBanner
+        icon={Users}
+        badge={language === "tl" ? "Talaan ng Residente" : "Resident Master Registry"}
+        title={t("residents.title")}
+        description={language === "tl" ? "Talaan ng populasyon at medikal na rekord ng Barangay Subukin." : "Barangay Subukin population health registry and medical records database."}
+        rightContent={
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-xs shadow-xs">
+            <Users className="h-4 w-4 text-white/90" />
+            <span className="text-white/80 font-medium">{language === "tl" ? "Kabuuan:" : "Total:"}</span>
+            <strong className="text-white font-bold">{residents.length}</strong>
           </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-heading font-extrabold text-foreground tracking-tight">
-              Resident Records
-            </h2>
-            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-              Barangay Subukin population health registry and medical records database.
-            </p>
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       {isMidwife && <ReadOnlyBanner />}
 

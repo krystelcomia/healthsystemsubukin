@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Settings, Download, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useSettings, COLOR_THEMES } from "@/contexts/SettingsContext";
+import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { generateFullReportFolder } from "@/lib/fullReportGenerator";
 
 const AdminSettings = () => {
@@ -39,13 +40,12 @@ const AdminSettings = () => {
 
   return (
     <div className="w-full space-y-6">
-      <div>
-        <h1 className="text-2xl font-heading font-bold text-foreground flex items-center gap-2">
-          <Settings className="h-6 w-6 text-primary" />
-          {t("admin.settings.title")}
-        </h1>
-        <p className="text-muted-foreground mt-1">{t("admin.settings.description")}</p>
-      </div>
+      <PageHeaderBanner
+        icon={Settings}
+        badge="Supervisory Management Settings"
+        title={t("admin.settings.title")}
+        description={t("admin.settings.description")}
+      />
 
       <Card className="border-border/50 shadow-sm">
         <CardHeader><CardTitle className="text-lg font-heading">{t("settings.display")}</CardTitle></CardHeader>
