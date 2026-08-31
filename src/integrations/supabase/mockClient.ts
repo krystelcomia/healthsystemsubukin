@@ -746,13 +746,14 @@ class MockFunctions {
     console.log(`[Mock Functions] Invoking "${name}" with body:`, options?.body);
     
     if (name === "create-bhw-account") {
-      const { name: workerName, age, address, gmail, number, username, password } = options?.body || {};
+      const { name: workerName, age, address, gmail, number, username, password, assigned_sitio } = options?.body || {};
+      const cleanEmail = (gmail || "").toLowerCase().trim();
       
       const dbStr = localStorage.getItem('supabase_mock_db');
       const db = dbStr ? JSON.parse(dbStr) : {};
       
       const users = db['auth_users'] || [];
-      if (users.some((u: any) => u.email === gmail)) {
+      if (users.some((u: any) => (u.email || "").toLowerCase().trim() === cleanEmail)) {
         return { data: { error: "User already exists with this email" }, error: null };
       }
       
@@ -762,7 +763,7 @@ class MockFunctions {
       // Add auth user
       users.push({
         id: newUserId,
-        email: gmail,
+        email: cleanEmail,
         password: password,
         user_metadata: { full_name: workerName }
       });
@@ -782,7 +783,7 @@ class MockFunctions {
         id: crypto.randomUUID(),
         user_id: newUserId,
         full_name: workerName,
-        username: username || gmail.split('@')[0]
+        username: username || cleanEmail.split('@')[0]
       });
       
       // Add BHW worker details
@@ -791,11 +792,12 @@ class MockFunctions {
         id: newWorkerId,
         name: workerName,
         age: Number(age) || 0,
-        address: address || "",
-        gmail: gmail,
+        address: address || assigned_sitio || "",
+        gmail: cleanEmail,
         number: number || "",
         is_online: false,
         user_id: newUserId,
+        assigned_sitio: assigned_sitio || address || "",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
