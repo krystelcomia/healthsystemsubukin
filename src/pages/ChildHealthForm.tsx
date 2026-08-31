@@ -1153,23 +1153,33 @@ const ChildHealthForm = () => {
     }
 
     const hasHealthDetails = Boolean(
-      sickForm.temperature?.trim() ||
+      sickForm.temp_c?.trim() ||
       sickForm.weight_kg?.trim() ||
+      sickForm.height_cm?.trim() ||
+      sickForm.pulse_rate?.trim() ||
+      sickForm.respiratory_rate?.trim() ||
       sickForm.chief_complaint?.trim() ||
-      sickForm.signs_cough_fast_breathing ||
-      sickForm.signs_diarrhea_sunken_eyes ||
-      sickForm.signs_fever_stiff_neck ||
-      sickForm.signs_dengue_bleeding ||
-      sickForm.signs_ear_discharge ||
+      sickForm.fast_breathing ||
+      sickForm.chest_indrawing ||
+      sickForm.stridor ||
+      sickForm.has_cough ||
+      sickForm.has_diarrhea ||
+      sickForm.blood_in_stool ||
+      sickForm.has_fever ||
+      sickForm.stiff_neck ||
+      sickForm.dengue_bleeding ||
+      sickForm.has_ear_problem ||
+      sickForm.ear_pain ||
+      sickForm.ear_discharge ||
       sickForm.classification_cough?.trim() ||
       sickForm.classification_diarrhea?.trim() ||
       sickForm.classification_fever?.trim() ||
       sickForm.classification_dengue?.trim() ||
-      sickForm.treatment_cough?.trim() ||
-      sickForm.treatment_diarrhea?.trim() ||
-      sickForm.treatment_fever?.trim() ||
+      sickForm.classification_ear?.trim() ||
+      sickForm.treatment_notes?.trim() ||
+      sickForm.advice_notes?.trim() ||
       sickForm.vaccines_given?.length > 0 ||
-      sickForm.action_plan_revisit?.trim()
+      sickForm.return_health_center_date?.trim()
     );
 
     if (!hasHealthDetails) {
@@ -1241,11 +1251,11 @@ const ChildHealthForm = () => {
     }
 
     const rowHasVitADetails = (r: any) => Boolean(
-      r.dose_6m?.trim() ||
-      r.dose_12_23m_1?.trim() || r.dose_12_23m_2?.trim() || r.deworm_12_23m_1?.trim() || r.deworm_12_23m_2?.trim() ||
-      r.dose_24_35m_1?.trim() || r.dose_24_35m_2?.trim() || r.deworm_24_35m_1?.trim() || r.deworm_24_35m_2?.trim() ||
-      r.dose_36_47m_1?.trim() || r.dose_36_47m_2?.trim() || r.deworm_36_47m_1?.trim() || r.deworm_36_47m_2?.trim() ||
-      r.dose_48_59m_1?.trim() || r.dose_48_59m_2?.trim() || r.deworm_48_59m_1?.trim() || r.deworm_48_59m_2?.trim()
+      r.v6m_1st?.trim() ||
+      r.v12_23_v1?.trim() || r.v12_23_v2?.trim() || r.v12_23_d1?.trim() || r.v12_23_d2?.trim() ||
+      r.v24_35_v1?.trim() || r.v24_35_v2?.trim() || r.v24_35_d1?.trim() || r.v24_35_d2?.trim() ||
+      r.v36_47_v1?.trim() || r.v36_47_v2?.trim() || r.v36_47_d1?.trim() || r.v36_47_d2?.trim() ||
+      r.v48_59_v1?.trim() || r.v48_59_v2?.trim() || r.v48_59_d1?.trim() || r.v48_59_d2?.trim()
     );
 
     const emptyHealthRow = validRows.find(r => !rowHasVitADetails(r));
