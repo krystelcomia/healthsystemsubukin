@@ -639,33 +639,33 @@ const AdminHealthRecords = () => {
 
     const html = `
       <div style="font-family: system-ui, -apple-system, sans-serif; color: #000000; width: 100%;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 4px; background: #ffffff; color: #000000;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; margin-bottom: 12px; background: #ffffff; color: #000000;">
           <thead>
             <tr style="border-bottom: 2px solid #000000; background: #ffffff;">
-              <th style="border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; text-transform: uppercase; font-size: 11px; font-weight: bold; color: #000000; background: #ffffff; width: 28px;">#</th>
-              <th style="border: 1px solid #cbd5e1; padding: 7px 8px; text-align: left; text-transform: uppercase; font-size: 11px; font-weight: bold; color: #000000; background: #ffffff;">Resident Name</th>
-              ${cols.map(c => `<th style="border: 1px solid #cbd5e1; padding: 7px 8px; text-align: left; text-transform: uppercase; font-size: 11px; font-weight: bold; color: #000000; background: #ffffff;">${formatColTitle(c)}</th>`).join("")}
+              <th style="border: 1px solid #000000; padding: 7px 8px; text-align: center; text-transform: uppercase; font-size: 11px; font-weight: bold; color: #000000; background: #ffffff; width: 28px;">#</th>
+              <th style="border: 1px solid #000000; padding: 7px 8px; text-align: left; text-transform: uppercase; font-size: 11px; font-weight: bold; color: #000000; background: #ffffff;">Resident Name</th>
+              ${cols.map(c => `<th style="border: 1px solid #000000; padding: 7px 8px; text-align: left; text-transform: uppercase; font-size: 11px; font-weight: bold; color: #000000; background: #ffffff;">${formatColTitle(c)}</th>`).join("")}
             </tr>
           </thead>
           <tbody>
             ${filteredFormRecords.length === 0 ? `
               <tr style="background: #ffffff;">
-                <td colspan="${cols.length + 2}" style="border: 1px solid #cbd5e1; padding: 12px; text-align: center; color: #000000; font-style: italic; background: #ffffff;">No records found for this form</td>
+                <td colspan="${cols.length + 2}" style="border: 1px solid #000000; padding: 12px; text-align: center; color: #000000; font-style: italic; background: #ffffff;">No records found for this form</td>
               </tr>
             ` : filteredFormRecords.map((r, i) => {
               const name = r.residents?.full_name || r.patient_name || (r.first_name ? `${r.first_name} ${r.surname || ""}` : (r.father_name ? `${r.father_name}` : "—"));
-              return `<tr style="border-bottom: 1px solid #cbd5e1; background: #ffffff;">
-                <td style="border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; color: #000000; font-size: 11px; background: #ffffff;">${i + 1}</td>
-                <td style="border: 1px solid #cbd5e1; padding: 7px 8px; font-weight: bold; color: #000000; font-size: 11px; background: #ffffff;">${name}</td>
-                ${cols.map(c => `<td style="border: 1px solid #cbd5e1; padding: 7px 8px; color: #000000; font-size: 11px; background: #ffffff;">${formatCellValue(r[c])}</td>`).join("")}
+              return `<tr style="background: #ffffff;">
+                <td style="border: 1px solid #000000; padding: 7px 8px; text-align: center; color: #000000; font-size: 11px; background: #ffffff;">${i + 1}</td>
+                <td style="border: 1px solid #000000; padding: 7px 8px; font-weight: bold; color: #000000; font-size: 11px; background: #ffffff;">${name}</td>
+                ${cols.map(c => `<td style="border: 1px solid #000000; padding: 7px 8px; color: #000000; font-size: 11px; background: #ffffff;">${formatCellValue(r[c])}</td>`).join("")}
               </tr>`;
             }).join("")}
           </tbody>
         </table>
 
-        <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 10px; color: #000000;">
-          <p style="font-size: 10px; color: #64748b; margin: 0; text-align: left;">Report Generated: ${new Date().toLocaleString()}</p>
-          <p style="font-size: 11px; font-weight: bold; color: #000000; margin: 0; text-align: right;">Total Active Records: ${filteredFormRecords.length}</p>
+        <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 10px; color: #000000;">
+          <p style="font-size: 10px; color: #000000; margin: 0; text-align: left;">Report Generated: ${new Date().toLocaleString()}</p>
+          <p style="font-size: 11px; font-weight: bold; color: #000000; margin: 0; text-align: right;">Total Registered: ${filteredFormRecords.length}</p>
         </div>
       </div>
     `;
@@ -1530,9 +1530,9 @@ const AdminHealthRecords = () => {
         <div id="admin-in-system-print" className="hidden print:block text-black bg-white">
           <OfficialHeader
             title={printContent.title}
-            subtitle="Barangay Subukin Health Center • San Juan, Batangas"
+            subtitle={printContent.subtitle || "Barangay Subukin Health Center • San Juan, Batangas"}
             showDoubleBorder={true}
-            logoHeight="75px"
+            logoHeight="95px"
           />
           <div dangerouslySetInnerHTML={{ __html: printContent.html }} />
           <style>{`
@@ -1544,15 +1544,15 @@ const AdminHealthRecords = () => {
                 left: 0 !important;
                 top: 0 !important;
                 width: 100% !important;
-                background: white !important;
-                color: black !important;
-                padding: 0 !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 20px !important;
                 margin: 0 !important;
                 box-sizing: border-box !important;
               }
               @page { 
                 size: ${printContent.orientation}; 
-                margin: 10mm 12mm 10mm 12mm; 
+                margin: 6mm; 
               }
             }
           `}</style>
