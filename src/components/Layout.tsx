@@ -139,11 +139,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (user && !activeBhw && !noticeDismissed) {
+    if (user && !activeBhw && !noticeDismissed && !isMidwife) {
       const timer = setTimeout(() => setAttendanceNoticeOpen(true), 400);
       return () => clearTimeout(timer);
     }
-  }, [user, activeBhw, noticeDismissed]);
+  }, [user, activeBhw, noticeDismissed, isMidwife]);
 
   useEffect(() => {
     if (workerDisplayName) {
@@ -391,7 +391,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </header>
 
           <div className="flex-1 p-6 animate-fade-in space-y-6 min-w-0 max-w-full">
-            {!activeBhw && user && (
+            {!activeBhw && user && !isMidwife && (
               <div className="p-4 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-amber-500/5 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-bounce-subtle">
                 <div className="flex items-start gap-3">
                   <div className="h-10 w-10 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5 animate-pulse">
@@ -636,7 +636,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </Dialog>
 
       {/* Attendance Check-In Notice Popup Dialog */}
-      <Dialog open={attendanceNoticeOpen} onOpenChange={setAttendanceNoticeOpen}>
+      <Dialog open={attendanceNoticeOpen && !isMidwife} onOpenChange={setAttendanceNoticeOpen}>
         <DialogContent className="max-w-md bg-card border-2 border-amber-500/50 shadow-2xl p-6 rounded-2xl">
           <DialogHeader className="text-center sm:text-left space-y-2">
             <div className="mx-auto sm:mx-0 h-12 w-12 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center animate-pulse">
