@@ -272,7 +272,33 @@ const PhilPenHealthForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.resident_id) {
-      toast.error(t("consultation.selectResident"));
+      toast.error("Please select a registered resident.");
+      return;
+    }
+
+    if (!form.birthdate && !form.age) {
+      toast.error("Essential resident info missing: Please provide Date of Birth or Age.");
+      return;
+    }
+
+    if (!form.address || !form.address.trim()) {
+      toast.error("Essential resident info missing: Please provide Address/Sitio.");
+      return;
+    }
+
+    const hasHealthDetails = Boolean(
+      form.bp?.trim() ||
+      form.height?.trim() ||
+      form.weight?.trim() ||
+      form.smokes || form.smokes_no || form.smokes_remarks?.trim() ||
+      form.drinks_alcohol || form.drinks_alcohol_no || form.drinks_remarks?.trim() ||
+      form.high_bp || form.high_bp_no || form.bp_remarks_bp?.trim() || form.bp_remarks_meds?.trim() || form.bp_remarks_chest?.trim() ||
+      form.diabetes || form.diabetes_no || form.diabetes_remarks?.trim() ||
+      form.diabetes_palakain || form.diabetes_palaging_gutom || form.diabetes_madalas_umihi || form.diabetes_laging_uhaw
+    );
+
+    if (!hasHealthDetails) {
+      toast.error("Health details missing: Please record at least one vital sign, BP/BMI metric, or health risk factor.");
       return;
     }
 

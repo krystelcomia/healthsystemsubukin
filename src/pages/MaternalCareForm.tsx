@@ -390,6 +390,37 @@ const MaternalCareForm = () => {
       return;
     }
 
+    if (!form.age || !String(form.age).trim()) {
+      toast.error("Essential resident info missing: Please provide patient's age.");
+      return;
+    }
+
+    if (!form.sitio || !form.sitio.trim()) {
+      toast.error("Essential resident info missing: Please provide Address/Sitio.");
+      return;
+    }
+
+    const hasHealthDetails = Boolean(
+      form.edc?.trim() ||
+      form.lmp?.trim() ||
+      form.obstetric_score?.trim() ||
+      form.fpal?.trim() ||
+      form.patient_height?.trim() ||
+      (form.blood_type && form.blood_type !== "Unspecified") ||
+      (form.risk_factors && form.risk_factors.length > 0) ||
+      (form.prenatal_visits && form.prenatal_visits.length > 0 && form.prenatal_visits.some(v => v.visit_date || v.weight || v.bp || v.fundic_height || v.fetal_heart_tone || v.notes)) ||
+      form.end_1st_trim?.trim() ||
+      form.end_2nd_trim?.trim() ||
+      form.end_3rd_trim?.trim() ||
+      form.end_postpartum?.trim() ||
+      form.period?.trim()
+    );
+
+    if (!hasHealthDetails) {
+      toast.error("Health details missing: Please record at least one maternal health metric, EDC/LMP, vital sign, or prenatal visit.");
+      return;
+    }
+
     setSaving(true);
 
     try {

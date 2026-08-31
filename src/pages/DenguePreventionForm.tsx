@@ -722,6 +722,25 @@ const DenguePreventionForm = () => {
       return;
     }
 
+    const missingName = nonEmptyRecords.find((r) => !r.household_name?.trim());
+    if (missingName) {
+      toast.error("Essential resident info missing: Please provide the household head's name.");
+      return;
+    }
+
+    const missingInspection = nonEmptyRecords.find(
+      (r) =>
+        !r.container_type?.trim() &&
+        (r.has_larvae === null || r.has_larvae === undefined) &&
+        !r.action_plan?.trim()
+    );
+    if (missingInspection) {
+      toast.error(
+        `Health details missing for "${missingInspection.household_name}": Please record container type, larvae inspection result, or action plan.`
+      );
+      return;
+    }
+
     setSaving(true);
 
     // Cancel pending debounce timeouts so they don't conflict

@@ -213,11 +213,21 @@ const ConsultationForm = () => {
     const targetId = form.resident_id;
 
     if (!targetId) { 
-      toast.error(t("consultation.selectResident") || "Please select a resident."); 
+      toast.error("Please select a registered resident."); 
       return; 
     }
 
-    const hasInfo = Boolean(
+    if (!form.birthdate && !form.age) {
+      toast.error("Essential resident info missing: Please provide Date of Birth or Age.");
+      return;
+    }
+
+    if (!form.sitio || !form.sitio.trim()) {
+      toast.error("Essential resident info missing: Please provide Address/Sitio.");
+      return;
+    }
+
+    const hasHealthInfo = Boolean(
       form.consultationCause?.trim() ||
       form.temperature?.trim() ||
       form.pulseRate?.trim() ||
@@ -226,8 +236,8 @@ const ConsultationForm = () => {
       form.weight?.trim()
     );
 
-    if (!hasInfo) {
-      toast.error("Cannot save consultation without any information entered.");
+    if (!hasHealthInfo) {
+      toast.error("Health details missing: Please record at least one health detail, symptom/cause, or vital sign.");
       return;
     }
 

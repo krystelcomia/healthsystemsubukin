@@ -1142,6 +1142,41 @@ const ChildHealthForm = () => {
       return;
     }
 
+    if (!sickForm.dob && !sickForm.age_months) {
+      toast.error("Essential resident info missing: Please provide child's Date of Birth or Age in Months.");
+      return;
+    }
+
+    if (!sickForm.address || !sickForm.address.trim()) {
+      toast.error("Essential resident info missing: Please provide Address/Sitio.");
+      return;
+    }
+
+    const hasHealthDetails = Boolean(
+      sickForm.temperature?.trim() ||
+      sickForm.weight_kg?.trim() ||
+      sickForm.chief_complaint?.trim() ||
+      sickForm.signs_cough_fast_breathing ||
+      sickForm.signs_diarrhea_sunken_eyes ||
+      sickForm.signs_fever_stiff_neck ||
+      sickForm.signs_dengue_bleeding ||
+      sickForm.signs_ear_discharge ||
+      sickForm.classification_cough?.trim() ||
+      sickForm.classification_diarrhea?.trim() ||
+      sickForm.classification_fever?.trim() ||
+      sickForm.classification_dengue?.trim() ||
+      sickForm.treatment_cough?.trim() ||
+      sickForm.treatment_diarrhea?.trim() ||
+      sickForm.treatment_fever?.trim() ||
+      sickForm.vaccines_given?.length > 0 ||
+      sickForm.action_plan_revisit?.trim()
+    );
+
+    if (!hasHealthDetails) {
+      toast.error("Health details missing: Please record at least one vital sign, complaint, illness classification, or treatment.");
+      return;
+    }
+
     setSaving(true);
     try {
       const targetResId = selectedResidentId || await ensureResidentExists({
@@ -1187,12 +1222,35 @@ const ChildHealthForm = () => {
     }
   };
 
-
-
   const handleSaveVitAMasterlist = async () => {
     const validRows = vitARows.filter(r => r.child_name.trim());
     if (validRows.length === 0) {
       toast.error("Please enter at least one child's name.");
+      return;
+    }
+
+    const missingDob = validRows.find(r => !r.dob?.trim());
+    if (missingDob) {
+      toast.error(`Essential info missing for "${missingDob.child_name}": Please provide Date of Birth.`);
+      return;
+    }
+
+    if (!vitAInfo.sitio || !vitAInfo.sitio.trim()) {
+      toast.error("Essential info missing: Please select Sitio.");
+      return;
+    }
+
+    const rowHasVitADetails = (r: any) => Boolean(
+      r.dose_6m?.trim() ||
+      r.dose_12_23m_1?.trim() || r.dose_12_23m_2?.trim() || r.deworm_12_23m_1?.trim() || r.deworm_12_23m_2?.trim() ||
+      r.dose_24_35m_1?.trim() || r.dose_24_35m_2?.trim() || r.deworm_24_35m_1?.trim() || r.deworm_24_35m_2?.trim() ||
+      r.dose_36_47m_1?.trim() || r.dose_36_47m_2?.trim() || r.deworm_36_47m_1?.trim() || r.deworm_36_47m_2?.trim() ||
+      r.dose_48_59m_1?.trim() || r.dose_48_59m_2?.trim() || r.deworm_48_59m_1?.trim() || r.deworm_48_59m_2?.trim()
+    );
+
+    const emptyHealthRow = validRows.find(r => !rowHasVitADetails(r));
+    if (emptyHealthRow) {
+      toast.error(`Health details missing for "${emptyHealthRow.child_name}": Please record at least one Vitamin A dose or deworming date.`);
       return;
     }
 
@@ -1236,6 +1294,27 @@ const ChildHealthForm = () => {
     const validRows = siaRows.filter(r => r.child_family_name.trim() || r.child_given_name.trim());
     if (validRows.length === 0) {
       toast.error("Please enter at least one child's name.");
+      return;
+    }
+
+    const missingInfoRow = validRows.find(r => (!r.dob?.trim() && !r.age_months?.trim()) || !r.purok_sitio_street?.trim());
+    if (missingInfoRow) {
+      const cName = `${missingInfoRow.child_given_name} ${missingInfoRow.child_family_name}`.trim();
+      toast.error(`Essential resident info missing for "${cName}": Please provide Date of Birth / Age and Address/Sitio.`);
+      return;
+    }
+
+    const siaRowHasVaccine = (r: any) => Boolean(
+      r.vaccine_given?.trim() ||
+      r.vaccination_date?.trim() ||
+      r.vaccinator_family_name?.trim() ||
+      r.vaccinator_given_name?.trim()
+    );
+
+    const emptyVaccineRow = validRows.find(r => !siaRowHasVaccine(r));
+    if (emptyVaccineRow) {
+      const cName = `${emptyVaccineRow.child_given_name} ${emptyVaccineRow.child_family_name}`.trim();
+      toast.error(`Health details missing for "${cName}": Please record vaccine given or vaccination date.`);
       return;
     }
 

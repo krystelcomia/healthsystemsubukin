@@ -471,6 +471,36 @@ const FamilyPlanningForm = () => {
       return;
     }
 
+    if (!sideA.client_dob && !sideA.client_age) {
+      toast.error("Essential resident info missing: Please provide Client's Date of Birth or Age.");
+      return;
+    }
+
+    if (!sideA.address_street?.trim() && !sideA.address_purok?.trim()) {
+      toast.error("Essential resident info missing: Please provide Client's Address/Sitio.");
+      return;
+    }
+
+    const hasHealthDetails = Boolean(
+      sideA.type_of_client?.trim() ||
+      sideA.chosen_method?.trim() ||
+      sideA.fp_no?.trim() ||
+      sideA.para?.trim() ||
+      sideA.gravida?.trim() ||
+      sideA.last_delivery_date?.trim() ||
+      sideA.lmp_date?.trim() ||
+      sideA.weight_kg?.trim() ||
+      sideA.height_cm?.trim() ||
+      sideA.blood_pressure?.trim() ||
+      sideA.pulse_rate?.trim() ||
+      (fpState.sideBVisits && fpState.sideBVisits.some(v => v.medical_findings?.trim() || v.method_accepted?.trim() || v.provider_name?.trim()))
+    );
+
+    if (!hasHealthDetails) {
+      toast.error("Health details missing: Please record at least one FP method, vital sign, obstetric history, or clinical assessment.");
+      return;
+    }
+
     setSaving(true);
     try {
       // Link or create resident
