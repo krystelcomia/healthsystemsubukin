@@ -67,6 +67,7 @@ import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { convertPaperFormToDigital } from "@/lib/formConverter";
+import { useSettings } from "@/contexts/SettingsContext";
 
 type FieldType = "text" | "number" | "date" | "textarea" | "checkbox";
 
@@ -150,56 +151,58 @@ const saveForms = (forms: CustomForm[]) => {
 /* ──────────────────────────────────────────────────────────────
    WIZARD STEP INDICATOR
    ────────────────────────────────────────────────────────────── */
-const STEPS = [
-  { num: 1, label: "Upload & Configure", icon: ImageIcon },
-  { num: 2, label: "Review & Edit Fields", icon: ListChecks },
-  { num: 3, label: "Preview & Deploy",    icon: Rocket },
-] as const;
+const StepIndicator = ({ current, onStepClick, canGoTo, language }: { current: number; onStepClick: (s: number) => void; canGoTo: (s: number) => boolean; language: string }) => {
+  const steps = [
+    { num: 1, label: language === "tl" ? "I-upload at I-configure" : "Upload & Configure", icon: ImageIcon },
+    { num: 2, label: language === "tl" ? "Suriin at I-edit ang Fields" : "Review & Edit Fields", icon: ListChecks },
+    { num: 3, label: language === "tl" ? "I-preview at I-deploy" : "Preview & Deploy", icon: Rocket },
+  ];
 
-const StepIndicator = ({ current, onStepClick, canGoTo }: { current: number; onStepClick: (s: number) => void; canGoTo: (s: number) => boolean }) => (
-  <div className="flex items-center justify-center gap-0 w-full max-w-2xl mx-auto select-none no-print">
-    {STEPS.map((step, idx) => {
-      const done = current > step.num;
-      const active = current === step.num;
-      const reachable = canGoTo(step.num);
-      const Icon = step.icon;
-      return (
-        <React.Fragment key={step.num}>
-          {idx > 0 && (
-            <div className={`flex-1 h-0.5 transition-colors duration-300 ${done ? "bg-primary" : "bg-border"}`} />
-          )}
-          <button
-            type="button"
-            disabled={!reachable}
-            onClick={() => reachable && onStepClick(step.num)}
-            className={`flex flex-col items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 ${
-              active
-                ? "scale-105"
-                : reachable
-                  ? "opacity-80 hover:opacity-100 cursor-pointer"
-                  : "opacity-40 cursor-not-allowed"
-            }`}
-          >
-            <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300 ${
-                done
-                  ? "bg-primary border-primary text-primary-foreground"
-                  : active
-                    ? "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/30"
-                    : "bg-muted border-border text-muted-foreground"
+  return (
+    <div className="flex items-center justify-center gap-0 w-full max-w-2xl mx-auto select-none no-print">
+      {steps.map((step, idx) => {
+        const done = current > step.num;
+        const active = current === step.num;
+        const reachable = canGoTo(step.num);
+        const Icon = step.icon;
+        return (
+          <React.Fragment key={step.num}>
+            {idx > 0 && (
+              <div className={`flex-1 h-0.5 transition-colors duration-300 ${done ? "bg-primary" : "bg-border"}`} />
+            )}
+            <button
+              type="button"
+              disabled={!reachable}
+              onClick={() => reachable && onStepClick(step.num)}
+              className={`flex flex-col items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 ${
+                active
+                  ? "scale-105"
+                  : reachable
+                    ? "opacity-80 hover:opacity-100 cursor-pointer"
+                    : "opacity-40 cursor-not-allowed"
               }`}
             >
-              {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
-            </div>
-            <span className={`text-[11px] font-semibold leading-tight text-center whitespace-nowrap ${active ? "text-primary" : done ? "text-primary" : "text-muted-foreground"}`}>
-              {step.label}
-            </span>
-          </button>
-        </React.Fragment>
-      );
-    })}
-  </div>
-);
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300 ${
+                  done
+                    ? "bg-primary border-primary text-primary-foreground"
+                    : active
+                      ? "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/30"
+                      : "bg-muted border-border text-muted-foreground"
+                }`}
+              >
+                {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+              </div>
+              <span className={`text-[11px] font-semibold leading-tight text-center whitespace-nowrap ${active ? "text-primary" : done ? "text-primary" : "text-muted-foreground"}`}>
+                {step.label}
+              </span>
+            </button>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+};
 
 /* ──────────────────────────────────────────────────────────────
    MAIN COMPONENT
@@ -209,6 +212,7 @@ const AddNewForm = () => {
   const { formId } = useParams<{ formId?: string }>();
   const { userRole } = useAuth();
   const isMidwife = userRole === "midwife";
+  const { t, language } = useSettings();
 
   const [imageData, setImageData] = useState<string | null>(null);
   const [hint, setHint] = useState<string>(DEFAULT_CONVERSION_PROMPT);
@@ -964,12 +968,12 @@ const AddNewForm = () => {
       {/* ─── Header Banner matching Dashboard ─── */}
       <PageHeaderBanner
         icon={formId ? FileText : Sparkles}
-        badge={formId ? "Naka-deploy na Custom Form" : "AI Form Digitizer & Converter"}
-        title={formId ? draftTitle : "Manual-to-Digital Form Converter & Deployer"}
+        badge={formId ? (language === "tl" ? "Naka-deploy na Custom Form" : "Deployed Custom Form") : (language === "tl" ? "AI Form Digitizer & Converter" : "AI Form Digitizer & Converter")}
+        title={formId ? draftTitle : (language === "tl" ? "Manu-manong Form Papuntang Digital Converter & Deployer" : "Manual-to-Digital Form Converter & Deployer")}
         description={
           formId
-            ? (draftDesc || "Opisyal na digital record para sa health registry ng Barangay Subukin.")
-            : "Mag-scan at mag-convert ng anumang papel na form patungo sa digital format, i-deploy nang direkta sa mga form ng kalusugan."
+            ? (draftDesc || (language === "tl" ? "Opisyal na digital record para sa health registry ng Barangay Subukin." : "Official digital record for Barangay Subukin health registry."))
+            : (language === "tl" ? "Mag-scan at mag-convert ng anumang papel na form patungo sa digital format, i-deploy nang direkta sa mga form ng kalusugan." : "Scan and convert any paper form into digital format, deploy directly to health forms.")
         }
       />
 
@@ -979,6 +983,7 @@ const AddNewForm = () => {
           current={currentStep}
           onStepClick={(s) => { if (canGoToStep(s)) setCurrentStep(s); }}
           canGoTo={canGoToStep}
+          language={language}
         />
       )}
 
@@ -990,7 +995,7 @@ const AddNewForm = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-heading flex items-center gap-2 text-foreground">
               <ScanLine className="h-5 w-5 text-primary" />
-              Step 1 — Upload Paper Form & Configure Conversion
+              {language === "tl" ? "Hakbang 1 — I-upload ang Papel na Form at I-configure ang Conversion" : "Step 1 — Upload Paper Form & Configure Conversion"}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
@@ -1007,8 +1012,12 @@ const AddNewForm = () => {
                     <Upload className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Click to upload or take a photo of paper form</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Supports any paper form (JPG, PNG up to 8MB)</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {language === "tl" ? "Pindutin upang mag-upload o kumuha ng litrato ng papel na form" : "Click to upload or take a photo of paper form"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {language === "tl" ? "Tumatanggap ng anumang papel na form (JPG, PNG hanggang 8MB)" : "Supports any paper form (JPG, PNG up to 8MB)"}
+                    </p>
                   </div>
                 </div>
               )}
@@ -1024,10 +1033,10 @@ const AddNewForm = () => {
             {/* Camera / File Buttons */}
             <div className="flex gap-2">
               <Button type="button" variant="outline" className="flex-1 text-xs gap-1.5" onClick={() => cameraRef.current?.click()}>
-                <Camera className="h-4 w-4 text-primary" /> Take Photo
+                <Camera className="h-4 w-4 text-primary" /> {language === "tl" ? "Kumuha ng Litrato" : "Take Photo"}
               </Button>
               <Button type="button" variant="outline" className="flex-1 text-xs gap-1.5" onClick={() => fileRef.current?.click()}>
-                <Upload className="h-4 w-4 text-primary" /> Choose File
+                <Upload className="h-4 w-4 text-primary" /> {language === "tl" ? "Pumili ng File" : "Choose File"}
               </Button>
               <input
                 ref={cameraRef}
@@ -1042,7 +1051,7 @@ const AddNewForm = () => {
             {/* Form Title Input */}
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <FileText className="h-3.5 w-3.5 text-primary" /> Assign Form Title
+                <FileText className="h-3.5 w-3.5 text-primary" /> {language === "tl" ? "Pamagat ng Form" : "Assign Form Title"}
               </Label>
               <Input
                 type="text"
@@ -1051,7 +1060,7 @@ const AddNewForm = () => {
                   setCustomTitleInput(e.target.value);
                   setDraftTitle(e.target.value);
                 }}
-                placeholder="Enter form title..."
+                placeholder={language === "tl" ? "Ilagay ang pamagat ng form..." : "Enter form title..."}
                 className="text-xs h-9 bg-background font-medium"
               />
             </div>
@@ -1060,19 +1069,23 @@ const AddNewForm = () => {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <HelpCircle className="h-3.5 w-3.5 text-primary" /> Manual-to-Digital AI Conversion Prompt
+                  <HelpCircle className="h-3.5 w-3.5 text-primary" /> {language === "tl" ? "AI Prompt para sa Manu-manong Form Papuntang Digital" : "Manual-to-Digital AI Conversion Prompt"}
                 </Label>
-                <span className="text-[10px] text-muted-foreground font-semibold text-primary">System Model Aligned</span>
+                <span className="text-[10px] text-muted-foreground font-semibold text-primary">
+                  {language === "tl" ? "Nakahanay sa Modelo ng Sistema" : "System Model Aligned"}
+                </span>
               </div>
               <Textarea
                 value={hint}
                 onChange={(e) => setHint(e.target.value)}
-                placeholder="Enter instructions for AI conversion..."
+                placeholder={language === "tl" ? "Maglagay ng mga tagubilin para sa AI conversion..." : "Enter instructions for AI conversion..."}
                 rows={4}
                 className="text-xs leading-relaxed"
               />
               <p className="text-[11px] text-muted-foreground italic">
-                Inputs will be rendered on underline lines rather than boxes; letter input is restricted when only numbers are required, and vice versa, unless both are needed. Replicates everything from the form exactly into a digital version.
+                {language === "tl" 
+                  ? "Ang mga input ay gagawing linya sa halip na kahon; bawal maglagay ng letra kung numero lang ang kailangan, at bawal ang numero kung letra lang. Kokopyahin ang eksaktong anyo ng papel na form."
+                  : "Inputs will be rendered on underline lines rather than boxes; letter input is restricted when only numbers are required, and vice versa, unless both are needed. Replicates everything from the form exactly into a digital version."}
               </p>
             </div>
 
@@ -1080,14 +1093,14 @@ const AddNewForm = () => {
             <div className="flex flex-col gap-2 pt-1">
               <Button type="button" onClick={runScan} disabled={scanning} className="w-full bg-primary text-primary-foreground font-bold shadow-sm">
                 {scanning ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Digitizing Paper Form...</>
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {language === "tl" ? "Dina-digitize ang Papel na Form..." : "Digitizing Paper Form..."}</>
                 ) : (
-                  <><Sparkles className="h-4 w-4 mr-2" /> Convert to Digital Form</>
+                  <><Sparkles className="h-4 w-4 mr-2" /> {language === "tl" ? "I-convert sa Digital Form" : "Convert to Digital Form"}</>
                 )}
               </Button>
               {imageData && (
                 <Button type="button" variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={fullReset}>
-                  <RotateCcw className="h-3.5 w-3.5 mr-1" /> Start Over
+                  <RotateCcw className="h-3.5 w-3.5 mr-1" /> {language === "tl" ? "Magsimula Muli" : "Start Over"}
                 </Button>
               )}
             </div>
@@ -1096,7 +1109,7 @@ const AddNewForm = () => {
             {draftFields.length > 0 && (
               <div className="pt-2 border-t border-border/50">
                 <Button type="button" onClick={goNext} className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm">
-                  Continue to Review Fields <ChevronRight className="h-4 w-4" />
+                  {language === "tl" ? "Magpatuloy sa Pagsusuri ng Fields" : "Continue to Review Fields"} <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             )}
@@ -1113,7 +1126,7 @@ const AddNewForm = () => {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card border border-border/60 p-3 rounded-xl shadow-xs no-print">
             <div className="flex items-center gap-3">
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-semibold px-2.5 py-0.5">
-                {draftFields.length} Field(s) Extracted
+                {draftFields.length} {language === "tl" ? "Field na Na-extract" : "Field(s) Extracted"}
               </Badge>
               <div className="flex items-center gap-1.5 min-w-0">
                 <Input
@@ -1123,7 +1136,7 @@ const AddNewForm = () => {
                     setDraftTitle(e.target.value);
                     setCustomTitleInput(e.target.value);
                   }}
-                  placeholder="Assign Form Title..."
+                  placeholder={language === "tl" ? "Ilagay ang Pamagat ng Form..." : "Assign Form Title..."}
                   className="h-7 text-xs font-bold bg-transparent border-b border-primary/40 focus-visible:ring-0 w-48 sm:w-64"
                 />
                 <Edit3 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -1134,7 +1147,7 @@ const AddNewForm = () => {
             <div className="w-full sm:w-64">
               <Select value={selectedResidentId} onValueChange={handleSelectResident}>
                 <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Link Resident to Auto-fill" />
+                  <SelectValue placeholder={language === "tl" ? "I-link ang Residente para sa Auto-fill" : "Link Resident to Auto-fill"} />
                 </SelectTrigger>
                 <SelectContent>
                   {residents.map((r) => (
@@ -1152,23 +1165,25 @@ const AddNewForm = () => {
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-heading flex items-center gap-2">
                 <FileCheck2 className="h-5 w-5 text-primary" />
-                Step 2 — Review & Edit Extracted Fields
+                {language === "tl" ? "Hakbang 2 — Suriin at I-edit ang Na-extract na Fields" : "Step 2 — Review & Edit Extracted Fields"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-xs text-muted-foreground">
-                Review the fields extracted from your paper form below. You can rename fields, change their types, remove unwanted fields, or add new ones.
+                {language === "tl" 
+                  ? "Suriin ang mga field na nakuha mula sa iyong papel na form sa ibaba. Maaari mong baguhin ang pangalan, uri, magbawas, o magdagdag ng mga bagong field."
+                  : "Review the fields extracted from your paper form below. You can rename fields, change their types, remove unwanted fields, or add new ones."}
               </p>
 
               {/* Description input */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Form Description (optional)</Label>
-                <Input value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} placeholder="Brief description of this form..." className="text-xs" />
+                <Label className="text-xs font-semibold">{language === "tl" ? "Deskripsyon ng Form (opsyonal)" : "Form Description (optional)"}</Label>
+                <Input value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} placeholder={language === "tl" ? "Maikling deskripsyon ng form na ito..." : "Brief description of this form..."} className="text-xs" />
               </div>
 
               {/* Fields List */}
               <div className="space-y-2">
-                <Label className="text-xs font-bold text-foreground">Extracted Fields</Label>
+                <Label className="text-xs font-bold text-foreground">{language === "tl" ? "Mga Na-extract na Field" : "Extracted Fields"}</Label>
                 {draftFields.map((f, i) => {
                   const prevSection = i > 0 ? draftFields[i - 1]?.section : undefined;
                   const showSection = f.section && f.section !== prevSection;
@@ -1193,11 +1208,11 @@ const AddNewForm = () => {
                             onChange={(e) => updateField(i, { type: e.target.value as FieldType })}
                             className="h-8 rounded-md border border-input bg-background px-2 text-xs"
                           >
-                            <option value="text">Short Text (Underline Line)</option>
-                            <option value="number">Numeric Only (Letters Blocked)</option>
-                            <option value="date">Date</option>
-                            <option value="textarea">Long Text / Remarks</option>
-                            <option value="checkbox">Yes / No Checkbox (Unchecked)</option>
+                            <option value="text">{language === "tl" ? "Maikling Teksto (May Guhit na Linya)" : "Short Text (Underline Line)"}</option>
+                            <option value="number">{language === "tl" ? "Numero Lamang (Bawal ang Letra)" : "Numeric Only (Letters Blocked)"}</option>
+                            <option value="date">{language === "tl" ? "Petsa" : "Date"}</option>
+                            <option value="textarea">{language === "tl" ? "Mahabang Teksto / Mga Tala" : "Long Text / Remarks"}</option>
+                            <option value="checkbox">{language === "tl" ? "Oo / Hindi Checkbox" : "Yes / No Checkbox"}</option>
                           </select>
                           <Button type="button" variant="ghost" size="icon" onClick={() => removeField(i)} className="h-8 w-8 text-destructive">
                             <Trash2 className="h-4 w-4" />
@@ -1209,7 +1224,7 @@ const AddNewForm = () => {
                 })}
 
                 <Button type="button" variant="outline" size="sm" onClick={addField} className="gap-1.5 text-xs">
-                  <Plus className="h-4 w-4" /> Add Field
+                  <Plus className="h-4 w-4" /> {language === "tl" ? "Magdagdag ng Field" : "Add Field"}
                 </Button>
               </div>
 
@@ -1217,12 +1232,12 @@ const AddNewForm = () => {
               <div className="flex items-center justify-between gap-3 pt-4 border-t border-border/50">
                 {!formId && (
                   <Button type="button" variant="outline" size="sm" onClick={goBack} className="gap-1.5 text-xs">
-                    <ChevronLeft className="h-4 w-4" /> Back to Upload
+                    <ChevronLeft className="h-4 w-4" /> {language === "tl" ? "Bumalik sa Pag-upload" : "Back to Upload"}
                   </Button>
                 )}
                 <div className="flex-1" />
                 <Button type="button" onClick={goNext} className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs px-6">
-                  Preview & Deploy <ChevronRight className="h-4 w-4" />
+                  {language === "tl" ? "I-preview at I-deploy" : "Preview & Deploy"} <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </CardContent>
@@ -1241,7 +1256,7 @@ const AddNewForm = () => {
               {/* Official Barangay Printable Header */}
               <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
                 <OfficialHeader
-                  title={draftTitle || "Health Form Record"}
+                  title={draftTitle || (language === "tl" ? "Tala ng Form ng Kalusugan" : "Health Form Record")}
                   subtitle="Barangay Subukin Health Center • San Juan, Batangas"
                   showDoubleBorder={true}
                   logoHeight="95px"
@@ -1260,7 +1275,7 @@ const AddNewForm = () => {
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-3 border-b border-border/50 no-print">
                 <div className="flex-1">
                   <h1 className="text-base md:text-lg font-bold font-heading uppercase text-foreground tracking-wide print-title-heading">
-                    {draftTitle || "Health Form Record"}
+                    {draftTitle || (language === "tl" ? "Tala ng Form ng Kalusugan" : "Health Form Record")}
                   </h1>
                   {draftDesc && (
                     <p className="text-xs text-muted-foreground no-print mt-0.5">
@@ -1271,10 +1286,12 @@ const AddNewForm = () => {
 
                 {/* Resident Selector */}
                 <div className="w-full sm:w-64 no-print">
-                  <Label className="text-xs font-semibold mb-1 block">Link Registered Resident</Label>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    {language === "tl" ? "I-link ang Rehistradong Residente" : "Link Registered Resident"}
+                  </Label>
                   <Select value={selectedResidentId} onValueChange={handleSelectResident}>
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="Select Resident to Auto-fill" />
+                      <SelectValue placeholder={language === "tl" ? "Pumili ng Residente para sa Auto-fill" : "Select Resident to Auto-fill"} />
                     </SelectTrigger>
                     <SelectContent>
                       {residents.map((r) => (
@@ -1309,7 +1326,7 @@ const AddNewForm = () => {
                               onCheckedChange={(v) => updateField(idx, { value: v ? "true" : "" })}
                               className="h-3.5 w-3.5"
                             />
-                            <span>Yes</span>
+                            <span>{language === "tl" ? "Oo" : "Yes"}</span>
                           </label>
                           <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-800 dark:text-slate-200">
                             <Checkbox
@@ -1317,7 +1334,7 @@ const AddNewForm = () => {
                               onCheckedChange={(v) => updateField(idx, { value: v ? "false" : "" })}
                               className="h-3.5 w-3.5"
                             />
-                            <span>No</span>
+                            <span>{language === "tl" ? "Hindi" : "No"}</span>
                           </label>
                         </div>
                       ) : field.type === "textarea" ? (
@@ -1355,20 +1372,28 @@ const AddNewForm = () => {
                 }}
               >
                 <div style={{ textAlign: "left" }}>
-                  Certified Correct: ___________________________<br />
-                  <span className="text-[10px] text-slate-600">Attending Barangay Health Worker</span>
+                  {language === "tl" ? "Pinatutunayang Wasto: ___________________________" : "Certified Correct: ___________________________"}<br />
+                  <span className="text-[10px] text-slate-600">
+                    {language === "tl" ? "Nakatokang Barangay Health Worker" : "Attending Barangay Health Worker"}
+                  </span>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  Approved By: ___________________________<br />
-                  <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
+                  {language === "tl" ? "Inaprubahan Ni: ___________________________" : "Approved By: ___________________________"}<br />
+                  <span className="text-[10px] text-slate-600">
+                    {language === "tl" ? "Barangay Health Supervisor / Midwife" : "Barangay Health Supervisor / Midwife"}
+                  </span>
                 </div>
               </div>
 
               {/* Bottom Signature & Action Bar */}
               <div className="pt-4 border-t border-slate-300 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="text-xs text-slate-600 dark:text-slate-400 space-y-0.5 no-print">
-                  <p className="font-bold text-slate-900 dark:text-slate-100">Barangay Subukin Health Center Services</p>
-                  <p className="italic text-[11px]">Inputs modeled on lines with official header seal in printable format.</p>
+                  <p className="font-bold text-slate-900 dark:text-slate-100">
+                    {language === "tl" ? "Mga Serbisyo ng Barangay Subukin Health Center" : "Barangay Subukin Health Center Services"}
+                  </p>
+                  <p className="italic text-[11px]">
+                    {language === "tl" ? "Mga input na nakaporma sa mga linya na may opisyal na selyo sa naka-print na format." : "Inputs modeled on lines with official header seal in printable format."}
+                  </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 no-print w-full md:w-auto justify-end">
@@ -1381,7 +1406,7 @@ const AddNewForm = () => {
                         onClick={resetDraft}
                         className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
                       >
-                        <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset
+                        <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> {language === "tl" ? "I-reset" : "Reset"}
                       </Button>
 
                       <Button
@@ -1391,7 +1416,7 @@ const AddNewForm = () => {
                         onClick={() => window.print()}
                         className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
                       >
-                        <Printer className="h-3.5 w-3.5" /> Print
+                        <Printer className="h-3.5 w-3.5" /> {language === "tl" ? "I-print" : "Print"}
                       </Button>
 
                       {!isMidwife && (
@@ -1401,7 +1426,7 @@ const AddNewForm = () => {
                           size="sm"
                           className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm px-6"
                         >
-                          <Save className="h-4 w-4" /> Save
+                          <Save className="h-4 w-4" /> {language === "tl" ? "I-save" : "Save"}
                         </Button>
                       )}
                     </>
@@ -1413,7 +1438,7 @@ const AddNewForm = () => {
                         onClick={() => setCurrentStep(2)}
                         className="gap-1.5 text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
                       >
-                        <Settings2 className="h-4 w-4" /> Edit Fields
+                        <Settings2 className="h-4 w-4" /> {language === "tl" ? "I-edit ang Fields" : "Edit Fields"}
                       </Button>
 
                       <Button
@@ -1423,7 +1448,7 @@ const AddNewForm = () => {
                         onClick={resetDraft}
                         className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
                       >
-                        <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> Reset Form
+                        <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> {language === "tl" ? "I-reset ang Form" : "Reset Form"}
                       </Button>
 
                       <Button
@@ -1433,7 +1458,7 @@ const AddNewForm = () => {
                         onClick={() => window.print()}
                         className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
                       >
-                        <Printer className="h-3.5 w-3.5" /> Print
+                        <Printer className="h-3.5 w-3.5" /> {language === "tl" ? "I-print" : "Print"}
                       </Button>
 
                       {!isMidwife && (
@@ -1443,7 +1468,7 @@ const AddNewForm = () => {
                           size="sm"
                           className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm px-5"
                         >
-                          <Rocket className="h-4 w-4" /> Deploy Form
+                          <Rocket className="h-4 w-4" /> {language === "tl" ? "I-deploy ang Form" : "Deploy Form"}
                         </Button>
                       )}
                     </>
@@ -1458,10 +1483,10 @@ const AddNewForm = () => {
           {!formId && (
             <div className="flex items-center gap-3 no-print">
               <Button type="button" variant="outline" size="sm" onClick={goBack} className="gap-1.5 text-xs">
-                <ChevronLeft className="h-4 w-4" /> Back to Edit Fields
+                <ChevronLeft className="h-4 w-4" /> {language === "tl" ? "Bumalik sa Pag-edit ng Fields" : "Back to Edit Fields"}
               </Button>
               <Button type="button" variant="ghost" size="sm" onClick={fullReset} className="gap-1.5 text-xs text-muted-foreground">
-                <RotateCcw className="h-3.5 w-3.5" /> Start Over
+                <RotateCcw className="h-3.5 w-3.5" /> {language === "tl" ? "Magsimula Muli" : "Start Over"}
               </Button>
             </div>
           )}
@@ -1473,16 +1498,18 @@ const AddNewForm = () => {
         <Card className="border-border/50 shadow-sm no-print">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-base font-heading flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" /> Deployed Custom Health Forms
+              <FileText className="h-5 w-5 text-primary" /> {language === "tl" ? "Mga Naka-deploy na Custom Health Form" : "Deployed Custom Health Forms"}
             </CardTitle>
             <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
-              {savedForms.length} Active Form(s)
+              {savedForms.length} {language === "tl" ? "Aktibong Form" : "Active Form(s)"}
             </Badge>
           </CardHeader>
           <CardContent>
             {savedForms.length === 0 ? (
               <p className="text-xs text-muted-foreground italic">
-                No deployed custom forms yet. Scan or convert a paper form above to deploy your first digital health form.
+                {language === "tl" 
+                  ? "Wala pang naka-deploy na custom forms. Mag-scan o mag-convert ng papel na form sa itaas upang mai-deploy ang iyong unang digital health form."
+                  : "No deployed custom forms yet. Scan or convert a paper form above to deploy your first digital health form."}
               </p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1492,10 +1519,10 @@ const AddNewForm = () => {
                       <div className="min-w-0">
                         <p className="font-semibold text-sm text-foreground truncate">{f.title}</p>
                         <p className="text-xs text-muted-foreground line-clamp-1">
-                          {f.description || `${f.fields.length} preserved element(s)`}
+                          {f.description || `${f.fields.length} ${language === "tl" ? "na elemento" : "preserved element(s)"}`}
                         </p>
                         <p className="text-[10px] text-muted-foreground/70 mt-1">
-                          Deployed: {new Date(f.createdAt).toLocaleDateString()}
+                          {language === "tl" ? "Nai-deploy noong" : "Deployed"}: {new Date(f.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
@@ -1506,7 +1533,7 @@ const AddNewForm = () => {
                           className="h-8 text-xs gap-1 border-primary/30 text-primary"
                           onClick={() => navigate(`/forms/custom/${f.id}`)}
                         >
-                          <Eye className="h-3.5 w-3.5" /> Open
+                          <Eye className="h-3.5 w-3.5" /> {language === "tl" ? "Buksan" : "Open"}
                         </Button>
                         <Button
                           type="button"
@@ -1523,7 +1550,7 @@ const AddNewForm = () => {
                             window.scrollTo({ top: 0, behavior: "smooth" });
                           }}
                         >
-                          <Settings2 className="h-3.5 w-3.5" /> Edit
+                          <Settings2 className="h-3.5 w-3.5" /> {language === "tl" ? "I-edit" : "Edit"}
                         </Button>
                         <Button
                           type="button"
@@ -1531,7 +1558,7 @@ const AddNewForm = () => {
                           size="icon"
                           className="h-8 w-8 text-destructive"
                           onClick={() => setDeleteTemplateConfirmId(f.id)}
-                          title="Delete Template"
+                          title={language === "tl" ? "Burahin ang Template" : "Delete Template"}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -1553,22 +1580,22 @@ const AddNewForm = () => {
               <History className="h-5 w-5 text-primary" />
               <div>
                 <CardTitle className="text-base font-heading font-bold text-foreground">
-                  Saved Submissions History ({filteredSubmissions.length})
+                  {language === "tl" ? "Kasaysayan ng mga Nai-save na Pagsusumite" : "Saved Submissions History"} ({filteredSubmissions.length})
                 </CardTitle>
                 <p className="text-xs text-muted-foreground">
-                  View, load, or re-print past submissions for this custom form.
+                  {language === "tl" ? "Tingnan, i-load, o muling i-print ang mga nakaraang pagsusumite para sa form na ito." : "View, load, or re-print past submissions for this custom form."}
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
               <Badge variant="secondary" className="bg-primary/10 text-primary font-bold shrink-0">
-                {filteredSubmissions.length} Submission(s)
+                {filteredSubmissions.length} {language === "tl" ? "Pagsusumite" : "Submission(s)"}
               </Badge>
               <div className="relative w-full sm:w-56">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Search resident or date..."
+                  placeholder={language === "tl" ? "Maghanap ng residente o petsa..." : "Search resident or date..."}
                   value={submissionSearch}
                   onChange={(e) => setSubmissionSearch(e.target.value)}
                   className="pl-9 h-9 text-xs"
@@ -1576,10 +1603,10 @@ const AddNewForm = () => {
               </div>
               <Select value={submissionSitio} onValueChange={setSubmissionSitio}>
                 <SelectTrigger className="h-9 text-xs w-36">
-                  <SelectValue placeholder="All Sitios" />
+                  <SelectValue placeholder={language === "tl" ? "Lahat ng Sitio" : "All Sitios"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Sitios</SelectItem>
+                  <SelectItem value="all">{language === "tl" ? "Lahat ng Sitio" : "All Sitios"}</SelectItem>
                   {sitioOptions.map(s => (
                     <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
                   ))}
@@ -1590,17 +1617,19 @@ const AddNewForm = () => {
           <CardContent>
             {filteredSubmissions.length === 0 ? (
               <p className="text-xs text-muted-foreground italic py-6 text-center">
-                {submissionSearch ? "No submissions match your search." : "No submissions saved for this form yet. Fill out the form above and click Save to record an entry."}
+                {submissionSearch 
+                  ? (language === "tl" ? "Walang pagsusumite na tumutugma sa iyong paghahanap." : "No submissions match your search.")
+                  : (language === "tl" ? "Wala pang nai-save na pagsusumite para sa form na ito. Punan ang form sa itaas at i-click ang I-save." : "No submissions saved for this form yet. Fill out the form above and click Save to record an entry.")}
               </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="bg-muted/40 border-b text-muted-foreground font-semibold">
-                      <th className="p-3 w-32">Date</th>
-                      <th className="p-3">Resident / Patient Name</th>
-                      <th className="p-3">Summary of Key Entries</th>
-                      <th className="p-3 text-right w-28">Actions</th>
+                      <th className="p-3 w-32">{language === "tl" ? "Petsa" : "Date"}</th>
+                      <th className="p-3">{language === "tl" ? "Pangalan ng Residente / Pasyente" : "Resident / Patient Name"}</th>
+                      <th className="p-3">{language === "tl" ? "Buod ng mga Pangunahing Tala" : "Summary of Key Entries"}</th>
+                      <th className="p-3 text-right w-28">{language === "tl" ? "Mga Aksyon" : "Actions"}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -1635,7 +1664,7 @@ const AddNewForm = () => {
                                   setSelectedSubmissionForView(rec);
                                   setViewSubmissionModalOpen(true);
                                 }}
-                                title="View & Print Full Submission"
+                                title={language === "tl" ? "Tingnan at I-print ang Buong Pagsusumite" : "View & Print Full Submission"}
                                 className="h-7 w-7 text-primary hover:bg-primary/10"
                               >
                                 <Eye className="h-4 w-4" />
@@ -1648,10 +1677,10 @@ const AddNewForm = () => {
                                     setDraftFields(rec.fields);
                                     if (rec.residentId) setSelectedResidentId(rec.residentId);
                                     window.scrollTo({ top: 0, behavior: "smooth" });
-                                    toast.info(`Loaded submission for ${rec.resident_name}`);
+                                    toast.info(language === "tl" ? `Na-load ang pagsusumite para kay ${rec.resident_name}` : `Loaded submission for ${rec.resident_name}`);
                                   }
                                 }}
-                                title="Load into Form"
+                                title={language === "tl" ? "I-load sa Form" : "Load into Form"}
                                 className="h-7 w-7 text-muted-foreground hover:text-foreground"
                               >
                                 <Edit3 className="h-3.5 w-3.5" />
@@ -1676,7 +1705,7 @@ const AddNewForm = () => {
             <div className="space-y-5" id="custom-submission-modal-printable">
               {/* Official Barangay Printable Header Seal */}
               <OfficialHeader
-                title={selectedSubmissionForView.formTitle || draftTitle || "Custom Form Submission Record"}
+                title={selectedSubmissionForView.formTitle || draftTitle || (language === "tl" ? "Talaan ng Pagsusumite ng Custom Form" : "Custom Form Submission Record")}
                 subtitle="Barangay Subukin Health Center • San Juan, Batangas"
                 showDoubleBorder={true}
                 logoHeight="95px"
@@ -1685,13 +1714,13 @@ const AddNewForm = () => {
               {/* Patient and Submission Header */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
                 <div>
-                  <span className="text-slate-500 text-[10px] block">Resident / Client:</span>
+                  <span className="text-slate-500 text-[10px] block">{language === "tl" ? "Residente / Kliyente:" : "Resident / Client:"}</span>
                   <strong className="text-sm text-slate-900 dark:text-slate-100">
                     {selectedSubmissionForView.resident_name || "—"}
                   </strong>
                 </div>
                 <div>
-                  <span className="text-slate-500 text-[10px] block">Submission Date:</span>
+                  <span className="text-slate-500 text-[10px] block">{language === "tl" ? "Petsa ng Pagsusumite:" : "Submission Date:"}</span>
                   <strong className="text-slate-800 dark:text-slate-200">
                     {selectedSubmissionForView.savedAt ? new Date(selectedSubmissionForView.savedAt).toLocaleDateString() : "—"}
                   </strong>
@@ -1724,7 +1753,7 @@ const AddNewForm = () => {
                           </span>
                           {field.type === "checkbox" ? (
                             <Badge variant="outline" className={field.value === "true" || field.value === "yes" ? "bg-emerald-50 text-emerald-700 border-emerald-300" : "text-slate-500"}>
-                              {field.value === "true" || field.value === "yes" ? "Checked / Yes" : "No / Unchecked"}
+                              {field.value === "true" || field.value === "yes" ? (language === "tl" ? "May Tsek / Oo" : "Checked / Yes") : (language === "tl" ? "Walang Tsek / Hindi" : "No / Unchecked")}
                             </Badge>
                           ) : (
                             <p className="text-xs font-medium text-slate-900 dark:text-slate-100 whitespace-pre-wrap">
@@ -1741,14 +1770,18 @@ const AddNewForm = () => {
               {/* Signatures */}
               <div className="print-footer-signatures pt-6 border-t border-slate-300 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 w-full" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "100%" }}>
                 <div style={{ textAlign: "left" }}>
-                  <p>Certified Correct:</p>
+                  <p>{language === "tl" ? "Pinatutunayang Wasto:" : "Certified Correct:"}</p>
                   <div className="mt-4 border-b border-slate-400 w-44"></div>
-                  <p className="text-[10px] text-slate-500 mt-1">Attending Barangay Health Worker</p>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    {language === "tl" ? "Nakatokang Barangay Health Worker" : "Attending Barangay Health Worker"}
+                  </p>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <p>Approved By:</p>
+                  <p>{language === "tl" ? "Inaprubahan Ni:" : "Approved By:"}</p>
                   <div className="mt-4 border-b border-slate-400 w-44 ml-auto"></div>
-                  <p className="text-[10px] text-slate-500 mt-1">Barangay Health Supervisor / Midwife</p>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    {language === "tl" ? "Barangay Health Supervisor / Midwife" : "Barangay Health Supervisor / Midwife"}
+                  </p>
                 </div>
               </div>
 
@@ -1757,12 +1790,21 @@ const AddNewForm = () => {
                 <div className="flex gap-2">
                   <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePrintModal}
+                    className="gap-1.5 text-xs"
+                  >
+                    <Printer className="h-3.5 w-3.5" /> {language === "tl" ? "I-print" : "Print"}
+                  </Button>
+                  <Button
+                    type="button"
                     variant="secondary"
                     size="sm"
                     onClick={() => setViewSubmissionModalOpen(false)}
                     className="text-xs"
                   >
-                    Close
+                    {language === "tl" ? "Isara" : "Close"}
                   </Button>
                 </div>
               </DialogFooter>
@@ -1775,13 +1817,19 @@ const AddNewForm = () => {
       <AlertDialog open={!!deleteTemplateConfirmId} onOpenChange={() => setDeleteTemplateConfirmId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Custom Form Template?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {language === "tl" ? "Burahin ang Custom Form Template?" : "Delete Custom Form Template?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this custom form template? This action cannot be undone.
+              {language === "tl"
+                ? "Sigurado ka ba na gusto mong burahin ang custom form template na ito? Hindi na ito maibabalik."
+                : "Are you sure you want to delete this custom form template? This action cannot be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>
+              {language === "tl" ? "Kanselahin" : "Cancel"}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (deleteTemplateConfirmId) {
@@ -1791,7 +1839,7 @@ const AddNewForm = () => {
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {language === "tl" ? "Burahin" : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

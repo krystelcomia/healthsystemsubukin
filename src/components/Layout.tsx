@@ -401,7 +401,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <h4 className="font-heading font-bold text-sm text-foreground flex items-center gap-2 flex-wrap">
                       <span>{t("attendance.noticeTitle")}</span>
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-amber-500 text-white animate-pulse">
-                        ATTENDANCE REQUIRED
+                        {language === "tl" ? "KAILANGAN ANG ATTENDANCE" : "ATTENDANCE REQUIRED"}
                       </span>
                     </h4>
                     <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
