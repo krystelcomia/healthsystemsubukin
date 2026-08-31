@@ -712,6 +712,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 left: 0 !important;
                 top: 0 !important;
                 width: 100% !important;
+                min-width: 100% !important;
                 max-width: 100% !important;
                 margin: 0 !important;
                 background: #ffffff !important;
@@ -730,7 +731,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 border-bottom: 3.5px double #000000 !important;
               }
               body.printing-attendance #attendance-print-area .header-seal img {
-                height: 100px !important;
+                height: 105px !important;
                 width: auto !important;
                 object-fit: contain !important;
                 mix-blend-mode: multiply !important;
@@ -750,7 +751,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               }
               @page {
                 size: A4 portrait;
-                margin: 8mm 10mm;
+                margin: 10mm 15mm;
               }
             }
           `}</style>
@@ -761,7 +762,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               title={language === "tl" ? "BARANGAY HEALTH WORKERS OPISYAL NA TALAAN NG ATTENDANCE" : "BARANGAY HEALTH WORKERS OFFICIAL ATTENDANCE RECORD"}
               subtitle={language === "tl" ? "Barangay Subukin Health Center, San Juan, Batangas • Opisyal na Talaan ng Oras ng Pagpasok at Paglabas" : "Barangay Subukin Health Center, San Juan, Batangas • Official Time In & Time Out Record"}
               showDoubleBorder={true}
-              logoHeight="100px"
+              logoHeight="105px"
             />
           </div>
 
@@ -786,11 +787,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <table className="w-full table-fixed text-left text-[12px] border border-black border-collapse">
               <thead>
                 <tr className="bg-slate-100 border-b border-black font-bold text-black">
-                  <th className="border border-black p-2 text-center w-[5%] font-bold uppercase text-[11px]">#</th>
+                  <th className="border border-black p-2 text-center w-[6%] font-bold uppercase text-[11px]">#</th>
                   <th className="border border-black p-2 text-center w-[18%] font-bold uppercase text-[11px]">Date (Petsa)</th>
-                  <th className="border border-black p-2 text-center w-[23%] font-bold uppercase text-[11px]">Time In (Oras ng Pagpasok)</th>
-                  <th className="border border-black p-2 text-center w-[23%] font-bold uppercase text-[11px]">Time Out (Oras ng Paglabas)</th>
-                  <th className="border border-black p-2 text-center w-[15%] font-bold uppercase text-[11px]">Duration (Tagal)</th>
+                  <th className="border border-black p-2 text-center w-[22%] font-bold uppercase text-[11px]">Time In (Oras ng Pagpasok)</th>
+                  <th className="border border-black p-2 text-center w-[22%] font-bold uppercase text-[11px]">Time Out (Oras ng Paglabas)</th>
+                  <th className="border border-black p-2 text-center w-[16%] font-bold uppercase text-[11px]">Duration (Tagal)</th>
                   <th className="border border-black p-2 text-center w-[16%] font-bold uppercase text-[11px]">Status (Katayuan)</th>
                 </tr>
               </thead>
