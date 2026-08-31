@@ -713,11 +713,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 right: 0 !important;
                 top: 0 !important;
                 width: 100% !important;
-                max-width: 650px !important;
+                max-width: 100% !important;
                 margin: 0 auto !important;
                 background: #ffffff !important;
                 color: #000000 !important;
-                padding: 0 !important;
+                padding: 10px 15px !important;
                 display: block !important;
                 box-sizing: border-box !important;
                 page-break-after: avoid !important;
@@ -726,43 +726,43 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 break-inside: avoid !important;
               }
               body.printing-attendance #attendance-print-area .official-barangay-header {
-                padding-bottom: 4px !important;
-                margin-bottom: 4px !important;
-                border-bottom: 2px double #000000 !important;
+                padding-bottom: 3px !important;
+                margin-bottom: 6px !important;
+                border-bottom: 3.5px double #000000 !important;
               }
               body.printing-attendance #attendance-print-area .header-seal img {
-                height: 70px !important;
+                height: 95px !important;
                 width: auto !important;
                 object-fit: contain !important;
                 mix-blend-mode: multiply !important;
               }
               body.printing-attendance #attendance-print-area .document-title-section h2 {
-                font-size: 13px !important;
+                font-size: 15px !important;
                 font-weight: 800 !important;
-                letter-spacing: 0.03em !important;
-                margin-top: 2px !important;
-                margin-bottom: 1px !important;
+                letter-spacing: 0.04em !important;
+                margin-top: 3px !important;
+                margin-bottom: 2px !important;
                 color: #000000 !important;
               }
               body.printing-attendance #attendance-print-area .document-title-section p {
-                font-size: 9.5px !important;
-                color: #374151 !important;
-                margin-bottom: 4px !important;
+                font-size: 11px !important;
+                color: #4b5563 !important;
+                margin-bottom: 6px !important;
               }
               @page {
                 size: A4 portrait;
-                margin: 10mm 15mm;
+                margin: 8mm 10mm;
               }
             }
           `}</style>
           
           {/* Official Header with logos and letterhead */}
-          <div className="w-full mb-2 pt-1">
+          <div className="w-full mb-3 pt-1">
             <OfficialHeader
               title={language === "tl" ? "BARANGAY HEALTH WORKERS OPISYAL NA TALAAN NG ATTENDANCE" : "BARANGAY HEALTH WORKERS OFFICIAL ATTENDANCE RECORD"}
-              subtitle={language === "tl" ? "Barangay Subukin, San Juan, Batangas • Opisyal na Talaan ng Oras ng Pagpasok at Paglabas" : "Barangay Subukin Health Center, San Juan, Batangas • Official Time In & Time Out Record"}
+              subtitle={language === "tl" ? "Barangay Subukin Health Center, San Juan, Batangas • Opisyal na Talaan ng Oras ng Pagpasok at Paglabas" : "Barangay Subukin Health Center, San Juan, Batangas • Official Time In & Time Out Record"}
               showDoubleBorder={true}
-              logoHeight="70px"
+              logoHeight="95px"
             />
           </div>
 
