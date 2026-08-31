@@ -1285,7 +1285,6 @@ const DenguePreventionForm = () => {
                             const sig = findSignatureForResident(
                               cleanName,
                               matched?.id || rec.resident_id,
-                              records,
                               matched?.full_name
                             );
                             if (sig) {
