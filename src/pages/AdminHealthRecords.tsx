@@ -223,7 +223,7 @@ const AdminHealthRecords = () => {
     setSingleRecordModalOpen(true);
   };
 
-  const [printContent, setPrintContent] = useState<{ title: string; html: string; orientation: string } | null>(null);
+  const [printContent, setPrintContent] = useState<{ title: string; html: string; orientation: string; subtitle?: string } | null>(null);
 
   const getFormPrintOrientation = (formId: string) => {
     if (formId === "child_health") {
@@ -235,8 +235,8 @@ const AdminHealthRecords = () => {
     return "A4 portrait";
   };
 
-  const triggerInSystemPrint = (title: string, html: string, orientation: string) => {
-    setPrintContent({ title, html, orientation });
+  const triggerInSystemPrint = (title: string, html: string, orientation: string, subtitle?: string) => {
+    setPrintContent({ title, html, orientation, subtitle });
     setTimeout(() => {
       window.print();
     }, 150);
@@ -638,44 +638,44 @@ const AdminHealthRecords = () => {
     };
 
     const html = `
-      <div style="font-family: system-ui, -apple-system, sans-serif; color: #0f172a; margin-top: 6px;">
-        <table style="width: 100%; border-collapse: collapse; margin-top: 6px; margin-bottom: 14px; font-size: 10px;">
+      <div style="font-family: system-ui, -apple-system, sans-serif; color: #000000; width: 100%;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 4px; background: #ffffff; color: #000000;">
           <thead>
-            <tr style="background: #f1f5f9; border-bottom: 2px solid #0f172a;">
-              <th style="border: 1px solid #cbd5e1; padding: 6px 6px; text-align: center; width: 28px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #0f172a;">#</th>
-              <th style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #0f172a; min-width: 110px;">Resident Name / Head</th>
-              ${cols.map(c => `<th style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #0f172a;">${formatColTitle(c)}</th>`).join("")}
+            <tr style="border-bottom: 2px solid #000000; background: #ffffff;">
+              <th style="border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; text-transform: uppercase; font-size: 11px; font-weight: bold; color: #000000; background: #ffffff; width: 28px;">#</th>
+              <th style="border: 1px solid #cbd5e1; padding: 7px 8px; text-align: left; text-transform: uppercase; font-size: 11px; font-weight: bold; color: #000000; background: #ffffff;">Resident Name</th>
+              ${cols.map(c => `<th style="border: 1px solid #cbd5e1; padding: 7px 8px; text-align: left; text-transform: uppercase; font-size: 11px; font-weight: bold; color: #000000; background: #ffffff;">${formatColTitle(c)}</th>`).join("")}
             </tr>
           </thead>
           <tbody>
             ${filteredFormRecords.length === 0 ? `
-              <tr>
-                <td colspan="${cols.length + 2}" style="border: 1px solid #e2e8f0; padding: 14px; text-align: center; color: #64748b; font-style: italic;">No records found for this form</td>
+              <tr style="background: #ffffff;">
+                <td colspan="${cols.length + 2}" style="border: 1px solid #cbd5e1; padding: 12px; text-align: center; color: #000000; font-style: italic; background: #ffffff;">No records found for this form</td>
               </tr>
             ` : filteredFormRecords.map((r, i) => {
               const name = r.residents?.full_name || r.patient_name || (r.first_name ? `${r.first_name} ${r.surname || ""}` : (r.father_name ? `${r.father_name}` : "—"));
-              const bg = i % 2 === 1 ? "background: #f8fafc;" : "background: #ffffff;";
-              return `<tr style="${bg}">
-                <td style="border: 1px solid #e2e8f0; padding: 5px 6px; text-align: center; color: #64748b; font-weight: 600; font-size: 9.5px;">${i + 1}</td>
-                <td style="border: 1px solid #e2e8f0; padding: 5px 8px; font-weight: 700; color: #0f172a; font-size: 10px;">${name}</td>
-                ${cols.map(c => `<td style="border: 1px solid #e2e8f0; padding: 5px 8px; color: #334155; font-size: 9.5px;">${formatCellValue(r[c])}</td>`).join("")}
+              return `<tr style="border-bottom: 1px solid #cbd5e1; background: #ffffff;">
+                <td style="border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; color: #000000; font-size: 11px; background: #ffffff;">${i + 1}</td>
+                <td style="border: 1px solid #cbd5e1; padding: 7px 8px; font-weight: bold; color: #000000; font-size: 11px; background: #ffffff;">${name}</td>
+                ${cols.map(c => `<td style="border: 1px solid #cbd5e1; padding: 7px 8px; color: #000000; font-size: 11px; background: #ffffff;">${formatCellValue(r[c])}</td>`).join("")}
               </tr>`;
             }).join("")}
           </tbody>
         </table>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 9.5px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 6px; margin-top: 8px; width: 100%;">
-          <span>Report Generated: ${new Date().toLocaleString()}</span>
-          <span style="font-weight: 700; color: #0f172a; font-size: 10px;">Total Form Records: ${filteredFormRecords.length}</span>
-        </div>
-
-        <div style="margin-top: 32px; display: flex; justify-content: space-between; font-size: 10.5px; color: #0f172a; page-break-inside: avoid;">
-          <div style="text-align: left;">Certified Correct: ___________________________<br/><span style="font-size: 9px; color: #64748b;">Attending Barangay Health Worker</span></div>
-          <div style="text-align: right;">Approved By: ___________________________<br/><span style="font-size: 9px; color: #64748b;">Barangay Health Supervisor / Midwife</span></div>
+        <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 10px; color: #000000;">
+          <p style="font-size: 10px; color: #64748b; margin: 0; text-align: left;">Report Generated: ${new Date().toLocaleString()}</p>
+          <p style="font-size: 11px; font-weight: bold; color: #000000; margin: 0; text-align: right;">Total Active Records: ${filteredFormRecords.length}</p>
         </div>
       </div>
     `;
-    triggerInSystemPrint(`${selectedForm.title.toUpperCase()} — SUBMISSIONS ARCHIVE`, html, orientation);
+
+    triggerInSystemPrint(
+      `${selectedForm.title.toUpperCase()} REGISTRY DIRECTORY`,
+      html,
+      orientation,
+      `Barangay Subukin Health Center • Total Registered: ${filteredFormRecords.length}`
+    );
   };
 
   const handlePrintSingleFilledRecord = () => {
