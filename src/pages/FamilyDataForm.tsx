@@ -76,7 +76,7 @@ export interface FamilyRecord {
 }
 
 const FamilyDataForm = () => {
-  const { t } = useSettings();
+  const { t, language } = useSettings();
   const { userRole } = useAuth();
   const isAdmin = userRole === "supervisor";
   const isMidwife = userRole === "midwife";

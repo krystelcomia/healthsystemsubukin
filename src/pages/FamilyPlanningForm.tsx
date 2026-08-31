@@ -341,7 +341,7 @@ const sanitizeDraftState = (parsed: any): FPFullFormState => {
 const FamilyPlanningForm = () => {
   const { userRole } = useAuth();
   const isMidwife = userRole === "midwife";
-  const { t } = useSettings();
+  const { t, language } = useSettings();
   const [fpState, setFpState] = useState<FPFullFormState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_FP_DRAFT);

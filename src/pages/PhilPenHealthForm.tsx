@@ -56,7 +56,7 @@ interface Resident {
 }
 
 const PhilPenHealthForm = () => {
-  const { t } = useSettings();
+  const { t, language } = useSettings();
   const { userRole } = useAuth();
   const isMidwife = userRole === "midwife";
   const [residents, setResidents] = useState<Resident[]>([]);

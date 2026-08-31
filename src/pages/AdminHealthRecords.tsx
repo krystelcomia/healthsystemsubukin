@@ -129,7 +129,7 @@ const BASE_FORM_GALLERY: FormMeta[] = [
 ];
 
 const AdminHealthRecords = () => {
-  const { t } = useSettings();
+  const { t, language } = useSettings();
   const [searchQuery, setSearchQuery] = useState("");
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loadingCounts, setLoadingCounts] = useState(true);

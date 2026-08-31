@@ -133,7 +133,7 @@ const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:b
 const MaternalCareForm = () => {
   const { userRole } = useAuth();
   const isMidwife = userRole === "midwife";
-  const { t } = useSettings();
+  const { t, language } = useSettings();
   const [residents, setResidents] = useState<any[]>([]);
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
   const [savedRecords, setSavedRecords] = useState<MaternalCareRecord[]>([]);

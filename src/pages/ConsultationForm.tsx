@@ -62,7 +62,7 @@ const getTodayDate = () => {
 const ConsultationForm = () => {
   const { userRole } = useAuth();
   const isMidwife = userRole === "midwife";
-  const { t } = useSettings();
+  const { t, language } = useSettings();
   const [residents, setResidents] = useState<{ id: string; full_name: string; sitio?: string; age?: number; birthday?: string }[]>([]);
   const [form, setForm] = useState({
     resident_id: "", birthdate: "", age: "", sitio: "", date: getTodayDate(),
