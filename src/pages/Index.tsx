@@ -200,14 +200,14 @@ const Index = () => {
         recentFamilies,
         recentResidents
       ] = await Promise.all([
-        supabase.from("consultations").select("consultation_date, consultation_cause, created_at, residents(full_name)").order("created_at", { ascending: false }).limit(6),
-        supabase.from("dengue_prevention").select("household_name, container_type, has_larvae, created_at").order("created_at", { ascending: false }).limit(6),
-        supabase.from("philpen_health").select("full_name, bp, record_date, created_at").order("created_at", { ascending: false }).limit(6),
-        supabase.from("maternal_care" as any).select("patient_name, patient_last_name, patient_first_name, checkup_date, created_at").order("created_at", { ascending: false }).limit(6),
-        supabase.from("child_health" as any).select("child_name, first_name, surname, checkup_date, created_at").order("created_at", { ascending: false }).limit(6),
-        supabase.from("family_planning").select("method, start_date, created_at").order("created_at", { ascending: false }).limit(6),
-        supabase.from("family_data").select("family_number, father_name, mother_name, created_at").order("created_at", { ascending: false }).limit(6),
-        supabase.from("residents").select("full_name, sitio, created_at").order("created_at", { ascending: false }).limit(6),
+        supabase.from("consultations").select("consultation_date, consultation_cause, created_at, residents(full_name)").order("created_at", { ascending: false }).limit(5),
+        supabase.from("dengue_prevention").select("household_name, container_type, has_larvae, created_at").order("created_at", { ascending: false }).limit(5),
+        supabase.from("philpen_health").select("full_name, bp, record_date, created_at").order("created_at", { ascending: false }).limit(5),
+        supabase.from("maternal_care" as any).select("patient_name, patient_last_name, patient_first_name, checkup_date, created_at").order("created_at", { ascending: false }).limit(5),
+        supabase.from("child_health" as any).select("child_name, first_name, surname, checkup_date, created_at").order("created_at", { ascending: false }).limit(5),
+        supabase.from("family_planning").select("method, start_date, created_at").order("created_at", { ascending: false }).limit(5),
+        supabase.from("family_data").select("family_number, father_name, mother_name, created_at").order("created_at", { ascending: false }).limit(5),
+        supabase.from("residents").select("full_name, sitio, created_at").order("created_at", { ascending: false }).limit(5),
       ]);
 
       const rawCustomRecords = JSON.parse(localStorage.getItem("bhw_custom_form_records") || "[]");
@@ -308,7 +308,7 @@ const Index = () => {
       });
 
       allEvents.sort((a, b) => b.timestamp - a.timestamp);
-      setRecentActivity(allEvents.slice(0, 6));
+      setRecentActivity(allEvents.slice(0, 5));
 
       setLoading(false);
     };

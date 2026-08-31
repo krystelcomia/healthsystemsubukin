@@ -297,6 +297,8 @@ const AdminDashboard = () => {
     { label: t("nav.denguePrevention"), value: stats.dengueRecords, icon: Bug, desc: t("admin.dashboard.dengueRecords"), color: "from-teal-500/10 via-teal-500/5 to-transparent text-teal-600 dark:text-teal-400 border-teal-500/30", badgeColor: "bg-teal-500/10 text-teal-600" },
   ];
 
+  const onlineWorkersList = workers.filter((w) => w.is_online);
+
   return (
     <div className="space-y-6 w-full max-w-full">
       
@@ -376,7 +378,7 @@ const AdminDashboard = () => {
       {/* BHW Workers Status + Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Active BHW Workers Shift Status */}
+        {/* Active BHW Workers Shift Status (Displays Online Workers Only) */}
         <Card className="border-border/60 shadow-sm bg-card flex flex-col">
           <CardHeader className="pb-3 border-b border-border/40 flex flex-row items-center justify-between">
             <div>
@@ -402,39 +404,39 @@ const AdminDashboard = () => {
                   <div className="h-4 bg-muted animate-pulse rounded w-3/4 mx-auto" />
                   <div className="h-4 bg-muted animate-pulse rounded w-1/2 mx-auto" />
                 </div>
-              ) : workers.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-6">{t("admin.dashboard.noWorkers")}</p>
-              ) : workers.map((w) => (
-                <div key={w.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center relative font-bold text-xs shrink-0">
-                      {w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                      <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card ${w.is_online ? "bg-emerald-500 shadow-sm shadow-emerald-500/50 ring-2 ring-emerald-500/30 animate-pulse" : "bg-slate-400/60 dark:bg-slate-600"}`} />
+              ) : onlineWorkersList.length === 0 ? (
+                <div className="text-center py-8 space-y-1.5 text-muted-foreground">
+                  <p className="text-xs font-semibold text-foreground/80">{t("admin.dashboard.noOnlineWorkers")}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {language === "tl" ? "I-click ang 'Tingnan Lahat' upang makita ang buong listahan ng kawani." : "Click 'View All' to check the complete staff directory."}
+                  </p>
+                </div>
+              ) : (
+                onlineWorkersList.map((w) => (
+                  <div key={w.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center relative font-bold text-xs shrink-0">
+                        {w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-emerald-500 shadow-sm shadow-emerald-500/50 ring-2 ring-emerald-500/30 animate-pulse" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-foreground truncate">{w.name}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{w.gmail}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-foreground truncate">{w.name}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">{w.gmail}</p>
-                    </div>
-                  </div>
-                  {w.is_online ? (
                     <Badge className="text-[10px] px-2 py-0.5 font-semibold bg-emerald-600 hover:bg-emerald-600 text-white border-emerald-500 shadow-xs gap-1">
                       <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse inline-block" />
                       <UserCheck className="h-3 w-3" />
                       {t("admin.dashboard.online")}
                     </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="text-[10px] px-2 py-0.5 font-normal text-muted-foreground bg-muted/60 border border-border/50 gap-1">
-                      <UserX className="h-3 w-3" />
-                      {t("admin.dashboard.offline")}
-                    </Badge>
-                  )}
-                </div>
-              ))}
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Recent System Activity Reports */}
+        {/* Recent System Activity Reports (Capped to 5 Most Recent) */}
         <Card className="border-border/60 shadow-sm bg-card flex flex-col">
           <CardHeader className="pb-3 border-b border-border/40">
             <CardTitle className="text-base font-heading font-bold flex items-center gap-2 text-foreground">
@@ -454,20 +456,22 @@ const AdminDashboard = () => {
                 </div>
               ) : recentActivity.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-6">{t("dashboard.noActivity")}</p>
-              ) : recentActivity.map((item, i) => (
-                <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors">
-                  <div className="h-8 w-8 rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                    {item.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1">
-                      <p className="text-xs font-bold text-foreground truncate">{item.name}</p>
-                      <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">{item.time}</span>
+              ) : (
+                recentActivity.slice(0, 5).map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors">
+                    <div className="h-8 w-8 rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                      {item.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                     </div>
-                    <p className="text-[11px] text-muted-foreground truncate mt-0.5">{item.action}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <p className="text-xs font-bold text-foreground truncate">{item.name}</p>
+                        <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">{item.time}</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground truncate mt-0.5">{item.action}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
