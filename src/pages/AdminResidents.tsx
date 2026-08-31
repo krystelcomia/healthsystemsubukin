@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
-import { syncFamilyDataToResidents } from "@/lib/residentLinker";
+import { syncFamilyDataToResidents, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import { OfficialHeader } from "@/components/OfficialHeader";

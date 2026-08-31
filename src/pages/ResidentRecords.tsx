@@ -37,7 +37,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
-import { calculateAge, syncFamilyDataToResidents } from "@/lib/residentLinker";
+import { calculateAge, syncFamilyDataToResidents, getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
