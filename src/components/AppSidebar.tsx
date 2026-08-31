@@ -135,25 +135,35 @@ export function AppSidebar() {
   const mainItems = isAdmin ? adminMainItems : bhwMainItems;
   const formItems = isAdmin ? adminFormItems : bhwFormItems;
 
-  const isActive = (path: string) => location.pathname === path || (path !== "/" && path !== "/admin" && location.pathname.startsWith(path));
+  const isActive = (path: string) => {
+    if (location.pathname === path) return true;
+    if (path === "/settings" || path === "/admin/settings" || path === "/" || path === "/admin") {
+      return location.pathname === path;
+    }
+    return location.pathname.startsWith(path);
+  };
 
   const renderItems = (items: typeof mainItems) => (
     <SidebarMenu>
-      {items.map((item) => (
-        <SidebarMenuItem key={item.title + item.url}>
-          <SidebarMenuButton asChild isActive={isActive(item.url)}>
-            <NavLink
-              to={item.url}
-              end
-              className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors hover:bg-sidebar-accent"
-              activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold"
-            >
-              <item.icon className="h-4 w-4 shrink-0" />
-              <span>{item.title}</span>
-            </NavLink>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
+      {items.map((item) => {
+        const isItemActive = isActive(item.url);
+        const shouldMatchEnd = item.url === "/admin/settings" || item.url === "/settings" || item.url === "/" || item.url === "/admin";
+        return (
+          <SidebarMenuItem key={item.title + item.url}>
+            <SidebarMenuButton asChild isActive={isItemActive}>
+              <NavLink
+                to={item.url}
+                end={shouldMatchEnd}
+                className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors hover:bg-sidebar-accent"
+                activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold"
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                <span>{item.title}</span>
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        );
+      })}
     </SidebarMenu>
   );
 
