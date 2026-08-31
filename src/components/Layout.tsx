@@ -713,11 +713,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 right: 0 !important;
                 top: 0 !important;
                 width: 100% !important;
-                max-width: 100% !important;
+                max-width: 680px !important;
                 margin: 0 auto !important;
                 background: #ffffff !important;
                 color: #000000 !important;
-                padding: 10px 15px !important;
+                padding: 0 15px !important;
                 display: block !important;
                 box-sizing: border-box !important;
                 page-break-after: avoid !important;
@@ -731,13 +731,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 border-bottom: 3.5px double #000000 !important;
               }
               body.printing-attendance #attendance-print-area .header-seal img {
-                height: 95px !important;
+                height: 130px !important;
                 width: auto !important;
                 object-fit: contain !important;
                 mix-blend-mode: multiply !important;
               }
               body.printing-attendance #attendance-print-area .document-title-section h2 {
-                font-size: 15px !important;
+                font-size: 16px !important;
                 font-weight: 800 !important;
                 letter-spacing: 0.04em !important;
                 margin-top: 3px !important;
@@ -745,13 +745,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 color: #000000 !important;
               }
               body.printing-attendance #attendance-print-area .document-title-section p {
-                font-size: 11px !important;
+                font-size: 11.5px !important;
                 color: #4b5563 !important;
                 margin-bottom: 6px !important;
               }
               @page {
                 size: A4 portrait;
-                margin: 8mm 10mm;
+                margin: 10mm 15mm;
               }
             }
           `}</style>
@@ -762,15 +762,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
               title={language === "tl" ? "BARANGAY HEALTH WORKERS OPISYAL NA TALAAN NG ATTENDANCE" : "BARANGAY HEALTH WORKERS OFFICIAL ATTENDANCE RECORD"}
               subtitle={language === "tl" ? "Barangay Subukin Health Center, San Juan, Batangas • Opisyal na Talaan ng Oras ng Pagpasok at Paglabas" : "Barangay Subukin Health Center, San Juan, Batangas • Official Time In & Time Out Record"}
               showDoubleBorder={true}
-              logoHeight="95px"
+              logoHeight="130px"
             />
           </div>
 
           {/* Worker Summary Box */}
           {selectedWorker && (
-            <div className="w-full border border-black p-2.5 rounded mb-2.5 text-[11px] leading-tight grid grid-cols-2 gap-2 mt-1 box-border bg-slate-50">
+            <div className="w-full border border-black p-2.5 rounded mb-2.5 text-[13px] leading-tight grid grid-cols-2 gap-2 mt-1 box-border bg-slate-50">
               <div className="space-y-1">
-                <p><span className="font-bold uppercase tracking-wider text-black">Personnel Name:</span> <span className="font-bold text-black text-[12px]">{selectedWorker.name}</span></p>
+                <p><span className="font-bold uppercase tracking-wider text-black">Personnel Name:</span> <span className="font-bold text-black text-[14px]">{selectedWorker.name}</span></p>
                 <p><span className="font-bold uppercase tracking-wider text-black">Designation / Role:</span> <span className="font-semibold text-black">{selectedWorker.role === "supervisor" || selectedWorker.role === "supervisory" ? "BHW Supervisory" : selectedWorker.role === "midwife" ? "Barangay Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
                 <p><span className="font-bold uppercase tracking-wider text-black">Assigned Station / Sitio:</span> <span className="font-semibold text-black">{selectedWorker.sitio || "Subukin Main"}</span></p>
               </div>
@@ -782,17 +782,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-          {/* Official Attendance Log Table */}
-          <div className="w-full mb-3">
-            <table className="w-full min-w-full text-left text-[11px] border border-black border-collapse table-auto">
+          {/* Official Attendance Log Table with margins and +2pt font size */}
+          <div className="w-full mb-3" style={{ paddingLeft: "20px", paddingRight: "20px", boxSizing: "border-box" }}>
+            <table className="w-full min-w-full text-left text-[15px] border border-black border-collapse table-auto">
               <thead>
                 <tr className="bg-slate-100 border-b border-black font-bold text-black">
-                  <th className="border border-black p-1.5 text-center w-8 font-bold uppercase text-[10px]">#</th>
-                  <th className="border border-black p-1.5 text-center font-bold uppercase text-[10px]">Date (Petsa)</th>
-                  <th className="border border-black p-1.5 text-center font-bold uppercase text-[10px]">Time In (Oras ng Pagpasok)</th>
-                  <th className="border border-black p-1.5 text-center font-bold uppercase text-[10px]">Time Out (Oras ng Paglabas)</th>
-                  <th className="border border-black p-1.5 text-center w-28 font-bold uppercase text-[10px]">Duration (Tagal)</th>
-                  <th className="border border-black p-1.5 text-center w-32 font-bold uppercase text-[10px]">Status (Katayuan)</th>
+                  <th className="border border-black p-2 text-center w-8 font-bold uppercase text-[14px]">#</th>
+                  <th className="border border-black p-2 text-center font-bold uppercase text-[14px]">Date (Petsa)</th>
+                  <th className="border border-black p-2 text-center font-bold uppercase text-[14px]">Time In (Oras ng Pagpasok)</th>
+                  <th className="border border-black p-2 text-center font-bold uppercase text-[14px]">Time Out (Oras ng Paglabas)</th>
+                  <th className="border border-black p-2 text-center w-28 font-bold uppercase text-[14px]">Duration (Tagal)</th>
+                  <th className="border border-black p-2 text-center w-32 font-bold uppercase text-[14px]">Status (Katayuan)</th>
                 </tr>
               </thead>
               <tbody>
@@ -804,14 +804,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       : (language === "tl" ? "Aktibong Shift" : "Active Shift");
                     return (
                       <tr key={log.id || idx} className="border-b border-black text-black">
-                        <td className="border border-black p-1.5 text-center font-mono font-bold text-[11px]">{idx + 1}</td>
-                        <td className="border border-black p-1.5 text-center font-bold text-[11px]">{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
-                        <td className="border border-black p-1.5 text-center font-mono font-semibold text-[11px]">{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
-                        <td className="border border-black p-1.5 text-center font-mono font-semibold text-[11px]">
+                        <td className="border border-black p-2 text-center font-mono font-bold text-[15px]">{idx + 1}</td>
+                        <td className="border border-black p-2 text-center font-bold text-[15px]">{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
+                        <td className="border border-black p-2 text-center font-mono font-semibold text-[15px]">{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
+                        <td className="border border-black p-2 text-center font-mono font-semibold text-[15px]">
                           {log.logoutAt ? new Date(log.logoutAt).toLocaleTimeString(undefined, { timeStyle: "short" }) : "— (Active on Duty)"}
                         </td>
-                        <td className="border border-black p-1.5 text-center font-mono font-bold text-[11px]">{durationStr}</td>
-                        <td className="border border-black p-1.5 text-center font-bold text-[11px]">
+                        <td className="border border-black p-2 text-center font-mono font-bold text-[15px]">{durationStr}</td>
+                        <td className="border border-black p-2 text-center font-bold text-[15px]">
                           {log.logoutAt ? "Completed Shift" : "On Duty (Active)"}
                         </td>
                       </tr>
@@ -819,7 +819,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={6} className="border border-black p-4 text-center italic font-medium text-slate-800 text-[11px]">
+                    <td colSpan={6} className="border border-black p-4 text-center italic font-medium text-slate-800 text-[15px]">
                       No official attendance records logged for this personnel during this period.
                     </td>
                   </tr>
@@ -829,18 +829,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Official Certification and Sign-offs */}
-          <div className="grid grid-cols-2 gap-8 pt-3 mt-2 text-[11px] w-full">
+          <div className="grid grid-cols-2 gap-8 pt-3 mt-2 text-[12px] w-full">
             <div className="text-center">
-              <div className="border-b border-black w-3/5 mx-auto pb-1 font-bold text-[12px] text-black uppercase">
+              <div className="border-b border-black w-3/5 mx-auto pb-1 font-bold text-[14px] text-black uppercase">
                 {selectedWorker?.name || "BHW Personnel"}
               </div>
-              <p className="mt-1 text-[10px] text-black font-bold uppercase tracking-wider">Signature over Printed Name / Personnel</p>
+              <p className="mt-1 text-[11px] text-black font-bold uppercase tracking-wider">Signature over Printed Name / Personnel</p>
             </div>
             <div className="text-center">
-              <div className="border-b border-black w-3/5 mx-auto pb-1 font-bold text-[12px] text-black uppercase">
+              <div className="border-b border-black w-3/5 mx-auto pb-1 font-bold text-[14px] text-black uppercase">
                 MARY JANE LANDICHO
               </div>
-              <p className="mt-1 text-[10px] text-black font-bold uppercase tracking-wider">Barangay Midwife / Certified Correct</p>
+              <p className="mt-1 text-[11px] text-black font-bold uppercase tracking-wider">Barangay Midwife / Certified Correct</p>
             </div>
           </div>
         </div>
