@@ -201,6 +201,15 @@ const MaternalCareForm = () => {
     fetchResidents();
     fetchSavedRecords();
     getDatabaseSitios().then(sits => setSitioOptions(sits));
+
+    window.addEventListener("resident-records-updated", fetchResidents);
+    window.addEventListener("family-data-updated", fetchResidents);
+    window.addEventListener("bhw-db-updated", fetchResidents);
+    return () => {
+      window.removeEventListener("resident-records-updated", fetchResidents);
+      window.removeEventListener("family-data-updated", fetchResidents);
+      window.removeEventListener("bhw-db-updated", fetchResidents);
+    };
   }, []);
 
   // Split name helper

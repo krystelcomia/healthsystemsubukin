@@ -88,9 +88,21 @@ const PhilPenHealthForm = () => {
   };
 
   useEffect(() => {
+    const loadResidents = () => {
+      getFamilyOnlyResidents().then((data) => setResidents(data || []));
+    };
+    loadResidents();
     getDatabaseSitios().then(sits => setSitioOptions(sits));
-    getFamilyOnlyResidents().then((data) => setResidents(data || []));
     fetchHistory();
+
+    window.addEventListener("resident-records-updated", loadResidents);
+    window.addEventListener("family-data-updated", loadResidents);
+    window.addEventListener("bhw-db-updated", loadResidents);
+    return () => {
+      window.removeEventListener("resident-records-updated", loadResidents);
+      window.removeEventListener("family-data-updated", loadResidents);
+      window.removeEventListener("bhw-db-updated", loadResidents);
+    };
   }, []);
 
   const [historySitio, setHistorySitio] = useState("all");
@@ -157,10 +169,6 @@ const PhilPenHealthForm = () => {
     
     diabetes_remarks: ""
   });
-
-  useEffect(() => {
-    getFamilyOnlyResidents().then((data) => setResidents(data || []));
-  }, []);
 
   // Calculate BMI
   const bmi = form.height && form.weight 

@@ -180,43 +180,34 @@ const AdminResidents = () => {
   const [healthRecords, setHealthRecords] = useState<HealthRecords | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => { 
-    fetchResidents(); 
+  useEffect(() => {
+    fetchResidents();
     const handleUpdate = () => fetchResidents();
     window.addEventListener("storage", handleUpdate);
     window.addEventListener("bhw-db-updated", handleUpdate);
+    window.addEventListener("resident-records-updated", handleUpdate);
+    window.addEventListener("family-data-updated", handleUpdate);
     return () => {
       window.removeEventListener("storage", handleUpdate);
       window.removeEventListener("bhw-db-updated", handleUpdate);
+      window.removeEventListener("resident-records-updated", handleUpdate);
+      window.removeEventListener("family-data-updated", handleUpdate);
     };
   }, []);
 
   const fetchResidents = async () => {
     setLoading(true);
-    const familyNamesSet = await syncFamilyDataToResidents();
-    const { data, error } = await supabase.from("residents").select("*").order("full_name");
-    if (error) { toast.error("Failed to load residents"); setLoading(false); return; }
-
-    // Resident records are strictly limited to those included in family data (regardless of placement)
-    const rawFamilyOnly = (data || []).filter(r => 
-      r.full_name && familyNamesSet.has(r.full_name.trim().toLowerCase())
-    );
-
-    const seenNames = new Set<string>();
-    const familyOnlyResidents: Resident[] = [];
-    for (const r of rawFamilyOnly) {
-      const key = r.full_name.trim().toLowerCase();
-      if (!seenNames.has(key)) {
-        seenNames.add(key);
-        familyOnlyResidents.push(r);
-      }
+    try {
+      const familyOnlyResidents = await getFamilyOnlyResidents();
+      setResidents(familyOnlyResidents || []);
+      const dbSitios = Array.from(new Set((familyOnlyResidents || []).map(r => r.sitio).filter(s => Boolean(s) && s !== "Centro" && s !== "Sitio Centro"))).sort() as string[];
+      const uniqueSitios = dbSitios.length > 0 ? dbSitios : SUBUKIN_SITIOS;
+      setSitios(uniqueSitios);
+    } catch {
+      toast.error("Failed to load residents");
+    } finally {
+      setLoading(false);
     }
-
-    setResidents(familyOnlyResidents);
-    const dbSitios = Array.from(new Set(familyOnlyResidents.map(r => r.sitio).filter(s => Boolean(s) && s !== "Centro" && s !== "Sitio Centro"))).sort() as string[];
-    const uniqueSitios = dbSitios.length > 0 ? dbSitios : SUBUKIN_SITIOS;
-    setSitios(uniqueSitios);
-    setLoading(false);
   };
 
   const [refreshing, setRefreshing] = useState(false);

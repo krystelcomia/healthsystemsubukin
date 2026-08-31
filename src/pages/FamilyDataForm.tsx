@@ -327,6 +327,15 @@ const FamilyDataForm = () => {
 
   useEffect(() => {
     fetchRecords();
+    const handleUpdate = () => fetchRecords();
+    window.addEventListener("family-data-updated", handleUpdate);
+    window.addEventListener("resident-records-updated", handleUpdate);
+    window.addEventListener("bhw-db-updated", handleUpdate);
+    return () => {
+      window.removeEventListener("family-data-updated", handleUpdate);
+      window.removeEventListener("resident-records-updated", handleUpdate);
+      window.removeEventListener("bhw-db-updated", handleUpdate);
+    };
   }, []);
 
   // Real-time search filtering
@@ -550,6 +559,11 @@ const FamilyDataForm = () => {
       });
       setCreateDialogOpen(false);
       fetchRecords();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("resident-records-updated"));
+        window.dispatchEvent(new Event("family-data-updated"));
+        window.dispatchEvent(new Event("bhw-db-updated"));
+      }
     }
   };
 
@@ -729,6 +743,11 @@ const FamilyDataForm = () => {
         setActiveMembers(deduplicatedActiveMembers);
         setIsEditingFileDetails(false);
         fetchRecords();
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("resident-records-updated"));
+          window.dispatchEvent(new Event("family-data-updated"));
+          window.dispatchEvent(new Event("bhw-db-updated"));
+        }
       }
     }
   };

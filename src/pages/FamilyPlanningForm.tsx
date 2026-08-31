@@ -393,6 +393,15 @@ const FamilyPlanningForm = () => {
 
   useEffect(() => {
     fetchData();
+
+    window.addEventListener("resident-records-updated", fetchData);
+    window.addEventListener("family-data-updated", fetchData);
+    window.addEventListener("bhw-db-updated", fetchData);
+    return () => {
+      window.removeEventListener("resident-records-updated", fetchData);
+      window.removeEventListener("family-data-updated", fetchData);
+      window.removeEventListener("bhw-db-updated", fetchData);
+    };
   }, []);
 
   // Handle Resident Selection

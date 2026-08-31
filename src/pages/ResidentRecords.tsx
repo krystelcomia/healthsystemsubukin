@@ -93,27 +93,14 @@ const ResidentRecords = () => {
 
   const fetchResidents = async () => {
     setLoading(true);
-    const familyNamesSet = await syncFamilyDataToResidents();
-    const { data, error } = await supabase.from("residents").select("*").order("created_at", { ascending: false });
-    if (error) { toast.error("Failed to load residents"); setLoading(false); return; }
-
-    // Resident records are strictly limited to those included in the family data (regardless of placement)
-    const rawFamilyOnly = (data || []).filter(r => 
-      r.full_name && familyNamesSet.has(r.full_name.trim().toLowerCase())
-    );
-
-    const seenNames = new Set<string>();
-    const familyOnlyResidents: Resident[] = [];
-    for (const r of rawFamilyOnly) {
-      const key = r.full_name.trim().toLowerCase();
-      if (!seenNames.has(key)) {
-        seenNames.add(key);
-        familyOnlyResidents.push(r);
-      }
+    try {
+      const data = await getFamilyOnlyResidents();
+      setResidents(data || []);
+    } catch {
+      toast.error("Failed to load residents");
+    } finally {
+      setLoading(false);
     }
-
-    setResidents(familyOnlyResidents);
-    setLoading(false);
   };
 
   const [refreshing, setRefreshing] = useState(false);
@@ -135,9 +122,13 @@ const ResidentRecords = () => {
     const handleUpdate = () => fetchResidents();
     window.addEventListener("storage", handleUpdate);
     window.addEventListener("bhw-db-updated", handleUpdate);
+    window.addEventListener("resident-records-updated", handleUpdate);
+    window.addEventListener("family-data-updated", handleUpdate);
     return () => {
       window.removeEventListener("storage", handleUpdate);
       window.removeEventListener("bhw-db-updated", handleUpdate);
+      window.removeEventListener("resident-records-updated", handleUpdate);
+      window.removeEventListener("family-data-updated", handleUpdate);
     };
   }, []);
 
