@@ -26,5 +26,6 @@ dist-ssr
 # Supabase temporary files
 supabase/.temp/
 *.timestamp-*.mjs
+*.tsbuildinfo
 
 

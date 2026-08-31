@@ -408,7 +408,7 @@ const MaternalCareForm = () => {
       form.patient_height?.trim() ||
       (form.blood_type && form.blood_type !== "Unspecified") ||
       (form.risk_factors && form.risk_factors.length > 0) ||
-      (form.prenatal_visits && form.prenatal_visits.length > 0 && form.prenatal_visits.some(v => v.visit_date || v.weight || v.bp || v.fundic_height || v.fetal_heart_tone || v.notes)) ||
+      (form.prenatal_visits && form.prenatal_visits.length > 0 && form.prenatal_visits.some(v => v.visit_date || v.weight || v.blood_pressure || v.fundic_height || v.fhr || v.notes)) ||
       form.end_1st_trim?.trim() ||
       form.end_2nd_trim?.trim() ||
       form.end_3rd_trim?.trim() ||

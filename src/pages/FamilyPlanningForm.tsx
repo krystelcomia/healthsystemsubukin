@@ -476,7 +476,7 @@ const FamilyPlanningForm = () => {
       return;
     }
 
-    if (!sideA.address_street?.trim() && !sideA.address_purok?.trim()) {
+    if (!sideA.address_street?.trim() && !sideA.address_no?.trim()) {
       toast.error("Essential resident info missing: Please provide Client's Address/Sitio.");
       return;
     }
@@ -485,14 +485,14 @@ const FamilyPlanningForm = () => {
       sideA.type_of_client?.trim() ||
       sideA.chosen_method?.trim() ||
       sideA.fp_no?.trim() ||
-      sideA.para?.trim() ||
-      sideA.gravida?.trim() ||
-      sideA.last_delivery_date?.trim() ||
-      sideA.lmp_date?.trim() ||
-      sideA.weight_kg?.trim() ||
-      sideA.height_cm?.trim() ||
-      sideA.blood_pressure?.trim() ||
-      sideA.pulse_rate?.trim() ||
+      sideA.obstetrical_history?.p_pregnancies?.trim() ||
+      sideA.obstetrical_history?.g_pregnancies?.trim() ||
+      sideA.obstetrical_history?.date_last_delivery?.trim() ||
+      sideA.obstetrical_history?.last_menstrual_period?.trim() ||
+      sideA.physical_exam?.weight_kg?.trim() ||
+      sideA.physical_exam?.height_m?.trim() ||
+      sideA.physical_exam?.bp?.trim() ||
+      sideA.physical_exam?.pulse_rate?.trim() ||
       (fpState.sideBVisits && fpState.sideBVisits.some(v => v.medical_findings?.trim() || v.method_accepted?.trim() || v.provider_name?.trim()))
     );
 
