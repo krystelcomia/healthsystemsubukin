@@ -170,6 +170,7 @@ const DenguePreventionForm = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
   const [activeSignRecordId, setActiveSignRecordId] = useState<string | null>(null);
+  const [consentChecked, setConsentChecked] = useState(false);
 
   const createBlankRows = (count: number) => {
     const rows = [];
@@ -662,9 +663,12 @@ const DenguePreventionForm = () => {
     const normMatchedHeadName = matchedHead ? normalizeResidentName(matchedHead.full_name) : "";
 
     if (targetName || targetResId) {
-      storeSignatureForResident(targetName, dataUrl, targetResId);
-      if (matchedHead?.full_name && matchedHead.full_name !== targetName) {
-        storeSignatureForResident(matchedHead.full_name, dataUrl, targetResId);
+      // Only persist the signature to storage if the resident has given consent
+      if (consentChecked) {
+        storeSignatureForResident(targetName, dataUrl, targetResId);
+        if (matchedHead?.full_name && matchedHead.full_name !== targetName) {
+          storeSignatureForResident(matchedHead.full_name, dataUrl, targetResId);
+        }
       }
     }
 
@@ -1541,7 +1545,7 @@ const DenguePreventionForm = () => {
 
 
       {/* Signature Modal */}
-      <Dialog open={signatureModalOpen} onOpenChange={setSignatureModalOpen}>
+      <Dialog open={signatureModalOpen} onOpenChange={(open) => { setSignatureModalOpen(open); if (!open) setConsentChecked(false); }}>
         <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">
@@ -1565,11 +1569,34 @@ const DenguePreventionForm = () => {
             />
           </div>
 
+          {/* Consent Notice */}
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200 space-y-2">
+            <p className="leading-snug">
+              <span className="font-bold">Consent Notice / Abiso ng Pahintulot:</span>{" "}
+              Sa pag-sign dito, inihahayag ng residente na siya/sila ay nagbibigay ng pahintulot sa Barangay Health Worker (BHW) na i-save ang kanilang electronic na lagda para sa awtomatikong paggamit sa susunod na mga okasyon.
+            </p>
+            <p className="leading-snug">
+              By signing, the resident authorizes the BHW system to save and automatically apply this e-signature for future forms under the same name.
+            </p>
+            <label className="flex items-start gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                id="signature-consent-checkbox"
+                checked={consentChecked}
+                onChange={(e) => setConsentChecked(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-amber-400 accent-amber-600 shrink-0 cursor-pointer"
+              />
+              <span className="font-semibold text-amber-900 dark:text-amber-100">
+                I allow — Pumapayag ako na i-save ang aking lagda para sa susunod na paggamit. (Continue)
+              </span>
+            </label>
+          </div>
+
           <DialogFooter className="gap-2 mt-4">
             <Button type="button" variant="outline" onClick={clearCanvas}>
               Clear
             </Button>
-            <Button type="button" variant="ghost" onClick={() => setSignatureModalOpen(false)}>
+            <Button type="button" variant="ghost" onClick={() => { setSignatureModalOpen(false); setConsentChecked(false); }}>
               Cancel
             </Button>
             <Button type="button" onClick={saveSignature} className="bg-primary text-white font-bold">
