@@ -32,7 +32,7 @@ const AdminSettings = () => {
         toast.success("Report files downloaded successfully!");
       }
     } else {
-      toast.error(`Report generation: ${res.message || "Failed"}`);
+      toast.error(`Report generation: ${res.error || "Failed"}`);
     }
 
     setGenerating(false);
