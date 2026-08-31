@@ -428,8 +428,31 @@ const FamilyDataForm = () => {
       }
     }
 
-    // Validate no duplicate members
+    // Validate no duplicate members and require birthday alongside name
     const validMembers = newMembers.filter((m) => m.full_name.trim());
+    for (const mem of validMembers) {
+      if (!mem.birthday || !mem.birthday.trim()) {
+        toast.error(`Please enter a birthday for "${mem.full_name.trim()}". Birthday is required.`);
+        return;
+      }
+    }
+
+    if (newFather.trim()) {
+      const fatherRow = newMembers.find((m) => (m.relationship === "Father" || m.full_name.trim().toLowerCase() === newFather.trim().toLowerCase()) && m.full_name.trim());
+      if (!fatherRow || !fatherRow.birthday || !fatherRow.birthday.trim()) {
+        toast.error(`Please enter the birthday for Father (${newFather.trim()}). Birthday is required.`);
+        return;
+      }
+    }
+
+    if (newMother.trim()) {
+      const motherRow = newMembers.find((m) => (m.relationship === "Mother" || m.full_name.trim().toLowerCase() === newMother.trim().toLowerCase()) && m.full_name.trim());
+      if (!motherRow || !motherRow.birthday || !motherRow.birthday.trim()) {
+        toast.error(`Please enter the birthday for Mother (${newMother.trim()}). Birthday is required.`);
+        return;
+      }
+    }
+
     const seenNew = new Set<string>();
     const deduplicatedNewMembers: FamilyMember[] = [];
     for (const mem of validMembers) {
@@ -463,11 +486,27 @@ const FamilyDataForm = () => {
 
     // Auto-link residents in system database
     let mainResidentId: string | null = null;
+    const fatherMem = deduplicatedNewMembers.find(m => m.full_name.toLowerCase() === newFather.trim().toLowerCase() || m.relationship === "Father");
     if (newFather.trim()) {
-      mainResidentId = await ensureResidentExists({ fullName: newFather.trim(), sitio: newSitio, gender: "Male" });
+      mainResidentId = await ensureResidentExists({
+        fullName: newFather.trim(),
+        sitio: newSitio,
+        gender: "Male",
+        birthday: fatherMem?.birthday,
+        age: fatherMem?.age,
+        familyNumber: newFamNum.trim()
+      });
     }
+    const motherMem = deduplicatedNewMembers.find(m => m.full_name.toLowerCase() === newMother.trim().toLowerCase() || m.relationship === "Mother");
     if (newMother.trim()) {
-      const motherId = await ensureResidentExists({ fullName: newMother.trim(), sitio: newSitio, gender: "Female" });
+      const motherId = await ensureResidentExists({
+        fullName: newMother.trim(),
+        sitio: newSitio,
+        gender: "Female",
+        birthday: motherMem?.birthday,
+        age: motherMem?.age,
+        familyNumber: newFamNum.trim()
+      });
       if (!mainResidentId) mainResidentId = motherId;
     }
 
@@ -476,7 +515,9 @@ const FamilyDataForm = () => {
         fullName: mem.full_name,
         sitio: newSitio,
         gender: mem.gender,
-        age: mem.age
+        age: mem.age,
+        birthday: mem.birthday,
+        familyNumber: newFamNum.trim()
       });
     }
 
@@ -596,17 +637,41 @@ const FamilyDataForm = () => {
     }
     deduplicatedActiveMembers.sort((a, b) => (a.full_name || "").trim().localeCompare((b.full_name || "").trim()));
 
+    // Require birthday for all active members
+    for (const mem of deduplicatedActiveMembers) {
+      if (!mem.birthday || !mem.birthday.trim()) {
+        toast.error(`Please enter a birthday for "${mem.full_name}". Birthday is required.`);
+        return;
+      }
+    }
+
     const malesCount = deduplicatedActiveMembers.filter((m) => m.gender === "Male").length;
     const femalesCount = deduplicatedActiveMembers.filter((m) => m.gender === "Female").length;
     const totalCount = deduplicatedActiveMembers.length;
 
     // Link father, mother, and all family members to the family_number in residents system
     const famNumStr = editFamNum.trim();
+    const editFatherMem = deduplicatedActiveMembers.find(m => m.full_name.toLowerCase() === editFather.trim().toLowerCase() || m.relationship === "Father");
     if (editFather.trim()) {
-      await ensureResidentExists({ fullName: editFather.trim(), sitio: editSitio, gender: "Male", familyNumber: famNumStr });
+      await ensureResidentExists({
+        fullName: editFather.trim(),
+        sitio: editSitio,
+        gender: "Male",
+        birthday: editFatherMem?.birthday,
+        age: editFatherMem?.age,
+        familyNumber: famNumStr
+      });
     }
+    const editMotherMem = deduplicatedActiveMembers.find(m => m.full_name.toLowerCase() === editMother.trim().toLowerCase() || m.relationship === "Mother");
     if (editMother.trim()) {
-      await ensureResidentExists({ fullName: editMother.trim(), sitio: editSitio, gender: "Female", familyNumber: famNumStr });
+      await ensureResidentExists({
+        fullName: editMother.trim(),
+        sitio: editSitio,
+        gender: "Female",
+        birthday: editMotherMem?.birthday,
+        age: editMotherMem?.age,
+        familyNumber: famNumStr
+      });
     }
     for (const mem of deduplicatedActiveMembers) {
       await ensureResidentExists({
@@ -673,6 +738,11 @@ const FamilyDataForm = () => {
     const cleanName = memName.trim();
     if (!cleanName) {
       toast.error("Please enter member's full name");
+      return;
+    }
+
+    if (!memBirthday || !memBirthday.trim()) {
+      toast.error("Please enter member's birthday. Birthday is required.");
       return;
     }
 
@@ -1547,7 +1617,7 @@ const FamilyDataForm = () => {
                       <tr className="bg-muted/40 border-b border-border/80">
                         <th className="p-3 font-semibold text-center w-[40px]">#</th>
                         <th className="p-3 font-semibold">Full Name</th>
-                        <th className="p-3 font-semibold text-center">Birthday</th>
+                        <th className="p-3 font-semibold text-center">Birthday *</th>
                         <th className="p-3 font-semibold text-center">Age</th>
                         <th className="p-3 font-semibold">Role</th>
                         <th className="p-3 font-semibold text-center">Gender</th>
@@ -1771,7 +1841,7 @@ const FamilyDataForm = () => {
                   <thead>
                     <tr className="bg-muted/60 border-b border-border/50 text-muted-foreground font-semibold">
                       <th className="p-2 text-left w-48">Full Name</th>
-                      <th className="p-2 text-left w-44">Birthday</th>
+                      <th className="p-2 text-left w-44">Birthday *</th>
                       <th className="p-2 text-center w-20">Age</th>
                       <th className="p-2 text-left w-24">Role</th>
                       <th className="p-2 text-left w-24">Gender</th>
@@ -1822,7 +1892,7 @@ const FamilyDataForm = () => {
                                   )
                                 );
                               }}
-                              className="h-8 text-xs"
+                              className={`h-8 text-xs ${mem.full_name.trim() !== "" && !mem.birthday ? "border-amber-400 focus-visible:ring-amber-400 bg-amber-50/40 dark:bg-amber-950/20" : ""}`}
                             />
                           </td>
                           <td className="p-1.5">
@@ -1976,7 +2046,7 @@ const FamilyDataForm = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div className="sm:col-span-2">
-                <Label className="text-xs">Birthday</Label>
+                <Label className="text-xs font-semibold">Birthday *</Label>
                 <Input
                   type="date"
                   value={memBirthday}
@@ -1990,7 +2060,7 @@ const FamilyDataForm = () => {
                       setMemAge("");
                     }
                   }}
-                  className="h-8 text-xs mt-1 w-full"
+                  className={`h-8 text-xs mt-1 w-full ${memName.trim() !== "" && !memBirthday ? "border-amber-400 focus-visible:ring-amber-400 bg-amber-50/50 dark:bg-amber-950/20" : ""}`}
                 />
               </div>
 
