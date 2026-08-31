@@ -3,7 +3,7 @@ import { translations, Language } from "@/lib/translations";
 
 export type { Language };
 
-export type ColorTheme = "emerald" | "ocean" | "purple" | "rose" | "maroon" | "amber" | "slate";
+export type ColorTheme = "emerald" | "ocean" | "purple" | "rose" | "maroon" | "amber" | "slate" | "mint" | "sky";
 
 export const COLOR_THEMES: { id: ColorTheme; label: string; swatch: string; vars: Record<string, string> }[] = [
   {
@@ -67,6 +67,24 @@ export const COLOR_THEMES: { id: ColorTheme; label: string; swatch: string; vars
       "--secondary": "215 18% 94%", "--secondary-foreground": "215 22% 28%",
       "--sidebar-background": "215 22% 26%", "--sidebar-primary": "215 22% 62%",
       "--sidebar-accent": "215 22% 34%", "--sidebar-border": "215 18% 36%", "--sidebar-ring": "215 22% 62%",
+    },
+  },
+  {
+    id: "mint", label: "Mint Breeze", swatch: "hsl(165 60% 48%)",
+    vars: {
+      "--primary": "165 60% 44%", "--ring": "165 60% 44%", "--accent": "165 60% 54%",
+      "--secondary": "165 40% 94%", "--secondary-foreground": "165 60% 28%",
+      "--sidebar-background": "165 48% 26%", "--sidebar-primary": "165 60% 64%",
+      "--sidebar-accent": "165 48% 36%", "--sidebar-border": "165 35% 36%", "--sidebar-ring": "165 60% 64%",
+    },
+  },
+  {
+    id: "sky", label: "Sky Cyan", swatch: "hsl(198 85% 54%)",
+    vars: {
+      "--primary": "198 85% 50%", "--ring": "198 85% 50%", "--accent": "198 85% 60%",
+      "--secondary": "198 50% 94%", "--secondary-foreground": "198 75% 30%",
+      "--sidebar-background": "198 55% 26%", "--sidebar-primary": "198 85% 66%",
+      "--sidebar-accent": "198 55% 36%", "--sidebar-border": "198 40% 36%", "--sidebar-ring": "198 85% 66%",
     },
   },
 ];

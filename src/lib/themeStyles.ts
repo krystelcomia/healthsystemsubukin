@@ -54,6 +54,20 @@ export const THEME_STYLES: Record<string, {
     btnStyle: "bg-slate-700 hover:bg-slate-600 text-white font-bold",
     chartColors: ["#475569", "#0284c7", "#059669", "#7c3aed", "#d97706", "#e11d48", "#2563eb"],
   },
+  mint: {
+    heroGradient: "from-teal-950 via-emerald-900 to-slate-950",
+    heroBorder: "border-teal-700/40",
+    badgeStyle: "bg-teal-500/20 text-teal-300 border-teal-400/30",
+    btnStyle: "bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold",
+    chartColors: ["#0d9488", "#0284c7", "#059669", "#7c3aed", "#d97706", "#e11d48", "#2563eb"],
+  },
+  sky: {
+    heroGradient: "from-sky-950 via-cyan-900 to-slate-950",
+    heroBorder: "border-sky-600/40",
+    badgeStyle: "bg-sky-500/20 text-sky-300 border-sky-400/30",
+    btnStyle: "bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold",
+    chartColors: ["#0284c7", "#06b6d4", "#059669", "#7c3aed", "#d97706", "#e11d48", "#2563eb"],
+  },
 };
 
 export const getThemeStyle = (colorTheme?: string) => {
