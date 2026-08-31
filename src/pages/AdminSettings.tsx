@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Download, Clock, KeyRound, Mail, CheckCircle2 } from "lucide-react";
+import { Settings, Download, Clock, KeyRound, Mail, CheckCircle2, Eye, EyeOff, ShieldCheck, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useSettings, COLOR_THEMES } from "@/contexts/SettingsContext";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
@@ -29,10 +29,10 @@ const AdminSettings = () => {
       if (res.method === "filesystem") {
         toast.success("All printable forms, weekly reports, and updates saved directly into your device folder!");
       } else {
-        toast.success("All printable forms, weekly reports, and updates compiled into folder archive and downloaded!");
+        toast.success("Report files downloaded successfully!");
       }
     } else {
-      toast.error(`Failed to generate reports: ${res.error || "Unknown error"}`);
+      toast.error(`Report generation: ${res.message || "Failed"}`);
     }
 
     setGenerating(false);
@@ -43,11 +43,12 @@ const AdminSettings = () => {
     <div className="w-full space-y-6">
       <PageHeaderBanner
         icon={Settings}
-        badge="Supervisory Management Settings"
+        badge={language === "tl" ? "Mga Setting ng Pangangasiwa" : "Supervisory Settings"}
         title={t("admin.settings.title")}
         description={t("admin.settings.description")}
       />
 
+      {/* 1. Display Settings Card */}
       <Card className="border-border/50 shadow-sm">
         <CardHeader><CardTitle className="text-lg font-heading">{t("settings.display")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
@@ -98,6 +99,7 @@ const AdminSettings = () => {
         </CardContent>
       </Card>
 
+      {/* 2. Color Palette Card */}
       <Card className="border-border/50 shadow-sm">
         <CardHeader><CardTitle className="text-lg font-heading">{t("settings.colorPalette")}</CardTitle></CardHeader>
         <CardContent>
@@ -120,22 +122,18 @@ const AdminSettings = () => {
         </CardContent>
       </Card>
 
+      {/* 3. Generate Full Reports Package */}
       <Card className="border-border/50 shadow-sm">
         <CardHeader><CardTitle className="text-lg font-heading">{t("settings.generateReport")}</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            {t("settings.generateReportDesc")}
-          </p>
-          {generating && generationProgress && (
-            <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4 animate-spin shrink-0" />
-              <span>{generationProgress}</span>
-            </div>
-          )}
-          <Button className="w-full gap-2" onClick={handleGenerateReport} disabled={generating}>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">{t("settings.generateReportDesc")}</p>
+          <Button onClick={handleGenerateReport} disabled={generating} className="w-full gap-2 font-semibold">
             <Download className="h-4 w-4" />
-            {generating ? (generationProgress || t("settings.generating")) : t("settings.generateFullReport")}
+            {generating ? (language === "tl" ? "Ginagawa ang mga Ulat..." : "Generating Full Report Package...") : t("settings.generateFullReport")}
           </Button>
+          {generationProgress && (
+            <p className="text-xs text-primary font-medium animate-pulse">{generationProgress}</p>
+          )}
         </CardContent>
       </Card>
 
@@ -151,6 +149,17 @@ const ResetPasswordSettingsCard = () => {
   const [username, setUsername] = useState("");
   const [registeredWorkers, setRegisteredWorkers] = useState<any[]>([]);
   const [sending, setSending] = useState(false);
+
+  // Revealed fields after code dispatch
+  const [codeSent, setCodeSent] = useState(false);
+  const [targetEmail, setTargetEmail] = useState("");
+  const [workerDisplayName, setWorkerDisplayName] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     try {
@@ -186,18 +195,109 @@ const ResetPasswordSettingsCard = () => {
       if (error) {
         toast.error(error.message, { duration: 6000 });
       } else {
-        const targetEmail = data?.email || "registered Gmail";
+        const resolved = data?.email || "registered Gmail";
+        setTargetEmail(resolved);
+        setWorkerDisplayName(data?.workerName || cleanFullName);
+        setCodeSent(true);
+        setVerificationCode("");
+        setNewPassword("");
+        setConfirmPassword("");
         toast.success(
           language === "tl"
-            ? `Matagumpay na naipadala ang 6-digit verification code sa email (${targetEmail}) para kay ${cleanFullName}!`
-            : `6-digit verification reset code successfully sent to email (${targetEmail}) for ${cleanFullName}!`,
-          { duration: 9000 }
+            ? `Ang 6-digit verification code ay naipadala sa email (${resolved}) para kay ${cleanFullName}! Ilagay ang code at bagong password sa ibaba.`
+            : `6-digit verification reset code sent to (${resolved}) for ${cleanFullName}! Enter the code and set the new password below.`,
+          { duration: 8000 }
         );
       }
     } catch (e: any) {
       toast.error(e?.message || "Failed to send reset code");
     }
     setSending(false);
+  };
+
+  const handleUpdatePassword = async () => {
+    const cleanCode = verificationCode.trim();
+
+    if (!cleanCode) {
+      toast.error(
+        language === "tl"
+          ? "Mangyaring ilagay ang 6-digit verification code na natanggap sa email."
+          : "Please enter the 6-digit verification code received via email."
+      );
+      return;
+    }
+
+    if (cleanCode.length !== 6) {
+      toast.error(
+        language === "tl"
+          ? "Ang verification code ay dapat eksaktong 6 na numero."
+          : "The verification code must be exactly 6 digits."
+      );
+      return;
+    }
+
+    // Strong password validation: at least 8 characters, at least 1 number, at least 1 uppercase letter
+    if (!newPassword || newPassword.length < 8) {
+      toast.error(
+        language === "tl"
+          ? "Ang bagong password ay dapat hindi bababa sa 8 karakter."
+          : "The new password must be at least 8 characters long."
+      );
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPassword)) {
+      toast.error(
+        language === "tl"
+          ? "Ang password ay dapat maglaman ng hindi bababa sa isang malaking titik (uppercase letter, A-Z)."
+          : "The password must include at least one uppercase letter (A-Z)."
+      );
+      return;
+    }
+
+    if (!/[0-9]/.test(newPassword)) {
+      toast.error(
+        language === "tl"
+          ? "Ang password ay dapat maglaman ng hindi bababa sa isang numero (0-9)."
+          : "The password must include at least one number (0-9)."
+      );
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error(
+        language === "tl"
+          ? "Hindi nagtutugma ang bagong password at kumpirmasyon."
+          : "The new password and confirm password do not match."
+      );
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const { error } = await (supabase.auth as any).resetUserPassword(targetEmail, newPassword, cleanCode);
+
+      if (error) {
+        toast.error(error.message, { duration: 6000 });
+      } else {
+        toast.success(
+          language === "tl"
+            ? `Matagumpay na nabago ang password para kay ${workerDisplayName || fullName}! Maaari na silang mag-sign in gamit ang bagong password.`
+            : `Password successfully updated for ${workerDisplayName || fullName}! The worker can now sign in with their new password.`,
+          { duration: 8000 }
+        );
+        // Reset form to clean state
+        setCodeSent(false);
+        setVerificationCode("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setFullName("");
+        setUsername("");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to update password");
+    }
+    setUpdating(false);
   };
 
   return (
@@ -211,10 +311,11 @@ const ResetPasswordSettingsCard = () => {
       <CardContent className="space-y-4">
         <p className="text-xs text-muted-foreground leading-relaxed">
           {language === "tl"
-            ? "Ilagay lamang ang buong pangalan at username ng manggagawa. Ang 6-digit verification reset code ay awtomatikong ipapadala sa kanyang nakarehistrong email address."
-            : "Only the worker's full name and username need to be entered. The 6-digit password reset verification code will be dispatched directly to their registered email inbox."}
+            ? "Ilagay lamang ang buong pangalan at username ng manggagawa. I-click ang button upang maipadala ang 6-digit verification code sa email bago ilagay ang bagong password."
+            : "Only the worker's full name and username need to be entered. Click the button to dispatch a 6-digit reset code to their email before setting a new strong password."}
         </p>
 
+        {/* Step 1: Worker Full Name & Username */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-foreground">
@@ -225,6 +326,7 @@ const ResetPasswordSettingsCard = () => {
               className="w-full h-10 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus:ring-1 focus:ring-primary"
               placeholder={language === "tl" ? "hal. Cristeta R. Lanuza" : "e.g. Cristeta R. Lanuza"}
               value={fullName}
+              disabled={codeSent}
               onChange={(e) => setFullName(e.target.value)}
               list="admin-workers-list"
             />
@@ -246,24 +348,144 @@ const ResetPasswordSettingsCard = () => {
               className="w-full h-10 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus:ring-1 focus:ring-primary"
               placeholder={language === "tl" ? "hal. cristeta" : "e.g. cristeta"}
               value={username}
+              disabled={codeSent}
               onChange={(e) => setUsername(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="pt-2">
-          <Button
-            size="sm"
-            onClick={handleSendResetCode}
-            disabled={sending}
-            className="w-full sm:w-auto px-6 h-9 font-semibold gap-2 shadow-xs"
-          >
-            <KeyRound className="h-4 w-4" />
-            {sending
-              ? (language === "tl" ? "Ipinapadala ang Reset Code..." : "Sending Reset Code...")
-              : (language === "tl" ? "Ipadala ang Reset Code sa Email" : "Send Reset Code via Email")}
-          </Button>
-        </div>
+        {/* Send Reset Code Button (Initially visible) */}
+        {!codeSent ? (
+          <div className="pt-2">
+            <Button
+              size="sm"
+              onClick={handleSendResetCode}
+              disabled={sending}
+              className="w-full sm:w-auto px-6 h-9 font-semibold gap-2 shadow-xs"
+            >
+              <KeyRound className="h-4 w-4" />
+              {sending
+                ? (language === "tl" ? "Ipinapadala ang Reset Code..." : "Sending Reset Code...")
+                : (language === "tl" ? "Ipadala ang Reset Code sa Email" : "Send Reset Code via Email")}
+            </Button>
+          </div>
+        ) : (
+          /* Step 2: Code & New Password Fields (Appears ONLY after code is sent) */
+          <div className="space-y-4 pt-3 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-3.5 text-xs text-foreground flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-primary font-semibold">
+                <Mail className="h-4 w-4 shrink-0" />
+                <span>
+                  {language === "tl" ? "Naipadala ang Code sa:" : "Verification Code Dispatched to:"} {targetEmail}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-[11px] px-2 text-muted-foreground hover:text-foreground"
+                onClick={() => setCodeSent(false)}
+              >
+                {language === "tl" ? "Magpalit ng Manggagawa" : "Change Worker"}
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* 6-Digit Code */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">
+                  {language === "tl" ? "6-Digit Verification Code" : "6-Digit Verification Code"}
+                </Label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 py-1 text-xs font-mono font-bold tracking-widest text-center shadow-xs focus:ring-1 focus:ring-primary"
+                  placeholder="123456"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  autoFocus
+                />
+              </div>
+
+              {/* New Password */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">
+                  {language === "tl" ? "Bagong Password" : "New Password"}
+                </Label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="w-full h-10 rounded-md border border-input bg-background pl-3 pr-9 py-1 text-xs shadow-xs focus:ring-1 focus:ring-primary"
+                    placeholder="••••••••"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm New Password */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">
+                  {language === "tl" ? "Kumpirmahin ang Bagong Password" : "Confirm New Password"}
+                </Label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    className="w-full h-10 rounded-md border border-input bg-background pl-3 pr-9 py-1 text-xs shadow-xs focus:ring-1 focus:ring-primary"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Password strength guide */}
+            <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50 text-[11px] text-muted-foreground flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span>
+                {language === "tl"
+                  ? "Dapat hindi bababa sa 8 karakter ang haba at mayroong kahit isang numero at isang malaking titik (uppercase)."
+                  : "Password must be at least 8 characters long and include both a number and an uppercase letter."}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <Button
+                size="sm"
+                onClick={handleUpdatePassword}
+                disabled={updating}
+                className="px-6 h-9 font-semibold gap-2 shadow-xs"
+              >
+                <Lock className="h-4 w-4" />
+                {updating
+                  ? (language === "tl" ? "Ina-update..." : "Updating Password...")
+                  : (language === "tl" ? "I-save ang Bagong Password" : "Save New Password")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCodeSent(false)}
+                className="h-9 px-4 text-xs"
+              >
+                {language === "tl" ? "Kanselahin" : "Cancel"}
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

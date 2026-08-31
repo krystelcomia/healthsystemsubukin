@@ -240,8 +240,16 @@ const AuthPage = () => {
       return;
     }
 
-    if (!newPassword || newPassword.length < 6) {
-      toast.error(language === "tl" ? "Ang password ay dapat hindi bababa sa 6 na karakter" : "Password must be at least 6 characters");
+    if (!newPassword || newPassword.length < 8) {
+      toast.error(language === "tl" ? "Ang password ay dapat hindi bababa sa 8 karakter" : "Password must be at least 8 characters");
+      return;
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      toast.error(language === "tl" ? "Ang password ay dapat may hindi bababa sa isang malaking titik (A-Z)" : "Password must include at least one uppercase letter (A-Z)");
+      return;
+    }
+    if (!/[0-9]/.test(newPassword)) {
+      toast.error(language === "tl" ? "Ang password ay dapat may hindi bababa sa isang numero (0-9)" : "Password must include at least one number (0-9)");
       return;
     }
     if (newPassword !== confirmPassword) {

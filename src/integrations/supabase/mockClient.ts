@@ -696,8 +696,14 @@ class MockAuth {
   }
 
   async resetUserPassword(email: string, newPassword: string, code?: string) {
-    if (!newPassword || newPassword.length < 6) {
-      return { data: null, error: { message: "Password must be at least 6 characters long." } };
+    if (!newPassword || newPassword.length < 8) {
+      return { data: null, error: { message: "Password must be at least 8 characters long." } };
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      return { data: null, error: { message: "Password must include at least one uppercase letter." } };
+    }
+    if (!/[0-9]/.test(newPassword)) {
+      return { data: null, error: { message: "Password must include at least one number." } };
     }
 
     seedMockDatabase();
