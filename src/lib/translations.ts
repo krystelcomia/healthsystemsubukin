@@ -146,7 +146,7 @@ export const translations: Record<Language, Record<string, string>> = {
     "residents.printRecord": "Print Record",
     "residents.noHealthRecords": "No health records found for this resident.",
     // Admin Residents
-    "admin.residents.title": "Resident Records (Admin)",
+    "admin.residents.title": "Resident Records",
     "admin.residents.desc": "View and print resident records filtered by sitio.",
     "admin.residents.filterBySitio": "Filter by Sitio:",
     "admin.residents.allSitios": "All Sitios",
@@ -543,7 +543,7 @@ export const translations: Record<Language, Record<string, string>> = {
     "residents.printRecord": "I-print ang Record",
     "residents.noHealthRecords": "Walang nahanap na health record para sa residenteng ito.",
     // Admin Residents
-    "admin.residents.title": "Mga Record ng Residente (Admin)",
+    "admin.residents.title": "Mga Record ng Residente",
     "admin.residents.desc": "Tingnan at i-print ang mga record ng residente ayon sa sitio.",
     "admin.residents.filterBySitio": "I-filter ayon sa Sitio:",
     "admin.residents.allSitios": "Lahat ng Sitio",

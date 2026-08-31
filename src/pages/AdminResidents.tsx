@@ -445,8 +445,8 @@ const AdminResidents = () => {
             const residentsInSitio = groupedBySitio[sitioName];
             const style = getSitioStyle(sitioName);
             return (
-              <Card key={sitioName} className={`border ${style.border} ${style.accentBar} shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md bg-card`}>
-                <CardHeader className={`${style.headerBg} border-b border-border/40 py-3.5 px-4 flex flex-row items-center justify-between`}>
+              <Card key={sitioName} className="border border-border/60 shadow-xs overflow-hidden transition-all duration-200 hover:shadow-md bg-card">
+                <CardHeader className="bg-card border-b border-border/40 py-3.5 px-4 flex flex-row items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className={`h-8 w-8 rounded-lg ${style.iconBg} ${style.iconColor} flex items-center justify-center shrink-0 shadow-xs`}>
                       <MapPin className="h-4 w-4" />
@@ -482,7 +482,7 @@ const AdminResidents = () => {
                             <td className="p-3 font-medium text-foreground">
                               <button 
                                 onClick={() => handleOpenResidentRecords(r)}
-                                className="hover:underline hover:text-primary text-left font-bold flex items-center gap-1.5 transition-colors"
+                                className="hover:underline text-left font-bold flex items-center gap-1.5 transition-colors text-foreground"
                                 title="Click to view associated health records"
                               >
                                 {r.full_name}
@@ -490,7 +490,7 @@ const AdminResidents = () => {
                             </td>
                             <td className="p-3 font-mono text-xs">
                               {r.family_number ? (
-                                <Badge variant="outline" className="font-mono text-[11px] bg-primary/5 text-primary border-primary/20 font-semibold">
+                                <Badge variant="outline" className="font-mono text-[11px] bg-muted/60 text-muted-foreground border-border/60 font-semibold">
                                   {r.family_number}
                                 </Badge>
                               ) : "—"}
@@ -502,10 +502,10 @@ const AdminResidents = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-8 text-xs gap-1.5 border-primary/20 hover:bg-primary/10 hover:text-primary text-foreground/80 font-medium"
+                                className="h-8 text-xs gap-1.5 border-border/60 hover:bg-muted text-foreground font-medium"
                                 onClick={() => handleOpenResidentRecords(r)}
                               >
-                                <Eye className="h-3.5 w-3.5 text-primary" />
+                                <Eye className="h-3.5 w-3.5 text-muted-foreground" />
                                 View Records
                               </Button>
                             </td>
