@@ -282,19 +282,94 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
 }
 
 export async function getFamilyOnlyResidents(): Promise<any[]> {
-  await syncFamilyDataToResidents();
-  const { data } = await supabase.from("residents").select("*").order("full_name");
-  
-  // Deduplicate residents by lowercase trimmed name
-  const seen = new Set<string>();
-  const uniqueResidents: any[] = [];
-  for (const r of data || []) {
-    if (!r.full_name || !r.full_name.trim()) continue;
-    const key = r.full_name.trim().toLowerCase();
-    if (!seen.has(key)) {
-      seen.add(key);
-      uniqueResidents.push(r);
+  try {
+    const [famRes, resRes] = await Promise.all([
+      supabase.from("family_data").select("*"),
+      supabase.from("residents").select("*").order("full_name"),
+    ]);
+
+    const resData = resRes.data || [];
+    const famData = famRes.data || [];
+
+    const seen = new Set<string>();
+    const uniqueResidents: any[] = [];
+
+    // First add all residents from residents table
+    for (const r of resData) {
+      if (!r.full_name || !r.full_name.trim()) continue;
+      const key = r.full_name.trim().toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueResidents.push(r);
+      }
     }
+
+    // Also include any family members from family_data not yet in residents table
+    for (const fam of famData) {
+      let members: any[] = [];
+      if (Array.isArray(fam.members_detail)) members = fam.members_detail;
+      else if (typeof fam.members_detail === "string") {
+        try { members = JSON.parse(fam.members_detail); } catch (e) {}
+      }
+
+      if (fam.father_name && fam.father_name.trim()) {
+        const k = fam.father_name.trim().toLowerCase();
+        if (!seen.has(k)) {
+          seen.add(k);
+          uniqueResidents.push({
+            id: `f-${fam.id}`,
+            full_name: fam.father_name.trim(),
+            gender: "Male",
+            age: 0,
+            status: "Married",
+            sitio: fam.sitio || "Centro",
+            family_number: fam.family_number || null,
+          });
+        }
+      }
+
+      if (fam.mother_name && fam.mother_name.trim()) {
+        const k = fam.mother_name.trim().toLowerCase();
+        if (!seen.has(k)) {
+          seen.add(k);
+          uniqueResidents.push({
+            id: `m-${fam.id}`,
+            full_name: fam.mother_name.trim(),
+            gender: "Female",
+            age: 0,
+            status: "Married",
+            sitio: fam.sitio || "Centro",
+            family_number: fam.family_number || null,
+          });
+        }
+      }
+
+      for (const mem of members) {
+        if (!mem.full_name || !mem.full_name.trim()) continue;
+        const k = mem.full_name.trim().toLowerCase();
+        if (!seen.has(k)) {
+          seen.add(k);
+          uniqueResidents.push({
+            id: `mem-${fam.id}-${k}`,
+            full_name: mem.full_name.trim(),
+            gender: mem.gender || "Male",
+            age: Number(mem.age) || (mem.birthday ? calculateAge(mem.birthday) : 0),
+            status: mem.civil_status || "Single",
+            sitio: fam.sitio || "Centro",
+            birthday: mem.birthday || null,
+            family_number: fam.family_number || null,
+          });
+        }
+      }
+    }
+
+    // Run background sync safely without blocking return
+    syncFamilyDataToResidents().catch(e => console.warn("Background resident sync:", e));
+
+    return uniqueResidents.sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
+  } catch (err) {
+    console.error("Error in getFamilyOnlyResidents:", err);
+    const { data } = await supabase.from("residents").select("*").order("full_name");
+    return data || [];
   }
-  return uniqueResidents;
 }
