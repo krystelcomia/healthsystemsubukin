@@ -238,14 +238,14 @@ const EmailJsSettingsCard = () => {
     <Card className="border-border/50 shadow-sm">
       <CardHeader>
         <CardTitle className="text-lg font-heading flex items-center gap-2">
-          <span>{language === "tl" ? "EmailJS Configuration (Gmail Verification Codes)" : "EmailJS Configuration (Gmail Verification Codes)"}</span>
+          <span>{language === "tl" ? "Reset Password" : "Reset Password"}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-xs text-muted-foreground leading-relaxed">
           {language === "tl"
-            ? "I-konekta ang iyong EmailJS account upang ang 6-digit verification code para sa forgot password ay direktang maipadala sa Gmail inbox ng user o administrator."
-            : "Connect your EmailJS account so that 6-digit password reset verification codes are dispatched directly to the user's or administrator's Gmail inbox."}
+            ? "I-konekta ang iyong email service credentials upang ang 6-digit verification code para sa reset password ay direktang maipadala sa nakarehistrong email inbox ng anumang account."
+            : "Connect your email service credentials so that 6-digit password reset verification codes are dispatched directly to the registered email inbox of any account used."}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

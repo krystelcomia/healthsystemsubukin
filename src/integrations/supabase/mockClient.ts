@@ -558,26 +558,77 @@ class MockAuth {
     };
   }
 
-  async resetPasswordForEmail(email: string, options?: any) {
+  async resetPasswordForEmail(input: string | { fullName?: string; username?: string; email?: string }, options?: any) {
     seedMockDatabase();
     const dbStr = localStorage.getItem('supabase_mock_db');
     const db = dbStr ? JSON.parse(dbStr) : {};
     const users = db['auth_users'] || [];
     const workers = db['bhw_workers'] || [];
-    const cleanInput = (email || "").trim().toLowerCase();
+    const profiles = db['profiles'] || [];
 
-    // Look for user by email or by worker gmail/name match
-    const userMatch = users.find((u: any) => (u.email || "").trim().toLowerCase() === cleanInput);
-    const workerMatch = workers.find((w: any) => (w.gmail || "").trim().toLowerCase() === cleanInput);
+    let cleanInput = '';
+    let targetFullName = '';
+    let targetUsername = '';
 
-    if (!userMatch && !workerMatch && !KNOWN_DEFAULT_CREDENTIALS[cleanInput]) {
+    if (typeof input === 'string') {
+      cleanInput = input.trim().toLowerCase();
+    } else if (input && typeof input === 'object') {
+      targetFullName = (input.fullName || '').trim().toLowerCase();
+      targetUsername = (input.username || '').trim().toLowerCase();
+      cleanInput = (input.email || '').trim().toLowerCase();
+    }
+
+    // Look for user by full name & username, or by email / worker match
+    let workerMatch = null;
+    let userMatch = null;
+    let profileMatch = null;
+
+    if (targetFullName || targetUsername) {
+      if (targetFullName && targetUsername) {
+        profileMatch = profiles.find((p: any) => 
+          (p.full_name || '').trim().toLowerCase() === targetFullName &&
+          (p.username || '').trim().toLowerCase() === targetUsername
+        );
+        workerMatch = workers.find((w: any) => 
+          (w.name || '').trim().toLowerCase() === targetFullName ||
+          (w.gmail || '').trim().toLowerCase().includes(targetUsername)
+        );
+      }
+      if (!workerMatch && !profileMatch) {
+        if (targetFullName) {
+          workerMatch = workers.find((w: any) => (w.name || '').trim().toLowerCase() === targetFullName);
+          profileMatch = profiles.find((p: any) => (p.full_name || '').trim().toLowerCase() === targetFullName);
+        }
+        if (!workerMatch && targetUsername) {
+          profileMatch = profiles.find((p: any) => (p.username || '').trim().toLowerCase() === targetUsername);
+          workerMatch = workers.find((w: any) => (w.gmail || '').trim().toLowerCase().includes(targetUsername));
+        }
+      }
+      if (profileMatch && profileMatch.user_id) {
+        userMatch = users.find((u: any) => u.id === profileMatch.user_id);
+      }
+    }
+
+    if (!workerMatch && !userMatch && cleanInput) {
+      userMatch = users.find((u: any) => (u.email || '').trim().toLowerCase() === cleanInput);
+      workerMatch = workers.find((w: any) => (w.gmail || '').trim().toLowerCase() === cleanInput || (w.name || '').trim().toLowerCase() === cleanInput);
+    }
+
+    if (!userMatch && !workerMatch && !profileMatch && (!cleanInput || !KNOWN_DEFAULT_CREDENTIALS[cleanInput])) {
       return {
         data: null,
-        error: { message: "No registered account found for this email. Please verify your email address." }
+        error: { message: "No registered worker account found matching the provided Full Name and Username." }
       };
     }
 
-    const resolvedEmail = (workerMatch?.gmail || userMatch?.email || cleanInput).toLowerCase().trim();
+    const resolvedEmail = (
+      workerMatch?.gmail ||
+      userMatch?.email ||
+      cleanInput ||
+      (profileMatch?.username ? `${profileMatch.username}@gmail.com` : 'amelitasayatbhw@gmail.com')
+    ).toLowerCase().trim();
+
+    const workerName = workerMatch?.name || profileMatch?.full_name || userMatch?.user_metadata?.full_name || 'BHW Health Worker';
     
     // Generate a secure 6-digit verification code
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -599,7 +650,7 @@ class MockAuth {
       await sendVerificationCodeEmail(
         resolvedEmail,
         resetCode,
-        workerMatch?.name || userMatch?.user_metadata?.full_name || 'BHW Health Worker'
+        workerName
       );
     } catch (e) {
       console.warn('[EmailJS] Dispatch call note:', e);
@@ -608,6 +659,7 @@ class MockAuth {
     return {
       data: {
         email: resolvedEmail,
+        workerName,
         message: "Verification code sent to your registered Gmail address.",
         redirectTo: options?.redirectTo || `/reset-password?email=${encodeURIComponent(resolvedEmail)}`
       },

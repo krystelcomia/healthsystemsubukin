@@ -15,6 +15,8 @@ const ResetPassword = () => {
   const { t, language } = useSettings();
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [verifiedCode, setVerifiedCode] = useState("");
@@ -34,20 +36,30 @@ const ResetPassword = () => {
       const lastEmail = localStorage.getItem("bhw_last_reset_email");
       if (lastEmail) {
         setEmail(lastEmail);
-        setStep(2);
       }
     }
   }, [searchParams]);
 
-  // Step 1: Send verification code to user's Gmail via EmailJS
+  // Step 1: Send verification code to user's Gmail via EmailJS by looking up Full Name & Username
   const handleSendResetCode = async () => {
-    const cleanEmail = email.trim();
-    if (!cleanEmail) {
-      toast.error(language === "tl" ? "Mangyaring ilagay ang iyong email address" : "Please enter your email address");
+    const cleanFullName = fullName.trim();
+    const cleanUsername = username.trim();
+
+    if (!cleanFullName) {
+      toast.error(language === "tl" ? "Mangyaring ilagay ang iyong Buong Pangalan" : "Please enter the worker's Full Name");
       return;
     }
+    if (!cleanUsername) {
+      toast.error(language === "tl" ? "Mangyaring ilagay ang iyong Username" : "Please enter the worker's Username");
+      return;
+    }
+
     setLoading(true);
-    const { error } = await (supabase.auth as any).resetPasswordForEmail(cleanEmail, {
+    const { data, error } = await (supabase.auth as any).resetPasswordForEmail({
+      fullName: cleanFullName,
+      username: cleanUsername,
+      email: email.trim(),
+    }, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
 
@@ -57,13 +69,15 @@ const ResetPassword = () => {
       return;
     }
 
+    const resolvedEmail = data?.email || email.trim();
+    setEmail(resolvedEmail);
     setVerificationCode("");
     setVerifiedCode("");
     setStep(2);
     toast.success(
       language === "tl"
-        ? `Ang 6-digit verification code ay ipinadala sa iyong Gmail (${cleanEmail}). Mangyaring tingnan ang iyong inbox.`
-        : `A 6-digit verification code has been sent to your Gmail (${cleanEmail}). Please check your inbox.`,
+        ? `Ang 6-digit verification code ay ipinadala sa iyong nakarehistrong Gmail inbox (${resolvedEmail}). Mangyaring tingnan ang iyong inbox.`
+        : `A 6-digit verification code has been sent to your registered Gmail inbox (${resolvedEmail}). Please check your inbox.`,
       { duration: 8000 }
     );
     setLoading(false);
@@ -171,27 +185,42 @@ const ResetPassword = () => {
         <CardContent>
           {step === 1 && (
             <form onSubmit={(e) => { e.preventDefault(); handleSendResetCode(); }} className="space-y-4" autoComplete="off">
-              <div className="space-y-2">
-                <Label className="text-white">{t("auth.email")}</Label>
-                <Input
-                  className="bg-background/70 border-border/60 text-slate-900"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  autoComplete="off"
-                  autoFocus
-                />
-                <p className="text-[11px] text-white/70 leading-relaxed">
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-white text-xs font-semibold">{language === "tl" ? "Buong Pangalan ng Manggagawa" : "Worker's Full Name"}</Label>
+                  <Input
+                    className="bg-background/90 border-border/60 text-foreground h-10 text-xs font-medium"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. Cristeta R. Lanuza"
+                    autoComplete="off"
+                    autoFocus
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-white text-xs font-semibold">{language === "tl" ? "Username ng Manggagawa" : "Worker's Username"}</Label>
+                  <Input
+                    className="bg-background/90 border-border/60 text-foreground h-10 text-xs font-medium"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="e.g. cristeta"
+                    autoComplete="off"
+                  />
+                </div>
+
+                <p className="text-[11px] text-white/80 leading-relaxed pt-1">
                   {language === "tl"
-                    ? "Ipasok ang iyong nakatalagang Gmail address. Ang 6-digit verification code ay direktang ipapadala sa iyong inbox gamit ang EmailJS."
-                    : "Enter your registered Gmail address. A 6-digit verification code will be sent directly to your inbox via EmailJS."}
+                    ? "Ilagay lamang ang iyong buong pangalan at username. Ang 6-digit reset code ay direktang ipapadala sa iyong nakarehistrong email address."
+                    : "Enter your registered worker full name and username. The 6-digit reset verification code will be dispatched directly to your email inbox."}
                 </p>
               </div>
 
-              <Button type="submit" className="w-full gap-2" disabled={loading}>
+              <Button type="submit" className="w-full gap-2 font-bold" disabled={loading}>
                 <KeyRound className="h-4 w-4" />
-                {loading ? t("auth.sending") : (language === "tl" ? "Ipadala ang Verification Code" : "Send Verification Code")}
+                {loading ? t("auth.sending") : (language === "tl" ? "Ipadala ang Reset Code sa Email" : "Send Reset Code via Email")}
               </Button>
 
               <Button
