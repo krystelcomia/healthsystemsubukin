@@ -731,7 +731,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 border-bottom: 3.5px double #000000 !important;
               }
               body.printing-attendance #attendance-print-area .header-seal img {
-                height: 105px !important;
+                height: 120px !important;
                 width: auto !important;
                 object-fit: contain !important;
                 mix-blend-mode: multiply !important;
@@ -751,7 +751,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               }
               @page {
                 size: A4 portrait;
-                margin: 10mm 15mm;
+                margin: 10mm 5mm;
               }
             }
           `}</style>
@@ -762,7 +762,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               title={language === "tl" ? "BARANGAY HEALTH WORKERS OPISYAL NA TALAAN NG ATTENDANCE" : "BARANGAY HEALTH WORKERS OFFICIAL ATTENDANCE RECORD"}
               subtitle={language === "tl" ? "Barangay Subukin Health Center, San Juan, Batangas • Opisyal na Talaan ng Oras ng Pagpasok at Paglabas" : "Barangay Subukin Health Center, San Juan, Batangas • Official Time In & Time Out Record"}
               showDoubleBorder={true}
-              logoHeight="105px"
+              logoHeight="120px"
             />
           </div>
 
