@@ -1542,17 +1542,17 @@ const DenguePreventionForm = () => {
 
       {/* Signature Modal */}
       <Dialog open={signatureModalOpen} onOpenChange={setSignatureModalOpen}>
-        <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200">
+        <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">
               Lagda ng Maybahay (Resident Signature)
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500">
+            <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
               Pumirma sa ibaba gamit ang iyong touchscreen, mouse, o touchpad.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="border border-slate-200 rounded-lg p-1 bg-slate-50 flex justify-center items-center">
+          <div className="border border-slate-200 dark:border-slate-800 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 flex justify-center items-center">
             <canvas
               ref={canvasRef}
               width={400}
@@ -1561,7 +1561,7 @@ const DenguePreventionForm = () => {
               onPointerMove={draw}
               onPointerUp={stopDrawing}
               onPointerLeave={stopDrawing}
-              className="border border-slate-300 rounded-md w-full bg-white touch-none cursor-crosshair"
+              className="border border-slate-300 dark:border-slate-700 rounded-md w-full bg-white dark:bg-slate-950 touch-none cursor-crosshair"
             />
           </div>
 
@@ -1581,7 +1581,7 @@ const DenguePreventionForm = () => {
 
       {/* View / Re-Print Saved Form Modal */}
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="max-w-5xl bg-white text-slate-900 border border-slate-200 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
           <DialogHeader className="no-print">
             <DialogTitle className="text-base font-bold text-foreground flex items-center justify-between">
               <span>Saved Dengue Prevention Checklist</span>

@@ -764,38 +764,39 @@ const FamilyDataForm = () => {
           border: none;
           outline: none;
           padding: 6px 8px;
-          color: #000000 !important;
+          color: inherit;
           font-family: inherit;
           font-size: inherit;
-        }
-        #family-print-area, #individual-file-print-area {
-          background-color: #ffffff !important;
-          color: #000000 !important;
-        }
-        #family-print-area table,
-        #family-print-area table th,
-        #family-print-area table td,
-        #individual-file-print-area table,
-        #individual-file-print-area table th,
-        #individual-file-print-area table td {
-          color: #000000 !important;
-          border-color: #cbd5e1 !important;
-        }
-        #family-print-area h2,
-        #family-print-area p,
-        #family-print-area span,
-        #individual-file-print-area h2,
-        #individual-file-print-area h3,
-        #individual-file-print-area p,
-        #individual-file-print-area span,
-        #individual-file-print-area strong,
-        #individual-file-print-area label {
-          color: #000000 !important;
         }
         @media print {
           @page {
             size: A4 portrait;
             margin: 8mm 6mm;
+          }
+
+          #family-print-area, #individual-file-print-area {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+          }
+          #family-print-area table,
+          #family-print-area table th,
+          #family-print-area table td,
+          #individual-file-print-area table,
+          #individual-file-print-area table th,
+          #individual-file-print-area table td {
+            color: #000000 !important;
+            border-color: #cbd5e1 !important;
+          }
+          #family-print-area h2,
+          #family-print-area p,
+          #family-print-area span,
+          #individual-file-print-area h2,
+          #individual-file-print-area h3,
+          #individual-file-print-area p,
+          #individual-file-print-area span,
+          #individual-file-print-area strong,
+          #individual-file-print-area label {
+            color: #000000 !important;
           }
 
           body * {

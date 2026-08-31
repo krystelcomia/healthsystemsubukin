@@ -352,9 +352,6 @@ const ResidentRecords = () => {
         <style>{`
           .print-only { display: none !important; }
           .print-only-table { display: none !important; }
-          #resident-print-area { background-color: #ffffff !important; color: #000000 !important; }
-          #resident-print-area table, #resident-print-area th, #resident-print-area td { color: #000000 !important; border-color: #000000 !important; }
-          #resident-print-area h2, #resident-print-area p, #resident-print-area span, #resident-print-area strong { color: #000000 !important; }
           @media print {
             body * { visibility: hidden !important; }
             #resident-print-area, #resident-print-area * { visibility: visible !important; }
@@ -363,13 +360,15 @@ const ResidentRecords = () => {
               left: 0 !important;
               top: 0 !important;
               width: 100% !important;
-              background: white !important;
+              background-color: #ffffff !important;
               padding: 20px !important;
               margin: 0 !important;
               box-shadow: none !important;
               border: none !important;
-              color: black !important;
+              color: #000000 !important;
             }
+            #resident-print-area table, #resident-print-area th, #resident-print-area td { color: #000000 !important; border-color: #000000 !important; }
+            #resident-print-area h2, #resident-print-area p, #resident-print-area span, #resident-print-area strong { color: #000000 !important; }
             .no-print { display: none !important; }
             .print-only { display: block !important; visibility: visible !important; width: 100% !important; }
             .print-footer-info { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; }
@@ -767,9 +766,6 @@ const ResidentRecords = () => {
       <style>{`
         .print-only { display: none !important; }
         .print-only-table { display: none !important; }
-        #resident-print-area { background-color: #ffffff !important; color: #000000 !important; }
-        #resident-print-area table, #resident-print-area th, #resident-print-area td { color: #000000 !important; border-color: #000000 !important; }
-        #resident-print-area h2, #resident-print-area p, #resident-print-area span, #resident-print-area strong { color: #000000 !important; }
         @media print {
           body * { visibility: hidden !important; }
           #resident-print-area, #resident-print-area * { visibility: visible !important; }
@@ -778,13 +774,15 @@ const ResidentRecords = () => {
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            background: white !important;
+            background-color: #ffffff !important;
             padding: 20px !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            color: black !important;
+            color: #000000 !important;
           }
+          #resident-print-area table, #resident-print-area th, #resident-print-area td { color: #000000 !important; border-color: #000000 !important; }
+          #resident-print-area h2, #resident-print-area p, #resident-print-area span, #resident-print-area strong { color: #000000 !important; }
           .no-print { display: none !important; }
           .print-only { display: block !important; visibility: visible !important; width: 100% !important; }
           .print-footer-info { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; }

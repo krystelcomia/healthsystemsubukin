@@ -3276,12 +3276,12 @@ const ChildHealthForm = () => {
 
       {/* DELETE CONFIRMATION DIALOG */}
       <Dialog open={!!deleteConfirmId} onOpenChange={open => !open && setDeleteConfirmId(null)}>
-        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200">
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">
               Delete Child Health Record?
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500">
+            <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
               Are you sure you want to delete this record? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
