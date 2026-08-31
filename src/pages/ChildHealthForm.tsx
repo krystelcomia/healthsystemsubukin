@@ -529,11 +529,101 @@ const ChildHealthForm = () => {
       localStorage.setItem(STORAGE_KEY_SIA_DRAFT, JSON.stringify(siaRows));
     }
   }, [siaRows]);
+  const calculateAgeMonths = (birthday?: string | null): number | null => {
+    if (!birthday) return null;
+    const birth = new Date(birthday);
+    if (isNaN(birth.getTime())) return null;
+    const now = new Date();
+    let months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+    if (now.getDate() < birth.getDate()) months--;
+    return months >= 0 ? months : 0;
+  };
+
+  const calculateAgeYears = (birthday?: string | null, ageNum?: number | string | null): number => {
+    if (birthday) {
+      const birth = new Date(birthday);
+      if (!isNaN(birth.getTime())) {
+        const now = new Date();
+        let years = now.getFullYear() - birth.getFullYear();
+        const mDiff = now.getMonth() - birth.getMonth();
+        if (mDiff < 0 || (mDiff === 0 && now.getDate() < birth.getDate())) years--;
+        return years >= 0 ? years : 0;
+      }
+    }
+    if (ageNum !== undefined && ageNum !== null && ageNum !== "") {
+      const num = Number(ageNum);
+      return !isNaN(num) ? num : 0;
+    }
+    return 0;
+  };
 
   const fetchResidents = async () => {
-    const data = await getFamilyOnlyResidents();
-    setResidents(data || []);
+    try {
+      const [familyResData, rawResidents] = await Promise.all([
+        supabase.from("family_data").select("*"),
+        getFamilyOnlyResidents(),
+      ]);
+
+      const familyDataList = familyResData.data || [];
+      
+      const enrichedResidents = (rawResidents || []).map((r: any) => {
+        const cleanName = (r.full_name || "").trim().toLowerCase();
+        const matchingFam = familyDataList.find((f: any) => {
+          if (r.family_number && f.family_number === r.family_number) return true;
+          let members: any[] = [];
+          if (Array.isArray(f.members_detail)) members = f.members_detail;
+          else if (typeof f.members_detail === "string") {
+            try { members = JSON.parse(f.members_detail); } catch {}
+          }
+          return members.some((m: any) => m.full_name && m.full_name.trim().toLowerCase() === cleanName);
+        });
+
+        let memBirthday = r.birthday;
+        let memAge = r.age;
+        let memGender = r.gender;
+        if (matchingFam) {
+          let members: any[] = [];
+          if (Array.isArray(matchingFam.members_detail)) members = matchingFam.members_detail;
+          else if (typeof matchingFam.members_detail === "string") {
+            try { members = JSON.parse(matchingFam.members_detail); } catch {}
+          }
+          const matchedMember = members.find((m: any) => m.full_name && m.full_name.trim().toLowerCase() === cleanName);
+          if (matchedMember) {
+            if (!memBirthday && matchedMember.birthday) memBirthday = matchedMember.birthday;
+            if ((memAge === undefined || memAge === null || memAge === "" || memAge === 0) && matchedMember.age) memAge = matchedMember.age;
+            if (!memGender && matchedMember.gender) memGender = matchedMember.gender;
+          }
+        }
+
+        return {
+          ...r,
+          birthday: memBirthday || r.birthday,
+          age: memAge !== undefined && memAge !== null ? memAge : r.age,
+          gender: memGender || r.gender,
+          father_name: r.father_name || matchingFam?.father_name || "",
+          mother_name: r.mother_name || matchingFam?.mother_name || "",
+          family_number: r.family_number || matchingFam?.family_number || "",
+          sitio: r.sitio || matchingFam?.sitio || "",
+        };
+      });
+
+      setResidents(enrichedResidents);
+    } catch (e) {
+      console.error("Error fetching child health residents:", e);
+    }
   };
+
+  // Only residents aged 1–5 years (or 0–60 months) should appear as options
+  const childResidents = useMemo(() => {
+    return residents.filter((r) => {
+      const months = calculateAgeMonths(r.birthday);
+      if (months !== null) {
+        return months >= 0 && months <= 60;
+      }
+      const years = calculateAgeYears(r.birthday, r.age);
+      return years >= 0 && years <= 5;
+    });
+  }, [residents]);
 
   const fetchSavedRecords = async () => {
     setLoading(true);
@@ -883,6 +973,118 @@ const ChildHealthForm = () => {
       mother_name: res.mother_name || prev.mother_name,
       father_name: res.father_name || prev.father_name,
     }));
+  };
+
+  const handleSelectResidentForVitA = (resId: string) => {
+    if (!resId) return;
+    const res = residents.find(r => r.id === resId);
+    if (!res) return;
+
+    setVitARows(prev => {
+      let targetIdx = prev.findIndex(r => !r.child_name || !r.child_name.trim());
+      if (targetIdx === -1) {
+        targetIdx = prev.length;
+      }
+
+      const updated = [...prev];
+      if (targetIdx >= updated.length) {
+        updated.push({
+          id: `vrow-${updated.length + 1}`,
+          child_name: "",
+          dob: "",
+          v6m_1st: "",
+          v12_23_v1: "", v12_23_v2: "", v12_23_d1: "", v12_23_d2: "",
+          v24_35_v1: "", v24_35_v2: "", v24_35_d1: "", v24_35_d2: "",
+          v36_47_v1: "", v36_47_v2: "", v36_47_d1: "", v36_47_d2: "",
+          v48_59_v1: "", v48_59_v2: "", v48_59_d1: "", v48_59_d2: "",
+        });
+      }
+
+      updated[targetIdx] = {
+        ...updated[targetIdx],
+        child_name: res.full_name || "",
+        dob: res.birthday || (res.age ? `Age: ${res.age}y` : ""),
+      };
+
+      localStorage.setItem(STORAGE_KEY_VITA_DRAFT, JSON.stringify(updated));
+      return updated;
+    });
+
+    toast.success(`Selected child "${res.full_name}" for Vitamin A masterlist.`);
+  };
+
+  const handleSelectResidentForSIA = (resId: string) => {
+    if (!resId) return;
+    const res = residents.find(r => r.id === resId);
+    if (!res) return;
+
+    const parts = (res.full_name || "").trim().split(" ");
+    let fName = parts[0] || "";
+    let lName = parts.length > 1 ? parts[parts.length - 1] : "";
+    let mName = parts.length > 2 ? parts.slice(1, -1).join(" ") : "";
+
+    let computedMonths = "";
+    const m = calculateAgeMonths(res.birthday);
+    if (m !== null) {
+      computedMonths = String(m);
+    } else if (res.age) {
+      computedMonths = String(Number(res.age) * 12);
+    }
+
+    const motherParts = (res.mother_name || "").trim().split(" ");
+    let momFirst = motherParts[0] || "";
+    let momLast = motherParts.length > 1 ? motherParts[motherParts.length - 1] : "";
+    let momMid = motherParts.length > 2 ? motherParts.slice(1, -1).join(" ") : "";
+
+    setSiaRows(prev => {
+      let targetIdx = prev.findIndex(r => !r.child_given_name && !r.child_family_name);
+      if (targetIdx === -1) {
+        targetIdx = prev.length;
+      }
+
+      const updated = [...prev];
+      if (targetIdx >= updated.length) {
+        updated.push({
+          id: `srow-${updated.length + 1}`,
+          child_family_name: "",
+          child_given_name: "",
+          child_middle_name: "",
+          dob: "",
+          age_months: "",
+          gender: "",
+          barangay: "Subukin",
+          purok_sitio_street: "",
+          mother_family_name: "",
+          mother_given_name: "",
+          mother_middle_name: "",
+          vaccine_given: "",
+          vaccination_date: "",
+          vaccinator_family_name: "",
+          vaccinator_given_name: "",
+          vaccinator_middle_name: "",
+        });
+      }
+
+      updated[targetIdx] = {
+        ...updated[targetIdx],
+        child_family_name: lName,
+        child_given_name: fName,
+        child_middle_name: mName,
+        dob: res.birthday || "",
+        age_months: computedMonths,
+        gender: res.gender === "Female" ? "F" : "M",
+        purok_sitio_street: res.sitio || "Subukin",
+        barangay: "Subukin",
+        mother_family_name: momLast,
+        mother_given_name: momFirst,
+        mother_middle_name: momMid,
+      };
+
+      localStorage.setItem(STORAGE_KEY_SIA_DRAFT, JSON.stringify(updated));
+      return updated;
+    });
+
+    toast.success(`Selected child "${res.full_name}" for SIA masterlist.`);
   };
 
   const toggleVaccine = (vaccine: string) => {
@@ -1544,16 +1746,16 @@ const ChildHealthForm = () => {
 
                   <div className="flex items-center justify-between bg-muted/40 p-2.5 rounded-md border w-full">
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5">
-                      <UserCheck className="h-4 w-4" /> Select Registered Resident Child:
+                      <UserCheck className="h-4 w-4" /> Select Registered Resident Child (0–5y / 0–60m):
                     </span>
                     <Select value={selectedResidentId} onValueChange={handleSelectResidentForSick}>
-                      <SelectTrigger className="h-8 text-xs bg-background w-72">
-                        <SelectValue placeholder="Pumili ng residente..." />
+                      <SelectTrigger className="h-8 text-xs bg-background w-72 md:w-80">
+                        <SelectValue placeholder="Pumili ng batang residente..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {residents.map(r => (
+                        {childResidents.map(r => (
                           <SelectItem key={r.id} value={r.id} className="text-xs">
-                            {r.full_name} {r.sitio ? `(${r.sitio})` : ""}
+                            {r.full_name} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos / ${calculateAgeYears(r.birthday, r.age)}y)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -2597,7 +2799,7 @@ const ChildHealthForm = () => {
                 </div>
 
                 {/* Toolbar Controls */}
-                <div className="flex items-center justify-between no-print bg-muted/40 p-2.5 rounded-md border w-full">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 no-print bg-muted/40 p-2.5 rounded-md border w-full">
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-semibold text-primary">Sitio:</span>
                     <Select value={vitAInfo.sitio} onValueChange={v => setVitAInfo(p => ({ ...p, sitio: v }))}>
@@ -2607,6 +2809,24 @@ const ChildHealthForm = () => {
                       <SelectContent>
                         {sitioOptions.map(s => (
                           <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                      <UserCheck className="h-4 w-4" /> Select Registered Child (0–5y):
+                    </span>
+                    <Select value="" onValueChange={handleSelectResidentForVitA}>
+                      <SelectTrigger className="h-8 text-xs bg-background w-64 md:w-80">
+                        <SelectValue placeholder="Pumili ng batang residente..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {childResidents.map(r => (
+                          <SelectItem key={r.id} value={r.id} className="text-xs">
+                            {r.full_name} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -2770,23 +2990,43 @@ const ChildHealthForm = () => {
                   </div>
                 </div>
 
-                {/* Meta Location Fields Bar */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-muted/40 p-2.5 rounded-md border text-xs w-full">
-                  <div>
-                    <Label className="text-[10px] text-slate-500 font-medium">Region:</Label>
-                    <Input type="text" value={siaInfo.region} onChange={e => setSiaInfo(p => ({ ...p, region: e.target.value }))} className={lineInputClass} />
+                {/* Meta Location Fields Bar & Child Resident Selector */}
+                <div className="flex flex-col gap-3 bg-muted/40 p-2.5 rounded-md border text-xs w-full">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-border/30">
+                    <span className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                      <UserCheck className="h-4 w-4" /> Select Registered Child (0–5y / 0–60m):
+                    </span>
+                    <Select value="" onValueChange={handleSelectResidentForSIA}>
+                      <SelectTrigger className="h-8 text-xs bg-background w-72 md:w-80">
+                        <SelectValue placeholder="Pumili ng batang residente..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {childResidents.map(r => (
+                          <SelectItem key={r.id} value={r.id} className="text-xs">
+                            {r.full_name} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div>
-                    <Label className="text-[10px] text-slate-500 font-medium">Province/City:</Label>
-                    <Input type="text" value={siaInfo.province} onChange={e => setSiaInfo(p => ({ ...p, province: e.target.value }))} className={lineInputClass} />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] text-slate-500 font-medium">Municipality:</Label>
-                    <Input type="text" value={siaInfo.municipality} onChange={e => setSiaInfo(p => ({ ...p, municipality: e.target.value }))} className={lineInputClass} />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] text-slate-500 font-medium">Barangay:</Label>
-                    <Input type="text" value={siaInfo.barangay} onChange={e => setSiaInfo(p => ({ ...p, barangay: e.target.value }))} className={lineInputClass} />
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <Label className="text-[10px] text-slate-500 font-medium">Region:</Label>
+                      <Input type="text" value={siaInfo.region} onChange={e => setSiaInfo(p => ({ ...p, region: e.target.value }))} className={lineInputClass} />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] text-slate-500 font-medium">Province/City:</Label>
+                      <Input type="text" value={siaInfo.province} onChange={e => setSiaInfo(p => ({ ...p, province: e.target.value }))} className={lineInputClass} />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] text-slate-500 font-medium">Municipality:</Label>
+                      <Input type="text" value={siaInfo.municipality} onChange={e => setSiaInfo(p => ({ ...p, municipality: e.target.value }))} className={lineInputClass} />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] text-slate-500 font-medium">Barangay:</Label>
+                      <Input type="text" value={siaInfo.barangay} onChange={e => setSiaInfo(p => ({ ...p, barangay: e.target.value }))} className={lineInputClass} />
+                    </div>
                   </div>
                 </div>
               </div>
