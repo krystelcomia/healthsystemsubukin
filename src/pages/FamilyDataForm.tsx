@@ -1077,26 +1077,26 @@ const FamilyDataForm = () => {
       {isMidwife && <ReadOnlyBanner />}
 
       {/* Control Toolbar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-card border border-border/60 p-4 rounded-xl shadow-xs">
-        <div className="flex items-center gap-2 no-print">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-border/60 p-3 sm:p-4 rounded-xl shadow-xs">
+        <div className="flex items-center justify-between w-full sm:w-auto gap-2 no-print">
           <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
             BRGY: <strong className="text-foreground">SUBUKIN</strong>
           </span>
         </div>
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto justify-start sm:justify-end">
           {!isAdmin && !isMidwife && (
             <Button
               onClick={handleOpenCreateModal}
               size="sm"
-              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-medium shadow-sm"
+              className="h-9 px-3 text-xs sm:text-sm gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-medium shadow-sm flex-1 sm:flex-none whitespace-normal text-center leading-tight"
             >
-              <Plus className="h-4 w-4" />
-              {t("familyData.createNewFile")}
+              <Plus className="h-4 w-4 shrink-0" />
+              <span>{t("familyData.createNewFile")}</span>
             </Button>
           )}
 
-          <div className="flex items-center border border-border rounded-lg p-0.5 bg-muted/40">
+          <div className="flex items-center border border-border rounded-lg p-0.5 bg-muted/40 shrink-0">
             <Button
               variant={viewMode === "grid" ? "secondary" : "ghost"}
               size="sm"
@@ -1104,7 +1104,7 @@ const FamilyDataForm = () => {
               onClick={() => setViewMode("grid")}
             >
               <Grid className="h-3.5 w-3.5" />
-              {t("familyData.folderView")}
+              <span>{t("familyData.folderView")}</span>
             </Button>
             <Button
               variant={viewMode === "ledger" ? "secondary" : "ghost"}
@@ -1113,7 +1113,7 @@ const FamilyDataForm = () => {
               onClick={() => setViewMode("ledger")}
             >
               <TableIcon className="h-3.5 w-3.5" />
-              {t("familyData.ledgerView")}
+              <span>{t("familyData.ledgerView")}</span>
             </Button>
           </div>
         </div>

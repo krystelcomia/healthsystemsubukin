@@ -1833,22 +1833,23 @@ const ChildHealthForm = () => {
               {/* Form Title Banner & Resident Selector for Care for Sick Children */}
               {activeTab === "sick-children" && (
                 <div className="space-y-3">
-                  <div className="text-center py-2 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-300 dark:border-slate-700 relative w-full">
-                    <h1 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 font-heading">
-                      PANGANGALAGA SA BATANG MAY SAKIT EDAD 2 BUWAN HANGGANG 5 TAON
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-300 dark:border-slate-700 w-full text-center sm:text-left">
+                    <h1 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 font-heading flex-1">
+                      {language === "tl" ? "PANGANGALAGA SA BATANG MAY SAKIT EDAD 2 BUWAN HANGGANG 5 TAON" : "CARE FOR SICK CHILDREN (AGED 2 MONTHS TO 5 YEARS)"}
                     </h1>
-                    <div className="absolute right-3 top-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                      FN: <Input type="text" value={sickForm.fn_number} onChange={e => setSickForm(p => ({ ...p, fn_number: e.target.value }))} placeholder="FN 242" className="inline-block w-20 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center" />
+                    <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 shrink-0 flex items-center gap-1.5 self-center sm:self-auto">
+                      <span>FN:</span>
+                      <Input type="text" value={sickForm.fn_number} onChange={e => setSickForm(p => ({ ...p, fn_number: e.target.value }))} placeholder="FN 242" className="inline-block w-20 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center bg-transparent" />
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between bg-muted/40 p-2.5 rounded-md border w-full">
-                    <span className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-muted/40 p-2.5 rounded-md border w-full">
+                    <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
                       <UserCheck className="h-4 w-4" /> Select Registered Resident Child (0–5y / 0–60m):
                     </span>
                     <Select value={selectedResidentId} onValueChange={handleSelectResidentForSick}>
-                      <SelectTrigger className="h-8 text-xs bg-background w-72 md:w-80">
-                        <SelectValue placeholder="Pumili ng batang residente..." />
+                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-72">
+                        <SelectValue placeholder={language === "tl" ? "Pumili..." : "Select..."} />
                       </SelectTrigger>
                       <SelectContent>
                         {childResidents.map(r => (
@@ -2912,13 +2913,13 @@ const ChildHealthForm = () => {
                     </Select>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
+                    <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
                       <UserCheck className="h-4 w-4" /> Select Registered Child (0–5y):
                     </span>
                     <Select value="" onValueChange={handleSelectResidentForVitA}>
-                      <SelectTrigger className="h-8 text-xs bg-background w-64 md:w-80">
-                        <SelectValue placeholder="Pumili ng batang residente..." />
+                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-72">
+                        <SelectValue placeholder={language === "tl" ? "Pumili..." : "Select..."} />
                       </SelectTrigger>
                       <SelectContent>
                         {childResidents.map(r => (
@@ -3091,12 +3092,12 @@ const ChildHealthForm = () => {
                 {/* Meta Location Fields Bar & Child Resident Selector */}
                 <div className="flex flex-col gap-3 bg-muted/40 p-2.5 rounded-md border text-xs w-full">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-border/30">
-                    <span className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                    <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
                       <UserCheck className="h-4 w-4" /> Select Registered Child (0–5y / 0–60m):
                     </span>
                     <Select value="" onValueChange={handleSelectResidentForSIA}>
-                      <SelectTrigger className="h-8 text-xs bg-background w-72 md:w-80">
-                        <SelectValue placeholder="Pumili ng batang residente..." />
+                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-72">
+                        <SelectValue placeholder={language === "tl" ? "Pumili..." : "Select..."} />
                       </SelectTrigger>
                       <SelectContent>
                         {childResidents.map(r => (

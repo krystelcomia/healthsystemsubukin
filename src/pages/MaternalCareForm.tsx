@@ -891,15 +891,15 @@ const MaternalCareForm = () => {
             
             {/* Patient General Details Grid */}
             <div className="space-y-4 bg-muted/20 p-4 md:p-5 rounded-lg border border-border/60">
-              <div className="flex items-center justify-between border-b border-border/60 pb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-border/60 pb-2.5">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                  <UserCheck className="h-4 w-4" /> Patient General Information
+                  <UserCheck className="h-4 w-4 shrink-0" /> Patient General Information
                 </h3>
-                <div className="flex items-center gap-2 no-print w-full md:w-72">
-                  <Label className="text-xs shrink-0 font-medium text-foreground">Select Resident:</Label>
+                <div className="flex items-center gap-2 no-print w-full sm:w-auto">
+                  <Label className="text-xs shrink-0 font-medium text-foreground whitespace-nowrap">Select Resident:</Label>
                   <Select value={form.resident_id} onValueChange={handleSelectResident}>
-                    <SelectTrigger className="h-8 text-xs bg-background text-foreground">
-                      <SelectValue placeholder="Pumili ng residente..." />
+                    <SelectTrigger className="h-8 text-xs bg-background text-foreground w-full sm:w-56 min-w-[140px]">
+                      <SelectValue placeholder={language === "tl" ? "Pumili..." : "Select..."} />
                     </SelectTrigger>
                     <SelectContent>
                       {residents.map(r => (
@@ -933,7 +933,7 @@ const MaternalCareForm = () => {
                     value={form.patient_last_name} 
                     onKeyDown={allowOnlyLetters}
                     onChange={e => handleFormChange("patient_last_name", sanitizeLetters(e.target.value))} 
-                    placeholder="Apelyido" 
+                    placeholder={language === "tl" ? "Apelyido" : "Last Name"} 
                     className={lineInputClass}
                     required
                   />
@@ -946,7 +946,7 @@ const MaternalCareForm = () => {
                     value={form.patient_first_name} 
                     onKeyDown={allowOnlyLetters}
                     onChange={e => handleFormChange("patient_first_name", sanitizeLetters(e.target.value))} 
-                    placeholder="Pangalan" 
+                    placeholder={language === "tl" ? "Pangalan" : "First Name"} 
                     className={lineInputClass}
                     required
                   />
@@ -959,7 +959,7 @@ const MaternalCareForm = () => {
                     value={form.patient_middle_name} 
                     onKeyDown={allowOnlyLetters}
                     onChange={e => handleFormChange("patient_middle_name", sanitizeLetters(e.target.value))} 
-                    placeholder="Gitnang Apelyido" 
+                    placeholder={language === "tl" ? "Gitnang Apelyido" : "Middle Name"} 
                     className={lineInputClass}
                   />
                 </div>
@@ -971,7 +971,7 @@ const MaternalCareForm = () => {
                     value={form.age} 
                     onKeyDown={allowOnlyNumbers}
                     onChange={e => handleFormChange("age", sanitizeNumbers(e.target.value))} 
-                    placeholder="Edad" 
+                    placeholder={language === "tl" ? "Edad" : "Age"} 
                     className={lineInputClass}
                   />
                 </div>

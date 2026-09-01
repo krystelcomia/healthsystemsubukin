@@ -827,10 +827,10 @@ const FamilyPlanningForm = () => {
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap shrink-0">
-            <div className="w-56 shrink-0">
+            <div className="w-full sm:w-56 shrink-0">
               <Select value={selectedResidentId} onValueChange={handleSelectResident} disabled={isMidwife}>
-                <SelectTrigger className="h-9 text-xs bg-background">
-                  <SelectValue placeholder="Pumili ng Residente..." />
+                <SelectTrigger className="h-9 text-xs bg-background w-full">
+                  <SelectValue placeholder={language === "tl" ? "Pumili..." : "Select..."} />
                 </SelectTrigger>
                 <SelectContent>
                   {residents.map((r) => (

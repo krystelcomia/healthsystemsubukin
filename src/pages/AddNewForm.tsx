@@ -1291,7 +1291,7 @@ const AddNewForm = () => {
                   </Label>
                   <Select value={selectedResidentId} onValueChange={handleSelectResident}>
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder={language === "tl" ? "Pumili ng Residente para sa Auto-fill" : "Select Resident to Auto-fill"} />
+                      <SelectValue placeholder={language === "tl" ? "Pumili ng residente..." : "Select resident..."} />
                     </SelectTrigger>
                     <SelectContent>
                       {residents.map((r) => (
