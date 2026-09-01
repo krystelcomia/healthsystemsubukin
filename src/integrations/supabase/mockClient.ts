@@ -2,27 +2,57 @@ import { Database } from './types';
 import { CANONICAL_INITIAL_DATABASE } from '@/lib/canonicalDataset';
 
 let isCrossBrowserSyncStarted = false;
+let syncBroadcastChannel: BroadcastChannel | null = null;
+let lastRemoteSyncFetch = 0;
+let remotePushTimeout: any = null;
+
+if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
+  try {
+    syncBroadcastChannel = new BroadcastChannel('bhw_db_cross_tab_sync');
+    syncBroadcastChannel.onmessage = (event) => {
+      try {
+        if (event?.data?.type === 'db_update') {
+          const dbStr = localStorage.getItem('supabase_mock_db');
+          const currentDb = dbStr ? JSON.parse(dbStr) : {};
+          window.dispatchEvent(new Event('storage'));
+          window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: currentDb }));
+          window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: currentDb }));
+          window.dispatchEvent(new CustomEvent('family-data-updated', { detail: currentDb }));
+          window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
+        }
+      } catch {}
+    };
+  } catch {}
+}
 
 export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
   try {
     const serialized = JSON.stringify(db);
     localStorage.setItem('supabase_mock_db', serialized);
 
-    // 1. Post to local Vite dev server sync endpoint so other browsers (Chrome, Firefox, Edge, Safari, Mobile) get it
+    // 1. Debounced remote push to avoid network flood and serverless memory exhaustion
     if (shouldBroadcastRemote && typeof fetch === 'function') {
-      fetch('/__db_sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: serialized,
-      }).catch(() => {});
+      if (remotePushTimeout) clearTimeout(remotePushTimeout);
+      remotePushTimeout = setTimeout(() => {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
+          fetch('/__db_sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: serialized,
+            signal: controller.signal,
+          })
+            .then(() => clearTimeout(timeoutId))
+            .catch(() => clearTimeout(timeoutId));
+        } catch {}
+      }, 500);
     }
 
-    // 2. Broadcast across tabs of current browser
-    if (typeof BroadcastChannel !== 'undefined') {
+    // 2. Broadcast across tabs of current browser using persistent channel
+    if (syncBroadcastChannel) {
       try {
-        const bc = new BroadcastChannel('bhw_db_cross_tab_sync');
-        bc.postMessage({ type: 'db_update', timestamp: Date.now() });
-        bc.close();
+        syncBroadcastChannel.postMessage({ type: 'db_update', timestamp: Date.now() });
       } catch {}
     }
 
@@ -39,88 +69,56 @@ export function initCrossBrowserSync() {
   if (isCrossBrowserSyncStarted || typeof window === 'undefined') return;
   isCrossBrowserSyncStarted = true;
 
-  // 1. Initial pull from shared backend file if available
-  if (typeof fetch === 'function') {
-    fetch('/__db_sync')
-      .then((res) => res.json())
-      .then((remoteDb) => {
-        if (remoteDb && remoteDb.is_initialized && Object.keys(remoteDb).length > 0) {
-          localStorage.setItem('supabase_mock_db', JSON.stringify(remoteDb));
-          window.dispatchEvent(new Event('storage'));
-          window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: remoteDb }));
-          window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: remoteDb }));
-          window.dispatchEvent(new CustomEvent('family-data-updated', { detail: remoteDb }));
-          window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
-        } else {
-          // If remote is empty, check if local storage has data to push to remote
-          const localStr = localStorage.getItem('supabase_mock_db');
-          if (localStr) {
-            fetch('/__db_sync', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: localStr,
-            }).catch(() => {});
-          }
-        }
-      })
-      .catch(() => {});
-  }
+  const pullRemoteDb = () => {
+    const now = Date.now();
+    if (now - lastRemoteSyncFetch < 10000) return; // Throttled to at most once per 10s
+    lastRemoteSyncFetch = now;
 
-  // 2. Realtime SSE push from other browsers (Chrome <-> Firefox <-> Edge <-> Safari <-> Mobile)
-  if (typeof EventSource !== 'undefined') {
-    try {
-      const evtSource = new EventSource('/__db_sync/events');
-      evtSource.addEventListener('db_update', (event: any) => {
-        if (event.data) {
-          try {
-            const parsed = JSON.parse(event.data);
-            if (parsed && parsed.is_initialized) {
-              localStorage.setItem('supabase_mock_db', event.data);
-              window.dispatchEvent(new Event('storage'));
-              window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: parsed }));
-              window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: parsed }));
-              window.dispatchEvent(new CustomEvent('family-data-updated', { detail: parsed }));
-              window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
-            }
-          } catch {}
-        }
-      });
-    } catch {}
-  }
-
-  // 3. BroadcastChannel listener for local browser tabs
-  if (typeof BroadcastChannel !== 'undefined') {
-    try {
-      const bc = new BroadcastChannel('bhw_db_cross_tab_sync');
-      bc.onmessage = () => {
-        window.dispatchEvent(new Event('storage'));
-        window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: {} }));
-        window.dispatchEvent(new CustomEvent('family-data-updated', { detail: {} }));
-        window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
-      };
-    } catch {}
-  }
-
-  // 4. Auto sync on tab visibility change or focus
-  if (typeof window !== 'undefined') {
-    window.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && typeof fetch === 'function') {
-        fetch('/__db_sync')
-          .then((res) => res.json())
-          .then((remoteDb) => {
-            if (remoteDb && remoteDb.is_initialized && Object.keys(remoteDb).length > 0) {
-              localStorage.setItem('supabase_mock_db', JSON.stringify(remoteDb));
+    if (typeof fetch === 'function') {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      fetch('/__db_sync', { signal: controller.signal })
+        .then((res) => res.json())
+        .then((remoteDb) => {
+          clearTimeout(timeoutId);
+          if (remoteDb && remoteDb.is_initialized && Object.keys(remoteDb).length > 0) {
+            const currentStr = localStorage.getItem('supabase_mock_db');
+            const remoteStr = JSON.stringify(remoteDb);
+            if (currentStr !== remoteStr) {
+              localStorage.setItem('supabase_mock_db', remoteStr);
               window.dispatchEvent(new Event('storage'));
               window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: remoteDb }));
               window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: remoteDb }));
               window.dispatchEvent(new CustomEvent('family-data-updated', { detail: remoteDb }));
               window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
             }
-          })
-          .catch(() => {});
-      }
-    });
-  }
+          } else {
+            // If remote is empty, push local storage data to remote
+            const localStr = localStorage.getItem('supabase_mock_db');
+            if (localStr) {
+              fetch('/__db_sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: localStr,
+              }).catch(() => {});
+            }
+          }
+        })
+        .catch(() => {
+          clearTimeout(timeoutId);
+        });
+    }
+  };
+
+  // 1. Initial pull from shared backend
+  pullRemoteDb();
+
+  // 2. Auto sync on tab visibility change or focus (throttled)
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      pullRemoteDb();
+    }
+  });
 }
 
 // Mock Query Builder mimicking Supabase's JS library behavior
