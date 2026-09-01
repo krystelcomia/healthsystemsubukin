@@ -1223,8 +1223,8 @@ const DenguePreventionForm = () => {
           {/* Official Header Layout - Visible ONLY when printing */}
           <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
             <OfficialHeader
-              title="SEARCH AND DESTROY 2026 — Dengue Prevention Checklist"
-              subtitle="Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue • Barangay Subukin"
+              title={language === "tl" ? "PAG-IWAS SA DENGUE 2026 — Search and Destroy Checklist" : "SEARCH AND DESTROY 2026 — Dengue Prevention Checklist"}
+              subtitle={language === "tl" ? "Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue • Barangay Subukin" : "Search and destruction of mosquitoes carrying Dengue virus • Barangay Subukin"}
               showDoubleBorder={true}
               logoHeight="95px"
             />
@@ -1246,7 +1246,9 @@ const DenguePreventionForm = () => {
               SEARCH AND DESTROY 2026
             </h1>
             <p className="font-serif italic text-xs md:text-sm text-muted-foreground tracking-wide">
-              &ldquo;Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue&rdquo;
+              {language === "tl"
+                ? "“Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue”"
+                : "“Search and destruction of mosquitoes carrying Dengue virus”"}
             </p>
           </div>
 
@@ -1255,19 +1257,19 @@ const DenguePreventionForm = () => {
               <thead>
                 <tr className="bg-primary/10 text-primary font-heading">
                   <th className="border border-border p-2 font-bold text-center w-[28%]" rowSpan={2}>
-                    PANGALAN NG MAYBAHAY
+                    {language === "tl" ? "PANGALAN NG MAYBAHAY" : "HOUSEHOLD HEAD NAME"}
                   </th>
                   <th className="border border-border p-2 font-bold text-center w-[28%]" rowSpan={2}>
-                    URI NG LALAGYAN O TIRAHAN NG LAMOK
+                    {language === "tl" ? "URI NG LALAGYAN O TIRAHAN NG LAMOK" : "CONTAINER / BREEDING SITE"}
                   </th>
                   <th className="border border-border p-1.5 font-bold text-center w-[14%]" colSpan={2}>
-                    KITI-KITI
+                    {language === "tl" ? "KITI-KITI" : "LARVAE (KITI-KITI)"}
                   </th>
                   <th className="border border-border p-2 font-bold text-center w-[20%]" rowSpan={2}>
-                    ACTION PLAN/DAPAT NA GAWIN
+                    {language === "tl" ? "ACTION PLAN/DAPAT NA GAWIN" : "ACTION PLAN / MEASURES"}
                   </th>
                   <th className="border border-border p-2 font-bold text-center w-[10%]" rowSpan={2}>
-                    LAGDA
+                    {language === "tl" ? "LAGDA" : "SIGNATURE"}
                   </th>
                   <th className="border border-border p-2 font-bold text-center w-[5%] no-print" rowSpan={2}>
                     
@@ -1275,10 +1277,10 @@ const DenguePreventionForm = () => {
                 </tr>
                 <tr className="bg-primary/10 text-primary font-heading">
                   <th className="border border-border p-1 text-[10px] font-bold text-center">
-                    MERON
+                    {language === "tl" ? "MERON" : "PRESENT"}
                   </th>
                   <th className="border border-border p-1 text-[10px] font-bold text-center">
-                    WALA
+                    {language === "tl" ? "WALA" : "ABSENT"}
                   </th>
                 </tr>
               </thead>
@@ -1591,10 +1593,12 @@ const DenguePreventionForm = () => {
         <DialogContent className="max-w-md bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">
-              Lagda ng Maybahay (Resident Signature)
+              {language === "tl" ? "Lagda ng Maybahay (Resident Signature)" : "Resident Signature"}
             </DialogTitle>
             <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
-              Pumirma sa ibaba gamit ang iyong touchscreen, mouse, o touchpad.
+              {language === "tl"
+                ? "Pumirma sa ibaba gamit ang iyong touchscreen, mouse, o touchpad."
+                : "Sign below using your touchscreen, mouse, or touchpad."}
             </DialogDescription>
           </DialogHeader>
 
@@ -1614,11 +1618,12 @@ const DenguePreventionForm = () => {
           {/* Consent Notice */}
           <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200 space-y-2">
             <p className="leading-snug">
-              <span className="font-bold">Consent Notice / Abiso ng Pahintulot:</span>{" "}
-              Sa pag-sign dito, inihahayag ng residente na siya/sila ay nagbibigay ng pahintulot sa Barangay Health Worker (BHW) na i-save ang kanilang electronic na lagda para sa awtomatikong paggamit sa susunod na mga okasyon.
-            </p>
-            <p className="leading-snug">
-              By signing, the resident authorizes the BHW system to save and automatically apply this e-signature for future forms under the same name.
+              <span className="font-bold">
+                {language === "tl" ? "Abiso ng Pahintulot (Consent Notice):" : "Consent Notice:"}
+              </span>{" "}
+              {language === "tl"
+                ? "Sa pag-sign dito, inihahayag ng residente na siya/sila ay nagbibigay ng pahintulot sa Barangay Health Worker (BHW) na i-save ang kanilang electronic na lagda para sa awtomatikong paggamit sa susunod na mga okasyon."
+                : "By signing here, the resident authorizes the Barangay Health Worker (BHW) system to save and automatically apply this electronic signature for future forms under the same name."}
             </p>
             <label className="flex items-start gap-2 cursor-pointer select-none">
               <input
@@ -1629,20 +1634,22 @@ const DenguePreventionForm = () => {
                 className="mt-0.5 h-4 w-4 rounded border-amber-400 accent-amber-600 shrink-0 cursor-pointer"
               />
               <span className="font-semibold text-amber-900 dark:text-amber-100">
-                I allow — Pumapayag ako na i-save ang aking lagda para sa susunod na paggamit. (Continue)
+                {language === "tl"
+                  ? "Pumapayag ako na i-save ang aking lagda para sa susunod na paggamit. (Magpatuloy)"
+                  : "I allow the system to save this signature for future use. (Continue)"}
               </span>
             </label>
           </div>
 
           <DialogFooter className="gap-2 mt-4">
             <Button type="button" variant="outline" onClick={clearCanvas}>
-              Clear
+              {language === "tl" ? "Burahin" : "Clear"}
             </Button>
             <Button type="button" variant="ghost" onClick={() => { setSignatureModalOpen(false); setConsentChecked(false); }}>
-              Cancel
+              {language === "tl" ? "Kanselahin" : "Cancel"}
             </Button>
             <Button type="button" onClick={saveSignature} className="bg-primary text-white font-bold">
-              Save Signature
+              {language === "tl" ? "I-save ang Lagda" : "Save Signature"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1653,13 +1660,15 @@ const DenguePreventionForm = () => {
         <DialogContent className="max-w-5xl bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
           <DialogHeader className="no-print">
             <DialogTitle className="text-base font-bold text-foreground flex items-center justify-between">
-              <span>Saved Dengue Prevention Checklist</span>
+              <span>{language === "tl" ? "Nai-save na Checklist sa Pag-iwas sa Dengue" : "Saved Dengue Prevention Checklist"}</span>
               <span className="text-xs font-normal text-muted-foreground">
                 {viewingSavedForm?.formattedDate}
               </span>
             </DialogTitle>
             <DialogDescription className="text-xs text-slate-500">
-              View official records and print or re-print this historical batch.
+              {language === "tl"
+                ? "Tingnan ang mga opisyal na tala at i-print o muling i-print ang historical batch na ito."
+                : "View official records and print or re-print this historical batch."}
             </DialogDescription>
           </DialogHeader>
 
@@ -1673,8 +1682,8 @@ const DenguePreventionForm = () => {
                 {/* Official Header Layout - Visible ONLY when printing */}
                 <div className="print-only" style={{ display: "none" }}>
                   <OfficialHeader
-                    title="SEARCH AND DESTROY 2026 — Dengue Prevention Checklist"
-                    subtitle="Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue • Barangay Subukin"
+                    title={language === "tl" ? "PAG-IWAS SA DENGUE 2026 — Search and Destroy Checklist" : "SEARCH AND DESTROY 2026 — Dengue Prevention Checklist"}
+                    subtitle={language === "tl" ? "Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue • Barangay Subukin" : "Search and destruction of mosquitoes carrying Dengue virus • Barangay Subukin"}
                     showDoubleBorder={true}
                     logoHeight="95px"
                   />
@@ -1688,7 +1697,9 @@ const DenguePreventionForm = () => {
                     SEARCH AND DESTROY 2026
                   </h1>
                   <p className="font-serif italic text-xs md:text-sm text-muted-foreground tracking-wide">
-                    &ldquo;Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue&rdquo;
+                    {language === "tl"
+                      ? "“Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue”"
+                      : "“Search and destruction of mosquitoes carrying Dengue virus”"}
                   </p>
                 </div>
 
@@ -1697,29 +1708,29 @@ const DenguePreventionForm = () => {
                     <thead>
                       <tr className="bg-primary/10 text-primary font-heading">
                         <th className="border border-border p-2 font-bold text-center w-[28%]" rowSpan={2}>
-                          PANGALAN NG MAYBAHAY
+                          {language === "tl" ? "PANGALAN NG MAYBAHAY" : "HOUSEHOLD HEAD NAME"}
                         </th>
                         <th className="border border-border p-2 font-bold text-center w-[28%]" rowSpan={2}>
-                          URI NG LALAGYAN O TIRAHAN NG LAMOK
+                          {language === "tl" ? "URI NG LALAGYAN O TIRAHAN NG LAMOK" : "CONTAINER / BREEDING SITE"}
                         </th>
                         <th className="border border-border p-1.5 font-bold text-center w-[14%]" colSpan={2}>
-                          KITI-KITI
+                          {language === "tl" ? "KITI-KITI" : "LARVAE (KITI-KITI)"}
                         </th>
                         <th className="border border-border p-2 font-bold text-center w-[20%]" rowSpan={2}>
-                          ACTION PLAN/DAPAT NA GAWIN
+                          {language === "tl" ? "ACTION PLAN/DAPAT NA GAWIN" : "ACTION PLAN / MEASURES"}
                         </th>
                         <th className="border border-border p-2 font-bold text-center w-[10%]" rowSpan={2}>
-                          LAGDA
+                          {language === "tl" ? "LAGDA" : "SIGNATURE"}
                         </th>
                         <th className="border border-border p-2 font-bold text-center w-[5%] no-print" rowSpan={2}>
                         </th>
                       </tr>
                       <tr className="bg-primary/10 text-primary font-heading">
                         <th className="border border-border p-1 text-[10px] font-bold text-center">
-                          MERON
+                          {language === "tl" ? "MERON" : "PRESENT"}
                         </th>
                         <th className="border border-border p-1 text-[10px] font-bold text-center">
-                          WALA
+                          {language === "tl" ? "WALA" : "ABSENT"}
                         </th>
                       </tr>
                     </thead>
