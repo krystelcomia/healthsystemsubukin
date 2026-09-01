@@ -100,6 +100,27 @@ export function initCrossBrowserSync() {
       };
     } catch {}
   }
+
+  // 4. Auto sync on tab visibility change or focus
+  if (typeof window !== 'undefined') {
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && typeof fetch === 'function') {
+        fetch('/__db_sync')
+          .then((res) => res.json())
+          .then((remoteDb) => {
+            if (remoteDb && remoteDb.is_initialized && Object.keys(remoteDb).length > 0) {
+              localStorage.setItem('supabase_mock_db', JSON.stringify(remoteDb));
+              window.dispatchEvent(new Event('storage'));
+              window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: remoteDb }));
+              window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: remoteDb }));
+              window.dispatchEvent(new CustomEvent('family-data-updated', { detail: remoteDb }));
+              window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
+            }
+          })
+          .catch(() => {});
+      }
+    });
+  }
 }
 
 // Mock Query Builder mimicking Supabase's JS library behavior
@@ -1113,6 +1134,48 @@ export function seedMockDatabase() {
         last_seen: isOnline ? new Date().toISOString() : w.last_seen
       };
     });
+  }
+
+  // Upsert canonical families
+  for (const cf of CANONICAL_INITIAL_DATABASE.family_data || []) {
+    const exists = db['family_data'].some((f: any) => f.id === cf.id || f.family_number === cf.family_number);
+    if (!exists) {
+      db['family_data'].push(cf);
+    }
+  }
+
+  // Upsert canonical residents
+  for (const cr of CANONICAL_INITIAL_DATABASE.residents || []) {
+    const exists = db['residents'].some((r: any) => r.id === cr.id || (r.full_name && cr.full_name && r.full_name.trim().toLowerCase() === cr.full_name.trim().toLowerCase()));
+    if (!exists) {
+      db['residents'].push(cr);
+    }
+  }
+
+  // Upsert canonical consultations
+  for (const cc of CANONICAL_INITIAL_DATABASE.consultations || []) {
+    const exists = db['consultations'].some((c: any) => c.id === cc.id);
+    if (!exists) {
+      db['consultations'].push(cc);
+    }
+  }
+
+  // Upsert canonical user activity logs
+  for (const ca of CANONICAL_INITIAL_DATABASE.user_activity_logs || []) {
+    const exists = db['user_activity_logs'].some((a: any) => a.id === ca.id);
+    if (!exists) {
+      db['user_activity_logs'].push(ca);
+    }
+  }
+
+  // Ensure default profile avatar for Krystel is saved in localStorage too
+  if (typeof localStorage !== 'undefined') {
+    const krystelProfile = (CANONICAL_INITIAL_DATABASE.profiles || []).find((p: any) => p.user_id === 'user-1');
+    if (krystelProfile?.avatar_url && !localStorage.getItem('bhw_avatar_user-1')) {
+      localStorage.setItem('bhw_avatar_user-1', krystelProfile.avatar_url);
+      localStorage.setItem('bhw_avatar_krystelcomia@gmail.com', krystelProfile.avatar_url);
+      localStorage.setItem('bhw_avatar_krystel', krystelProfile.avatar_url);
+    }
   }
 
   const isFreshLocalInit = !dbStr;

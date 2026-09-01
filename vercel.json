@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/__db_sync",
+      "destination": "/api/db_sync"
+    },
+    {
+      "source": "/__db_sync/:match*",
+      "destination": "/api/db_sync"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
