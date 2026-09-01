@@ -11,10 +11,21 @@ function crossBrowserDbSyncPlugin(): Plugin {
     name: "cross-browser-db-sync-plugin",
     configureServer(server) {
       server.middlewares.use("/__db_sync", (req: any, res: any, next: any) => {
+        // Enable cross-origin resource sharing for any device/browser on the network
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+
+        if (req.method === "OPTIONS") {
+          res.statusCode = 200;
+          res.end();
+          return;
+        }
+
         if (req.url === "/events" && req.method === "GET") {
           res.writeHead(200, {
             "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
+            "Cache-Control": "no-cache, no-transform",
             "Connection": "keep-alive",
             "Access-Control-Allow-Origin": "*",
           });
@@ -32,7 +43,6 @@ function crossBrowserDbSyncPlugin(): Plugin {
 
         if (req.method === "GET") {
           res.setHeader("Content-Type", "application/json");
-          res.setHeader("Access-Control-Allow-Origin", "*");
           if (fs.existsSync(dbFilePath)) {
             try {
               const content = fs.readFileSync(dbFilePath, "utf-8");
@@ -56,7 +66,6 @@ function crossBrowserDbSyncPlugin(): Plugin {
                 subscribers.forEach((cb) => cb(body));
               }
               res.setHeader("Content-Type", "application/json");
-              res.setHeader("Access-Control-Allow-Origin", "*");
               res.end(JSON.stringify({ success: true }));
             } catch (err: any) {
               res.statusCode = 500;

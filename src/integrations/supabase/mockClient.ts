@@ -3,13 +3,13 @@ import { CANONICAL_INITIAL_DATABASE } from '@/lib/canonicalDataset';
 
 let isCrossBrowserSyncStarted = false;
 
-export function saveAndBroadcastMockDb(db: any) {
+export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
   try {
     const serialized = JSON.stringify(db);
     localStorage.setItem('supabase_mock_db', serialized);
 
-    // 1. Post to local Vite dev server sync endpoint so other browsers (Chrome, Firefox, Edge) get it
-    if (typeof fetch === 'function') {
+    // 1. Post to local Vite dev server sync endpoint so other browsers (Chrome, Firefox, Edge, Safari, Mobile) get it
+    if (shouldBroadcastRemote && typeof fetch === 'function') {
       fetch('/__db_sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -28,6 +28,8 @@ export function saveAndBroadcastMockDb(db: any) {
 
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: db }));
+    window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: db }));
+    window.dispatchEvent(new CustomEvent('family-data-updated', { detail: db }));
   } catch (e) {
     console.error('Failed to save mock db:', e);
   }
@@ -42,17 +44,29 @@ export function initCrossBrowserSync() {
     fetch('/__db_sync')
       .then((res) => res.json())
       .then((remoteDb) => {
-        if (remoteDb && remoteDb.is_initialized) {
+        if (remoteDb && remoteDb.is_initialized && Object.keys(remoteDb).length > 0) {
           localStorage.setItem('supabase_mock_db', JSON.stringify(remoteDb));
           window.dispatchEvent(new Event('storage'));
           window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: remoteDb }));
+          window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: remoteDb }));
+          window.dispatchEvent(new CustomEvent('family-data-updated', { detail: remoteDb }));
           window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
+        } else {
+          // If remote is empty, check if local storage has data to push to remote
+          const localStr = localStorage.getItem('supabase_mock_db');
+          if (localStr) {
+            fetch('/__db_sync', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: localStr,
+            }).catch(() => {});
+          }
         }
       })
       .catch(() => {});
   }
 
-  // 2. Realtime SSE push from other browsers (Chrome <-> Firefox <-> Edge)
+  // 2. Realtime SSE push from other browsers (Chrome <-> Firefox <-> Edge <-> Safari <-> Mobile)
   if (typeof EventSource !== 'undefined') {
     try {
       const evtSource = new EventSource('/__db_sync/events');
@@ -64,6 +78,8 @@ export function initCrossBrowserSync() {
               localStorage.setItem('supabase_mock_db', event.data);
               window.dispatchEvent(new Event('storage'));
               window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: parsed }));
+              window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: parsed }));
+              window.dispatchEvent(new CustomEvent('family-data-updated', { detail: parsed }));
               window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
             }
           } catch {}
@@ -78,6 +94,8 @@ export function initCrossBrowserSync() {
       const bc = new BroadcastChannel('bhw_db_cross_tab_sync');
       bc.onmessage = () => {
         window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: {} }));
+        window.dispatchEvent(new CustomEvent('family-data-updated', { detail: {} }));
         window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
       };
     } catch {}
@@ -1097,7 +1115,8 @@ export function seedMockDatabase() {
     });
   }
 
-  saveAndBroadcastMockDb(db);
+  const isFreshLocalInit = !dbStr;
+  saveAndBroadcastMockDb(db, !isFreshLocalInit);
 }
 
 class MockRealtimeChannel {
