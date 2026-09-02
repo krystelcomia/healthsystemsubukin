@@ -1526,19 +1526,136 @@ const ChildHealthForm = () => {
             justify-content: center !important;
             width: 100% !important;
             border-bottom: 3px double #000000 !important;
-            padding-bottom: 6px !important;
-            margin-bottom: 6px !important;
+            padding-bottom: 4px !important;
+            margin-bottom: 4px !important;
             text-align: center !important;
           }
           .header-seal img, .print-only img {
-            height: 75px !important;
-            max-height: 75px !important;
+            height: 68px !important;
+            max-height: 68px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
           }
 
-          /* Tables formatting - Clean continuous layout with no large gaps */
+          /* FORM LAYOUT PRESERVATION - Continuous, compact, professional presentation without excessive gaps */
+          #child-print-area form {
+            font-size: 7.8px !important;
+            line-height: 1.15 !important;
+            display: block !important;
+            visibility: visible !important;
+          }
+
+          #child-print-area .border {
+            border-color: #64748b !important;
+          }
+
+          #child-print-area .bg-slate-800 {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            padding: 1.5px 4px !important;
+            font-size: 7.8px !important;
+            font-weight: bold !important;
+          }
+          #child-print-area .bg-slate-800 * {
+            color: #ffffff !important;
+          }
+
+          #child-print-area .bg-slate-200,
+          #child-print-area .bg-slate-100 {
+            background-color: #f1f5f9 !important;
+            color: #000000 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            padding: 2px 4px !important;
+            font-size: 8px !important;
+            font-weight: bold !important;
+          }
+
+          #child-print-area .bg-card,
+          #child-print-area .bg-muted,
+          #child-print-area .bg-muted\/40 {
+            background-color: #ffffff !important;
+          }
+
+          #child-print-area .p-4,
+          #child-print-area .p-3,
+          #child-print-area .p-2\.5,
+          #child-print-area .p-2 {
+            padding: 2px 4px !important;
+          }
+
+          #child-print-area .space-y-6 > :not([hidden]) ~ :not([hidden]),
+          #child-print-area .space-y-4 > :not([hidden]) ~ :not([hidden]),
+          #child-print-area .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 3px !important;
+          }
+
+          #child-print-area .space-y-2\.5 > :not([hidden]) ~ :not([hidden]),
+          #child-print-area .space-y-2 > :not([hidden]) ~ :not([hidden]),
+          #child-print-area .space-y-1\.5 > :not([hidden]) ~ :not([hidden]),
+          #child-print-area .space-y-1 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1.5px !important;
+          }
+
+          #child-print-area .grid {
+            gap: 2px 4px !important;
+          }
+
+          #child-print-area label,
+          #child-print-area span,
+          #child-print-area p,
+          #child-print-area div {
+            font-size: 7.8px !important;
+            line-height: 1.15 !important;
+            color: #000000 !important;
+          }
+
+          #child-print-area input[type="text"],
+          #child-print-area input[type="number"],
+          #child-print-area input[type="date"] {
+            height: 13px !important;
+            min-height: 13px !important;
+            font-size: 7.8px !important;
+            padding: 0 1px !important;
+            line-height: 13px !important;
+            color: #000000 !important;
+            border-bottom: 1px solid #475569 !important;
+            background: transparent !important;
+          }
+
+          #child-print-area textarea {
+            font-size: 7.8px !important;
+            line-height: 1.15 !important;
+            height: 28px !important;
+            min-height: 28px !important;
+            padding: 1px 2px !important;
+            border-bottom: 1px solid #475569 !important;
+            color: #000000 !important;
+            background: transparent !important;
+          }
+
+          #child-print-area select {
+            font-size: 7.8px !important;
+            height: 15px !important;
+            padding: 0 2px !important;
+            border: 1px solid #94a3b8 !important;
+            -webkit-appearance: none !important;
+            appearance: none !important;
+            background: transparent !important;
+          }
+
+          #child-print-area input[type="radio"],
+          #child-print-area input[type="checkbox"] {
+            width: 9px !important;
+            height: 9px !important;
+            margin: 0 2px 0 0 !important;
+            vertical-align: middle !important;
+          }
+
+          /* Tables formatting for Masterlists & summaries */
           table {
             min-width: 0 !important;
             width: 100% !important;
@@ -1546,36 +1663,31 @@ const ChildHealthForm = () => {
             table-layout: auto !important;
             border-collapse: collapse !important;
             border: 1px solid #000000 !important;
-            page-break-inside: avoid !important;
           }
 
           thead th {
             border: 1px solid #000000 !important;
             color: #000000 !important;
             padding: 2.5px 4px !important;
-            font-size: 8.5px !important;
+            font-size: 8px !important;
             line-height: 1.15 !important;
             background-color: #f1f5f9 !important;
             font-weight: 800 !important;
             text-align: center !important;
           }
 
-          tbody tr {
-            height: auto !important;
-          }
-
           tbody td {
             border: 1px solid #000000 !important;
             color: #000000 !important;
             padding: 2px 4px !important;
-            font-size: 8.5px !important;
+            font-size: 8px !important;
             line-height: 1.15 !important;
             vertical-align: middle !important;
           }
 
           tbody td input {
             border: none !important;
-            font-size: 8.5px !important;
+            font-size: 8px !important;
             text-align: inherit !important;
             color: #000000 !important;
             width: 100% !important;
@@ -1584,49 +1696,16 @@ const ChildHealthForm = () => {
             height: auto !important;
           }
 
-          tbody td span {
-            color: #000000 !important;
-            font-size: 8.5px !important;
-          }
-
           ::placeholder,
-          ::-webkit-input-placeholder,
-          ::-moz-placeholder,
-          :-ms-input-placeholder,
           input::placeholder,
           textarea::placeholder {
             color: transparent !important;
             opacity: 0 !important;
-            -webkit-text-fill-color: transparent !important;
           }
-          input[type="date"]:invalid::-webkit-datetime-edit,
-          input[type="date"]:not([value])::-webkit-datetime-edit,
-          input[type="date"][value=""]::-webkit-datetime-edit,
-          .empty-date::-webkit-datetime-edit {
-            color: transparent !important;
-            -webkit-text-fill-color: transparent !important;
-          }
-          ::-webkit-scrollbar {
-            display: none !important;
-            width: 0 !important;
-            height: 0 !important;
-          }
-          .overflow-x-auto, .overflow-y-auto, .overflow-auto {
-            overflow: visible !important;
-            overflow-x: visible !important;
-            overflow-y: visible !important;
-            border: none !important;
-            box-shadow: none !important;
-          }
-          select {
-            -webkit-appearance: none !important;
-            -moz-appearance: none !important;
-            appearance: none !important;
-            background: transparent !important;
-          }
+
           @page {
             size: ${activeTab === "sick-children" ? "portrait" : "landscape"};
-            margin: 5mm 6mm;
+            margin: 4mm 5mm;
           }
         }
       `}</style>
@@ -1753,233 +1832,28 @@ const ChildHealthForm = () => {
               {/* ========================================================================= */}
               {/* OFFICIAL FORMAL PRINTABLE SICK CHILD RECORD (VISIBLE ONLY WHEN PRINTING) */}
               {/* ========================================================================= */}
-              <div className="print-only w-full font-sans text-black" style={{ display: "none", width: "100%", color: "#000000", fontFamily: "Arial, sans-serif" }}>
-                {/* Official Header Seal */}
+              {/* Official Header Seal for Printout */}
+              <div className="print-only mb-2" style={{ display: "none" }}>
                 <OfficialHeader
                   title="Child Health and Development Immunization Record"
                   subtitle="Pangangalaga sa Batang May Sakit Edad 2 Buwan Hanggang 5 Taon • Barangay Subukin Health Center"
                   showDoubleBorder={true}
-                  logoHeight="80px"
+                  logoHeight="70px"
                 />
+              </div>
 
-                {/* Document Metadata Bar */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1.5px solid #000", paddingBottom: "3px", marginBottom: "6px", fontSize: "9px", fontWeight: "bold" }}>
-                  <span>OFFICIAL PEDIATRIC HEALTH RECORD • BARANGAY SUBUKIN HEALTH REGISTRY</span>
-                  <span>FN: {sickForm.fn_number || "FN 242"} &nbsp;|&nbsp; PETSA: {sickForm.date_examined || new Date().toLocaleDateString()}</span>
-                </div>
-
-                {/* TABLE 1: PATIENT IDENTIFICATION & VITAL SIGNS */}
-                <div style={{ marginBottom: "6px" }}>
-                  <div style={{ backgroundColor: "#1e293b", color: "#ffffff", padding: "2.5px 6px", fontSize: "9px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    I. Impormasyon ng Pasyente at Mahahalagang Palatandaan (Patient Identification &amp; Vitals)
-                  </div>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8.5px", border: "1px solid #000" }}>
-                    <tbody>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left", width: "18%" }}>Pangalan ng Bata:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "bold", fontSize: "9.5px", width: "32%" }}>
-                          {[sickForm.surname, sickForm.first_name, sickForm.middle_name].filter(Boolean).join(", ") || (selectedResidentId ? residents.find(r => r.id === selectedResidentId)?.full_name : "—") || "—"}
-                        </td>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left", width: "18%" }}>Family Number (FN):</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "bold", width: "32%" }}>
-                          {sickForm.fn_number || "—"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Petsa ng Kapanganakan:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.dob || "—"}</td>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Edad / Kasarian:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>
-                          {sickForm.age_months ? `${sickForm.age_months} buwan (mos)` : "—"} &nbsp;|&nbsp; {sickForm.sex || "—"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Address / Sitio:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.address ? `${sickForm.address}, Subukin, San Juan, Batangas` : "Subukin, San Juan, Batangas"}</td>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>PhilHealth Number:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.philhealth_number || "—"}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Pangalan ng Ina:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.mother_name || "—"}</td>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Pangalan ng Ama:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.father_name || "—"}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Contact Number:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.contact_number || "—"}</td>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Uri ng Konsultasyon:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "600" }}>{sickForm.consultation_type || "Unang Konsulta"}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Timbang &amp; Taas:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "bold" }}>
-                          {sickForm.weight_kg ? `${sickForm.weight_kg} kg` : "—"} &nbsp;|&nbsp; {sickForm.height_cm ? `${sickForm.height_cm} cm` : "—"}
-                        </td>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Vital Signs (T/PR/RR):</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>
-                          {sickForm.temp_c ? `${sickForm.temp_c} °C` : "—"} &nbsp;|&nbsp; {sickForm.pulse_rate ? `PR: ${sickForm.pulse_rate}/min` : "—"} &nbsp;|&nbsp; {sickForm.respiratory_rate ? `RR: ${sickForm.respiratory_rate}/min` : "—"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Pangunahing Problema / Reklamo:</th>
-                        <td colSpan={3} style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "600" }}>
-                          {sickForm.chief_complaint || "Walang naitalang partikular na reklamo"}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* TABLE 2: IMCI CLINICAL ASSESSMENT & CLASSIFICATION */}
-                <div style={{ marginBottom: "6px" }}>
-                  <div style={{ backgroundColor: "#1e293b", color: "#ffffff", padding: "2.5px 6px", fontSize: "9px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    II. Pagsusuri at Klasipikasyon ng Sakit (Integrated Management of Childhood Illness - IMCI)
-                  </div>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8px", border: "1px solid #000" }}>
-                    <thead>
-                      <tr style={{ background: "#f1f5f9" }}>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", textAlign: "left", width: "65%" }}>MGA PALATANDAAN AT SINTOMAS (CLINICAL SIGNS EVALUATED)</th>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", textAlign: "left", width: "35%" }}>KLASIPIKASYON AT AKSYON (CLASSIFICATION)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>
-                          <strong>1. Pangkalahatang Panganib:</strong> Di makainom/makadede: {sickForm.unable_to_drink ? "[✓] Oo" : "[ ] Hindi"} • Nagsusuka ng lahat: {sickForm.vomits_everything ? "[✓] Oo" : "[ ] Hindi"} • May kombulsiyon: {sickForm.has_convulsions ? "[✓] Oo" : "[ ] Hindi"} • Matamlay/walang malay: {sickForm.lethargic_unconscious ? "[✓] Oo" : "[ ] Hindi"}
-                        </td>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "bold", background: sickForm.classification_danger ? "#fee2e2" : "transparent" }}>
-                          {sickForm.classification_danger || "Walang pangkalahatang panganib"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>
-                          <strong>2. Ubo o Nahihirapang Huminga:</strong> May ubo: {sickForm.has_cough ? `[✓] Oo (${sickForm.cough_days || "—"} araw)` : "[ ] Wala"} • Mabilis na paghinga: {sickForm.fast_breathing ? "[✓] Oo" : "[ ] Hindi"} ({sickForm.respiratory_rate_val || sickForm.respiratory_rate || "—"}/min) • Chest indrawing: {sickForm.chest_indrawing ? "[✓] Oo" : "[ ] Wala"} • Stridor: {sickForm.stridor ? "[✓] Oo" : "[ ] Wala"}
-                        </td>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "bold", background: sickForm.classification_cough ? "#fef3c7" : "transparent" }}>
-                          {sickForm.classification_cough || "Walang pneumonia / Normal"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>
-                          <strong>3. Pagtatae (Diarrhea):</strong> May pagtatae: {sickForm.has_diarrhea ? `[✓] Oo (${sickForm.diarrhea_days || "—"} araw)` : "[ ] Wala"} • May dugo sa dumi: {sickForm.blood_in_stool ? "[✓] Oo" : "[ ] Wala"} • Mata: {sickForm.eye_condition || "Normal"} • Skin pinch: {sickForm.skin_pinch || "Mabilis"} • Pag-inom: {sickForm.drinking_ability || "Normal"}
-                        </td>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "bold", background: sickForm.classification_diarrhea ? "#fef3c7" : "transparent" }}>
-                          {sickForm.classification_diarrhea || "Walang dehydration"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>
-                          <strong>4. Nilalagnat (Fever), Tigdas at Dengue:</strong> May lagnat: {sickForm.has_fever ? `[✓] Oo (${sickForm.fever_days || "—"} araw)` : "[ ] Wala"} • Naninigas ang leeg: {sickForm.stiff_neck ? "[✓] Oo" : "[ ] Wala"} • Tigdas rash: {sickForm.measles_rash ? "[✓] Oo" : "[ ] Wala"} • Dengue signs (Pagdurugo/Sakit sa tiyan): {sickForm.dengue_bleeding || sickForm.dengue_abdominal_pain ? "[✓] May palatandaan" : "[ ] Wala"}
-                        </td>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "bold" }}>
-                          {[sickForm.classification_fever, sickForm.classification_measles, sickForm.classification_dengue].filter(Boolean).join(" • ") || "Walang lagnat / Mababa ang panganib"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>
-                          <strong>5. Problema sa Tenga:</strong> Pananakit: {sickForm.ear_pain ? "[✓] Oo" : "[ ] Wala"} • May lumalabas: {sickForm.ear_discharge ? `[✓] Oo (${sickForm.ear_discharge_days || "—"} araw)` : "[ ] Wala"} • Pamamaga sa likod ng tenga: {sickForm.ear_swelling_behind ? "[✓] Oo" : "[ ] Wala"}
-                        </td>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "bold" }}>
-                          {sickForm.classification_ear || "Walang problema sa tenga"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>
-                          <strong>6. Malnutrisyon at Anemia:</strong> Severe wasting: {sickForm.severe_wasting ? "[✓] Oo" : "[ ] Wala"} • Edema sa dalawang paa: {sickForm.edema_both_feet ? "[✓] Oo" : "[ ] Wala"} • MUAC: {sickForm.muac_cm ? `${sickForm.muac_cm} cm` : "—"} • Palmar pallor: {sickForm.palmar_pallor_severe ? "Malubha" : (sickForm.palmar_pallor_some ? "Bahagya" : "Wala")}
-                        </td>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "bold" }}>
-                          {[sickForm.classification_malnutrition, sickForm.classification_anemia].filter(Boolean).join(" • ") || "Normal na timbang / Walang anemia"}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* TABLE 3: IMMUNIZATION, NUTRITION & FEEDING EVALUATION */}
-                <div style={{ marginBottom: "6px" }}>
-                  <div style={{ backgroundColor: "#1e293b", color: "#ffffff", padding: "2.5px 6px", fontSize: "9px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    III. Imunisasyon, Bitamina A at Pagtatasa sa Pagpapakain (Immunization &amp; Nutrition)
-                  </div>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8px", border: "1px solid #000" }}>
-                    <tbody>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left", width: "20%" }}>Bakunang Naibigay:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", width: "30%" }}>{sickForm.vaccines_given?.length > 0 ? sickForm.vaccines_given.join(", ") : "Wala / Up-to-date"}</td>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left", width: "20%" }}>Kailangang Bakuna Ngayon:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", width: "30%" }}>{sickForm.vaccines_needed_today || "Wala"}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Bitamina A (Huling 6 Buwan):</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.vit_a_past_6months ? "Oo (Nabigyan)" : "Hindi / Wala"}</td>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Pagpapasuso (Breastfeeding):</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.breastfeeding ? `Oo (${sickForm.breastfeed_times || "—"} beses)` : "Hindi"}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Iba Pang Pagkain / Inumin:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.other_food_drinks ? `Oo (${sickForm.other_food_details || ""} - ${sickForm.other_food_times || ""} beses)` : "Gatas ng ina lamang"}</td>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Paraan ng Pagpapakain:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.how_fed || "Sariling plato / kutsara"}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* TABLE 4: CLINICAL MANAGEMENT, TREATMENT & ADVICE */}
-                <div style={{ marginBottom: "6px" }}>
-                  <div style={{ backgroundColor: "#1e293b", color: "#ffffff", padding: "2.5px 6px", fontSize: "9px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    IV. Lunas, Paggamot at Tagubilin sa Ina (Clinical Management &amp; Advice)
-                  </div>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8px", border: "1px solid #000" }}>
-                    <tbody>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left", width: "25%" }}>Ipinatingin sa Doktor:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.doctor_see ? "Oo (Natingnan ng Doktor)" : "BHW / Midwife Clinical Assessment"}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Paggamot / Gamot na Naibigay:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "600" }}>{sickForm.treatment_notes || "Walang partikular na gamot na kinailangan"}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Payo sa Pagpapakain at Pag-aalaga:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px" }}>{sickForm.advice_notes || sickForm.feeding_advice || "Ipagpatuloy ang regular na pagpapakain at pagpapainom ng likido"}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Kailan Dapat Ibalik Agad:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", color: "#b91c1c", fontWeight: "bold" }}>{sickForm.urgent_return_advice || "Kapag nahihirapang huminga, hindi makainom, o patuloy na nilalagnat"}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ border: "1px solid #000", padding: "2.5px 5px", background: "#f1f5f9", textAlign: "left" }}>Petsa ng Pagbalik sa Health Center:</th>
-                        <td style={{ border: "1px solid #000", padding: "2.5px 5px", fontWeight: "bold" }}>{sickForm.return_health_center_date || "Ayon sa iskedyul / kung lumala"}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* SECTION 5: OFFICIAL SIGNATURES */}
-                <div className="print-footer-signatures" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "100%", paddingTop: "8px", marginTop: "6px", borderTop: "1.5px solid #000" }}>
-                  <div style={{ textAlign: "left", width: "45%" }}>
-                    <div style={{ fontSize: "9px", fontWeight: "bold" }}>Nagsuri / Certified Correct:</div>
-                    <div style={{ marginTop: "18px", borderBottom: "1.5px solid #000", width: "100%" }}></div>
-                    <div style={{ fontSize: "8.5px", fontWeight: "bold", marginTop: "2px" }}>{sickForm.examiner_name || loggedInWorkerName || "Attending Barangay Health Worker"}</div>
-                    <div style={{ fontSize: "7.5px", color: "#475569" }}>Barangay Health Worker • Barangay Subukin</div>
-                  </div>
-                  <div style={{ textAlign: "right", width: "45%" }}>
-                    <div style={{ fontSize: "9px", fontWeight: "bold" }}>Pinagtibay / Approved By:</div>
-                    <div style={{ marginTop: "18px", borderBottom: "1.5px solid #000", width: "100%", marginLeft: "auto" }}></div>
-                    <div style={{ fontSize: "8.5px", fontWeight: "bold", marginTop: "2px" }}>Barangay Health Supervisor / Public Health Midwife</div>
-                    <div style={{ fontSize: "7.5px", color: "#475569" }}>Rural Health Unit • Municipality of San Juan</div>
-                  </div>
-                </div>
-
-                {/* Official Seal / Legal Footer Note */}
-                <div style={{ marginTop: "6px", paddingTop: "2px", borderTop: "1px dotted #94a3b8", textAlign: "center", fontSize: "7px", color: "#64748b" }}>
-                  CONFIDENTIAL PEDIATRIC MEDICAL RECORD • INTEGRATED MANAGEMENT OF CHILDHOOD ILLNESS (IMCI) • BARANGAY SUBUKIN HEALTH CENTER
+              {/* Form Title Banner */}
+              <div className="text-center py-2 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-300 dark:border-slate-700 relative w-full mb-3">
+                <h1 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 font-heading">
+                  CARE FOR SICK CHILDREN (AGED 2 MONTHS TO 5 YEARS)
+                </h1>
+                <div className="absolute right-3 top-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                  FN: {sickForm.fn_number || "FN 242"}
                 </div>
               </div>
 
-              {/* Form Body (Flows naturally with main background page scroll, hidden when printing) */}
-              <form onSubmit={handleSaveSickChild} className="space-y-6 text-xs no-print">
+              {/* Form Body (Retains exact on-screen form appearance when printed, compact and continuous) */}
+              <form onSubmit={handleSaveSickChild} className="space-y-3 text-xs">
 
                 {/* Patient Information Box */}
                 <div className="border border-slate-300 dark:border-slate-700 rounded-md p-3 space-y-3 bg-card">
@@ -2934,6 +2808,31 @@ const ChildHealthForm = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Official Dual Signature Block for Printout */}
+                <div
+                  className="print-only print-footer-signatures pt-4 mt-3 border-t border-slate-400 text-xs text-slate-800 w-full"
+                  style={{
+                    display: "none",
+                  }}
+                >
+                  <div style={{ textAlign: "left", width: "45%" }}>
+                    <div style={{ fontSize: "9px", fontWeight: "bold" }}>Nagsuri / Certified Correct:</div>
+                    <div style={{ marginTop: "18px", borderBottom: "1.5px solid #000", width: "100%" }}></div>
+                    <div style={{ fontSize: "8.5px", fontWeight: "bold", marginTop: "2px" }}>{sickForm.examiner_name || loggedInWorkerName || "Attending Barangay Health Worker"}</div>
+                    <div style={{ fontSize: "7.5px", color: "#475569" }}>Barangay Health Worker • Barangay Subukin</div>
+                  </div>
+                  <div style={{ textAlign: "right", width: "45%" }}>
+                    <div style={{ fontSize: "9px", fontWeight: "bold" }}>Pinagtibay / Approved By:</div>
+                    <div style={{ marginTop: "18px", borderBottom: "1.5px solid #000", width: "100%", marginLeft: "auto" }}></div>
+                    <div style={{ fontSize: "8.5px", fontWeight: "bold", marginTop: "2px" }}>Barangay Health Supervisor / Public Health Midwife</div>
+                    <div style={{ fontSize: "7.5px", color: "#475569" }}>Rural Health Unit • Municipality of San Juan</div>
+                  </div>
+                </div>
+
+                <div className="print-only text-center text-[7px] text-slate-500 pt-1.5 border-t border-dotted mt-1.5" style={{ display: "none" }}>
+                  CONFIDENTIAL PEDIATRIC MEDICAL RECORD • BARANGAY SUBUKIN HEALTH CENTER • SAN JUAN, BATANGAS
                 </div>
 
                 {/* Form Action Buttons */}
