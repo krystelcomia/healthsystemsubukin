@@ -1525,14 +1525,14 @@ const ChildHealthForm = () => {
             align-items: center !important;
             justify-content: center !important;
             width: 100% !important;
-            border-bottom: 3px double #000000 !important;
-            padding-bottom: 4px !important;
-            margin-bottom: 4px !important;
+            border-bottom: 2.5px double #000000 !important;
+            padding-bottom: 2px !important;
+            margin-bottom: 2px !important;
             text-align: center !important;
           }
           .header-seal img, .print-only img {
-            height: 68px !important;
-            max-height: 68px !important;
+            height: 52px !important;
+            max-height: 52px !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
@@ -1540,10 +1540,31 @@ const ChildHealthForm = () => {
 
           /* FORM LAYOUT PRESERVATION - Continuous, compact, professional presentation without excessive gaps */
           #child-print-area form {
-            font-size: 7.8px !important;
-            line-height: 1.15 !important;
+            font-size: 7.5px !important;
+            line-height: 1.12 !important;
             display: block !important;
             visibility: visible !important;
+          }
+
+          /* AVOID ABRUPT PAGE BREAKS: If text or a section cuts off, move the entire block to the next page */
+          #child-print-area .border,
+          #child-print-area .rounded,
+          #child-print-area .rounded-md,
+          #child-print-area .overflow-hidden,
+          #child-print-area table,
+          #child-print-area tr,
+          #child-print-area fieldset,
+          #child-print-area .print-signatures,
+          #child-print-area .print-footer-signatures {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+
+          /* Clean Page 2 pagination for official 2-sheet IMCI form */
+          #child-print-area .imci-page-2 {
+            break-before: page !important;
+            page-break-before: always !important;
+            margin-top: 0 !important;
           }
 
           #child-print-area .border {
@@ -1555,8 +1576,8 @@ const ChildHealthForm = () => {
             color: #ffffff !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
-            padding: 1.5px 4px !important;
-            font-size: 7.8px !important;
+            padding: 1px 3px !important;
+            font-size: 7.5px !important;
             font-weight: bold !important;
           }
           #child-print-area .bg-slate-800 * {
@@ -1569,8 +1590,8 @@ const ChildHealthForm = () => {
             color: #000000 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
-            padding: 2px 4px !important;
-            font-size: 8px !important;
+            padding: 1.5px 3px !important;
+            font-size: 7.8px !important;
             font-weight: bold !important;
           }
 
@@ -1584,53 +1605,53 @@ const ChildHealthForm = () => {
           #child-print-area .p-3,
           #child-print-area .p-2\.5,
           #child-print-area .p-2 {
-            padding: 2px 4px !important;
+            padding: 1.5px 3px !important;
           }
 
           #child-print-area .space-y-6 > :not([hidden]) ~ :not([hidden]),
           #child-print-area .space-y-4 > :not([hidden]) ~ :not([hidden]),
           #child-print-area .space-y-3 > :not([hidden]) ~ :not([hidden]) {
-            margin-top: 3px !important;
+            margin-top: 2px !important;
           }
 
           #child-print-area .space-y-2\.5 > :not([hidden]) ~ :not([hidden]),
           #child-print-area .space-y-2 > :not([hidden]) ~ :not([hidden]),
           #child-print-area .space-y-1\.5 > :not([hidden]) ~ :not([hidden]),
           #child-print-area .space-y-1 > :not([hidden]) ~ :not([hidden]) {
-            margin-top: 1.5px !important;
+            margin-top: 1px !important;
           }
 
           #child-print-area .grid {
-            gap: 2px 4px !important;
+            gap: 1.5px 3px !important;
           }
 
           #child-print-area label,
           #child-print-area span,
           #child-print-area p,
           #child-print-area div {
-            font-size: 7.8px !important;
-            line-height: 1.15 !important;
+            font-size: 7.5px !important;
+            line-height: 1.12 !important;
             color: #000000 !important;
           }
 
           #child-print-area input[type="text"],
           #child-print-area input[type="number"],
           #child-print-area input[type="date"] {
-            height: 13px !important;
-            min-height: 13px !important;
-            font-size: 7.8px !important;
+            height: 12px !important;
+            min-height: 12px !important;
+            font-size: 7.5px !important;
             padding: 0 1px !important;
-            line-height: 13px !important;
+            line-height: 12px !important;
             color: #000000 !important;
             border-bottom: 1px solid #475569 !important;
             background: transparent !important;
           }
 
           #child-print-area textarea {
-            font-size: 7.8px !important;
-            line-height: 1.15 !important;
-            height: 28px !important;
-            min-height: 28px !important;
+            font-size: 7.5px !important;
+            line-height: 1.12 !important;
+            height: 24px !important;
+            min-height: 24px !important;
             padding: 1px 2px !important;
             border-bottom: 1px solid #475569 !important;
             color: #000000 !important;
@@ -1638,8 +1659,8 @@ const ChildHealthForm = () => {
           }
 
           #child-print-area select {
-            font-size: 7.8px !important;
-            height: 15px !important;
+            font-size: 7.5px !important;
+            height: 14px !important;
             padding: 0 2px !important;
             border: 1px solid #94a3b8 !important;
             -webkit-appearance: none !important;
@@ -1649,9 +1670,9 @@ const ChildHealthForm = () => {
 
           #child-print-area input[type="radio"],
           #child-print-area input[type="checkbox"] {
-            width: 9px !important;
-            height: 9px !important;
-            margin: 0 2px 0 0 !important;
+            width: 8.5px !important;
+            height: 8.5px !important;
+            margin: 0 1.5px 0 0 !important;
             vertical-align: middle !important;
           }
 
@@ -1663,14 +1684,16 @@ const ChildHealthForm = () => {
             table-layout: auto !important;
             border-collapse: collapse !important;
             border: 1px solid #000000 !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
           }
 
           thead th {
             border: 1px solid #000000 !important;
             color: #000000 !important;
-            padding: 2.5px 4px !important;
-            font-size: 8px !important;
-            line-height: 1.15 !important;
+            padding: 2px 3px !important;
+            font-size: 7.8px !important;
+            line-height: 1.12 !important;
             background-color: #f1f5f9 !important;
             font-weight: 800 !important;
             text-align: center !important;
@@ -1679,15 +1702,15 @@ const ChildHealthForm = () => {
           tbody td {
             border: 1px solid #000000 !important;
             color: #000000 !important;
-            padding: 2px 4px !important;
-            font-size: 8px !important;
-            line-height: 1.15 !important;
+            padding: 1.5px 3px !important;
+            font-size: 7.8px !important;
+            line-height: 1.12 !important;
             vertical-align: middle !important;
           }
 
           tbody td input {
             border: none !important;
-            font-size: 8px !important;
+            font-size: 7.8px !important;
             text-align: inherit !important;
             color: #000000 !important;
             width: 100% !important;
@@ -2421,7 +2444,7 @@ const ChildHealthForm = () => {
                 </div>
 
                 {/* PAGE 2: IMMUNIZATION, VITAMIN A, NUTRITION, FEEDING & TREATMENT */}
-                <div className="border border-slate-300 dark:border-slate-700 rounded-md p-3 space-y-4 bg-card">
+                <div className="border border-slate-300 dark:border-slate-700 rounded-md p-3 space-y-4 bg-card imci-page-2">
                   
                   {/* 8. BAKUNA (VACCINES) */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden">
