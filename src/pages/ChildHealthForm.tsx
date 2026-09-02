@@ -519,6 +519,15 @@ const ChildHealthForm = () => {
     return createBlankSIARows(20);
   });
 
+  // Delete row warning modal state
+  const [deleteRowModalOpen, setDeleteRowModalOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState<{
+    formType: "vitamin-a" | "sia-masterlist";
+    rowId: string;
+    rowNumber: number;
+    childName?: string;
+  } | null>(null);
+
   useEffect(() => {
     if (vitARows.length > 0) {
       localStorage.setItem(STORAGE_KEY_VITA_DRAFT, JSON.stringify(vitARows));
@@ -1097,7 +1106,65 @@ const ChildHealthForm = () => {
     toast.success(`Selected child "${res.full_name}" for SIA masterlist.`);
   };
 
-  const handleDeleteVitARow = (rowId: string) => {
+  const requestDeleteVitARow = (row: VitaminARow, index: number) => {
+    const hasData = Boolean(
+      row.child_name?.trim() ||
+      row.dob?.trim() ||
+      row.v6m_1st?.trim() ||
+      row.v12_23_v1?.trim() || row.v12_23_v2?.trim() || row.v12_23_d1?.trim() || row.v12_23_d2?.trim() ||
+      row.v24_35_v1?.trim() || row.v24_35_v2?.trim() || row.v24_35_d1?.trim() || row.v24_35_d2?.trim() ||
+      row.v36_47_v1?.trim() || row.v36_47_v2?.trim() || row.v36_47_d1?.trim() || row.v36_47_d2?.trim() ||
+      row.v48_59_v1?.trim() || row.v48_59_v2?.trim() || row.v48_59_d1?.trim() || row.v48_59_d2?.trim()
+    );
+
+    if (!hasData) {
+      handleExecuteDeleteVitARow(row.id);
+      return;
+    }
+
+    setRowToDelete({
+      formType: "vitamin-a",
+      rowId: row.id,
+      rowNumber: index + 1,
+      childName: row.child_name?.trim() || undefined,
+    });
+    setDeleteRowModalOpen(true);
+  };
+
+  const requestDeleteSIARow = (row: SIARow, index: number) => {
+    const hasData = Boolean(
+      row.child_family_name?.trim() ||
+      row.child_given_name?.trim() ||
+      row.child_middle_name?.trim() ||
+      row.dob?.trim() ||
+      row.age_months?.trim() ||
+      row.gender?.trim() ||
+      row.purok_sitio_street?.trim() ||
+      row.mother_family_name?.trim() ||
+      row.mother_given_name?.trim() ||
+      row.mother_middle_name?.trim() ||
+      row.vaccine_given?.trim() ||
+      row.vaccination_date?.trim() ||
+      row.vaccinator_family_name?.trim() ||
+      row.vaccinator_given_name?.trim()
+    );
+
+    if (!hasData) {
+      handleExecuteDeleteSIARow(row.id);
+      return;
+    }
+
+    const fullName = `${row.child_given_name || ''} ${row.child_family_name || ''}`.trim();
+    setRowToDelete({
+      formType: "sia-masterlist",
+      rowId: row.id,
+      rowNumber: index + 1,
+      childName: fullName || undefined,
+    });
+    setDeleteRowModalOpen(true);
+  };
+
+  const handleExecuteDeleteVitARow = (rowId: string) => {
     setVitARows(prev => {
       const updated = prev.map(r => r.id === rowId ? {
         id: r.id,
@@ -1115,7 +1182,7 @@ const ChildHealthForm = () => {
     toast.success("Row entry cleared.");
   };
 
-  const handleDeleteSIARow = (rowId: string) => {
+  const handleExecuteDeleteSIARow = (rowId: string) => {
     setSiaRows(prev => {
       const updated = prev.map(r => r.id === rowId ? {
         id: r.id,
@@ -1140,6 +1207,17 @@ const ChildHealthForm = () => {
       return updated;
     });
     toast.success("Row entry cleared.");
+  };
+
+  const confirmDeleteRow = () => {
+    if (!rowToDelete) return;
+    if (rowToDelete.formType === "vitamin-a") {
+      handleExecuteDeleteVitARow(rowToDelete.rowId);
+    } else if (rowToDelete.formType === "sia-masterlist") {
+      handleExecuteDeleteSIARow(rowToDelete.rowId);
+    }
+    setDeleteRowModalOpen(false);
+    setRowToDelete(null);
   };
 
   const toggleVaccine = (vaccine: string) => {
@@ -3130,7 +3208,7 @@ const ChildHealthForm = () => {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDeleteVitARow(row.id)}
+                            onClick={() => requestDeleteVitARow(row, idx)}
                             className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 mx-auto"
                             title="Clear row entry"
                           >
@@ -3311,7 +3389,7 @@ const ChildHealthForm = () => {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDeleteSIARow(row.id)}
+                            onClick={() => requestDeleteSIARow(row, idx)}
                             className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 mx-auto"
                             title="Clear row entry"
                           >
