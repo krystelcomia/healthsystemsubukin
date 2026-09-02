@@ -219,12 +219,8 @@ const FamilyDataForm = () => {
     if (inActive) {
       return `"${memName.trim()}" is already listed as a member in this family file.`;
     }
-    const inOtherFamily = getResidentDuplicateInfo(clean, selectedFile?.id);
-    if (inOtherFamily) {
-      return `Cannot add "${memName.trim()}": ${inOtherFamily} Duplicate resident records across multiple families are not allowed.`;
-    }
     return null;
-  }, [memName, editFather, editMother, activeMembers, records, selectedFile]);
+  }, [memName, editFather, editMother, activeMembers]);
 
   // Real-time validation for Create New Family File modal
   const newFatherDuplicateError = useMemo(() => {
@@ -233,12 +229,8 @@ const FamilyDataForm = () => {
     if (newMother && newMother.trim().toLowerCase() === clean) {
       return "Father and Mother cannot have the same name.";
     }
-    const inOther = getResidentDuplicateInfo(clean);
-    if (inOther) {
-      return `Cannot assign "${newFather.trim()}": ${inOther} Duplicate resident records across multiple families are not allowed.`;
-    }
     return null;
-  }, [newFather, newMother, records]);
+  }, [newFather, newMother]);
 
   const newMotherDuplicateError = useMemo(() => {
     const clean = newMother.trim().toLowerCase();
@@ -246,12 +238,8 @@ const FamilyDataForm = () => {
     if (newFather && newFather.trim().toLowerCase() === clean) {
       return "Mother and Father cannot have the same name.";
     }
-    const inOther = getResidentDuplicateInfo(clean);
-    if (inOther) {
-      return `Cannot assign "${newMother.trim()}": ${inOther} Duplicate resident records across multiple families are not allowed.`;
-    }
     return null;
-  }, [newMother, newFather, records]);
+  }, [newMother, newFather]);
 
   // Real-time validation for Editing Opened Family File headers
   const editFatherDuplicateError = useMemo(() => {
@@ -261,12 +249,8 @@ const FamilyDataForm = () => {
     if (editMother && editMother.trim().toLowerCase() === clean) {
       return "Father and Mother cannot have the same name.";
     }
-    const inOther = getResidentDuplicateInfo(clean, selectedFile.id);
-    if (inOther) {
-      return `Cannot assign "${editFather.trim()}": ${inOther} Duplicate resident records across multiple families are not allowed.`;
-    }
     return null;
-  }, [editFather, editMother, selectedFile, records]);
+  }, [editFather, editMother, selectedFile]);
 
   const editMotherDuplicateError = useMemo(() => {
     if (!selectedFile) return null;
@@ -275,12 +259,8 @@ const FamilyDataForm = () => {
     if (editFather && editFather.trim().toLowerCase() === clean) {
       return "Mother and Father cannot have the same name.";
     }
-    const inOther = getResidentDuplicateInfo(clean, selectedFile.id);
-    if (inOther) {
-      return `Cannot assign "${editMother.trim()}": ${inOther} Duplicate resident records across multiple families are not allowed.`;
-    }
     return null;
-  }, [editMother, editFather, selectedFile, records]);
+  }, [editMother, editFather, selectedFile]);
 
 
 
@@ -480,11 +460,6 @@ const FamilyDataForm = () => {
         toast.error(`Member "${clean}" is already listed as Mother.`);
         return;
       }
-      const inOther = getResidentDuplicateInfo(key);
-      if (inOther) {
-        toast.error(`Cannot add "${clean}": ${inOther} Duplicate resident records across multiple families are not allowed.`);
-        return;
-      }
       seenNew.add(key);
       deduplicatedNewMembers.push({ ...mem, full_name: clean });
     }
@@ -641,11 +616,6 @@ const FamilyDataForm = () => {
       if (!key) continue;
       if (seenActive.has(key)) {
         continue;
-      }
-      const dupMem = getResidentDuplicateInfo(key, selectedFile.id);
-      if (dupMem) {
-        toast.error(`Cannot save "${clean}": ${dupMem} Duplicate resident records across multiple families are not allowed.`);
-        return;
       }
       seenActive.add(key);
       deduplicatedActiveMembers.push({ ...mem, full_name: clean });

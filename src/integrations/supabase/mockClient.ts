@@ -47,7 +47,7 @@ export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
     const serialized = JSON.stringify(db);
     localStorage.setItem('supabase_mock_db', serialized);
 
-    // 1. Debounced remote push to avoid network flood and serverless memory exhaustion
+    // 1. Fast debounced remote push to sync shared serverless backend
     if (shouldBroadcastRemote && typeof fetch === 'function') {
       if (remotePushTimeout) clearTimeout(remotePushTimeout);
       remotePushTimeout = setTimeout(() => {
@@ -63,7 +63,7 @@ export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
             .then(() => clearTimeout(timeoutId))
             .catch(() => clearTimeout(timeoutId));
         } catch {}
-      }, 1000);
+      }, 300);
     }
 
     // 2. Broadcast across tabs of current browser using persistent channel
@@ -86,7 +86,7 @@ export function initCrossBrowserSync() {
 
   const pullRemoteDb = () => {
     const now = Date.now();
-    if (now - lastRemoteSyncFetch < 15000) return; // Throttled to at most once per 15s
+    if (now - lastRemoteSyncFetch < 5000) return; // Throttled to at most once per 5s
     lastRemoteSyncFetch = now;
 
     if (typeof fetch === 'function') {
@@ -114,7 +114,10 @@ export function initCrossBrowserSync() {
   // 1. Initial pull from shared backend
   pullRemoteDb();
 
-  // 2. Auto sync on tab visibility change or focus (throttled)
+  // 2. Active background sync polling every 6 seconds across devices/accounts
+  setInterval(pullRemoteDb, 6000);
+
+  // 3. Auto sync on tab visibility change or focus
   window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       pullRemoteDb();
