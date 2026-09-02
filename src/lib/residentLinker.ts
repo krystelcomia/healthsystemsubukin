@@ -107,8 +107,17 @@ export async function ensureResidentExists(opts: {
   }
 }
 
+let isSyncingFamilyData = false;
+let lastSyncFamilyTimestamp = 0;
+
 export async function syncFamilyDataToResidents(): Promise<Set<string>> {
   const familyNamesSet = new Set<string>();
+  const now = Date.now();
+  if (isSyncingFamilyData || now - lastSyncFamilyTimestamp < 8000) {
+    return familyNamesSet;
+  }
+  isSyncingFamilyData = true;
+  lastSyncFamilyTimestamp = now;
 
   try {
     const [famRes, resRes] = await Promise.all([
@@ -117,7 +126,7 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
     ]);
 
     const familyRecords = famRes.data || [];
-    let residentRecords: any[] = resRes.data || [];
+    let residentRecords: any[] = [...(resRes.data || [])];
 
     // Deduplicate residents in database if duplicate records already exist
     const seenMap = new Map<string, any>();
@@ -141,6 +150,9 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
     }
     residentRecords = uniqueResidentRecords;
 
+    const residentsToInsert: any[] = [];
+    let hasUpdates = false;
+
     for (const fam of familyRecords) {
       const famNum = fam.family_number;
       const sitio = fam.sitio;
@@ -157,7 +169,7 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
         familyNamesSet.add(fatherClean.toLowerCase());
 
         const fatherMember = members.find(
-          (m: any) => m.full_name && m.full_name.trim().toLowerCase() === fatherClean.toLowerCase() || m.relationship === "Father"
+          (m: any) => (m.full_name && m.full_name.trim().toLowerCase() === fatherClean.toLowerCase()) || m.relationship === "Father"
         );
         const fatherBday = fatherMember?.birthday || null;
         const fatherAge = fatherBday ? calculateAge(fatherBday) : (Number(fatherMember?.age) || 0);
@@ -172,10 +184,11 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
           if (fatherBday && fatherMatch.birthday !== fatherBday) updates.birthday = fatherBday;
           if (fatherAge > 0 && fatherMatch.age !== fatherAge) updates.age = fatherAge;
           if (Object.keys(updates).length > 0) {
+            hasUpdates = true;
             await supabase.from("residents").update(updates).eq("id", fatherMatch.id);
           }
         } else {
-          const { data: inserted } = await supabase.from("residents").insert({
+          const newFather = {
             full_name: fatherClean,
             gender: "Male",
             age: fatherAge,
@@ -186,8 +199,9 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
             sitio: sitio || "",
             birthday: fatherBday,
             family_number: famNum || null,
-          }).select().maybeSingle();
-          if (inserted) residentRecords.push(inserted);
+          };
+          residentsToInsert.push(newFather);
+          residentRecords.push(newFather);
         }
       }
 
@@ -196,7 +210,7 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
         familyNamesSet.add(motherClean.toLowerCase());
 
         const motherMember = members.find(
-          (m: any) => m.full_name && m.full_name.trim().toLowerCase() === motherClean.toLowerCase() || m.relationship === "Mother"
+          (m: any) => (m.full_name && m.full_name.trim().toLowerCase() === motherClean.toLowerCase()) || m.relationship === "Mother"
         );
         const motherBday = motherMember?.birthday || null;
         const motherAge = motherBday ? calculateAge(motherBday) : (Number(motherMember?.age) || 0);
@@ -211,10 +225,11 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
           if (motherBday && motherMatch.birthday !== motherBday) updates.birthday = motherBday;
           if (motherAge > 0 && motherMatch.age !== motherAge) updates.age = motherAge;
           if (Object.keys(updates).length > 0) {
+            hasUpdates = true;
             await supabase.from("residents").update(updates).eq("id", motherMatch.id);
           }
         } else {
-          const { data: inserted } = await supabase.from("residents").insert({
+          const newMother = {
             full_name: motherClean,
             gender: "Female",
             age: motherAge,
@@ -225,8 +240,9 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
             sitio: sitio || "",
             birthday: motherBday,
             family_number: famNum || null,
-          }).select().maybeSingle();
-          if (inserted) residentRecords.push(inserted);
+          };
+          residentsToInsert.push(newMother);
+          residentRecords.push(newMother);
         }
       }
 
@@ -255,10 +271,11 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
           if (mem.civil_status && memMatch.status !== mem.civil_status) updates.status = mem.civil_status;
 
           if (Object.keys(updates).length > 0) {
+            hasUpdates = true;
             await supabase.from("residents").update(updates).eq("id", memMatch.id);
           }
         } else {
-          const { data: inserted } = await supabase.from("residents").insert({
+          const newMem = {
             full_name: nameClean,
             gender: mem.gender || "Male",
             age: computedAge,
@@ -269,13 +286,20 @@ export async function syncFamilyDataToResidents(): Promise<Set<string>> {
             sitio: sitio || "",
             birthday: mem.birthday || null,
             family_number: famNum || null,
-          }).select().maybeSingle();
-          if (inserted) residentRecords.push(inserted);
+          };
+          residentsToInsert.push(newMem);
+          residentRecords.push(newMem);
         }
       }
     }
+
+    if (residentsToInsert.length > 0) {
+      await supabase.from("residents").insert(residentsToInsert);
+    }
   } catch (e) {
     console.error("Error in syncFamilyDataToResidents:", e);
+  } finally {
+    isSyncingFamilyData = false;
   }
 
   return familyNamesSet;
@@ -362,9 +386,6 @@ export async function getFamilyOnlyResidents(): Promise<any[]> {
         }
       }
     }
-
-    // Run background sync safely without blocking return
-    syncFamilyDataToResidents().catch(e => console.warn("Background resident sync:", e));
 
     return uniqueResidents.sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
   } catch (err) {

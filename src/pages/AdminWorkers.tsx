@@ -65,10 +65,10 @@ const AdminWorkers = () => {
   useEffect(() => {
     fetchWorkers();
 
-    // Periodic polling every 3 seconds to reflect active device status in real-time
+    // Periodic polling every 10 seconds to reflect active device status in real-time
     const interval = setInterval(() => {
       fetchWorkers();
-    }, 3000);
+    }, 10000);
 
     // Realtime channel subscription for instant worker status change detection (with safe fallback)
     let channel: any = null;

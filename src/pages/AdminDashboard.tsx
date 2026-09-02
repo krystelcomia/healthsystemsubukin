@@ -143,7 +143,7 @@ const AdminDashboard = () => {
       }
     };
 
-    const interval = setInterval(refreshWorkersStatus, 3000);
+    const interval = setInterval(refreshWorkersStatus, 10000);
     const handleStatusEvent = () => {
       refreshWorkersStatus();
       fetchAll();

@@ -5,6 +5,19 @@ let isCrossBrowserSyncStarted = false;
 let syncBroadcastChannel: BroadcastChannel | null = null;
 let lastRemoteSyncFetch = 0;
 let remotePushTimeout: any = null;
+let dispatchEventsTimeout: any = null;
+let bcMessageTimeout: any = null;
+
+function notifyComponentsOfDbUpdate(db: any) {
+  if (dispatchEventsTimeout) clearTimeout(dispatchEventsTimeout);
+  dispatchEventsTimeout = setTimeout(() => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: db }));
+      window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: db }));
+      window.dispatchEvent(new CustomEvent('family-data-updated', { detail: db }));
+    }
+  }, 100);
+}
 
 if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
   try {
@@ -12,13 +25,17 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
     syncBroadcastChannel.onmessage = (event) => {
       try {
         if (event?.data?.type === 'db_update') {
-          const dbStr = localStorage.getItem('supabase_mock_db');
-          const currentDb = dbStr ? JSON.parse(dbStr) : {};
-          window.dispatchEvent(new Event('storage'));
-          window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: currentDb }));
-          window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: currentDb }));
-          window.dispatchEvent(new CustomEvent('family-data-updated', { detail: currentDb }));
-          window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
+          if (bcMessageTimeout) clearTimeout(bcMessageTimeout);
+          bcMessageTimeout = setTimeout(() => {
+            const dbStr = localStorage.getItem('supabase_mock_db');
+            const currentDb = dbStr ? JSON.parse(dbStr) : {};
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: currentDb }));
+              window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: currentDb }));
+              window.dispatchEvent(new CustomEvent('family-data-updated', { detail: currentDb }));
+              window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
+            }
+          }, 150);
         }
       } catch {}
     };
@@ -46,7 +63,7 @@ export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
             .then(() => clearTimeout(timeoutId))
             .catch(() => clearTimeout(timeoutId));
         } catch {}
-      }, 500);
+      }, 1000);
     }
 
     // 2. Broadcast across tabs of current browser using persistent channel
@@ -56,10 +73,8 @@ export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
       } catch {}
     }
 
-    window.dispatchEvent(new Event('storage'));
-    window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: db }));
-    window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: db }));
-    window.dispatchEvent(new CustomEvent('family-data-updated', { detail: db }));
+    // 3. Debounced local event dispatching
+    notifyComponentsOfDbUpdate(db);
   } catch (e) {
     console.error('Failed to save mock db:', e);
   }
@@ -71,7 +86,7 @@ export function initCrossBrowserSync() {
 
   const pullRemoteDb = () => {
     const now = Date.now();
-    if (now - lastRemoteSyncFetch < 10000) return; // Throttled to at most once per 10s
+    if (now - lastRemoteSyncFetch < 15000) return; // Throttled to at most once per 15s
     lastRemoteSyncFetch = now;
 
     if (typeof fetch === 'function') {
@@ -86,21 +101,7 @@ export function initCrossBrowserSync() {
             const remoteStr = JSON.stringify(remoteDb);
             if (currentStr !== remoteStr) {
               localStorage.setItem('supabase_mock_db', remoteStr);
-              window.dispatchEvent(new Event('storage'));
-              window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: remoteDb }));
-              window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: remoteDb }));
-              window.dispatchEvent(new CustomEvent('family-data-updated', { detail: remoteDb }));
-              window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
-            }
-          } else {
-            // If remote is empty, push local storage data to remote
-            const localStr = localStorage.getItem('supabase_mock_db');
-            if (localStr) {
-              fetch('/__db_sync', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: localStr,
-              }).catch(() => {});
+              notifyComponentsOfDbUpdate(remoteDb);
             }
           }
         })
