@@ -642,7 +642,7 @@ const MaternalCareForm = () => {
 
           /* Single Form Print */
           body:not(.printing-modal):not(.printing-history) #maternal-print-area,
-          body:not(.printing-modal):not(.printing-history) #maternal-print-area *:not(.no-print):not(.no-print *) {
+          body:not(.printing-modal):not(.printing-history) #maternal-print-area * {
             visibility: visible !important;
           }
           body:not(.printing-modal):not(.printing-history) #maternal-print-area .no-print,
@@ -655,17 +655,17 @@ const MaternalCareForm = () => {
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            background: white !important;
+            background: #ffffff !important;
             padding: 0 !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            color: black !important;
+            color: #000000 !important;
           }
 
           /* History Table Print */
           body.printing-history #maternal-history-print-area,
-          body.printing-history #maternal-history-print-area *:not(.no-print):not(.no-print *) {
+          body.printing-history #maternal-history-print-area * {
             visibility: visible !important;
             color: #000000 !important;
             border-color: #000000 !important;
@@ -675,8 +675,8 @@ const MaternalCareForm = () => {
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            background: white !important;
-            color: black !important;
+            background: #ffffff !important;
+            color: #000000 !important;
             padding: 10px 15px !important;
             margin: 0 !important;
             display: block !important;
@@ -698,8 +698,9 @@ const MaternalCareForm = () => {
             font-weight: bold !important;
           }
 
+          /* Modal Print */
           body.printing-modal #maternal-modal-printable,
-          body.printing-modal #maternal-modal-printable *:not(.no-print):not(.no-print *) {
+          body.printing-modal #maternal-modal-printable * {
             visibility: visible !important;
             color: #000000 !important;
           }
@@ -714,21 +715,23 @@ const MaternalCareForm = () => {
             width: 100% !important;
             max-width: 100% !important;
             border: none !important;
-            background: white !important;
+            background: #ffffff !important;
           }
           body.printing-modal #maternal-modal-printable {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            background: white !important;
-            color: black !important;
+            background: #ffffff !important;
+            color: #000000 !important;
             padding: 15px !important;
             margin: 0 !important;
           }
+
           html, body {
             height: 100% !important;
             overflow: visible !important;
+            background: #ffffff !important;
           }
           .no-print {
             display: none !important;
@@ -746,77 +749,10 @@ const MaternalCareForm = () => {
             align-items: flex-start !important;
             width: 100% !important;
           }
-          .header-seal {
-            width: 100% !important;
-          }
-
-          /* Hide all placeholders and guide text when printing */
-          ::placeholder,
-          ::-webkit-input-placeholder,
-          ::-moz-placeholder,
-          :-ms-input-placeholder,
-          input::placeholder,
-          textarea::placeholder {
-            color: transparent !important;
-            opacity: 0 !important;
-            -webkit-text-fill-color: transparent !important;
-          }
-
-          /* Hide default Chrome date picker mm/dd/yyyy when empty */
-          input[type="date"]:invalid::-webkit-datetime-edit,
-          input[type="date"]:not([value])::-webkit-datetime-edit,
-          input[type="date"][value=""]::-webkit-datetime-edit,
-          .empty-date::-webkit-datetime-edit {
-            color: transparent !important;
-            -webkit-text-fill-color: transparent !important;
-          }
-
-          /* Force empty inputs with placeholders to hide placeholder text on print */
-          input:placeholder-shown {
-            color: transparent !important;
-            -webkit-text-fill-color: transparent !important;
-          }
-
-          /* Clean input rendering for print */
-          input, textarea, select {
-            background-color: transparent !important;
-            box-shadow: none !important;
-          /* Fit printout cleanly onto portrait sheet */
-          .header-border {
-            padding-bottom: 6px !important;
-            margin-bottom: 8px !important;
-            gap: 16px !important;
-          }
-          .header-border img {
-            height: 75px !important;
-            max-height: 75px !important;
-          }
-          #maternal-print-area .p-6,
-          #maternal-print-area .md\:p-8,
-          #maternal-print-area .p-4,
-          #maternal-print-area .md\:p-5 {
-            padding: 8px !important;
-          }
-          #maternal-print-area form > * + * {
-            margin-top: 8px !important;
-          }
-          #maternal-print-area label,
-          #maternal-print-area input,
-          #maternal-print-area select,
-          #maternal-print-area textarea,
-          #maternal-print-area span,
-          #maternal-print-area h3 {
-            font-size: 11px !important;
-          }
-          #maternal-print-area table th,
-          #maternal-print-area table td {
-            padding: 2px 4px !important;
-            font-size: 10px !important;
-          }
 
           @page {
             size: A4 portrait;
-            margin: 4mm;
+            margin: 6mm 6mm;
           }
         }
       `}</style>
@@ -868,14 +804,244 @@ const MaternalCareForm = () => {
         <Card id="maternal-print-area" className="border border-border/50 shadow-md bg-card text-card-foreground overflow-hidden">
         <CardContent className="p-6 md:p-8 space-y-6">
           
-          {/* Header Seal Layout - Visible ONLY when printing */}
-          <div className="print-only w-full" style={{ display: "none", width: "100%" }}>
+          {/* ========================================================================= */}
+          {/* OFFICIAL FORMAL PRINTABLE MATERNAL CARE RECORD (VISIBLE ONLY WHEN PRINTING) */}
+          {/* ========================================================================= */}
+          <div className="print-only w-full font-sans text-black" style={{ display: "none", width: "100%", color: "#000000", fontFamily: "Arial, sans-serif" }}>
+            {/* Official Header Seal */}
             <OfficialHeader
-              title="Maternal Care & Prenatal Health Record"
+              title="Official Maternal Care & Prenatal Health Record"
               subtitle="Barangay Subukin Health Center • San Juan, Batangas"
               showDoubleBorder={true}
-              logoHeight="95px"
+              logoHeight="85px"
             />
+
+            {/* Document Metadata Bar */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1.5px solid #000", paddingBottom: "4px", marginBottom: "8px", fontSize: "10px", fontWeight: "bold" }}>
+              <span>OFFICIAL PATIENT HEALTH RECORD • BARANGAY SUBUKIN HEALTH REGISTRY</span>
+              <span>DATE PRINTED: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</span>
+            </div>
+
+            {/* SECTION 1: PATIENT IDENTIFICATION & OBSTETRIC PROFILE */}
+            <div style={{ marginBottom: "10px" }}>
+              <div style={{ backgroundColor: "#1e293b", color: "#ffffff", padding: "3px 8px", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                I. Patient Demographic &amp; Obstetrical Profile
+              </div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px", border: "1px solid #000" }}>
+                <tbody>
+                  <tr>
+                    <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left", width: "18%" }}>Patient Full Name:</th>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold", fontSize: "11px", width: "32%" }}>
+                      {[form.patient_last_name, form.patient_first_name, form.patient_middle_name].filter(Boolean).join(", ") || (form.resident_id ? residents.find(r => r.id === form.resident_id)?.full_name : "—") || "—"}
+                    </td>
+                    <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left", width: "18%" }}>Family Number (FN):</th>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold", width: "32%" }}>
+                      {form.family_number || "—"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>Age:</th>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px" }}>{form.age ? `${form.age} years old` : "—"}</td>
+                    <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>Sitio / Address:</th>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px" }}>{form.sitio ? `${form.sitio}, Subukin, San Juan, Batangas` : "Subukin, San Juan, Batangas"}</td>
+                  </tr>
+                  <tr>
+                    <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>Obstetric Score (G/P):</th>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold" }}>{form.obstetric_score || "—"}</td>
+                    <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>FPAL Score (F-P-A-L):</th>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold" }}>{form.fpal || "—"}</td>
+                  </tr>
+                  <tr>
+                    <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>LMP (Last Menstrual Period):</th>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px" }}>{form.lmp || "—"}</td>
+                    <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>EDC (Expected Date):</th>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold" }}>{form.edc || "—"}</td>
+                  </tr>
+                  <tr>
+                    <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>Patient Height:</th>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px" }}>{form.patient_height ? `${form.patient_height} cm` : "—"}</td>
+                    <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>Blood Type:</th>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold" }}>{form.blood_type || "Unspecified"}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Trimester Milestones Table */}
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "9.5px", border: "1px solid #000", borderTop: "none" }}>
+                <thead>
+                  <tr style={{ background: "#f8fafc" }}>
+                    <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "center", width: "25%" }}>End of 1st Trimester</th>
+                    <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "center", width: "25%" }}>End of 2nd Trimester</th>
+                    <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "center", width: "25%" }}>End of 3rd Trimester</th>
+                    <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "center", width: "25%" }}>End of Postpartum / Period</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px", textAlign: "center" }}>{form.end_1st_trim || "—"}</td>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px", textAlign: "center" }}>{form.end_2nd_trim || "—"}</td>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px", textAlign: "center" }}>{form.end_3rd_trim || "—"}</td>
+                    <td style={{ border: "1px solid #000", padding: "4px 6px", textAlign: "center" }}>
+                      {form.end_postpartum || "—"}{form.period ? ` (${form.period})` : ""}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* SECTION 2: PRENATAL CHECKUP & CLINICAL VISITS LEDGER */}
+            <div style={{ marginBottom: "10px" }}>
+              <div style={{ backgroundColor: "#1e293b", color: "#ffffff", padding: "3px 8px", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                II. Prenatal Clinical Visits &amp; Progress Monitoring Ledger
+              </div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "9.5px", border: "1px solid #000" }}>
+                <thead>
+                  <tr style={{ background: "#f1f5f9" }}>
+                    <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "45px" }}>Visit #</th>
+                    <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "80px" }}>Date of Visit</th>
+                    <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "55px" }}>AOG</th>
+                    <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "65px" }}>BP</th>
+                    <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "65px" }}>Weight (kg)</th>
+                    <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "70px" }}>Fundic Ht (cm)</th>
+                    <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "70px" }}>FHR (bpm)</th>
+                    <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "85px" }}>Presentation</th>
+                    <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "left" }}>Clinical Findings / Treatment / Remarks</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {form.prenatal_visits.length > 0 ? (
+                    form.prenatal_visits.map((v, i) => (
+                      <tr key={i}>
+                        <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", fontWeight: "bold" }}>{v.visit_number || i + 1}</td>
+                        <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.visit_date || "—"}</td>
+                        <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.aog || v.aog_weeks || "—"}</td>
+                        <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", fontWeight: "600" }}>{v.blood_pressure || v.bp || "—"}</td>
+                        <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.weight || v.weight_kg ? `${v.weight || v.weight_kg} kg` : "—"}</td>
+                        <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.fundic_height || v.fundic_height_cm ? `${v.fundic_height || v.fundic_height_cm} cm` : "—"}</td>
+                        <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.fhr || v.fhb_bpm ? `${v.fhr || v.fhb_bpm} bpm` : "—"}</td>
+                        <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.presentation || "—"}</td>
+                        <td style={{ border: "1px solid #000", padding: "4px 5px" }}>{v.notes || v.findings || v.remarks || "—"}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    [1, 2, 3, 4].map((num) => (
+                      <tr key={num}>
+                        <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center", color: "#64748b" }}>{num}</td>
+                        <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                        <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                        <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                        <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                        <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                        <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                        <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                        <td style={{ border: "1px solid #000", padding: "6px 5px" }}></td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* SECTION 3: MATERNAL CLINICAL RISK FACTORS EVALUATION */}
+            <div style={{ marginBottom: "10px" }}>
+              <div style={{ backgroundColor: "#1e293b", color: "#ffffff", padding: "3px 8px", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                III. Maternal Risk Factors Clinical Assessment Matrix
+              </div>
+              
+              {/* Summary of Active Risks */}
+              <div style={{ border: "1px solid #000", borderBottom: "none", padding: "4px 8px", background: form.risk_factors.length > 0 ? "#fff1f2" : "#f0fdf4", fontSize: "9.5px" }}>
+                <strong>Identified Clinical Risks: </strong>
+                {form.risk_factors.length > 0 ? (
+                  <span style={{ color: "#b91c1c", fontWeight: "bold" }}>
+                    {form.risk_factors.join(" • ")}
+                  </span>
+                ) : (
+                  <span style={{ color: "#15803d", fontWeight: "bold" }}>
+                    ✓ No High-Risk Clinical Factors Identified (Low-Risk Pregnancy Status)
+                  </span>
+                )}
+              </div>
+
+              {/* Full 3-Column Risk Factors Checklist Table */}
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8.5px", border: "1px solid #000" }}>
+                <thead>
+                  <tr style={{ background: "#f1f5f9" }}>
+                    <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "left", width: "34%" }}>Risk Factors (Group 1)</th>
+                    <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "left", width: "33%" }}>Risk Factors (Group 2)</th>
+                    <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "left", width: "33%" }}>Risk Factors (Group 3)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: Math.max(RISK_FACTORS_COLUMN_1.length, RISK_FACTORS_COLUMN_2.length, RISK_FACTORS_COLUMN_3.length) }).map((_, rIdx) => {
+                    const rf1 = RISK_FACTORS_COLUMN_1[rIdx];
+                    const rf2 = RISK_FACTORS_COLUMN_2[rIdx];
+                    const rf3 = RISK_FACTORS_COLUMN_3[rIdx];
+
+                    const isChecked1 = rf1 ? form.risk_factors.includes(rf1) : false;
+                    const isChecked2 = rf2 ? form.risk_factors.includes(rf2) : false;
+                    const isChecked3 = rf3 ? form.risk_factors.includes(rf3) : false;
+
+                    return (
+                      <tr key={rIdx}>
+                        <td style={{ border: "1px solid #000", padding: "2px 4px", backgroundColor: isChecked1 ? "#fee2e2" : "transparent" }}>
+                          {rf1 ? (
+                            <span style={{ fontWeight: isChecked1 ? "bold" : "normal" }}>
+                              <span style={{ fontFamily: "monospace", fontWeight: "bold" }}>{isChecked1 ? "[✓] " : "[  ] "}</span>
+                              {rf1}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td style={{ border: "1px solid #000", padding: "2px 4px", backgroundColor: isChecked2 ? "#fee2e2" : "transparent" }}>
+                          {rf2 ? (
+                            <span style={{ fontWeight: isChecked2 ? "bold" : "normal" }}>
+                              <span style={{ fontFamily: "monospace", fontWeight: "bold" }}>{isChecked2 ? "[✓] " : "[  ] "}</span>
+                              {rf2}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td style={{ border: "1px solid #000", padding: "2px 4px", backgroundColor: isChecked3 ? "#fee2e2" : "transparent" }}>
+                          {rf3 ? (
+                            <span style={{ fontWeight: isChecked3 ? "bold" : "normal" }}>
+                              <span style={{ fontFamily: "monospace", fontWeight: "bold" }}>{isChecked3 ? "[✓] " : "[  ] "}</span>
+                              {rf3}
+                            </span>
+                          ) : null}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* SECTION 4: CLINICAL REMARKS */}
+            {form.remarks && (
+              <div style={{ marginBottom: "10px", border: "1px solid #000", padding: "5px 8px", fontSize: "9.5px" }}>
+                <strong>Additional Clinical Instructions / Midwife Remarks: </strong>
+                <span>{form.remarks}</span>
+              </div>
+            )}
+
+            {/* SECTION 5: OFFICIAL SIGNATURES */}
+            <div className="print-footer-signatures" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "100%", paddingTop: "14px", marginTop: "12px", borderTop: "1.5px solid #000" }}>
+              <div style={{ textAlign: "left", width: "45%" }}>
+                <div style={{ fontSize: "10px", fontWeight: "bold" }}>Certified Correct by:</div>
+                <div style={{ marginTop: "24px", borderBottom: "1.5px solid #000", width: "100%" }}></div>
+                <div style={{ fontSize: "9.5px", fontWeight: "bold", marginTop: "2px" }}>Attending Barangay Health Worker (BHW)</div>
+                <div style={{ fontSize: "8.5px", color: "#475569" }}>Barangay Subukin Health Center</div>
+              </div>
+              <div style={{ textAlign: "right", width: "45%" }}>
+                <div style={{ fontSize: "10px", fontWeight: "bold" }}>Approved &amp; Verified by:</div>
+                <div style={{ marginTop: "24px", borderBottom: "1.5px solid #000", width: "100%", marginLeft: "auto" }}></div>
+                <div style={{ fontSize: "9.5px", fontWeight: "bold", marginTop: "2px" }}>Barangay Health Supervisor / Public Health Midwife</div>
+                <div style={{ fontSize: "8.5px", color: "#475569" }}>Rural Health Unit • Municipality of San Juan</div>
+              </div>
+            </div>
+
+            {/* Official Seal / Legal Footer Note */}
+            <div style={{ marginTop: "10px", paddingTop: "4px", borderTop: "1px dotted #94a3b8", textAlign: "center", fontSize: "8px", color: "#64748b" }}>
+              CONFIDENTIAL PATIENT MEDICAL RECORD • BARANGAY HEALTH WORKER HEALTH INFORMATION MANAGEMENT SYSTEM (BHW-HIMS) • BARANGAY SUBUKIN, SAN JUAN, BATANGAS
+            </div>
           </div>
 
           {/* Header Bar with Barangay Subukin note (Hidden when printing) */}
@@ -886,7 +1052,7 @@ const MaternalCareForm = () => {
             </span>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-8 no-print">
             <fieldset disabled={isMidwife} className="space-y-8 border-0 p-0 m-0 min-w-0">
             
             {/* Patient General Details Grid */}
@@ -1599,179 +1765,270 @@ const MaternalCareForm = () => {
                 logoHeight="95px"
               />
 
-              {/* Patient Demographics */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1 flex items-center gap-1.5">
-                  <UserCheck className="h-3.5 w-3.5 text-primary" /> Patient &amp; Obstetrical Information
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-                  <div className="col-span-2">
-                    <span className="text-slate-500 text-[10px] block">Patient Full Name:</span>
-                    <strong className="text-sm text-slate-900 dark:text-slate-100">
-                      {selectedRecordForView.patient_name || "—"}
-                    </strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Family Number (FN):</span>
-                    <strong className="text-primary font-semibold">{selectedRecordForView.family_number || "—"}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Sitio / Area:</span>
-                    <span className="font-semibold">{selectedRecordForView.sitio || "Subukin"}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Age:</span>
-                    <span className="font-semibold">{selectedRecordForView.age ? `${selectedRecordForView.age} yrs` : "—"}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Expected Date of Confinement (EDC):</span>
-                    <strong className="text-slate-800 dark:text-slate-200">{selectedRecordForView.edc || "—"}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Last Menstrual Period (LMP):</span>
-                    <span>{selectedRecordForView.lmp || "—"}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Obstetric Score (G/P):</span>
-                    <span>{selectedRecordForView.obstetric_score || "—"}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">FPAL:</span>
-                    <span>{selectedRecordForView.fpal || "—"}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Patient Height:</span>
-                    <span>{selectedRecordForView.patient_height ? `${selectedRecordForView.patient_height} cm` : "—"}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Blood Type:</span>
-                    <strong className="text-rose-600 dark:text-rose-400">{selectedRecordForView.blood_type || "Unspecified"}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Date Recorded:</span>
-                    <span>{selectedRecordForView.created_at ? new Date(selectedRecordForView.created_at).toLocaleDateString() : "—"}</span>
-                  </div>
+              {/* Patient Demographics Table */}
+              <div style={{ marginBottom: "10px" }}>
+                <div style={{ backgroundColor: "#1e293b", color: "#ffffff", padding: "4px 8px", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  I. Patient Demographic &amp; Obstetrical Profile
                 </div>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px", border: "1px solid #000" }}>
+                  <tbody>
+                    <tr>
+                      <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left", width: "18%" }}>Patient Full Name:</th>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold", fontSize: "11px", width: "32%" }}>
+                        {selectedRecordForView.patient_name || "—"}
+                      </td>
+                      <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left", width: "18%" }}>Family Number (FN):</th>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold", width: "32%" }}>
+                        {selectedRecordForView.family_number || "—"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>Age:</th>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px" }}>{selectedRecordForView.age ? `${selectedRecordForView.age} years old` : "—"}</td>
+                      <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>Sitio / Address:</th>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px" }}>{selectedRecordForView.sitio ? `${selectedRecordForView.sitio}, Subukin, San Juan, Batangas` : "Subukin, San Juan, Batangas"}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>Obstetric Score (G/P):</th>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold" }}>{selectedRecordForView.obstetric_score || "—"}</td>
+                      <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>FPAL Score (F-P-A-L):</th>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold" }}>{selectedRecordForView.fpal || "—"}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>LMP (Last Menstrual Period):</th>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px" }}>{selectedRecordForView.lmp || "—"}</td>
+                      <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>EDC (Expected Date):</th>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold" }}>{selectedRecordForView.edc || "—"}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>Patient Height:</th>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px" }}>{selectedRecordForView.patient_height ? `${selectedRecordForView.patient_height} cm` : "—"}</td>
+                      <th style={{ border: "1px solid #000", padding: "4px 6px", background: "#f1f5f9", textAlign: "left" }}>Blood Type:</th>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px", fontWeight: "bold" }}>{selectedRecordForView.blood_type || "Unspecified"}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* Trimester Milestones Table */}
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "9.5px", border: "1px solid #000", borderTop: "none" }}>
+                  <thead>
+                    <tr style={{ background: "#f8fafc" }}>
+                      <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "center", width: "25%" }}>End of 1st Trimester</th>
+                      <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "center", width: "25%" }}>End of 2nd Trimester</th>
+                      <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "center", width: "25%" }}>End of 3rd Trimester</th>
+                      <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "center", width: "25%" }}>End of Postpartum / Period</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px", textAlign: "center" }}>{selectedRecordForView.end_1st_trim || "—"}</td>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px", textAlign: "center" }}>{selectedRecordForView.end_2nd_trim || "—"}</td>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px", textAlign: "center" }}>{selectedRecordForView.end_3rd_trim || "—"}</td>
+                      <td style={{ border: "1px solid #000", padding: "4px 6px", textAlign: "center" }}>
+                        {selectedRecordForView.end_postpartum || "—"}{selectedRecordForView.period ? ` (${selectedRecordForView.period})` : ""}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
-              {/* Risk Factors */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1 flex items-center gap-1.5">
-                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> Risk Factors Assessed
-                </h4>
-                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-                  {(() => {
-                    let risks: string[] = [];
-                    if (Array.isArray(selectedRecordForView.risk_factors)) risks = selectedRecordForView.risk_factors;
-                    else if (typeof selectedRecordForView.risk_factors === "string") {
-                      try { risks = JSON.parse(selectedRecordForView.risk_factors); } catch (e) {}
-                    }
+              {/* SECTION 2: PRENATAL CHECKUP & CLINICAL VISITS LEDGER */}
+              <div style={{ marginBottom: "10px" }}>
+                <div style={{ backgroundColor: "#1e293b", color: "#ffffff", padding: "4px 8px", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  II. Prenatal Clinical Visits &amp; Progress Monitoring Ledger
+                </div>
+                {(() => {
+                  let visits: PrenatalVisit[] = [];
+                  if (Array.isArray(selectedRecordForView.prenatal_visits)) visits = selectedRecordForView.prenatal_visits;
+                  else if (typeof selectedRecordForView.prenatal_visits === "string") {
+                    try { visits = JSON.parse(selectedRecordForView.prenatal_visits); } catch (e) {}
+                  }
 
-                    if (risks.length === 0) return <p className="text-slate-500 italic">No maternal risk factors checked.</p>;
-                    return (
-                      <div className="flex flex-wrap gap-1.5">
-                        {risks.map((rf, idx) => (
-                          <Badge key={idx} variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 text-[11px]">
-                            {rf}
-                          </Badge>
-                        ))}
+                  return (
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "9.5px", border: "1px solid #000" }}>
+                      <thead>
+                        <tr style={{ background: "#f1f5f9" }}>
+                          <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "45px" }}>Visit #</th>
+                          <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "80px" }}>Date of Visit</th>
+                          <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "55px" }}>AOG</th>
+                          <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "65px" }}>BP</th>
+                          <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "65px" }}>Weight (kg)</th>
+                          <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "70px" }}>Fundic Ht (cm)</th>
+                          <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "70px" }}>FHR (bpm)</th>
+                          <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", width: "85px" }}>Presentation</th>
+                          <th style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "left" }}>Clinical Findings / Treatment / Remarks</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visits.length > 0 ? (
+                          visits.map((v, i) => (
+                            <tr key={i}>
+                              <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", fontWeight: "bold" }}>{v.visit_number || i + 1}</td>
+                              <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.visit_date || "—"}</td>
+                              <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.aog || v.aog_weeks || "—"}</td>
+                              <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center", fontWeight: "600" }}>{v.blood_pressure || v.bp || "—"}</td>
+                              <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.weight || v.weight_kg ? `${v.weight || v.weight_kg} kg` : "—"}</td>
+                              <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.fundic_height || v.fundic_height_cm ? `${v.fundic_height || v.fundic_height_cm} cm` : "—"}</td>
+                              <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.fhr || v.fhb_bpm ? `${v.fhr || v.fhb_bpm} bpm` : "—"}</td>
+                              <td style={{ border: "1px solid #000", padding: "4px 5px", textAlign: "center" }}>{v.presentation || "—"}</td>
+                              <td style={{ border: "1px solid #000", padding: "4px 5px" }}>{v.notes || v.findings || v.remarks || "—"}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          [1, 2, 3, 4].map((num) => (
+                            <tr key={num}>
+                              <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center", color: "#64748b" }}>{num}</td>
+                              <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                              <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                              <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                              <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                              <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                              <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                              <td style={{ border: "1px solid #000", padding: "6px 5px", textAlign: "center" }}></td>
+                              <td style={{ border: "1px solid #000", padding: "6px 5px" }}></td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  );
+                })()}
+              </div>
+
+              {/* SECTION 3: MATERNAL CLINICAL RISK FACTORS EVALUATION */}
+              <div style={{ marginBottom: "10px" }}>
+                <div style={{ backgroundColor: "#1e293b", color: "#ffffff", padding: "4px 8px", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  III. Maternal Risk Factors Clinical Assessment Matrix
+                </div>
+                {(() => {
+                  let risks: string[] = [];
+                  if (Array.isArray(selectedRecordForView.risk_factors)) risks = selectedRecordForView.risk_factors;
+                  else if (typeof selectedRecordForView.risk_factors === "string") {
+                    try { risks = JSON.parse(selectedRecordForView.risk_factors); } catch (e) {}
+                  }
+
+                  return (
+                    <>
+                      {/* Summary of Active Risks */}
+                      <div style={{ border: "1px solid #000", borderBottom: "none", padding: "4px 8px", background: risks.length > 0 ? "#fff1f2" : "#f0fdf4", fontSize: "9.5px" }}>
+                        <strong>Identified Clinical Risks: </strong>
+                        {risks.length > 0 ? (
+                          <span style={{ color: "#b91c1c", fontWeight: "bold" }}>
+                            {risks.join(" • ")}
+                          </span>
+                        ) : (
+                          <span style={{ color: "#15803d", fontWeight: "bold" }}>
+                            ✓ No High-Risk Clinical Factors Identified (Low-Risk Pregnancy Status)
+                          </span>
+                        )}
                       </div>
-                    );
-                  })()}
-                </div>
-              </div>
 
-              {/* Prenatal Visits Table */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 pb-1 flex items-center gap-1.5">
-                  <FileText className="h-3.5 w-3.5 text-primary" /> Prenatal Visits &amp; Clinical Progress
-                </h4>
-                <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden text-xs">
-                  {(() => {
-                    let visits: PrenatalVisit[] = [];
-                    if (Array.isArray(selectedRecordForView.prenatal_visits)) visits = selectedRecordForView.prenatal_visits;
-                    else if (typeof selectedRecordForView.prenatal_visits === "string") {
-                      try { visits = JSON.parse(selectedRecordForView.prenatal_visits); } catch (e) {}
-                    }
-
-                    if (visits.length === 0) {
-                      return <div className="p-4 text-center text-slate-500 italic">No prenatal visits recorded for this patient yet.</div>;
-                    }
-                    return (
-                      <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-bold text-slate-700 dark:text-slate-300">
-                          <tr>
-                            <th className="p-2.5">Date</th>
-                            <th className="p-2.5 w-16 text-center">Visit #</th>
-                            <th className="p-2.5">AOG</th>
-                            <th className="p-2.5">BP</th>
-                            <th className="p-2.5">Weight</th>
-                            <th className="p-2.5">Fundic / FHR</th>
-                            <th className="p-2.5">Clinical Remarks &amp; Treatment</th>
+                      {/* 3-Column Risk Factors Checklist Table */}
+                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8.5px", border: "1px solid #000" }}>
+                        <thead>
+                          <tr style={{ background: "#f1f5f9" }}>
+                            <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "left", width: "34%" }}>Risk Factors (Group 1)</th>
+                            <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "left", width: "33%" }}>Risk Factors (Group 2)</th>
+                            <th style={{ border: "1px solid #000", padding: "3px 5px", textAlign: "left", width: "33%" }}>Risk Factors (Group 3)</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                          {visits.map((v, i) => (
-                            <tr key={i} className="hover:bg-slate-50/50">
-                              <td className="p-2.5 font-medium">{v.visit_date || "—"}</td>
-                              <td className="p-2.5 text-center font-bold">{v.visit_number || i + 1}</td>
-                              <td className="p-2.5">{v.aog || "—"}</td>
-                              <td className="p-2.5 font-semibold">{v.blood_pressure || "—"}</td>
-                              <td className="p-2.5">{v.weight ? `${v.weight} kg` : "—"}</td>
-                              <td className="p-2.5">
-                                {v.fundic_height ? `FH: ${v.fundic_height} cm` : ""} {v.fhr ? `• FHR: ${v.fhr} bpm` : ""}
-                              </td>
-                              <td className="p-2.5 text-slate-600 dark:text-slate-400">{v.notes || "—"}</td>
-                            </tr>
-                          ))}
+                        <tbody>
+                          {Array.from({ length: Math.max(RISK_FACTORS_COLUMN_1.length, RISK_FACTORS_COLUMN_2.length, RISK_FACTORS_COLUMN_3.length) }).map((_, rIdx) => {
+                            const rf1 = RISK_FACTORS_COLUMN_1[rIdx];
+                            const rf2 = RISK_FACTORS_COLUMN_2[rIdx];
+                            const rf3 = RISK_FACTORS_COLUMN_3[rIdx];
+
+                            const isChecked1 = rf1 ? risks.includes(rf1) : false;
+                            const isChecked2 = rf2 ? risks.includes(rf2) : false;
+                            const isChecked3 = rf3 ? risks.includes(rf3) : false;
+
+                            return (
+                              <tr key={rIdx}>
+                                <td style={{ border: "1px solid #000", padding: "2px 4px", backgroundColor: isChecked1 ? "#fee2e2" : "transparent" }}>
+                                  {rf1 ? (
+                                    <span style={{ fontWeight: isChecked1 ? "bold" : "normal" }}>
+                                      <span style={{ fontFamily: "monospace", fontWeight: "bold" }}>{isChecked1 ? "[✓] " : "[  ] "}</span>
+                                      {rf1}
+                                    </span>
+                                  ) : null}
+                                </td>
+                                <td style={{ border: "1px solid #000", padding: "2px 4px", backgroundColor: isChecked2 ? "#fee2e2" : "transparent" }}>
+                                  {rf2 ? (
+                                    <span style={{ fontWeight: isChecked2 ? "bold" : "normal" }}>
+                                      <span style={{ fontFamily: "monospace", fontWeight: "bold" }}>{isChecked2 ? "[✓] " : "[  ] "}</span>
+                                      {rf2}
+                                    </span>
+                                  ) : null}
+                                </td>
+                                <td style={{ border: "1px solid #000", padding: "2px 4px", backgroundColor: isChecked3 ? "#fee2e2" : "transparent" }}>
+                                  {rf3 ? (
+                                    <span style={{ fontWeight: isChecked3 ? "bold" : "normal" }}>
+                                      <span style={{ fontFamily: "monospace", fontWeight: "bold" }}>{isChecked3 ? "[✓] " : "[  ] "}</span>
+                                      {rf3}
+                                    </span>
+                                  ) : null}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
-                    );
-                  })()}
-                </div>
+                    </>
+                  );
+                })()}
               </div>
 
               {/* Remarks Summary */}
               {selectedRecordForView.remarks && (
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold text-slate-600 uppercase">Additional Clinical Notes:</span>
-                  <div className="p-2.5 bg-slate-50 dark:bg-slate-900 rounded border text-xs whitespace-pre-wrap">
-                    {selectedRecordForView.remarks}
-                  </div>
+                <div style={{ marginBottom: "10px", border: "1px solid #000", padding: "5px 8px", fontSize: "9.5px" }}>
+                  <strong>Additional Clinical Instructions / Midwife Remarks: </strong>
+                  <span>{selectedRecordForView.remarks}</span>
                 </div>
               )}
 
               {/* Signatures */}
-              <div className="print-footer-signatures pt-6 border-t border-slate-300 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 w-full" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "100%" }}>
-                <div style={{ textAlign: "left" }}>
-                  <p>Certified Correct:</p>
-                  <div className="mt-4 border-b border-slate-400 w-44"></div>
-                  <p className="text-[10px] text-slate-500 mt-1">Attending Barangay Health Worker</p>
+              <div className="print-footer-signatures" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "100%", paddingTop: "14px", marginTop: "12px", borderTop: "1.5px solid #000" }}>
+                <div style={{ textAlign: "left", width: "45%" }}>
+                  <div style={{ fontSize: "10px", fontWeight: "bold" }}>Certified Correct by:</div>
+                  <div style={{ marginTop: "24px", borderBottom: "1.5px solid #000", width: "100%" }}></div>
+                  <div style={{ fontSize: "9.5px", fontWeight: "bold", marginTop: "2px" }}>Attending Barangay Health Worker (BHW)</div>
+                  <div style={{ fontSize: "8.5px", color: "#475569" }}>Barangay Subukin Health Center</div>
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  <p>Approved By:</p>
-                  <div className="mt-4 border-b border-slate-400 w-44 ml-auto"></div>
-                  <p className="text-[10px] text-slate-500 mt-1">Barangay Health Supervisor / Midwife</p>
+                <div style={{ textAlign: "right", width: "45%" }}>
+                  <div style={{ fontSize: "10px", fontWeight: "bold" }}>Approved &amp; Verified by:</div>
+                  <div style={{ marginTop: "24px", borderBottom: "1.5px solid #000", width: "100%", marginLeft: "auto" }}></div>
+                  <div style={{ fontSize: "9.5px", fontWeight: "bold", marginTop: "2px" }}>Barangay Health Supervisor / Public Health Midwife</div>
+                  <div style={{ fontSize: "8.5px", color: "#475569" }}>Rural Health Unit • Municipality of San Juan</div>
                 </div>
+              </div>
+
+              {/* Official Seal / Legal Footer Note */}
+              <div style={{ marginTop: "10px", paddingTop: "4px", borderTop: "1px dotted #94a3b8", textAlign: "center", fontSize: "8px", color: "#64748b" }}>
+                CONFIDENTIAL PATIENT MEDICAL RECORD • BARANGAY HEALTH WORKER HEALTH INFORMATION MANAGEMENT SYSTEM (BHW-HIMS) • BARANGAY SUBUKIN, SAN JUAN, BATANGAS
               </div>
 
               <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
                 <span className="text-[10px] text-slate-500">Maternal Record ID: {selectedRecordForView.id}</span>
                 <div className="flex gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={handlePrintModal} className="text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
+                    <Printer className="h-3.5 w-3.5" /> Print Record
+                  </Button>
                   <Button type="button" variant="outline" size="sm" onClick={() => setViewRecordModalOpen(false)}>
                     Close
                   </Button>
-                  <Button 
-                    type="button" 
-                    size="sm"
-                    onClick={() => {
-                      setViewRecordModalOpen(false);
-                      if (selectedRecordForView) handleEdit(selectedRecordForView);
-                    }} 
-                    className="bg-primary text-primary-foreground text-xs"
-                  >
-                    Edit Record
-                  </Button>
+                  {!isMidwife && (
+                    <Button 
+                      type="button" 
+                      size="sm"
+                      onClick={() => {
+                        setViewRecordModalOpen(false);
+                        if (selectedRecordForView) handleEdit(selectedRecordForView);
+                      }} 
+                      className="bg-primary text-primary-foreground text-xs"
+                    >
+                      Edit Record
+                    </Button>
+                  )}
                 </div>
               </DialogFooter>
             </div>
