@@ -12,6 +12,10 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "allowScripts": {
+    "@swc/core": true,
+    "esbuild": true
+  },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@hookform/resolvers": "^3.10.0",
