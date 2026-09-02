@@ -27,7 +27,9 @@ import {
   Check,
   AlertCircle,
   FileText,
-  History
+  History,
+  FileCheck,
+  Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -410,6 +412,26 @@ const ChildHealthForm = () => {
 
   const STORAGE_KEY_VITA_DRAFT = "bhw_child_health_vita_draft";
   const STORAGE_KEY_SIA_DRAFT = "bhw_child_health_sia_draft";
+  const STORAGE_KEY_VITA_SAVED_BATCHES = "bhw_child_health_vita_saved_batches";
+  const STORAGE_KEY_SIA_SAVED_BATCHES = "bhw_child_health_sia_saved_batches";
+
+  const getSavedBatchesFromStorage = (key: string): Record<string, any> => {
+    try {
+      return JSON.parse(localStorage.getItem(key) || "{}");
+    } catch {
+      return {};
+    }
+  };
+
+  const saveBatchesToStorage = (key: string, batches: Record<string, any>) => {
+    localStorage.setItem(key, JSON.stringify(batches));
+  };
+
+  const [savedVitABatches, setSavedVitABatches] = useState<any[]>([]);
+  const [savedSIABatches, setSavedSIABatches] = useState<any[]>([]);
+  const [viewingSavedBatch, setViewingSavedBatch] = useState<any | null>(null);
+  const [viewBatchModalOpen, setViewBatchModalOpen] = useState(false);
+  const [deleteSavedBatchConfirm, setDeleteSavedBatchConfirm] = useState<{ id: string; formType: "vitamin-a" | "sia-masterlist" } | null>(null);
 
   const createBlankVitARows = (count = 20): VitaminARow[] => {
     const rows: VitaminARow[] = [];
@@ -642,7 +664,167 @@ const ChildHealthForm = () => {
       .select("*")
       .order("created_at", { ascending: false });
 
-    setSavedHealthRecords(data || []);
+    const allDbRecords = data || [];
+    setSavedHealthRecords(allDbRecords);
+
+    // Load saved master list batches from storage
+    const storedVitABatches = getSavedBatchesFromStorage(STORAGE_KEY_VITA_SAVED_BATCHES);
+    const storedSIABatches = getSavedBatchesFromStorage(STORAGE_KEY_SIA_SAVED_BATCHES);
+
+    const compiledVitABatches = Object.values(storedVitABatches).sort(
+      (a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    const compiledSIABatches = Object.values(storedSIABatches).sort(
+      (a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+    setSavedVitABatches(compiledVitABatches);
+    setSavedSIABatches(compiledSIABatches);
+
+    // Collect all archived record IDs so we know what belongs to a finished batch
+    const archivedVitARecordIds = new Set<string>();
+    compiledVitABatches.forEach((b: any) => {
+      (b.recordIds || []).forEach((id: string) => archivedVitARecordIds.add(id));
+      (b.records || []).forEach((r: any) => { if (r.id) archivedVitARecordIds.add(r.id); });
+    });
+
+    const archivedSIARecordIds = new Set<string>();
+    compiledSIABatches.forEach((b: any) => {
+      (b.recordIds || []).forEach((id: string) => archivedSIARecordIds.add(id));
+      (b.records || []).forEach((r: any) => { if (r.id) archivedSIARecordIds.add(r.id); });
+    });
+
+    // Restore active Vitamin A form if local draft is not present or blank
+    const activeVitADraftStr = localStorage.getItem(STORAGE_KEY_VITA_DRAFT);
+    let hasLocalVitAData = false;
+    if (activeVitADraftStr) {
+      try {
+        const parsed = JSON.parse(activeVitADraftStr);
+        if (Array.isArray(parsed) && parsed.some((r: any) => r.child_name && r.child_name.trim())) {
+          hasLocalVitAData = true;
+        }
+      } catch {}
+    }
+
+    if (!hasLocalVitAData) {
+      // Find unarchived Vitamin A records from DB
+      const unarchivedVitADb = allDbRecords.filter((rec: any) => {
+        if (archivedVitARecordIds.has(rec.id)) return false;
+        return getRecordFormType(rec) === "vitamin-a";
+      });
+
+      if (unarchivedVitADb.length > 0) {
+        const restoredRows: VitaminARow[] = [];
+        unarchivedVitADb.forEach((rec: any, idx: number) => {
+          let rowData: any = null;
+          if (rec.details) {
+            try {
+              const d = typeof rec.details === "string" ? JSON.parse(rec.details) : rec.details;
+              rowData = d.row_data;
+            } catch {}
+          }
+          if (rowData) {
+            restoredRows.push({
+              id: rowData.id || rec.id || `vrow-${idx + 1}`,
+              child_name: rowData.child_name || getRecordChildName(rec) || "",
+              dob: rowData.dob || "",
+              v6m_1st: rowData.v6m_1st || "",
+              v12_23_v1: rowData.v12_23_v1 || "", v12_23_v2: rowData.v12_23_v2 || "", v12_23_d1: rowData.v12_23_d1 || "", v12_23_d2: rowData.v12_23_d2 || "",
+              v24_35_v1: rowData.v24_35_v1 || "", v24_35_v2: rowData.v24_35_v2 || "", v24_35_d1: rowData.v24_35_d1 || "", v24_35_d2: rowData.v24_35_d2 || "",
+              v36_47_v1: rowData.v36_47_v1 || "", v36_47_v2: rowData.v36_47_v2 || "", v36_47_d1: rowData.v36_47_d1 || "", v36_47_d2: rowData.v36_47_d2 || "",
+              v48_59_v1: rowData.v48_59_v1 || "", v48_59_v2: rowData.v48_59_v2 || "", v48_59_d1: rowData.v48_59_d1 || "", v48_59_d2: rowData.v48_59_d2 || "",
+            });
+          }
+        });
+
+        // Pad to 20
+        while (restoredRows.length < 20) {
+          const idx = restoredRows.length;
+          restoredRows.push({
+            id: `vrow-${idx + 1}`,
+            child_name: "", dob: "", v6m_1st: "",
+            v12_23_v1: "", v12_23_v2: "", v12_23_d1: "", v12_23_d2: "",
+            v24_35_v1: "", v24_35_v2: "", v24_35_d1: "", v24_35_d2: "",
+            v36_47_v1: "", v36_47_v2: "", v36_47_d1: "", v36_47_d2: "",
+            v48_59_v1: "", v48_59_v2: "", v48_59_d1: "", v48_59_d2: "",
+          });
+        }
+
+        setVitARows(restoredRows);
+        localStorage.setItem(STORAGE_KEY_VITA_DRAFT, JSON.stringify(restoredRows));
+      }
+    }
+
+    // Restore active SIA form if local draft is not present or blank
+    const activeSIADraftStr = localStorage.getItem(STORAGE_KEY_SIA_DRAFT);
+    let hasLocalSIAData = false;
+    if (activeSIADraftStr) {
+      try {
+        const parsed = JSON.parse(activeSIADraftStr);
+        if (Array.isArray(parsed) && parsed.some((r: any) => (r.child_family_name && r.child_family_name.trim()) || (r.child_given_name && r.child_given_name.trim()))) {
+          hasLocalSIAData = true;
+        }
+      } catch {}
+    }
+
+    if (!hasLocalSIAData) {
+      // Find unarchived SIA records from DB
+      const unarchivedSIADb = allDbRecords.filter((rec: any) => {
+        if (archivedSIARecordIds.has(rec.id)) return false;
+        return getRecordFormType(rec) === "sia-masterlist";
+      });
+
+      if (unarchivedSIADb.length > 0) {
+        const restoredSIARows: SIARow[] = [];
+        unarchivedSIADb.forEach((rec: any, idx: number) => {
+          let rowData: any = null;
+          if (rec.details) {
+            try {
+              const d = typeof rec.details === "string" ? JSON.parse(rec.details) : rec.details;
+              rowData = d.row_data;
+            } catch {}
+          }
+          if (rowData) {
+            restoredSIARows.push({
+              id: rowData.id || rec.id || `srow-${idx + 1}`,
+              child_family_name: rowData.child_family_name || "",
+              child_given_name: rowData.child_given_name || "",
+              child_middle_name: rowData.child_middle_name || "",
+              dob: rowData.dob || "",
+              age_months: rowData.age_months || "",
+              gender: rowData.gender || "",
+              barangay: rowData.barangay || "Subukin",
+              purok_sitio_street: rowData.purok_sitio_street || "",
+              mother_family_name: rowData.mother_family_name || "",
+              mother_given_name: rowData.mother_given_name || "",
+              mother_middle_name: rowData.mother_middle_name || "",
+              vaccine_given: rowData.vaccine_given || "",
+              vaccination_date: rowData.vaccination_date || "",
+              vaccinator_family_name: rowData.vaccinator_family_name || "",
+              vaccinator_given_name: rowData.vaccinator_given_name || "",
+              vaccinator_middle_name: rowData.vaccinator_middle_name || "",
+            });
+          }
+        });
+
+        // Pad to 20
+        while (restoredSIARows.length < 20) {
+          const idx = restoredSIARows.length;
+          restoredSIARows.push({
+            id: `srow-${idx + 1}`,
+            child_family_name: "", child_given_name: "", child_middle_name: "",
+            dob: "", age_months: "", gender: "", barangay: "Subukin", purok_sitio_street: "",
+            mother_family_name: "", mother_given_name: "", mother_middle_name: "",
+            vaccine_given: "", vaccination_date: "",
+            vaccinator_family_name: "", vaccinator_given_name: "", vaccinator_middle_name: "",
+          });
+        }
+
+        setSiaRows(restoredSIARows);
+        localStorage.setItem(STORAGE_KEY_SIA_DRAFT, JSON.stringify(restoredSIARows));
+      }
+    }
+
     setLoading(false);
   };
 
@@ -770,191 +952,353 @@ const ChildHealthForm = () => {
     const config = configs[formType];
 
     return (
-      <Card className="border border-border/50 shadow-md bg-card text-card-foreground no-print mt-6">
-        <CardHeader className="pb-3 border-b">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              {config.icon}
-              <div>
-                <CardTitle className="text-base font-bold flex items-center gap-2 font-heading">
-                  {config.title}
-                  <Badge variant="outline" className={`text-[10px] px-2 py-0.5 font-semibold ${config.badgeColor}`}>
-                    {formRecords.length} {formRecords.length === 1 ? "record" : "records"}
-                  </Badge>
-                </CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {config.subtitle}
-                </p>
+      <div className="space-y-6">
+        {/* Saved Complete Master List Batches (Forms Saved as Complete) */}
+        {formType === "vitamin-a" && savedVitABatches.length > 0 && (
+          <Card className="border border-amber-200 dark:border-amber-800/60 shadow-xs bg-amber-50/40 dark:bg-amber-950/20 no-print">
+            <CardHeader className="pb-3 border-b border-amber-200/60 dark:border-amber-800/40">
+              <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200">
+                <FileCheck className="h-5 w-5 text-amber-600 shrink-0" />
+                <div>
+                  <CardTitle className="text-sm font-bold font-heading">
+                    Saved Complete Vitamin A Master Lists ({savedVitABatches.length})
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Completed 20-child master lists preserved as full official printable forms.
+                  </p>
+                </div>
               </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0 justify-end">
-              <div className="relative w-full md:w-56">
-                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input 
-                  type="text" 
-                  placeholder="Search child name..." 
-                  value={historySearch} 
-                  onChange={e => setHistorySearch(e.target.value)} 
-                  className="pl-8 h-8 text-xs"
-                />
-              </div>
-
-              <Select value={historySitio} onValueChange={setHistorySitio}>
-                <SelectTrigger className="h-8 text-xs w-36">
-                  <SelectValue placeholder="All Sitios" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sitios</SelectItem>
-                  {sitioOptions.map(s => (
-                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handlePrintHistory}
-                disabled={displayedRecords.length === 0}
-                className="h-8 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 shrink-0"
-              >
-                <Printer className="h-3.5 w-3.5" />
-                Print History
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-0 overflow-x-auto">
-          {loading ? (
-            <div className="text-center py-8 text-xs text-muted-foreground">Loading records...</div>
-          ) : displayedRecords.length === 0 ? (
-            <div className="text-center py-8 text-xs text-muted-foreground italic">{config.emptyMsg}</div>
-          ) : (
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-muted/40 border-b text-muted-foreground font-semibold">
-                  {formType === "sick-children" && (
-                    <>
-                      <th className="p-3">Checkup Date</th>
-                      <th className="p-3">Child's Name</th>
-                      <th className="p-3">Age & Sex</th>
-                      <th className="p-3">Chief Complaint / Summary</th>
-                      <th className="p-3 text-right">Actions</th>
-                    </>
-                  )}
-                  {formType === "vitamin-a" && (
-                    <>
-                      <th className="p-3">Date Saved</th>
-                      <th className="p-3">Child's Name</th>
-                      <th className="p-3">Date of Birth</th>
-                      <th className="p-3">Sitio</th>
-                      <th className="p-3">Dose Records / Remarks</th>
-                      <th className="p-3 text-right">Actions</th>
-                    </>
-                  )}
-                  {formType === "sia-masterlist" && (
-                    <>
-                      <th className="p-3">Vaccination Date</th>
-                      <th className="p-3">Child's Name</th>
-                      <th className="p-3">Age & Gender</th>
-                      <th className="p-3">Vaccine Given</th>
-                      <th className="p-3">Sitio / Address</th>
-                      <th className="p-3">Vaccinator</th>
-                      <th className="p-3 text-right">Actions</th>
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {displayedRecords.map(rec => {
-                  let detailsObj: any = null;
-                  try {
-                    if (rec.details) {
-                      detailsObj = typeof rec.details === "string" ? JSON.parse(rec.details) : rec.details;
-                    }
-                  } catch {}
-
-                  const childName = getRecordChildName(rec);
-
-                  return (
-                    <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
-                      {formType === "sick-children" && (
-                        <>
-                          <td className="p-3 font-medium text-foreground">{rec.checkup_date || "—"}</td>
-                          <td className="p-3 font-bold text-foreground">{childName}</td>
-                          <td className="p-3 text-muted-foreground">
-                            {detailsObj?.age_months ? `${detailsObj.age_months} mos (${detailsObj.sex || "—"})` : "—"}
-                          </td>
-                          <td className="p-3 max-w-md truncate text-muted-foreground">
-                            {detailsObj?.chief_complaint ? `Complaint: ${detailsObj.chief_complaint}` : rec.remarks || "—"}
-                          </td>
-                        </>
-                      )}
-                      {formType === "vitamin-a" && (
-                        <>
-                          <td className="p-3 font-medium text-foreground">{rec.checkup_date || "—"}</td>
-                          <td className="p-3 font-bold text-foreground">{childName}</td>
-                          <td className="p-3 text-muted-foreground">{detailsObj?.row_data?.dob || "—"}</td>
-                          <td className="p-3 text-muted-foreground">{detailsObj?.header?.sitio || "Subukin"}</td>
-                          <td className="p-3 max-w-md truncate text-muted-foreground">{rec.remarks || "—"}</td>
-                        </>
-                      )}
-                      {formType === "sia-masterlist" && (
-                        <>
-                          <td className="p-3 font-medium text-foreground">
-                            {detailsObj?.row_data?.vaccination_date || rec.checkup_date || "—"}
-                          </td>
-                          <td className="p-3 font-bold text-foreground">{childName}</td>
-                          <td className="p-3 text-muted-foreground">
-                            {detailsObj?.row_data?.age_months ? `${detailsObj.row_data.age_months} mos (${detailsObj.row_data.gender === "M" ? "Male" : detailsObj.row_data.gender === "F" ? "Female" : detailsObj.row_data.gender || "—"})` : "—"}
-                          </td>
-                          <td className="p-3 font-medium text-sky-700 dark:text-sky-300">
-                            {detailsObj?.row_data?.vaccine_given || "—"}
-                          </td>
-                          <td className="p-3 text-muted-foreground">
-                            {detailsObj?.row_data?.purok_sitio_street || detailsObj?.row_data?.barangay || "Subukin"}
-                          </td>
-                          <td className="p-3 text-muted-foreground">
-                            {`${detailsObj?.row_data?.vaccinator_given_name || ''} ${detailsObj?.row_data?.vaccinator_family_name || ''}`.trim() || "—"}
-                          </td>
-                        </>
-                      )}
-                      <td className="p-3 text-right space-x-1 whitespace-nowrap">
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          onClick={() => {
-                            setSelectedRecordForView(rec);
-                            setViewRecordModalOpen(true);
-                          }} 
-                          className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                          title="View record details"
+            </CardHeader>
+            <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+              {savedVitABatches.map((b, idx) => (
+                <Card key={b.id} className="border border-border/70 bg-card shadow-xs hover:border-amber-400/50 transition-colors">
+                  <CardContent className="p-3.5 flex items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-xs text-foreground font-heading">
+                          Form #{savedVitABatches.length - idx}: Vitamin A & RHU2
+                        </span>
+                        <Badge variant="outline" className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] px-1.5 py-0 border-amber-200 font-semibold">
+                          {b.records?.filter((r: any) => r.child_name?.trim())?.length || 20} Children Complete
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3 text-amber-600" />
+                          {b.formattedDate}
+                        </span>
+                        <span>•</span>
+                        <span>Sitio: {b.headerInfo?.sitio || "Subukin"}</span>
+                        <span>•</span>
+                        <span>Year: {b.headerInfo?.year || "2026"}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          setViewingSavedBatch(b);
+                          setViewBatchModalOpen(true);
+                        }}
+                        className="h-8 w-8 text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10"
+                        title="View Full Master List"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handlePrintSavedBatch(b)}
+                        className="h-8 w-8 text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10"
+                        title="Print Full Master List"
+                      >
+                        <Printer className="h-4 w-4" />
+                      </Button>
+                      {!isMidwife && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setDeleteSavedBatchConfirm({ id: b.id, formType: "vitamin-a" })}
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          title="Delete Batch"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                        {!isMidwife && (
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {formType === "sia-masterlist" && savedSIABatches.length > 0 && (
+          <Card className="border border-emerald-200 dark:border-emerald-800/60 shadow-xs bg-emerald-50/40 dark:bg-emerald-950/20 no-print">
+            <CardHeader className="pb-3 border-b border-emerald-200/60 dark:border-emerald-800/40">
+              <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-200">
+                <FileCheck className="h-5 w-5 text-emerald-600 shrink-0" />
+                <div>
+                  <CardTitle className="text-sm font-bold font-heading">
+                    Saved Complete SIA Master Lists ({savedSIABatches.length})
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Completed 20-child SIA vaccine master lists preserved as full official printable forms.
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+              {savedSIABatches.map((b, idx) => (
+                <Card key={b.id} className="border border-border/70 bg-card shadow-xs hover:border-emerald-400/50 transition-colors">
+                  <CardContent className="p-3.5 flex items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-xs text-foreground font-heading">
+                          Form #{savedSIABatches.length - idx}: SIA Master List
+                        </span>
+                        <Badge variant="outline" className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] px-1.5 py-0 border-emerald-200 font-semibold">
+                          {b.records?.filter((r: any) => (r.child_family_name && r.child_family_name.trim()) || (r.child_given_name && r.child_given_name.trim()))?.length || 20} Children Complete
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3 text-emerald-600" />
+                          {b.formattedDate}
+                        </span>
+                        <span>•</span>
+                        <span>Date: {b.headerInfo?.activity_date || "SEPT 2021 - FEB 2024"}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          setViewingSavedBatch(b);
+                          setViewBatchModalOpen(true);
+                        }}
+                        className="h-8 w-8 text-muted-foreground hover:text-emerald-600 hover:bg-emerald-500/10"
+                        title="View Full Master List"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handlePrintSavedBatch(b)}
+                        className="h-8 w-8 text-muted-foreground hover:text-emerald-600 hover:bg-emerald-500/10"
+                        title="Print Full Master List"
+                      >
+                        <Printer className="h-4 w-4" />
+                      </Button>
+                      {!isMidwife && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setDeleteSavedBatchConfirm({ id: b.id, formType: "sia-masterlist" })}
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          title="Delete Batch"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Individual Records Table Card */}
+        <Card className="border border-border/50 shadow-md bg-card text-card-foreground no-print">
+          <CardHeader className="pb-3 border-b">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                {config.icon}
+                <div>
+                  <CardTitle className="text-base font-bold flex items-center gap-2 font-heading">
+                    {config.title}
+                    <Badge variant="outline" className={`text-[10px] px-2 py-0.5 font-semibold ${config.badgeColor}`}>
+                      {formRecords.length} {formRecords.length === 1 ? "record" : "records"}
+                    </Badge>
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {config.subtitle}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0 justify-end">
+                <div className="relative w-full md:w-56">
+                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input 
+                    type="text" 
+                    placeholder="Search child name..." 
+                    value={historySearch} 
+                    onChange={e => setHistorySearch(e.target.value)} 
+                    className="pl-8 h-8 text-xs"
+                  />
+                </div>
+
+                <Select value={historySitio} onValueChange={setHistorySitio}>
+                  <SelectTrigger className="h-8 text-xs w-36">
+                    <SelectValue placeholder="All Sitios" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sitios</SelectItem>
+                    {sitioOptions.map(s => (
+                      <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrintHistory}
+                  disabled={displayedRecords.length === 0}
+                  className="h-8 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 shrink-0"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  Print History
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-0 overflow-x-auto">
+            {loading ? (
+              <div className="text-center py-8 text-xs text-muted-foreground">Loading records...</div>
+            ) : displayedRecords.length === 0 ? (
+              <div className="text-center py-8 text-xs text-muted-foreground italic">{config.emptyMsg}</div>
+            ) : (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-muted/40 border-b text-muted-foreground font-semibold">
+                    {formType === "sick-children" && (
+                      <>
+                        <th className="p-3">Checkup Date</th>
+                        <th className="p-3">Child's Name</th>
+                        <th className="p-3">Age & Sex</th>
+                        <th className="p-3">Chief Complaint / Summary</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </>
+                    )}
+                    {formType === "vitamin-a" && (
+                      <>
+                        <th className="p-3">Date Saved</th>
+                        <th className="p-3">Child's Name</th>
+                        <th className="p-3">Date of Birth</th>
+                        <th className="p-3">Sitio</th>
+                        <th className="p-3">Dose Records / Remarks</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </>
+                    )}
+                    {formType === "sia-masterlist" && (
+                      <>
+                        <th className="p-3">Vaccination Date</th>
+                        <th className="p-3">Child's Name</th>
+                        <th className="p-3">Age & Gender</th>
+                        <th className="p-3">Vaccine Given</th>
+                        <th className="p-3">Sitio / Address</th>
+                        <th className="p-3">Vaccinator</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {displayedRecords.map(rec => {
+                    let detailsObj: any = null;
+                    try {
+                      if (rec.details) {
+                        detailsObj = typeof rec.details === "string" ? JSON.parse(rec.details) : rec.details;
+                      }
+                    } catch {}
+
+                    const childName = getRecordChildName(rec);
+
+                    return (
+                      <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
+                        {formType === "sick-children" && (
+                          <>
+                            <td className="p-3 font-medium text-foreground">{rec.checkup_date || "—"}</td>
+                            <td className="p-3 font-bold text-foreground">{childName}</td>
+                            <td className="p-3 text-muted-foreground">
+                              {detailsObj?.age_months ? `${detailsObj.age_months} mos (${detailsObj.sex || "—"})` : "—"}
+                            </td>
+                            <td className="p-3 max-w-md truncate text-muted-foreground">
+                              {detailsObj?.chief_complaint ? `Complaint: ${detailsObj.chief_complaint}` : rec.remarks || "—"}
+                            </td>
+                          </>
+                        )}
+                        {formType === "vitamin-a" && (
+                          <>
+                            <td className="p-3 font-medium text-foreground">{rec.checkup_date || "—"}</td>
+                            <td className="p-3 font-bold text-foreground">{childName}</td>
+                            <td className="p-3 text-muted-foreground">{detailsObj?.row_data?.dob || "—"}</td>
+                            <td className="p-3 text-muted-foreground">{detailsObj?.header?.sitio || "Subukin"}</td>
+                            <td className="p-3 max-w-md truncate text-muted-foreground">{rec.remarks || "—"}</td>
+                          </>
+                        )}
+                        {formType === "sia-masterlist" && (
+                          <>
+                            <td className="p-3 font-medium text-foreground">
+                              {detailsObj?.row_data?.vaccination_date || rec.checkup_date || "—"}
+                            </td>
+                            <td className="p-3 font-bold text-foreground">{childName}</td>
+                            <td className="p-3 text-muted-foreground">
+                              {detailsObj?.row_data?.age_months ? `${detailsObj.row_data.age_months} mos (${detailsObj.row_data.gender === "M" ? "Male" : detailsObj.row_data.gender === "F" ? "Female" : detailsObj.row_data.gender || "—"})` : "—"}
+                            </td>
+                            <td className="p-3 font-medium text-sky-700 dark:text-sky-300">
+                              {detailsObj?.row_data?.vaccine_given || "—"}
+                            </td>
+                            <td className="p-3 text-muted-foreground">
+                              {detailsObj?.row_data?.purok_sitio_street || detailsObj?.row_data?.barangay || "Subukin"}
+                            </td>
+                            <td className="p-3 text-muted-foreground">
+                              {`${detailsObj?.row_data?.vaccinator_given_name || ''} ${detailsObj?.row_data?.vaccinator_family_name || ''}`.trim() || "—"}
+                            </td>
+                          </>
+                        )}
+                        <td className="p-3 text-right space-x-1 whitespace-nowrap">
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            onClick={() => setDeleteConfirmId(rec.id)} 
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                            title="Delete record"
+                            onClick={() => {
+                              setSelectedRecordForView(rec);
+                              setViewRecordModalOpen(true);
+                            }} 
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                            title="View record details"
                           >
-                            <Trash className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
+                          {!isMidwife && (
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              onClick={() => setDeleteConfirmId(rec.id)} 
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              title="Delete record"
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     );
   };
 
@@ -1353,6 +1697,7 @@ const ChildHealthForm = () => {
 
     setSaving(true);
     try {
+      const savedRecordIds: string[] = [];
       let savedCount = 0;
       for (const row of validRows) {
         const resId = await ensureResidentExists({
@@ -1370,14 +1715,61 @@ const ChildHealthForm = () => {
           details: JSON.stringify({ form_type: "vitamin_a_rhu2_masterlist", header: vitAInfo, row_data: row }),
         };
 
-        const { error } = await supabase.from("child_health" as any).insert(payload as any);
-        if (!error) savedCount++;
+        const { data, error } = await supabase.from("child_health" as any).insert(payload as any).select().single();
+        if (!error && data) {
+          savedCount++;
+          savedRecordIds.push(data.id);
+        } else if (!error) {
+          savedCount++;
+        }
       }
 
-      toast.success(`Successfully saved ${savedCount} Vitamin A & Deworming entries.`);
-      logActivity("submit_child_health", { entity_type: "child_health", description: `Saved ${savedCount} Vitamin A & Deworming records` });
-      localStorage.removeItem(STORAGE_KEY_VITA_DRAFT);
-      setVitARows(createBlankVitARows(20));
+      const isComplete = validRows.length >= 20;
+
+      if (isComplete) {
+        // Archive the completed full form batch in history
+        const batchId = `vit_batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        const batchTimestamp = new Date().toISOString();
+        const storedBatches = getSavedBatchesFromStorage(STORAGE_KEY_VITA_SAVED_BATCHES);
+
+        const newBatch = {
+          id: batchId,
+          formType: "vitamin-a" as const,
+          timestamp: batchTimestamp,
+          formattedDate: new Date(batchTimestamp).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          headerInfo: { ...vitAInfo },
+          recordIds: savedRecordIds,
+          records: [...vitARows],
+        };
+
+        storedBatches[batchId] = newBatch;
+        saveBatchesToStorage(STORAGE_KEY_VITA_SAVED_BATCHES, storedBatches);
+        setSavedVitABatches(prev => [newBatch, ...prev]);
+
+        // Reset active form to 20 blank rows for a new batch
+        localStorage.removeItem(STORAGE_KEY_VITA_DRAFT);
+        setVitARows(createBlankVitARows(20));
+
+        toast.success("Vitamin A Master List complete! All 20 entries saved to history as a complete form. The form has been reset for a new batch.");
+      } else {
+        // Keep entered rows on the active form so user can continue filling them out
+        localStorage.setItem(STORAGE_KEY_VITA_DRAFT, JSON.stringify(vitARows));
+        toast.success(`Progress saved (${savedCount} entries). All inputs remain on the form and are preserved in history.`);
+      }
+
+      logActivity("submit_child_health", { 
+        entity_type: "child_health", 
+        description: isComplete 
+          ? `Archived complete Vitamin A Master List (20 children)` 
+          : `Saved progress for ${savedCount} Vitamin A & Deworming records` 
+      });
+
       fetchSavedRecords();
     } catch (err) {
       console.error(err);
@@ -1388,7 +1780,7 @@ const ChildHealthForm = () => {
   };
 
   const handleSaveSIAMasterlist = async () => {
-    const validRows = siaRows.filter(r => r.child_family_name.trim() || r.child_given_name.trim());
+    const validRows = siaRows.filter(r => (r.child_family_name && r.child_family_name.trim()) || (r.child_given_name && r.child_given_name.trim()));
     if (validRows.length === 0) {
       toast.error("Please enter at least one child's name.");
       return;
@@ -1396,7 +1788,7 @@ const ChildHealthForm = () => {
 
     const missingInfoRow = validRows.find(r => (!r.dob?.trim() && !r.age_months?.trim()) || !r.purok_sitio_street?.trim());
     if (missingInfoRow) {
-      const cName = `${missingInfoRow.child_given_name} ${missingInfoRow.child_family_name}`.trim();
+      const cName = `${missingInfoRow.child_given_name || ''} ${missingInfoRow.child_family_name || ''}`.trim();
       toast.error(`Essential resident info missing for "${cName}": Please provide Date of Birth / Age and Address/Sitio.`);
       return;
     }
@@ -1410,16 +1802,17 @@ const ChildHealthForm = () => {
 
     const emptyVaccineRow = validRows.find(r => !siaRowHasVaccine(r));
     if (emptyVaccineRow) {
-      const cName = `${emptyVaccineRow.child_given_name} ${emptyVaccineRow.child_family_name}`.trim();
+      const cName = `${emptyVaccineRow.child_given_name || ''} ${emptyVaccineRow.child_family_name || ''}`.trim();
       toast.error(`Health details missing for "${cName}": Please record vaccine given or vaccination date.`);
       return;
     }
 
     setSaving(true);
     try {
+      const savedRecordIds: string[] = [];
       let savedCount = 0;
       for (const row of validRows) {
-        const fullChildName = `${row.child_given_name} ${row.child_middle_name} ${row.child_family_name}`.trim();
+        const fullChildName = `${row.child_given_name || ''} ${row.child_middle_name || ''} ${row.child_family_name || ''}`.trim();
         const resId = await ensureResidentExists({
           fullName: fullChildName,
           sitio: row.purok_sitio_street || "Subukin",
@@ -1436,14 +1829,61 @@ const ChildHealthForm = () => {
           details: JSON.stringify({ form_type: "sia_masterlist_6_59m", campaign_info: siaInfo, row_data: row }),
         };
 
-        const { error } = await supabase.from("child_health" as any).insert(payload as any);
-        if (!error) savedCount++;
+        const { data, error } = await supabase.from("child_health" as any).insert(payload as any).select().single();
+        if (!error && data) {
+          savedCount++;
+          savedRecordIds.push(data.id);
+        } else if (!error) {
+          savedCount++;
+        }
       }
 
-      toast.success(`Successfully saved ${savedCount} SIA masterlist entries.`);
-      logActivity("submit_child_health", { entity_type: "child_health", description: `Saved ${savedCount} SIA records` });
-      localStorage.removeItem(STORAGE_KEY_SIA_DRAFT);
-      setSiaRows(createBlankSIARows(20));
+      const isComplete = validRows.length >= 20;
+
+      if (isComplete) {
+        // Archive the completed full form batch in history
+        const batchId = `sia_batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        const batchTimestamp = new Date().toISOString();
+        const storedBatches = getSavedBatchesFromStorage(STORAGE_KEY_SIA_SAVED_BATCHES);
+
+        const newBatch = {
+          id: batchId,
+          formType: "sia-masterlist" as const,
+          timestamp: batchTimestamp,
+          formattedDate: new Date(batchTimestamp).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          headerInfo: { ...siaInfo },
+          recordIds: savedRecordIds,
+          records: [...siaRows],
+        };
+
+        storedBatches[batchId] = newBatch;
+        saveBatchesToStorage(STORAGE_KEY_SIA_SAVED_BATCHES, storedBatches);
+        setSavedSIABatches(prev => [newBatch, ...prev]);
+
+        // Reset active form to 20 blank rows for a new batch
+        localStorage.removeItem(STORAGE_KEY_SIA_DRAFT);
+        setSiaRows(createBlankSIARows(20));
+
+        toast.success("SIA Master List complete! All 20 entries saved to history as a complete form. The form has been reset for a new batch.");
+      } else {
+        // Keep entered rows on active form
+        localStorage.setItem(STORAGE_KEY_SIA_DRAFT, JSON.stringify(siaRows));
+        toast.success(`Progress saved (${savedCount} entries). All inputs remain on the form and are preserved in history.`);
+      }
+
+      logActivity("submit_child_health", { 
+        entity_type: "child_health", 
+        description: isComplete 
+          ? `Archived complete SIA Master List (20 children)` 
+          : `Saved progress for ${savedCount} SIA records` 
+      });
+
       fetchSavedRecords();
     } catch (err) {
       console.error(err);
@@ -1451,6 +1891,41 @@ const ChildHealthForm = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDeleteSavedBatch = async (batchId: string, formType: "vitamin-a" | "sia-masterlist") => {
+    const storageKey = formType === "vitamin-a" ? STORAGE_KEY_VITA_SAVED_BATCHES : STORAGE_KEY_SIA_SAVED_BATCHES;
+    const storedBatches = getSavedBatchesFromStorage(storageKey);
+    const batch = storedBatches[batchId];
+
+    if (batch && batch.recordIds && batch.recordIds.length > 0) {
+      await supabase.from("child_health" as any).delete().in("id", batch.recordIds);
+    }
+
+    delete storedBatches[batchId];
+    saveBatchesToStorage(storageKey, storedBatches);
+
+    if (formType === "vitamin-a") {
+      setSavedVitABatches(prev => prev.filter(b => b.id !== batchId));
+    } else {
+      setSavedSIABatches(prev => prev.filter(b => b.id !== batchId));
+    }
+
+    setDeleteSavedBatchConfirm(null);
+    toast.success("Saved Master List batch deleted.");
+    fetchSavedRecords();
+  };
+
+  const handlePrintSavedBatch = (batch: any) => {
+    setViewingSavedBatch(batch);
+    setViewBatchModalOpen(true);
+    setTimeout(() => {
+      document.body.classList.add("printing-child-batch");
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove("printing-child-batch");
+      }, 1000);
+    }, 350);
   };
 
 
@@ -1549,9 +2024,35 @@ const ChildHealthForm = () => {
             font-weight: bold !important;
           }
 
+          /* Batch Print Mode */
+          body.printing-child-batch [role="dialog"],
+          body.printing-child-batch [data-radix-portal],
+          body.printing-child-batch div[data-state="open"] {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            transform: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: white !important;
+          }
+          body.printing-child-batch #child-print-area,
+          body.printing-child-batch #child-print-area * {
+            display: none !important;
+            visibility: hidden !important;
+          }
+          body.printing-child-batch #saved-child-batch-print-area,
+          body.printing-child-batch #saved-child-batch-print-area * {
+            visibility: visible !important;
+          }
+
           /* If printing main form, make child-print-area visible */
-          body:not(.printing-summary):not(.printing-history) #child-print-area,
-          body:not(.printing-summary):not(.printing-history) #child-print-area *:not(.no-print):not(.no-print *) {
+          body:not(.printing-summary):not(.printing-history):not(.printing-child-batch) #child-print-area,
+          body:not(.printing-summary):not(.printing-history):not(.printing-child-batch) #child-print-area *:not(.no-print):not(.no-print *) {
             visibility: visible !important;
           }
 
@@ -4247,6 +4748,262 @@ const ChildHealthForm = () => {
               className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold gap-1.5 shadow-xs"
             >
               <Trash2 className="h-3.5 w-3.5" /> Yes, Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* VIEW & RE-PRINT COMPLETE MASTER LIST BATCH DIALOG */}
+      <Dialog open={viewBatchModalOpen} onOpenChange={setViewBatchModalOpen}>
+        <DialogContent className="max-w-6xl w-[95vw] max-h-[92vh] overflow-y-auto bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 p-6 shadow-2xl">
+          <DialogHeader className="border-b pb-3 no-print flex flex-row items-center justify-between">
+            <div>
+              <DialogTitle className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
+                <FileCheck className="h-5 w-5 text-primary" />
+                {viewingSavedBatch?.formType === "vitamin-a" 
+                  ? "Completed Vitamin A & Deworming Master List (RHU2)" 
+                  : "Completed SIA Master List (6–59 Months)"}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                Archived complete official form batch • Saved on {viewingSavedBatch?.formattedDate}
+              </DialogDescription>
+            </div>
+            <Button
+              type="button"
+              onClick={() => {
+                document.body.classList.add("printing-child-batch");
+                window.print();
+                setTimeout(() => {
+                  document.body.classList.remove("printing-child-batch");
+                }, 1000);
+              }}
+              className="gap-1.5 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs mr-6"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              Print Full Form
+            </Button>
+          </DialogHeader>
+
+          {/* Dialog Body & Print Area */}
+          <div id="saved-child-batch-print-area" className="mt-4 space-y-4">
+            {viewingSavedBatch?.formType === "vitamin-a" && (
+              <div className="space-y-4">
+                <OfficialHeader
+                  title="TARGET CLIENT LIST FOR VITAMIN A SUPPLEMENTATION AND DEWORMING FOR 6-59 MONTHS OLD"
+                  subtitle="RHU 2 - BARANGAY SUBUKIN HEALTH CENTER"
+                  showDoubleBorder={true}
+                  logoHeight="80px"
+                />
+
+                <div className="flex justify-between items-center text-xs font-semibold px-1 py-1 border-b border-slate-300">
+                  <span>Barangay: <strong>Subukin</strong></span>
+                  <span>Sitio: <strong>{viewingSavedBatch.headerInfo?.sitio || "Subukin"}</strong></span>
+                  <span>Year: <strong>{viewingSavedBatch.headerInfo?.year || "2026"}</strong></span>
+                  <span>Municipality: <strong>San Juan, Batangas</strong></span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-black text-[10px]" style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr className="bg-slate-100 text-center font-bold">
+                        <th rowSpan={3} className="border border-black p-1 w-7">#</th>
+                        <th rowSpan={3} className="border border-black p-1 min-w-[140px]">Name of Child</th>
+                        <th rowSpan={3} className="border border-black p-1 w-20">Date of Birth</th>
+                        <th className="border border-black p-1">6 mos</th>
+                        <th colSpan={4} className="border border-black p-1">12-23 mos</th>
+                        <th colSpan={4} className="border border-black p-1">24-35 mos</th>
+                        <th colSpan={4} className="border border-black p-1">36-47 mos</th>
+                        <th colSpan={4} className="border border-black p-1">48-59 mos</th>
+                      </tr>
+                      <tr className="bg-slate-50 text-center font-semibold text-[9px]">
+                        <th className="border border-black p-0.5">Vit A</th>
+                        <th colSpan={2} className="border border-black p-0.5">Vit A</th>
+                        <th colSpan={2} className="border border-black p-0.5">Deworming</th>
+                        <th colSpan={2} className="border border-black p-0.5">Vit A</th>
+                        <th colSpan={2} className="border border-black p-0.5">Deworming</th>
+                        <th colSpan={2} className="border border-black p-0.5">Vit A</th>
+                        <th colSpan={2} className="border border-black p-0.5">Deworming</th>
+                        <th colSpan={2} className="border border-black p-0.5">Vit A</th>
+                        <th colSpan={2} className="border border-black p-0.5">Deworming</th>
+                      </tr>
+                      <tr className="bg-slate-50 text-center font-normal text-[8.5px]">
+                        <th className="border border-black p-0.5 w-12">1st Dose</th>
+                        <th className="border border-black p-0.5 w-12">1st Dose</th>
+                        <th className="border border-black p-0.5 w-12">2nd Dose</th>
+                        <th className="border border-black p-0.5 w-12">1st Dose</th>
+                        <th className="border border-black p-0.5 w-12">2nd Dose</th>
+                        <th className="border border-black p-0.5 w-12">1st Dose</th>
+                        <th className="border border-black p-0.5 w-12">2nd Dose</th>
+                        <th className="border border-black p-0.5 w-12">1st Dose</th>
+                        <th className="border border-black p-0.5 w-12">2nd Dose</th>
+                        <th className="border border-black p-0.5 w-12">1st Dose</th>
+                        <th className="border border-black p-0.5 w-12">2nd Dose</th>
+                        <th className="border border-black p-0.5 w-12">1st Dose</th>
+                        <th className="border border-black p-0.5 w-12">2nd Dose</th>
+                        <th className="border border-black p-0.5 w-12">1st Dose</th>
+                        <th className="border border-black p-0.5 w-12">2nd Dose</th>
+                        <th className="border border-black p-0.5 w-12">1st Dose</th>
+                        <th className="border border-black p-0.5 w-12">2nd Dose</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(viewingSavedBatch.records || []).map((row: any, i: number) => (
+                        <tr key={row.id || i} className="text-center">
+                          <td className="border border-black p-1 font-bold">{i + 1}</td>
+                          <td className="border border-black p-1 text-left font-medium px-2">{row.child_name || "—"}</td>
+                          <td className="border border-black p-1">{row.dob || "—"}</td>
+                          <td className="border border-black p-1">{row.v6m_1st || "—"}</td>
+                          <td className="border border-black p-1">{row.v12_23_v1 || "—"}</td>
+                          <td className="border border-black p-1">{row.v12_23_v2 || "—"}</td>
+                          <td className="border border-black p-1">{row.v12_23_d1 || "—"}</td>
+                          <td className="border border-black p-1">{row.v12_23_d2 || "—"}</td>
+                          <td className="border border-black p-1">{row.v24_35_v1 || "—"}</td>
+                          <td className="border border-black p-1">{row.v24_35_v2 || "—"}</td>
+                          <td className="border border-black p-1">{row.v24_35_d1 || "—"}</td>
+                          <td className="border border-black p-1">{row.v24_35_d2 || "—"}</td>
+                          <td className="border border-black p-1">{row.v36_47_v1 || "—"}</td>
+                          <td className="border border-black p-1">{row.v36_47_v2 || "—"}</td>
+                          <td className="border border-black p-1">{row.v36_47_d1 || "—"}</td>
+                          <td className="border border-black p-1">{row.v36_47_d2 || "—"}</td>
+                          <td className="border border-black p-1">{row.v48_59_v1 || "—"}</td>
+                          <td className="border border-black p-1">{row.v48_59_v2 || "—"}</td>
+                          <td className="border border-black p-1">{row.v48_59_d1 || "—"}</td>
+                          <td className="border border-black p-1">{row.v48_59_d2 || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="print-footer-signatures flex justify-between items-start pt-6 mt-4 border-t border-slate-300 text-xs">
+                  <div>
+                    Certified Correct: ___________________________<br />
+                    <span className="text-[10px] text-slate-500">Attending Barangay Health Worker</span>
+                  </div>
+                  <div className="text-right">
+                    Approved By: ___________________________<br />
+                    <span className="text-[10px] text-slate-500">Barangay Health Supervisor / Midwife</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {viewingSavedBatch?.formType === "sia-masterlist" && (
+              <div className="space-y-4">
+                <OfficialHeader
+                  title="SUPPLEMENTAL IMMUNIZATION ACTIVITY (SIA) MASTERLIST (6-59 MONTHS OLD)"
+                  subtitle="DEPARTMENT OF HEALTH • BARANGAY SUBUKIN HEALTH CENTER"
+                  showDoubleBorder={true}
+                  logoHeight="80px"
+                />
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-semibold px-1 py-1 border-b border-slate-300">
+                  <span>Region: <strong>{viewingSavedBatch.headerInfo?.region || "IV-A CALABARZON"}</strong></span>
+                  <span>Province: <strong>{viewingSavedBatch.headerInfo?.province || "BATANGAS"}</strong></span>
+                  <span>Municipality: <strong>{viewingSavedBatch.headerInfo?.municipality || "SAN JUAN"}</strong></span>
+                  <span>Barangay: <strong>{viewingSavedBatch.headerInfo?.barangay || "SUBUKIN"}</strong></span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-black text-[10px]" style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr className="bg-slate-100 text-center font-bold">
+                        <th rowSpan={2} className="border border-black p-1 w-7">#</th>
+                        <th colSpan={3} className="border border-black p-1">Name of Child</th>
+                        <th rowSpan={2} className="border border-black p-1 w-20">Date of Birth</th>
+                        <th rowSpan={2} className="border border-black p-1 w-10">Age (Mos)</th>
+                        <th rowSpan={2} className="border border-black p-1 w-8">Sex</th>
+                        <th colSpan={2} className="border border-black p-1">Address</th>
+                        <th colSpan={3} className="border border-black p-1">Mother / Caregiver's Name</th>
+                        <th rowSpan={2} className="border border-black p-1 min-w-[70px]">Vaccine Given</th>
+                        <th rowSpan={2} className="border border-black p-1 w-20">Date Vaccinated</th>
+                        <th colSpan={3} className="border border-black p-1">Vaccinator's Name</th>
+                      </tr>
+                      <tr className="bg-slate-50 text-center font-semibold text-[9px]">
+                        <th className="border border-black p-0.5">Family Name</th>
+                        <th className="border border-black p-0.5">Given Name</th>
+                        <th className="border border-black p-0.5">Middle Name</th>
+                        <th className="border border-black p-0.5">Barangay</th>
+                        <th className="border border-black p-0.5">Purok / Sitio / Street</th>
+                        <th className="border border-black p-0.5">Family Name</th>
+                        <th className="border border-black p-0.5">Given Name</th>
+                        <th className="border border-black p-0.5">Middle Name</th>
+                        <th className="border border-black p-0.5">Family Name</th>
+                        <th className="border border-black p-0.5">Given Name</th>
+                        <th className="border border-black p-0.5">Middle Name</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(viewingSavedBatch.records || []).map((row: any, i: number) => (
+                        <tr key={row.id || i} className="text-center">
+                          <td className="border border-black p-1 font-bold">{i + 1}</td>
+                          <td className="border border-black p-1 text-left font-medium px-1.5">{row.child_family_name || "—"}</td>
+                          <td className="border border-black p-1 text-left font-medium px-1.5">{row.child_given_name || "—"}</td>
+                          <td className="border border-black p-1 text-left px-1.5">{row.child_middle_name || "—"}</td>
+                          <td className="border border-black p-1">{row.dob || "—"}</td>
+                          <td className="border border-black p-1 font-semibold">{row.age_months || "—"}</td>
+                          <td className="border border-black p-1 font-semibold">{row.gender || "—"}</td>
+                          <td className="border border-black p-1">{row.barangay || "Subukin"}</td>
+                          <td className="border border-black p-1 text-left px-1.5">{row.purok_sitio_street || "—"}</td>
+                          <td className="border border-black p-1 text-left px-1.5">{row.mother_family_name || "—"}</td>
+                          <td className="border border-black p-1 text-left px-1.5">{row.mother_given_name || "—"}</td>
+                          <td className="border border-black p-1 text-left px-1.5">{row.mother_middle_name || "—"}</td>
+                          <td className="border border-black p-1 font-bold text-sky-800 dark:text-sky-300">{row.vaccine_given || "—"}</td>
+                          <td className="border border-black p-1 font-semibold">{row.vaccination_date || "—"}</td>
+                          <td className="border border-black p-1 text-left px-1.5">{row.vaccinator_family_name || "—"}</td>
+                          <td className="border border-black p-1 text-left px-1.5">{row.vaccinator_given_name || "—"}</td>
+                          <td className="border border-black p-1 text-left px-1.5">{row.vaccinator_middle_name || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="print-footer-signatures flex justify-between items-start pt-6 mt-4 border-t border-slate-300 text-xs">
+                  <div>
+                    Certified Correct: ___________________________<br />
+                    <span className="text-[10px] text-slate-500">Attending Vaccinator / Health Worker</span>
+                  </div>
+                  <div className="text-right">
+                    Approved By: ___________________________<br />
+                    <span className="text-[10px] text-slate-500">Barangay Health Supervisor / Midwife</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* DELETE SAVED BATCH CONFIRMATION DIALOG */}
+      <Dialog open={!!deleteSavedBatchConfirm} onOpenChange={open => !open && setDeleteSavedBatchConfirm(null)}>
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800 shadow-xl">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-destructive mb-1">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              <DialogTitle className="text-base font-bold text-foreground">
+                Delete Master List Batch?
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground pt-1">
+              Are you sure you want to delete this saved master list batch? All archived form records in this batch will be permanently removed.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setDeleteSavedBatchConfirm(null)} 
+              className="text-xs font-medium"
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              onClick={() => deleteSavedBatchConfirm && handleDeleteSavedBatch(deleteSavedBatchConfirm.id, deleteSavedBatchConfirm.formType)} 
+              className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold gap-1.5 shadow-xs"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Yes, Delete Batch
             </Button>
           </DialogFooter>
         </DialogContent>
