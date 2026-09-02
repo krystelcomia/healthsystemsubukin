@@ -187,16 +187,17 @@ const FamilyDataForm = () => {
       const famNum = rec.family_number || "N/A";
       const fName = (rec.father_name || "").trim();
       const mName = (rec.mother_name || "").trim();
+      const headOfFamily = fName || mName || `Family #${famNum}`;
       if (fName && fName.toLowerCase() === clean) {
-        return `Already registered as Father in Family File #${famNum} (${fName}).`;
+        return `Already registered as Father (Household Head) in Family File #${famNum} (${headOfFamily}).`;
       }
       if (mName && mName.toLowerCase() === clean) {
-        return `Already registered as Mother in Family File #${famNum} (${mName}).`;
+        return `Already registered as Mother in Family File #${famNum} (Head: ${headOfFamily}).`;
       }
       const mems = parseMembers(rec.members_detail);
       const m = mems.find((item) => (item.full_name || "").trim().toLowerCase() === clean);
       if (m) {
-        return `Already registered as ${m.relationship || "Member"} in Family File #${famNum} (${fName || mName || "Family"}).`;
+        return `Already registered as ${m.relationship || "Member"} in Family File #${famNum} (Head: ${headOfFamily}).`;
       }
     }
     return null;
@@ -207,20 +208,20 @@ const FamilyDataForm = () => {
     const clean = memName.trim().toLowerCase();
     if (!clean) return null;
     if (editFather && editFather.trim().toLowerCase() === clean) {
-      return "Already listed as Father (Head) in this family file.";
+      return `"${memName.trim()}" is already listed as Father (Household Head) in this family file.`;
     }
     if (editMother && editMother.trim().toLowerCase() === clean) {
-      return "Already listed as Mother in this family file.";
+      return `"${memName.trim()}" is already listed as Mother in this family file.`;
     }
     const inActive = activeMembers.some(
       (m) => (m.full_name || "").trim().toLowerCase() === clean
     );
     if (inActive) {
-      return "Already listed in this family file.";
+      return `"${memName.trim()}" is already listed as a member in this family file.`;
     }
     const inOtherFamily = getResidentDuplicateInfo(clean, selectedFile?.id);
     if (inOtherFamily) {
-      return `${inOtherFamily} Duplicate resident records are not allowed.`;
+      return `Cannot add "${memName.trim()}": ${inOtherFamily} Duplicate resident records across multiple families are not allowed.`;
     }
     return null;
   }, [memName, editFather, editMother, activeMembers, records, selectedFile]);
@@ -234,7 +235,7 @@ const FamilyDataForm = () => {
     }
     const inOther = getResidentDuplicateInfo(clean);
     if (inOther) {
-      return `${inOther} Duplicate resident records are not allowed.`;
+      return `Cannot assign "${newFather.trim()}": ${inOther} Duplicate resident records across multiple families are not allowed.`;
     }
     return null;
   }, [newFather, newMother, records]);
@@ -247,7 +248,7 @@ const FamilyDataForm = () => {
     }
     const inOther = getResidentDuplicateInfo(clean);
     if (inOther) {
-      return `${inOther} Duplicate resident records are not allowed.`;
+      return `Cannot assign "${newMother.trim()}": ${inOther} Duplicate resident records across multiple families are not allowed.`;
     }
     return null;
   }, [newMother, newFather, records]);
@@ -262,7 +263,7 @@ const FamilyDataForm = () => {
     }
     const inOther = getResidentDuplicateInfo(clean, selectedFile.id);
     if (inOther) {
-      return `${inOther} Duplicate resident records are not allowed.`;
+      return `Cannot assign "${editFather.trim()}": ${inOther} Duplicate resident records across multiple families are not allowed.`;
     }
     return null;
   }, [editFather, editMother, selectedFile, records]);
@@ -276,7 +277,7 @@ const FamilyDataForm = () => {
     }
     const inOther = getResidentDuplicateInfo(clean, selectedFile.id);
     if (inOther) {
-      return `${inOther} Duplicate resident records are not allowed.`;
+      return `Cannot assign "${editMother.trim()}": ${inOther} Duplicate resident records across multiple families are not allowed.`;
     }
     return null;
   }, [editMother, editFather, selectedFile, records]);
@@ -468,11 +469,11 @@ const FamilyDataForm = () => {
       const clean = mem.full_name.trim();
       const key = clean.toLowerCase();
       if (seenNew.has(key)) {
-        toast.error(`Duplicate member "${clean}" is not allowed.`);
+        toast.error(`Duplicate member "${clean}" in the members list is not allowed.`);
         return;
       }
       if (mem.relationship !== "Father" && newFather && newFather.trim().toLowerCase() === key) {
-        toast.error(`Member "${clean}" is already listed as Father.`);
+        toast.error(`Member "${clean}" is already listed as Father (Household Head).`);
         return;
       }
       if (mem.relationship !== "Mother" && newMother && newMother.trim().toLowerCase() === key) {
@@ -481,7 +482,7 @@ const FamilyDataForm = () => {
       }
       const inOther = getResidentDuplicateInfo(key);
       if (inOther) {
-        toast.error(`Member "${clean}": ${inOther} Duplicate resident records are not allowed.`);
+        toast.error(`Cannot add "${clean}": ${inOther} Duplicate resident records across multiple families are not allowed.`);
         return;
       }
       seenNew.add(key);
@@ -643,7 +644,7 @@ const FamilyDataForm = () => {
       }
       const dupMem = getResidentDuplicateInfo(key, selectedFile.id);
       if (dupMem) {
-        toast.error(`Member "${clean}": ${dupMem} Duplicate resident records are not allowed.`);
+        toast.error(`Cannot save "${clean}": ${dupMem} Duplicate resident records across multiple families are not allowed.`);
         return;
       }
       seenActive.add(key);
@@ -718,9 +719,9 @@ const FamilyDataForm = () => {
         .single();
 
       if (error) {
-        toast.error("Failed to save family file");
+        toast.error("Failed to save family file. Please try again.");
       } else {
-        toast.success("Family file created and saved!");
+        toast.success(`Family file "${editFamNum} - ${editFather || editMother || "Family"}" created and saved!`);
         setSelectedFile(data);
         setActiveMembers(deduplicatedActiveMembers);
         fetchRecords();
@@ -732,12 +733,12 @@ const FamilyDataForm = () => {
         .eq("id", selectedFile.id);
 
       if (error) {
-        toast.error("Failed to update family file");
+        toast.error("Failed to update family file. Please try again.");
       } else {
-        toast.success("Family file updated and family numbers assigned!");
+        toast.success(`Family file "${editFamNum} - ${editFather || editMother || "Family"}" updated and saved successfully!`);
         logActivity("update_family_data", {
           entity_type: "family_data",
-          description: `Updated family file ${editFamNum} - ${editFather}`
+          description: `Updated family file ${editFamNum} - ${editFather || editMother}`
         });
         setSelectedFile((prev) => (prev ? { ...prev, ...updatePayload } : null));
         setActiveMembers(deduplicatedActiveMembers);
@@ -756,12 +757,12 @@ const FamilyDataForm = () => {
   const handleAddMemberToActiveFile = () => {
     const cleanName = memName.trim();
     if (!cleanName) {
-      toast.error("Please enter member's full name");
+      toast.error("Please enter the member's full name.");
       return;
     }
 
     if (!memBirthday || !memBirthday.trim()) {
-      toast.error("Please enter member's birthday. Birthday is required.");
+      toast.error(`Please enter a birthday for "${cleanName}". Birthday is required.`);
       return;
     }
 
@@ -788,13 +789,14 @@ const FamilyDataForm = () => {
     setMemAge("");
     setMemBirthday("");
     setAddMemberDialogOpen(false);
-    toast.success(`Added ${cleanName} to family members list`);
+    toast.success(`Added "${cleanName}" (${memRole}) to family members! Click "Save File Changes" to save.`);
   };
 
   // Remove member inside opened file
   const handleRemoveMember = (id: string) => {
+    const memToRemove = activeMembers.find(m => m.id === id);
     setActiveMembers((prev) => prev.filter((m) => m.id !== id));
-    toast.success("Member removed from family");
+    toast.success(`Removed "${memToRemove?.full_name || "Member"}" from family list. Click "Save File Changes" to save.`);
   };
 
   // Delete family file
