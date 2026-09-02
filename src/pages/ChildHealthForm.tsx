@@ -1560,6 +1560,23 @@ const ChildHealthForm = () => {
             page-break-inside: avoid !important;
           }
 
+          /* FORMAL ROUNDED CORNERS: Smooth rounded borders for cards, sections, and banners */
+          #child-print-area .rounded-md,
+          #child-print-area .border.rounded-md {
+            border-radius: 6px !important;
+            overflow: hidden !important;
+          }
+
+          #child-print-area .rounded,
+          #child-print-area .border.rounded,
+          #child-print-area .border {
+            border-radius: 4px !important;
+          }
+
+          #child-print-area .overflow-hidden {
+            overflow: hidden !important;
+          }
+
           /* Clean Page 2 pagination for official 2-sheet IMCI form */
           #child-print-area .imci-page-2 {
             break-before: page !important;
