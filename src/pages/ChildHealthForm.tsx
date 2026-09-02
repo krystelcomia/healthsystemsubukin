@@ -1107,21 +1107,6 @@ const ChildHealthForm = () => {
   };
 
   const requestDeleteVitARow = (row: VitaminARow, index: number) => {
-    const hasData = Boolean(
-      row.child_name?.trim() ||
-      row.dob?.trim() ||
-      row.v6m_1st?.trim() ||
-      row.v12_23_v1?.trim() || row.v12_23_v2?.trim() || row.v12_23_d1?.trim() || row.v12_23_d2?.trim() ||
-      row.v24_35_v1?.trim() || row.v24_35_v2?.trim() || row.v24_35_d1?.trim() || row.v24_35_d2?.trim() ||
-      row.v36_47_v1?.trim() || row.v36_47_v2?.trim() || row.v36_47_d1?.trim() || row.v36_47_d2?.trim() ||
-      row.v48_59_v1?.trim() || row.v48_59_v2?.trim() || row.v48_59_d1?.trim() || row.v48_59_d2?.trim()
-    );
-
-    if (!hasData) {
-      handleExecuteDeleteVitARow(row.id);
-      return;
-    }
-
     setRowToDelete({
       formType: "vitamin-a",
       rowId: row.id,
@@ -1132,28 +1117,6 @@ const ChildHealthForm = () => {
   };
 
   const requestDeleteSIARow = (row: SIARow, index: number) => {
-    const hasData = Boolean(
-      row.child_family_name?.trim() ||
-      row.child_given_name?.trim() ||
-      row.child_middle_name?.trim() ||
-      row.dob?.trim() ||
-      row.age_months?.trim() ||
-      row.gender?.trim() ||
-      row.purok_sitio_street?.trim() ||
-      row.mother_family_name?.trim() ||
-      row.mother_given_name?.trim() ||
-      row.mother_middle_name?.trim() ||
-      row.vaccine_given?.trim() ||
-      row.vaccination_date?.trim() ||
-      row.vaccinator_family_name?.trim() ||
-      row.vaccinator_given_name?.trim()
-    );
-
-    if (!hasData) {
-      handleExecuteDeleteSIARow(row.id);
-      return;
-    }
-
     const fullName = `${row.child_given_name || ''} ${row.child_family_name || ''}`.trim();
     setRowToDelete({
       formType: "sia-masterlist",
@@ -3292,10 +3255,10 @@ const ChildHealthForm = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => requestDeleteVitARow(row, idx)}
-                            className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 mx-auto"
-                            title="Clear row entry"
+                            className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/15 transition-colors mx-auto cursor-pointer"
+                            title="Delete this row entry"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </td>
                       </tr>
@@ -3505,10 +3468,10 @@ const ChildHealthForm = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => requestDeleteSIARow(row, idx)}
-                            className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 mx-auto"
-                            title="Clear row entry"
+                            className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/15 transition-colors mx-auto cursor-pointer"
+                            title="Delete this row entry"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </td>
                       </tr>
@@ -3705,8 +3668,37 @@ const ChildHealthForm = () => {
                           <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.father_name || "N/A"}</span>
                         </div>
                         <div>
-                          <span className="text-slate-500 text-[10px] block">Examiner / BHW:</span>
-                          <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.examiner_name || loggedInWorkerName || "—"}</span>
+                          <span className="text-slate-500 text-[10px] block">Family No. (FN):</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.fn_number || "N/A"}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Attending Examiner:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{detailsObj?.examiner_name || "BHW Subukin"}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. Clinical Assessment & Complaints */}
+                    <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2">
+                      <span className="font-bold text-sky-700 dark:text-sky-400 uppercase text-[11px] block border-b pb-1">
+                        Clinical Assessment & Complaints
+                      </span>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Chief Complaint:</span>
+                          <strong className="text-slate-800 dark:text-slate-200">{detailsObj?.chief_complaint || "None"}</strong>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Weight & Length:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {detailsObj?.weight_kg ? `${detailsObj.weight_kg} kg` : "—"} / {detailsObj?.length_cm ? `${detailsObj.length_cm} cm` : "—"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Temperature:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {detailsObj?.temperature ? `${detailsObj.temperature} °C` : "—"}
+                          </span>
                         </div>
                         <div>
                           <span className="text-slate-500 text-[10px] block">Consultation Type:</span>
@@ -3714,32 +3706,6 @@ const ChildHealthForm = () => {
                         </div>
                       </div>
                     </div>
-
-                    {/* 2. Clinical Vitals Grid */}
-                    {detailsObj && (
-                      <div className="grid grid-cols-5 gap-2 text-center bg-slate-100 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <div className="border-r pr-1">
-                          <span className="text-[10px] text-slate-500 block">Timbang (Weight)</span>
-                          <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.weight_kg ? `${detailsObj.weight_kg} kg` : "—"}</strong>
-                        </div>
-                        <div className="border-r pr-1">
-                          <span className="text-[10px] text-slate-500 block">Taas (Height)</span>
-                          <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.height_cm ? `${detailsObj.height_cm} cm` : "—"}</strong>
-                        </div>
-                        <div className="border-r pr-1">
-                          <span className="text-[10px] text-slate-500 block">Temp (°C)</span>
-                          <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.temp_c ? `${detailsObj.temp_c} °C` : "—"}</strong>
-                        </div>
-                        <div className="border-r pr-1">
-                          <span className="text-[10px] text-slate-500 block">Pulse Rate</span>
-                          <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.pulse_rate ? `${detailsObj.pulse_rate} /min` : "—"}</strong>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-slate-500 block">Respiratory Rate</span>
-                          <strong className="text-xs text-slate-900 dark:text-slate-100">{detailsObj.respiratory_rate ? `${detailsObj.respiratory_rate} /min` : "—"}</strong>
-                        </div>
-                      </div>
-                    )}
 
                     {/* Chief Complaint */}
                     {detailsObj?.chief_complaint && (
@@ -4239,6 +4205,48 @@ const ChildHealthForm = () => {
               className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold"
             >
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* DELETE ROW CONFIRMATION PROMPT DIALOG */}
+      <Dialog open={deleteRowModalOpen} onOpenChange={setDeleteRowModalOpen}>
+        <DialogContent className="max-w-sm bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800 shadow-xl">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-destructive mb-1">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              <DialogTitle className="text-base font-bold text-foreground">
+                Confirm Delete
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground pt-1">
+              {rowToDelete?.childName ? (
+                <>
+                  Are you sure you really want to delete the item for <strong className="text-foreground font-semibold">"{rowToDelete.childName}"</strong> (Row #{rowToDelete.rowNumber})? All entered data in this row will be cleared.
+                </>
+              ) : (
+                <>
+                  Are you sure you really want to delete the item on <strong className="text-foreground font-semibold">Row #{rowToDelete?.rowNumber}</strong>? All entered data in this row will be cleared.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => { setDeleteRowModalOpen(false); setRowToDelete(null); }} 
+              className="text-xs font-medium"
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              onClick={confirmDeleteRow} 
+              className="bg-destructive text-white hover:bg-destructive/90 text-xs font-semibold gap-1.5 shadow-xs"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Yes, Delete
             </Button>
           </DialogFooter>
         </DialogContent>
