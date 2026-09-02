@@ -19,6 +19,7 @@ import {
   Printer, 
   Plus, 
   Trash, 
+  Trash2,
   RefreshCw, 
   Search, 
   Eye, 
@@ -1096,6 +1097,51 @@ const ChildHealthForm = () => {
     toast.success(`Selected child "${res.full_name}" for SIA masterlist.`);
   };
 
+  const handleDeleteVitARow = (rowId: string) => {
+    setVitARows(prev => {
+      const updated = prev.map(r => r.id === rowId ? {
+        id: r.id,
+        child_name: "",
+        dob: "",
+        v6m_1st: "",
+        v12_23_v1: "", v12_23_v2: "", v12_23_d1: "", v12_23_d2: "",
+        v24_35_v1: "", v24_35_v2: "", v24_35_d1: "", v24_35_d2: "",
+        v36_47_v1: "", v36_47_v2: "", v36_47_d1: "", v36_47_d2: "",
+        v48_59_v1: "", v48_59_v2: "", v48_59_d1: "", v48_59_d2: "",
+      } : r);
+      localStorage.setItem(STORAGE_KEY_VITA_DRAFT, JSON.stringify(updated));
+      return updated;
+    });
+    toast.success("Row entry cleared.");
+  };
+
+  const handleDeleteSIARow = (rowId: string) => {
+    setSiaRows(prev => {
+      const updated = prev.map(r => r.id === rowId ? {
+        id: r.id,
+        child_family_name: "",
+        child_given_name: "",
+        child_middle_name: "",
+        dob: "",
+        age_months: "",
+        gender: "",
+        barangay: "Subukin",
+        purok_sitio_street: "",
+        mother_family_name: "",
+        mother_given_name: "",
+        mother_middle_name: "",
+        vaccine_given: "",
+        vaccination_date: "",
+        vaccinator_family_name: "",
+        vaccinator_given_name: "",
+        vaccinator_middle_name: "",
+      } : r);
+      localStorage.setItem(STORAGE_KEY_SIA_DRAFT, JSON.stringify(updated));
+      return updated;
+    });
+    toast.success("Row entry cleared.");
+  };
+
   const toggleVaccine = (vaccine: string) => {
     setSickForm(prev => {
       const exists = prev.vaccines_given.includes(vaccine);
@@ -1845,15 +1891,15 @@ const ChildHealthForm = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-muted/40 p-2.5 rounded-md border w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-card p-3 rounded-lg border border-border/60 shadow-xs w-full">
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
-                      <UserCheck className="h-4 w-4" /> Select Registered Resident Child (0–5y / 0–60m):
+                      <UserCheck className="h-4 w-4" /> Select a Resident (0–5y / 0–60m):
                     </span>
                     <Select value={selectedResidentId} onValueChange={handleSelectResidentForSick}>
-                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-72">
-                        <SelectValue placeholder={language === "tl" ? "Pumili..." : "Select..."} />
+                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
+                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente..." : "Select a child resident..."} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-60">
                         {childResidents.map(r => (
                           <SelectItem key={r.id} value={r.id} className="text-xs">
                             {r.full_name} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos / ${calculateAgeYears(r.birthday, r.age)}y)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
@@ -2916,10 +2962,10 @@ const ChildHealthForm = () => {
                   </div>
                 </div>
 
-                {/* Toolbar Controls */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 no-print bg-muted/40 p-2.5 rounded-md border w-full">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-semibold text-primary">Sitio:</span>
+                {/* Toolbar Controls - Prominent Resident Selector & Sitio Filter */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 no-print bg-card p-3 rounded-lg border border-border/60 shadow-xs w-full">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0">Sitio:</Label>
                     <Select value={vitAInfo.sitio} onValueChange={v => setVitAInfo(p => ({ ...p, sitio: v }))}>
                       <SelectTrigger className="h-8 text-xs bg-background w-36">
                         <SelectValue placeholder="Sitio" />
@@ -2932,15 +2978,15 @@ const ChildHealthForm = () => {
                     </Select>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
-                      <UserCheck className="h-4 w-4" /> Select Registered Child (0–5y):
+                      <UserCheck className="h-4 w-4" /> Select a Resident (0–5y / 0–60m):
                     </span>
                     <Select value="" onValueChange={handleSelectResidentForVitA}>
-                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-72">
-                        <SelectValue placeholder={language === "tl" ? "Pumili..." : "Select..."} />
+                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
+                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente..." : "Select a child resident..."} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-60">
                         {childResidents.map(r => (
                           <SelectItem key={r.id} value={r.id} className="text-xs">
                             {r.full_name} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
@@ -2968,6 +3014,7 @@ const ChildHealthForm = () => {
                       <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200">24-35 MONTHS</th>
                       <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200">36-47 MONTHS</th>
                       <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200">48-59 MONTHS</th>
+                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-10 text-center no-print">ACTION</th>
                     </tr>
                     
                     <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-[10px] font-bold text-center border-b border-slate-300 dark:border-slate-700">
@@ -3077,15 +3124,36 @@ const ChildHealthForm = () => {
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
 
+                        {/* Action Column */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5 text-center no-print">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteVitARow(row.id)}
+                            className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 mx-auto"
+                            title="Clear row entry"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              <div className="flex items-center justify-end no-print pt-2 border-t">
-                <Button type="button" onClick={handleSaveVitAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+              <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
+                <Button type="button" onClick={handleSaveVitAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
                   <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Vitamin A Master List"}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handlePrint} 
+                  className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
+                >
+                  <Printer className="h-4 w-4" /> Print
                 </Button>
               </div>
             </TabsContent>
@@ -3109,16 +3177,16 @@ const ChildHealthForm = () => {
                 </div>
 
                 {/* Meta Location Fields Bar & Child Resident Selector */}
-                <div className="flex flex-col gap-3 bg-muted/40 p-2.5 rounded-md border text-xs w-full">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-border/30">
+                <div className="flex flex-col gap-3 bg-card p-3 rounded-lg border border-border/60 shadow-xs text-xs w-full">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
-                      <UserCheck className="h-4 w-4" /> Select Registered Child (0–5y / 0–60m):
+                      <UserCheck className="h-4 w-4" /> Select a Resident (0–5y / 0–60m):
                     </span>
                     <Select value="" onValueChange={handleSelectResidentForSIA}>
-                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-72">
-                        <SelectValue placeholder={language === "tl" ? "Pumili..." : "Select..."} />
+                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
+                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente..." : "Select a child resident..."} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-60">
                         {childResidents.map(r => (
                           <SelectItem key={r.id} value={r.id} className="text-xs">
                             {r.full_name} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
@@ -3164,6 +3232,7 @@ const ChildHealthForm = () => {
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px]">Vaccine Given</th>
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[85px]">Date of Vaccination<br/><span className="text-[9px] font-normal">(YYYY-MM-DD)</span></th>
                       <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[240px]">Name of Vaccinator</th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-10 text-center no-print">ACTION</th>
                     </tr>
 
                     <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-[10px] font-semibold text-center border-b border-slate-300 dark:border-slate-700">
@@ -3235,15 +3304,37 @@ const ChildHealthForm = () => {
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_family_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_family_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_given_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_given_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_middle_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_middle_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+
+                        {/* Action Column */}
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5 text-center no-print">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteSIARow(row.id)}
+                            className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 mx-auto"
+                            title="Clear row entry"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              <div className="flex items-center justify-end no-print pt-2 border-t">
-                <Button type="button" onClick={handleSaveSIAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+              <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
+                <Button type="button" onClick={handleSaveSIAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
                   <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save SIA Master List"}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handlePrint} 
+                  className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
+                >
+                  <Printer className="h-4 w-4" /> Print
                 </Button>
               </div>
             </TabsContent>
