@@ -1655,8 +1655,8 @@ const ChildHealthForm = () => {
             text-align: center !important;
           }
           .header-seal img, .print-only img {
-            height: 52px !important;
-            max-height: 52px !important;
+            height: ${activeTab === "sick-children" ? "52px" : "68px"} !important;
+            max-height: ${activeTab === "sick-children" ? "52px" : "68px"} !important;
             width: auto !important;
             object-fit: contain !important;
             mix-blend-mode: multiply !important;
@@ -1817,47 +1817,115 @@ const ChildHealthForm = () => {
             vertical-align: middle !important;
           }
 
-          /* Tables formatting for Masterlists & summaries */
-          table {
-            min-width: 0 !important;
+          /* MASTERLIST LANDSCAPE TABLES (Vitamin A & SIA) - Solid Black Borders, Vertically Stretched Rows & Highlight Colors */
+          #child-print-area .masterlist-table {
             width: 100% !important;
             max-width: 100% !important;
-            table-layout: auto !important;
+            table-layout: fixed !important;
             border-collapse: collapse !important;
-            border: 1px solid #000000 !important;
+            border: 1.5px solid #000000 !important;
+            color: #000000 !important;
+            margin-top: 4px !important;
             break-inside: avoid !important;
             page-break-inside: avoid !important;
           }
 
-          thead th {
+          #child-print-area .masterlist-table thead th {
             border: 1px solid #000000 !important;
             color: #000000 !important;
-            padding: 2px 3px !important;
-            font-size: 7.8px !important;
-            line-height: 1.12 !important;
-            background-color: #f1f5f9 !important;
+            padding: 3px 1.5px !important;
+            font-size: 8px !important;
+            line-height: 1.15 !important;
             font-weight: 800 !important;
+            text-align: center !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          #child-print-area .masterlist-table tbody tr {
+            height: 22px !important;
+            min-height: 22px !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+
+          #child-print-area .masterlist-table tbody td {
+            border: 1px solid #000000 !important;
+            color: #000000 !important;
+            padding: 0 1.5px !important;
+            height: 22px !important;
+            font-size: 8.5px !important;
+            line-height: 1.15 !important;
+            vertical-align: middle !important;
             text-align: center !important;
           }
 
-          tbody td {
-            border: 1px solid #000000 !important;
-            color: #000000 !important;
-            padding: 1.5px 3px !important;
-            font-size: 7.8px !important;
-            line-height: 1.12 !important;
-            vertical-align: middle !important;
-          }
-
-          tbody td input {
+          /* Remove internal row lines (input underlines) inside masterlist cells */
+          #child-print-area .masterlist-table tbody td input,
+          #child-print-area .masterlist-table tbody td select,
+          #child-print-area .masterlist-table input {
             border: none !important;
-            font-size: 7.8px !important;
+            border-bottom: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            padding: 0 1px !important;
+            height: 100% !important;
+            min-height: 20px !important;
+            font-size: 8.5px !important;
             text-align: inherit !important;
             color: #000000 !important;
-            width: 100% !important;
-            background: transparent !important;
-            padding: 0 !important;
-            height: auto !important;
+            line-height: normal !important;
+          }
+
+          /* Preserve and force highlight colors for Vitamin A masterlist columns */
+          #child-print-area .masterlist-table .bg-amber-100 {
+            background-color: #fef3c7 !important;
+            color: #78350f !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #child-print-area .masterlist-table .bg-sky-100 {
+            background-color: #e0f2fe !important;
+            color: #0369a1 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #child-print-area .masterlist-table .bg-emerald-100 {
+            background-color: #d1fae5 !important;
+            color: #065f46 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #child-print-area .masterlist-table .bg-indigo-100 {
+            background-color: #e0e7ff !important;
+            color: #3730a3 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #child-print-area .masterlist-table .bg-rose-100 {
+            background-color: #ffe4e6 !important;
+            color: #9f1239 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #child-print-area .masterlist-table .bg-slate-200 {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #child-print-area .masterlist-table .bg-slate-100 {
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #child-print-area .masterlist-table .bg-slate-50 {
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
 
           ::placeholder,
@@ -1869,7 +1937,7 @@ const ChildHealthForm = () => {
 
           @page {
             size: ${activeTab === "sick-children" ? "portrait" : "landscape"};
-            margin: 4mm 5mm;
+            margin: ${activeTab === "sick-children" ? "4mm 5mm" : "5mm 6mm"};
           }
         }
       `}</style>
@@ -3028,6 +3096,21 @@ const ChildHealthForm = () => {
             {/* TAB 2: Children's Master List for Vitamin A and RHU2 (Official Paper Form Replica) */}
             <TabsContent value="vitamin-a" className="mt-4 space-y-4 w-full max-w-full">
               
+              {/* Official Printable Header (Enlarged for Landscape Layout) */}
+              <div className="print-only mb-2" style={{ display: "none" }}>
+                <OfficialHeader
+                  title="Vitamin A and Deworming Master List - RHU2"
+                  subtitle="Barangay Subukin Health Center • San Juan, Batangas • Masterlist of Children 6-59 Months Old"
+                  showDoubleBorder={true}
+                  logoHeight="70px"
+                />
+                <div className="flex justify-between items-center text-[10px] font-bold text-black border-b border-black pb-1 mb-1 mt-1">
+                  <span>BARANGAY: <strong>SUBUKIN</strong></span>
+                  <span>SITIO: <strong>{vitAInfo.sitio || "All Sitios"}</strong></span>
+                  <span>YEAR: <strong>{vitAInfo.year || new Date().getFullYear()}</strong></span>
+                </div>
+              </div>
+
               {/* Header Container (Stationary) */}
               <div className="w-full max-w-full space-y-4 shrink-0 no-print">
                 {/* Form Title Banner */}
@@ -3078,20 +3161,20 @@ const ChildHealthForm = () => {
 
               {/* Masterlist 20-Column Table (Scrolls horizontally on screen, fits cleanly on paper during print without slide function) */}
               <div className="overflow-x-auto print:overflow-visible print:border-0 w-full max-w-full rounded-md border border-slate-300 dark:border-slate-700 shadow-xs">
-                <table className="min-w-[1550px] print:min-w-0 print:w-full w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
+                <table className="masterlist-table min-w-[1550px] print:min-w-0 print:w-full w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
                   <thead>
                     <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
-                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-8">NO.</th>
-                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[280px] w-[280px]">
+                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-8 print:w-[3%]">NO.</th>
+                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[280px] w-[280px] print:w-[17%]">
                         NAME OF CHILD<br/><span className="text-[10px] font-normal text-slate-600 dark:text-slate-400">(First Name, MI, Last Name)</span>
                       </th>
-                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px]">BIRTH DATE</th>
+                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px] print:w-[8%]">BIRTH DATE</th>
                       
-                      <th colSpan={1} rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200">6 MOS.</th>
-                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-sky-100 dark:bg-sky-950/60 text-sky-900 dark:text-sky-200">12-23 MONTHS</th>
-                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200">24-35 MONTHS</th>
-                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200">36-47 MONTHS</th>
-                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200">48-59 MONTHS</th>
+                      <th colSpan={1} rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 print:w-[5%]">6 MOS.</th>
+                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-sky-100 dark:bg-sky-950/60 text-sky-900 dark:text-sky-200 print:w-[16.6%]">12-23 MONTHS</th>
+                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 print:w-[16.6%]">24-35 MONTHS</th>
+                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200 print:w-[16.6%]">36-47 MONTHS</th>
+                      <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200 print:w-[16.6%]">48-59 MONTHS</th>
                       <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-10 text-center no-print">ACTION</th>
                     </tr>
                     
@@ -3112,31 +3195,31 @@ const ChildHealthForm = () => {
                     
                     <tr className="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-[9px] font-semibold text-center border-b border-slate-300 dark:border-slate-700">
                       {/* 6 mos */}
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">VITAMIN A<br/>1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[5%]">VITAMIN A<br/>1ST DOSE</th>
 
                       {/* 12-23 mos */}
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">2ND DOSE</th>
 
                       {/* 24-35 mos */}
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">2ND DOSE</th>
 
                       {/* 36-47 mos */}
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">2ND DOSE</th>
 
                       {/* 48-59 mos */}
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">1ST DOSE</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">2ND DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">1ST DOSE</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.15%]">2ND DOSE</th>
                     </tr>
                   </thead>
                   
@@ -3221,6 +3304,22 @@ const ChildHealthForm = () => {
                 </table>
               </div>
 
+              {/* Official Printable Signatures Block */}
+              <div className="print-only print-footer-signatures pt-4 mt-3" style={{ display: "none" }}>
+                <div style={{ textAlign: "left", width: "45%" }}>
+                  <div style={{ fontSize: "10px", fontWeight: "bold" }}>Nagsuri / Certified Correct:</div>
+                  <div style={{ marginTop: "22px", borderBottom: "1.5px solid #000", width: "80%" }}></div>
+                  <div style={{ fontSize: "9.5px", fontWeight: "bold", marginTop: "3px" }}>{loggedInWorkerName || "Attending Barangay Health Worker"}</div>
+                  <div style={{ fontSize: "8.5px", color: "#334155" }}>Barangay Health Worker • Barangay Subukin</div>
+                </div>
+                <div style={{ textAlign: "right", width: "45%" }}>
+                  <div style={{ fontSize: "10px", fontWeight: "bold" }}>Pinagtibay / Approved By:</div>
+                  <div style={{ marginTop: "22px", borderBottom: "1.5px solid #000", width: "80%", marginLeft: "auto" }}></div>
+                  <div style={{ fontSize: "9.5px", fontWeight: "bold", marginTop: "3px" }}>Barangay Health Supervisor / Public Health Midwife</div>
+                  <div style={{ fontSize: "8.5px", color: "#334155" }}>Rural Health Unit (RHU2) • Municipality of San Juan</div>
+                </div>
+              </div>
+
               <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
                 <Button type="button" onClick={handleSaveVitAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
                   <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Vitamin A Master List"}
@@ -3239,6 +3338,22 @@ const ChildHealthForm = () => {
             {/* TAB 3: Supplemental Immunization Activity (SIA) Master List (Official Paper Form Replica) */}
             <TabsContent value="sia-masterlist" className="mt-4 space-y-4 w-full max-w-full">
               
+              {/* Official Printable Header (Enlarged for Landscape Layout) */}
+              <div className="print-only mb-2" style={{ display: "none" }}>
+                <OfficialHeader
+                  title="Supplemental Immunization Activity (SIA)"
+                  subtitle="Masterlist of Children 6-59 Months Old • Barangay Subukin Health Center • San Juan, Batangas"
+                  showDoubleBorder={true}
+                  logoHeight="70px"
+                />
+                <div className="grid grid-cols-4 gap-2 text-[9.5px] font-semibold text-black border-b border-black pb-1 mb-1 mt-1">
+                  <span>Region: <strong>{siaInfo.region || "IV-A CALABARZON"}</strong></span>
+                  <span>Province/City: <strong>{siaInfo.province || "BATANGAS"}</strong></span>
+                  <span>Municipality: <strong>{siaInfo.municipality || "SAN JUAN"}</strong></span>
+                  <span>Barangay: <strong>{siaInfo.barangay || "SUBUKIN"}</strong></span>
+                </div>
+              </div>
+
               {/* Header Container (Stationary) */}
               <div className="w-full max-w-full space-y-4 shrink-0 no-print">
                 {/* Title Banner */}
@@ -3297,41 +3412,41 @@ const ChildHealthForm = () => {
 
               {/* SIA Masterlist Table (Scrolls horizontally on screen, fits cleanly on paper during print without slide function) */}
               <div className="overflow-x-auto print:overflow-visible print:border-0 w-full max-w-full rounded-md border border-slate-300 dark:border-slate-700 shadow-xs">
-                <table className="min-w-[1550px] print:min-w-0 print:w-full w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
+                <table className="masterlist-table min-w-[1550px] print:min-w-0 print:w-full w-full text-[11px] border-collapse border border-slate-300 dark:border-slate-700">
                   <thead>
                     <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
-                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-6">#</th>
-                      <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[320px]">NAME</th>
-                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[85px]">Date of Birth<br/><span className="text-[9px] font-normal">(YYYY-MM-DD)</span></th>
-                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-14">Age in Months</th>
-                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-12">Gender<br/><span className="text-[9px] font-normal">(M/F)</span></th>
-                      <th colSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[160px]">Address</th>
-                      <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[240px]">Name of Mother</th>
-                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px]">Vaccine Given</th>
-                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[85px]">Date of Vaccination<br/><span className="text-[9px] font-normal">(YYYY-MM-DD)</span></th>
-                      <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[240px]">Name of Vaccinator</th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-6 print:w-[2.5%]">#</th>
+                      <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[320px] print:w-[21%]">NAME</th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[85px] print:w-[7.5%]">Date of Birth<br/><span className="text-[9px] font-normal">(YYYY-MM-DD)</span></th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-14 print:w-[4.5%]">Age in Months</th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-12 print:w-[4%]">Gender<br/><span className="text-[9px] font-normal">(M/F)</span></th>
+                      <th colSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[160px] print:w-[15%]">Address</th>
+                      <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[240px] print:w-[21%]">Name of Mother</th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px] print:w-[8%]">Vaccine Given</th>
+                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[85px] print:w-[7.5%]">Date of Vaccination<br/><span className="text-[9px] font-normal">(YYYY-MM-DD)</span></th>
+                      <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[240px] print:w-[12%]">Name of Vaccinator</th>
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-10 text-center no-print">ACTION</th>
                     </tr>
 
                     <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-[10px] font-semibold text-center border-b border-slate-300 dark:border-slate-700">
                       {/* Name of Child */}
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Family Name</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Given Name</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Middle Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[7%]">Family Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[8%]">Given Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[6%]">Middle Name</th>
 
                       {/* Address */}
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Barangay</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Purok/Sitio/Street</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[6.5%]">Barangay</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[8.5%]">Purok/Sitio/Street</th>
 
                       {/* Name of Mother */}
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Family Name</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Given Name</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Middle Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[7%]">Family Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[8%]">Given Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[6%]">Middle Name</th>
 
                       {/* Name of Vaccinator */}
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Family Name</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Given Name</th>
-                      <th className="border border-slate-300 dark:border-slate-700 p-0.5">Middle Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[4.5%]">Family Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[5%]">Given Name</th>
+                      <th className="border border-slate-300 dark:border-slate-700 p-0.5 print:w-[2.5%]">Middle Name</th>
                     </tr>
                   </thead>
 
@@ -3400,6 +3515,22 @@ const ChildHealthForm = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Official Printable Signatures Block */}
+              <div className="print-only print-footer-signatures pt-4 mt-3" style={{ display: "none" }}>
+                <div style={{ textAlign: "left", width: "45%" }}>
+                  <div style={{ fontSize: "10px", fontWeight: "bold" }}>Nagsuri / Certified Correct:</div>
+                  <div style={{ marginTop: "22px", borderBottom: "1.5px solid #000", width: "80%" }}></div>
+                  <div style={{ fontSize: "9.5px", fontWeight: "bold", marginTop: "3px" }}>{loggedInWorkerName || "Attending Barangay Health Worker"}</div>
+                  <div style={{ fontSize: "8.5px", color: "#334155" }}>Barangay Health Worker • Barangay Subukin</div>
+                </div>
+                <div style={{ textAlign: "right", width: "45%" }}>
+                  <div style={{ fontSize: "10px", fontWeight: "bold" }}>Pinagtibay / Approved By:</div>
+                  <div style={{ marginTop: "22px", borderBottom: "1.5px solid #000", width: "80%", marginLeft: "auto" }}></div>
+                  <div style={{ fontSize: "9.5px", fontWeight: "bold", marginTop: "3px" }}>Barangay Health Supervisor / Public Health Midwife</div>
+                  <div style={{ fontSize: "8.5px", color: "#334155" }}>Rural Health Unit (RHU2) • Municipality of San Juan</div>
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
