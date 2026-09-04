@@ -1,8 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import JSZip from "jszip";
-import sanjuanLogo from "@/assets/sanjuan_logo.png";
-import barangayLogo from "@/assets/barangay-logo.png";
-import headerTextImg from "@/assets/header_text.png";
+import { SANJUAN_LOGO_BASE64, BARANGAY_LOGO_BASE64, HEADER_TEXT_BASE64 } from "@/lib/officialHeaderAssets";
 
 interface ReportFile {
   folder: string;
@@ -11,78 +9,11 @@ interface ReportFile {
   type?: string;
 }
 
-let cachedOfficialLogos: { sanjuan: string; headerText: string; barangay: string } | null = null;
-
-const convertImgToDataUrl = (src: string, targetHeight = 180): Promise<string> => {
-  return new Promise((resolve) => {
-    if (typeof window === "undefined") {
-      resolve(src);
-      return;
-    }
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        const scale = Math.min(1, targetHeight / (img.naturalHeight || img.height || 180));
-        canvas.width = Math.round((img.naturalWidth || img.width) * scale);
-        canvas.height = Math.round((img.naturalHeight || img.height) * scale);
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = "high";
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL("image/png", 0.95);
-          resolve(dataUrl);
-          return;
-        }
-      } catch (e) {
-        console.warn("Canvas export fallback:", e);
-      }
-      // Fallback: fetch blob and read as Data URL
-      fetch(src)
-        .then((r) => r.blob())
-        .then((b) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(b);
-        })
-        .catch(() => resolve(src));
-    };
-    img.onerror = () => {
-      fetch(src)
-        .then((r) => r.blob())
-        .then((b) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(b);
-        })
-        .catch(() => resolve(src));
-    };
-    img.src = src;
-  });
-};
-
-const getOfficialLogos = async (): Promise<{ sanjuan: string; headerText: string; barangay: string }> => {
-  if (cachedOfficialLogos) return cachedOfficialLogos;
-  try {
-    const [sanjuan, headerText, barangay] = await Promise.all([
-      convertImgToDataUrl(sanjuanLogo, 180),
-      convertImgToDataUrl(headerTextImg, 180),
-      convertImgToDataUrl(barangayLogo, 180),
-    ]);
-    cachedOfficialLogos = { sanjuan, headerText, barangay };
-    return cachedOfficialLogos;
-  } catch {
-    return { sanjuan: sanjuanLogo, headerText: headerTextImg, barangay: barangayLogo };
-  }
-};
-
 const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, landscape = false) => {
-  const logos = cachedOfficialLogos || {
-    sanjuan: sanjuanLogo,
-    headerText: headerTextImg,
-    barangay: barangayLogo
+  const logos = {
+    sanjuan: SANJUAN_LOGO_BASE64,
+    headerText: HEADER_TEXT_BASE64,
+    barangay: BARANGAY_LOGO_BASE64
   };
 
   return `<!DOCTYPE html>
@@ -399,11 +330,7 @@ export const generateFullReportFolder = async (
   const log = (msg: string) => {
     if (onProgress) onProgress(msg);
   };
-
   try {
-    log("Preparing official barangay header seals and letterhead assets...");
-    await getOfficialLogos();
-
     log("Fetching all health center data, forms, and audit logs...");
 
     // 1. Fetch all data across the system in parallel
