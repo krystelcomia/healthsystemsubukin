@@ -135,9 +135,13 @@ const ConsultationForm = () => {
     });
   }, [historyRecords, historySearch, historySitio]);
 
-  const handleChange = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (field: string, value: string) => {
+    if (isMidwife) return;
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSelectResident = (id: string) => {
+    if (isMidwife) return;
     const found = residents.find(r => r.id === id);
     if (found) {
       setForm(prev => ({
@@ -173,6 +177,7 @@ const ConsultationForm = () => {
   };
 
   const handleReset = () => {
+    if (isMidwife) return;
     setForm({
       resident_id: "",
       birthdate: "",
@@ -191,6 +196,7 @@ const ConsultationForm = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (isMidwife) return;
     try {
       const rec = historyRecords.find(r => r.id === id);
       const { error } = await supabase.from("consultations").delete().eq("id", id);
@@ -210,6 +216,7 @@ const ConsultationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isMidwife) return;
     const targetId = form.resident_id;
 
     if (!targetId) { 
@@ -474,6 +481,7 @@ const ConsultationForm = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <fieldset disabled={isMidwife} className="space-y-6 border-0 p-0 m-0 min-w-0">
             
             {/* Section 1: Patient Identification */}
             <div className="space-y-4">
@@ -488,7 +496,7 @@ const ConsultationForm = () => {
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground">Name</Label>
                   <div className="no-print">
-                    <Select value={form.resident_id} onValueChange={handleSelectResident}>
+                    <Select value={form.resident_id} onValueChange={handleSelectResident} disabled={isMidwife}>
                       <SelectTrigger className={lineSelectClass}>
                         <SelectValue placeholder={t("consultation.selectResident")} />
                       </SelectTrigger>
@@ -603,6 +611,7 @@ const ConsultationForm = () => {
                 <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
               </div>
             </div>
+            </fieldset>
 
             {/* Form Actions */}
             <div className="pt-6 border-t border-border/40 flex flex-wrap items-center justify-end gap-3 no-print">

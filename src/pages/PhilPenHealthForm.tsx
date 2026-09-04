@@ -176,6 +176,7 @@ const PhilPenHealthForm = () => {
     : "";
 
   const handleResidentChange = (residentId: string) => {
+    if (isMidwife) return;
     const res = residents.find(r => r.id === residentId);
     if (!res) return;
 
@@ -203,10 +204,12 @@ const PhilPenHealthForm = () => {
   };
 
   const handleFieldChange = (field: string, value: any) => {
+    if (isMidwife) return;
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleToggle = (yesField: string, noField: string, choice: "yes" | "no") => {
+    if (isMidwife) return;
     setForm(prev => ({
       ...prev,
       [yesField]: choice === "yes",
@@ -215,6 +218,7 @@ const PhilPenHealthForm = () => {
   };
 
   const handleReset = () => {
+    if (isMidwife) return;
     setForm({
       resident_id: "",
       address: "",
@@ -252,6 +256,7 @@ const PhilPenHealthForm = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (isMidwife) return;
     try {
       const rec = historyRecords.find(r => r.id === id);
       const { error } = await supabase.from("philpen_health").delete().eq("id", id);
@@ -271,6 +276,7 @@ const PhilPenHealthForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isMidwife) return;
     if (!form.resident_id) {
       toast.error("Please select a registered resident.");
       return;
@@ -621,6 +627,7 @@ const PhilPenHealthForm = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <fieldset disabled={isMidwife} className="space-y-6 border-0 p-0 m-0 min-w-0">
             
             {/* Top Personal Fields Header Grid */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-x-6 gap-y-4 pb-4 border-b border-border/60">
@@ -630,7 +637,7 @@ const PhilPenHealthForm = () => {
                 <div className="flex items-center gap-2">
                   <span className="text-foreground shrink-0 text-sm font-bold">Name:</span>
                   <div className="flex-1 no-print">
-                    <Select value={form.resident_id} onValueChange={handleResidentChange}>
+                    <Select value={form.resident_id} onValueChange={handleResidentChange} disabled={isMidwife}>
                       <SelectTrigger className="h-8 border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 shadow-none focus:ring-0 focus:border-primary text-sm font-normal transition-colors">
                         <SelectValue placeholder="Select a resident..." />
                       </SelectTrigger>
@@ -1005,6 +1012,7 @@ const PhilPenHealthForm = () => {
                 <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
               </div>
             </div>
+            </fieldset>
 
             {/* Bottom Form Actions Row - Hidden in Print */}
             <div className="flex flex-wrap items-center justify-end gap-3 pt-6 no-print border-t border-border/40">

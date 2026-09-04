@@ -1303,6 +1303,7 @@ const ChildHealthForm = () => {
   };
 
   const handleSelectResidentForSick = (resId: string) => {
+    if (isMidwife) return;
     setSelectedResidentId(resId);
     const res = residents.find(r => r.id === resId);
     if (!res) return;
@@ -1339,6 +1340,7 @@ const ChildHealthForm = () => {
   };
 
   const handleSelectResidentForVitA = (resId: string) => {
+    if (isMidwife) return;
     if (!resId) return;
     const res = residents.find(r => r.id === resId);
     if (!res) return;
@@ -1377,6 +1379,7 @@ const ChildHealthForm = () => {
   };
 
   const handleSelectResidentForSIA = (resId: string) => {
+    if (isMidwife) return;
     if (!resId) return;
     const res = residents.find(r => r.id === resId);
     if (!res) return;
@@ -1451,6 +1454,7 @@ const ChildHealthForm = () => {
   };
 
   const requestDeleteVitARow = (row: VitaminARow, index: number) => {
+    if (isMidwife) return;
     setRowToDelete({
       formType: "vitamin-a",
       rowId: row.id,
@@ -1461,6 +1465,7 @@ const ChildHealthForm = () => {
   };
 
   const requestDeleteSIARow = (row: SIARow, index: number) => {
+    if (isMidwife) return;
     const fullName = `${row.child_given_name || ''} ${row.child_family_name || ''}`.trim();
     setRowToDelete({
       formType: "sia-masterlist",
@@ -1472,6 +1477,7 @@ const ChildHealthForm = () => {
   };
 
   const handleExecuteDeleteVitARow = (rowId: string) => {
+    if (isMidwife) return;
     setVitARows(prev => {
       const updated = prev.map(r => r.id === rowId ? {
         id: r.id,
@@ -1490,6 +1496,7 @@ const ChildHealthForm = () => {
   };
 
   const handleExecuteDeleteSIARow = (rowId: string) => {
+    if (isMidwife) return;
     setSiaRows(prev => {
       const updated = prev.map(r => r.id === rowId ? {
         id: r.id,
@@ -1517,6 +1524,7 @@ const ChildHealthForm = () => {
   };
 
   const confirmDeleteRow = () => {
+    if (isMidwife) return;
     if (!rowToDelete) return;
     if (rowToDelete.formType === "vitamin-a") {
       handleExecuteDeleteVitARow(rowToDelete.rowId);
@@ -1528,6 +1536,7 @@ const ChildHealthForm = () => {
   };
 
   const toggleVaccine = (vaccine: string) => {
+    if (isMidwife) return;
     setSickForm(prev => {
       const exists = prev.vaccines_given.includes(vaccine);
       return {
@@ -1538,6 +1547,7 @@ const ChildHealthForm = () => {
   };
 
   const handleResetSickForm = () => {
+    if (isMidwife) return;
     setSickForm({
       ...initialSickForm,
       examiner_name: loggedInWorkerName,
@@ -1548,6 +1558,7 @@ const ChildHealthForm = () => {
   };
 
   const handleDeleteRecord = async (id: string) => {
+    if (isMidwife) return;
     try {
       const rec = savedHealthRecords.find(r => r.id === id);
       const { error } = await supabase.from("child_health" as any).delete().eq("id", id);
@@ -1567,6 +1578,7 @@ const ChildHealthForm = () => {
 
   const handleSaveSickChild = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isMidwife) return;
     const fullName = `${sickForm.first_name} ${sickForm.middle_name} ${sickForm.surname}`.trim();
     if (!fullName) {
       toast.error("Please enter the child's name.");
@@ -1664,6 +1676,7 @@ const ChildHealthForm = () => {
   };
 
   const handleSaveVitAMasterlist = async () => {
+    if (isMidwife) return;
     const validRows = vitARows.filter(r => r.child_name.trim());
     if (validRows.length === 0) {
       toast.error("Please enter at least one child's name.");
@@ -1780,6 +1793,7 @@ const ChildHealthForm = () => {
   };
 
   const handleSaveSIAMasterlist = async () => {
+    if (isMidwife) return;
     const validRows = siaRows.filter(r => (r.child_family_name && r.child_family_name.trim()) || (r.child_given_name && r.child_given_name.trim()));
     if (validRows.length === 0) {
       toast.error("Please enter at least one child's name.");
@@ -1894,6 +1908,7 @@ const ChildHealthForm = () => {
   };
 
   const handleDeleteSavedBatch = async (batchId: string, formType: "vitamin-a" | "sia-masterlist") => {
+    if (isMidwife) return;
     const storageKey = formType === "vitamin-a" ? STORAGE_KEY_VITA_SAVED_BATCHES : STORAGE_KEY_SIA_SAVED_BATCHES;
     const storedBatches = getSavedBatchesFromStorage(storageKey);
     const batch = storedBatches[batchId];
@@ -2446,6 +2461,8 @@ const ChildHealthForm = () => {
         }
       />
 
+      {isMidwife && <ReadOnlyBanner />}
+
       {/* Main Container Card (Form View) */}
       {activeView === "form" && (
       <Card id="child-print-area" className="border border-border/50 shadow-md bg-card text-card-foreground overflow-visible">
@@ -2497,7 +2514,7 @@ const ChildHealthForm = () => {
                     </h1>
                     <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 shrink-0 flex items-center gap-1.5 self-center sm:self-auto">
                       <span>FN:</span>
-                      <Input type="text" value={sickForm.fn_number} onChange={e => setSickForm(p => ({ ...p, fn_number: e.target.value }))} placeholder="FN 242" className="inline-block w-20 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center bg-transparent" />
+                      <Input type="text" disabled={isMidwife} value={sickForm.fn_number} onChange={e => setSickForm(p => ({ ...p, fn_number: e.target.value }))} placeholder="FN 242" className="inline-block w-20 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center bg-transparent" />
                     </div>
                   </div>
 
@@ -2505,7 +2522,7 @@ const ChildHealthForm = () => {
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
                       <UserCheck className="h-4 w-4" /> Select a Resident (0–5y / 0–60m):
                     </span>
-                    <Select value={selectedResidentId} onValueChange={handleSelectResidentForSick}>
+                    <Select disabled={isMidwife} value={selectedResidentId} onValueChange={handleSelectResidentForSick}>
                       <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
                         <SelectValue placeholder={language === "tl" ? "Pumili ng residente..." : "Select a child resident..."} />
                       </SelectTrigger>
@@ -2550,6 +2567,7 @@ const ChildHealthForm = () => {
 
               {/* Form Body (Retains exact on-screen form appearance when printed, compact and continuous) */}
               <form onSubmit={handleSaveSickChild} className="space-y-3 text-xs">
+                <fieldset disabled={isMidwife} className="contents border-0 p-0 m-0">
 
                 {/* Patient Information Box */}
                 <div className="border border-slate-300 dark:border-slate-700 rounded-md p-3 space-y-3 bg-card">
@@ -3530,20 +3548,25 @@ const ChildHealthForm = () => {
                 <div className="print-only text-center text-[7px] text-slate-500 pt-1.5 border-t border-dotted mt-1.5" style={{ display: "none" }}>
                   CONFIDENTIAL PEDIATRIC MEDICAL RECORD • BARANGAY SUBUKIN HEALTH CENTER • SAN JUAN, BATANGAS
                 </div>
+                </fieldset>
 
                 {/* Form Action Buttons */}
                 <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
-                  <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
-                    <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Sick Child Record"}
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setResetConfirmOpen(true)} 
-                    className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
-                  >
-                    <RefreshCw className="h-4 w-4" /> Reset
-                  </Button>
+                  {!isMidwife && (
+                    <>
+                      <Button type="submit" disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
+                        <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Sick Child Record"}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => setResetConfirmOpen(true)} 
+                        className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 font-medium px-4 h-9 text-xs sm:text-sm"
+                      >
+                        <RefreshCw className="h-4 w-4" /> Reset
+                      </Button>
+                    </>
+                  )}
                   <Button 
                     type="button" 
                     variant="outline" 
@@ -3591,7 +3614,7 @@ const ChildHealthForm = () => {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 no-print bg-card p-3 rounded-lg border border-border/60 shadow-xs w-full">
                   <div className="flex items-center gap-2">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0">Sitio:</Label>
-                    <Select value={vitAInfo.sitio} onValueChange={v => setVitAInfo(p => ({ ...p, sitio: v }))}>
+                    <Select disabled={isMidwife} value={vitAInfo.sitio} onValueChange={v => setVitAInfo(p => ({ ...p, sitio: v }))}>
                       <SelectTrigger className="h-8 text-xs bg-background w-36">
                         <SelectValue placeholder="Sitio" />
                       </SelectTrigger>
@@ -3607,7 +3630,7 @@ const ChildHealthForm = () => {
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
                       <UserCheck className="h-4 w-4" /> Select a Resident (0–5y / 0–60m):
                     </span>
-                    <Select value="" onValueChange={handleSelectResidentForVitA}>
+                    <Select disabled={isMidwife} value="" onValueChange={handleSelectResidentForVitA}>
                       <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
                         <SelectValue placeholder={language === "tl" ? "Pumili ng residente..." : "Select a child resident..."} />
                       </SelectTrigger>
@@ -3639,7 +3662,7 @@ const ChildHealthForm = () => {
                       <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 print:w-[16.6%]">24-35 MONTHS</th>
                       <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200 print:w-[16.6%]">36-47 MONTHS</th>
                       <th colSpan={4} className="border border-slate-300 dark:border-slate-700 p-1 bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200 print:w-[16.6%]">48-59 MONTHS</th>
-                      <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-10 text-center no-print">ACTION</th>
+                      {!isMidwife && <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-10 text-center no-print">ACTION</th>}
                     </tr>
                     
                     <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-[10px] font-bold text-center border-b border-slate-300 dark:border-slate-700">
@@ -3696,6 +3719,7 @@ const ChildHealthForm = () => {
                         <td className="border border-slate-300 dark:border-slate-700 p-1">
                           <input 
                             type="text" 
+                            disabled={isMidwife}
                             value={row.child_name} 
                             onChange={e => {
                               const val = e.target.value;
@@ -3710,6 +3734,7 @@ const ChildHealthForm = () => {
                         <td className="border border-slate-300 dark:border-slate-700 p-1">
                           <input 
                             type="text" 
+                            disabled={isMidwife}
                             value={row.dob} 
                             onChange={e => {
                               const val = e.target.value;
@@ -3722,46 +3747,48 @@ const ChildHealthForm = () => {
 
                         {/* 6 mos - Vit A 1st */}
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5">
-                          <input type="text" value={row.v6m_1st} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v6m_1st: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" />
+                          <input type="text" disabled={isMidwife} value={row.v6m_1st} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v6m_1st: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" />
                         </td>
 
                         {/* 12-23 mos */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v12_23_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v12_23_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v12_23_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v12_23_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v12_23_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v12_23_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v12_23_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v12_23_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v12_23_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
 
                         {/* 24-35 mos */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v24_35_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v24_35_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v24_35_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v24_35_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v24_35_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v24_35_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v24_35_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v24_35_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v24_35_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
 
                         {/* 36-47 mos */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v36_47_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v36_47_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v36_47_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v36_47_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v36_47_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v36_47_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v36_47_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v36_47_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v36_47_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
 
                         {/* 48-59 mos */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.v48_59_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v48_59_v1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_v1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v48_59_v2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_v2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v48_59_d1} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_d1: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.v48_59_d2} onChange={e => setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, v48_59_d2: e.target.value } : r))} className="w-full text-center bg-transparent border-0 outline-none text-[11px]" /></td>
 
                         {/* Action Column */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5 text-center no-print">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => requestDeleteVitARow(row, idx)}
-                            className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/15 transition-colors mx-auto cursor-pointer"
-                            title="Delete this row entry"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </td>
+                        {!isMidwife && (
+                          <td className="border border-slate-300 dark:border-slate-700 p-0.5 text-center no-print">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => requestDeleteVitARow(row, idx)}
+                              className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/15 transition-colors mx-auto cursor-pointer"
+                              title="Delete this row entry"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -3785,9 +3812,11 @@ const ChildHealthForm = () => {
               </div>
 
               <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
-                <Button type="button" onClick={handleSaveVitAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
-                  <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Vitamin A Master List"}
-                </Button>
+                {!isMidwife && (
+                  <Button type="button" onClick={handleSaveVitAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
+                    <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Vitamin A Master List"}
+                  </Button>
+                )}
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -3829,7 +3858,7 @@ const ChildHealthForm = () => {
                     Masterlist of Children 6-59 months old
                   </p>
                   <div className="absolute right-3 top-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
-                    Date: <Input type="text" value={siaInfo.activity_date} onChange={e => setSiaInfo(p => ({ ...p, activity_date: e.target.value }))} placeholder="SEPT 2021 - FEB 2024" className="inline-block w-36 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center" />
+                    Date: <Input type="text" disabled={isMidwife} value={siaInfo.activity_date} onChange={e => setSiaInfo(p => ({ ...p, activity_date: e.target.value }))} placeholder="SEPT 2021 - FEB 2024" className="inline-block w-36 h-6 text-xs border-b border-t-0 border-x-0 rounded-none p-0 text-center" />
                   </div>
                 </div>
 
@@ -3839,7 +3868,7 @@ const ChildHealthForm = () => {
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
                       <UserCheck className="h-4 w-4" /> Select a Resident (0–5y / 0–60m):
                     </span>
-                    <Select value="" onValueChange={handleSelectResidentForSIA}>
+                    <Select disabled={isMidwife} value="" onValueChange={handleSelectResidentForSIA}>
                       <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
                         <SelectValue placeholder={language === "tl" ? "Pumili ng residente..." : "Select a child resident..."} />
                       </SelectTrigger>
@@ -3856,19 +3885,19 @@ const ChildHealthForm = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <Label className="text-[10px] text-slate-500 font-medium">Region:</Label>
-                      <Input type="text" value={siaInfo.region} onChange={e => setSiaInfo(p => ({ ...p, region: e.target.value }))} className={lineInputClass} />
+                      <Input type="text" disabled={isMidwife} value={siaInfo.region} onChange={e => setSiaInfo(p => ({ ...p, region: e.target.value }))} className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[10px] text-slate-500 font-medium">Province/City:</Label>
-                      <Input type="text" value={siaInfo.province} onChange={e => setSiaInfo(p => ({ ...p, province: e.target.value }))} className={lineInputClass} />
+                      <Input type="text" disabled={isMidwife} value={siaInfo.province} onChange={e => setSiaInfo(p => ({ ...p, province: e.target.value }))} className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[10px] text-slate-500 font-medium">Municipality:</Label>
-                      <Input type="text" value={siaInfo.municipality} onChange={e => setSiaInfo(p => ({ ...p, municipality: e.target.value }))} className={lineInputClass} />
+                      <Input type="text" disabled={isMidwife} value={siaInfo.municipality} onChange={e => setSiaInfo(p => ({ ...p, municipality: e.target.value }))} className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[10px] text-slate-500 font-medium">Barangay:</Label>
-                      <Input type="text" value={siaInfo.barangay} onChange={e => setSiaInfo(p => ({ ...p, barangay: e.target.value }))} className={lineInputClass} />
+                      <Input type="text" disabled={isMidwife} value={siaInfo.barangay} onChange={e => setSiaInfo(p => ({ ...p, barangay: e.target.value }))} className={lineInputClass} />
                     </div>
                   </div>
                 </div>
@@ -3889,7 +3918,7 @@ const ChildHealthForm = () => {
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px] print:w-[8%]">Vaccine Given</th>
                       <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[85px] print:w-[7.5%]">Date of Vaccination<br/><span className="text-[9px] font-normal">(YYYY-MM-DD)</span></th>
                       <th colSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[240px] print:w-[12%]">Name of Vaccinator</th>
-                      <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-10 text-center no-print">ACTION</th>
+                      {!isMidwife && <th rowSpan={2} className="border border-slate-300 dark:border-slate-700 p-1 w-10 text-center no-print">ACTION</th>}
                     </tr>
 
                     <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-[10px] font-semibold text-center border-b border-slate-300 dark:border-slate-700">
@@ -3920,19 +3949,19 @@ const ChildHealthForm = () => {
                         <td className="border border-slate-300 dark:border-slate-700 p-1 text-center font-bold text-slate-500">{idx + 1}</td>
 
                         {/* Child Name */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.child_family_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, child_family_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.child_given_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, child_given_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.child_middle_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, child_middle_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.child_family_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, child_family_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.child_given_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, child_given_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.child_middle_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, child_middle_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
 
                         {/* DOB */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.dob} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, dob: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.dob} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, dob: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center" /></td>
 
                         {/* Age Months */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.age_months} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, age_months: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.age_months} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, age_months: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center" /></td>
 
                         {/* Gender */}
                         <td className="border border-slate-300 dark:border-slate-700 p-0.5 text-center">
-                          <select value={row.gender || ""} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, gender: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center print:hidden">
+                          <select disabled={isMidwife} value={row.gender || ""} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, gender: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center print:hidden">
                             <option value=""></option>
                             <option value="M">M</option>
                             <option value="F">F</option>
@@ -3943,38 +3972,40 @@ const ChildHealthForm = () => {
                         </td>
 
                         {/* Address */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.barangay || ""} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, barangay: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1 text-center" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.purok_sitio_street} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, purok_sitio_street: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.barangay || ""} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, barangay: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1 text-center" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.purok_sitio_street} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, purok_sitio_street: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
 
                         {/* Mother Name */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.mother_family_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, mother_family_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.mother_given_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, mother_given_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.mother_middle_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, mother_middle_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.mother_family_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, mother_family_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.mother_given_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, mother_given_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.mother_middle_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, mother_middle_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
 
                         {/* Vaccine Given */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccine_given} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccine_given: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.vaccine_given} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccine_given: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
 
                         {/* Vaccination Date */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccination_date} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccination_date: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.vaccination_date} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccination_date: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-[11px] text-center" /></td>
 
                         {/* Vaccinator Name */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_family_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_family_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_given_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_given_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" value={row.vaccinator_middle_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_middle_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.vaccinator_family_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_family_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.vaccinator_given_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_given_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
+                        <td className="border border-slate-300 dark:border-slate-700 p-0.5"><input type="text" disabled={isMidwife} value={row.vaccinator_middle_name} onChange={e => setSiaRows(prev => prev.map(r => r.id === row.id ? { ...r, vaccinator_middle_name: e.target.value } : r))} className="w-full bg-transparent border-0 outline-none text-xs px-1" /></td>
 
                         {/* Action Column */}
-                        <td className="border border-slate-300 dark:border-slate-700 p-0.5 text-center no-print">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => requestDeleteSIARow(row, idx)}
-                            className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/15 transition-colors mx-auto cursor-pointer"
-                            title="Delete this row entry"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </td>
+                        {!isMidwife && (
+                          <td className="border border-slate-300 dark:border-slate-700 p-0.5 text-center no-print">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => requestDeleteSIARow(row, idx)}
+                              className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/15 transition-colors mx-auto cursor-pointer"
+                              title="Delete this row entry"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -3998,9 +4029,11 @@ const ChildHealthForm = () => {
               </div>
 
               <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
-                <Button type="button" onClick={handleSaveSIAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
-                  <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save SIA Master List"}
-                </Button>
+                {!isMidwife && (
+                  <Button type="button" onClick={handleSaveSIAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
+                    <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save SIA Master List"}
+                  </Button>
+                )}
                 <Button 
                   type="button" 
                   variant="outline" 

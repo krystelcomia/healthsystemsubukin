@@ -383,6 +383,7 @@ const FamilyDataForm = () => {
 
   // Submit Create New Family File
   const handleCreateFamilyFile = async () => {
+    if (isMidwife) return;
     if (!newFamNum.trim()) {
       toast.error("Please enter a Family Number");
       return;
@@ -574,6 +575,7 @@ const FamilyDataForm = () => {
 
   // Save changes inside opened file
   const handleSaveFileChanges = async () => {
+    if (isMidwife) return;
     if (!selectedFile) return;
 
     if (!editFamNum.trim()) {
@@ -725,6 +727,7 @@ const FamilyDataForm = () => {
 
   // Add member inside opened file modal
   const handleAddMemberToActiveFile = () => {
+    if (isMidwife) return;
     const cleanName = memName.trim();
     if (!cleanName) {
       toast.error("Please enter the member's full name.");
@@ -764,6 +767,7 @@ const FamilyDataForm = () => {
 
   // Remove member inside opened file
   const handleRemoveMember = (id: string) => {
+    if (isMidwife) return;
     const memToRemove = activeMembers.find(m => m.id === id);
     setActiveMembers((prev) => prev.filter((m) => m.id !== id));
     toast.success(`Removed "${memToRemove?.full_name || "Member"}" from family list. Click "Save File Changes" to save.`);
@@ -771,6 +775,7 @@ const FamilyDataForm = () => {
 
   // Delete family file
   const handleDeleteFile = async (id: string, name: string) => {
+    if (isMidwife) return;
 
     if (id.startsWith("temp-")) {
       setRecords((prev) => prev.filter((r) => r.id !== id));

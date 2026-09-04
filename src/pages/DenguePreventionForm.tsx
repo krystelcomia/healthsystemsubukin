@@ -492,7 +492,8 @@ const DenguePreventionForm = () => {
   };
 
   const autoSaveRowToDb = async (row: any) => {
-    if (!row) return;
+    if (isMidwife) return;
+    if (!row || !row.id) return;
 
     if (isRowEmpty(row)) {
       if (row.id && !row.id.startsWith("temp-") && !row.id.startsWith("blank-")) {
@@ -550,6 +551,7 @@ const DenguePreventionForm = () => {
   };
 
   const queueAutoSaveRow = (row: any) => {
+    if (isMidwife) return;
     if (!row || !row.id) return;
     if (saveTimeoutsRef.current[row.id]) {
       clearTimeout(saveTimeoutsRef.current[row.id]);
@@ -561,6 +563,7 @@ const DenguePreventionForm = () => {
   };
 
   const handleHouseholdNameChange = (id: string, value: string) => {
+    if (isMidwife) return;
     const cleanName = value.trim();
     const normInput = normalizeResidentName(value);
     const matched = householdHeads.find(
@@ -593,6 +596,7 @@ const DenguePreventionForm = () => {
   };
 
   const handleContainerTypeChange = (id: string, value: string) => {
+    if (isMidwife) return;
     setRecords((prev) => {
       const updated = prev.map((r) => {
         if (r.id === id) {
@@ -608,6 +612,7 @@ const DenguePreventionForm = () => {
   };
 
   const handleActionPlanChange = (id: string, value: string) => {
+    if (isMidwife) return;
     setRecords((prev) => {
       const updated = prev.map((r) => {
         if (r.id === id) {
@@ -625,6 +630,7 @@ const DenguePreventionForm = () => {
   // Signature is saved: if consented, it is stored in persistent cache and auto-applied.
   // If not consented, it is ONLY applied to the active row and never saved for future auto-use.
   const saveSignature = () => {
+    if (isMidwife) return;
     const canvas = canvasRef.current;
     if (!canvas || !activeSignRecordId) return;
 
@@ -697,6 +703,7 @@ const DenguePreventionForm = () => {
 
   // Toggle larvae checkmark and immediately auto-save to database
   const handleToggleLarvae = (id: string, hasLarvae: boolean) => {
+    if (isMidwife) return;
     setRecords((prev) => {
       const updated = prev.map((r) => {
         if (r.id === id) {
@@ -716,6 +723,7 @@ const DenguePreventionForm = () => {
 
   // Save Progress button: smoothly saves current records to DB while keeping the view directly on the form
   const handleSaveAll = async () => {
+    if (isMidwife) return;
     const nonEmptyRecords = records.filter((r) => !isRowEmpty(r));
     if (nonEmptyRecords.length === 0) {
       toast.error(t("dengue.noRecordsToSave") || "No records to save.");
@@ -796,7 +804,7 @@ const DenguePreventionForm = () => {
 
       if (isFormComplete) {
         // Archive the completed form as a saved batch in history
-        const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        const batchId = `dengue_batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         const batchTimestamp = new Date().toISOString();
         const savedBatchesMap = getSavedBatchesFromStorage();
 
@@ -864,6 +872,7 @@ const DenguePreventionForm = () => {
 
   // Delete single previous record/batch stored in saved list
   const handleDeleteSavedForm = async (batchId: string) => {
+    if (isMidwife) return;
     const savedBatchesMap = getSavedBatchesFromStorage();
     const batchInfo = savedBatchesMap[batchId];
 
@@ -903,6 +912,7 @@ const DenguePreventionForm = () => {
   };
 
   const handleDeleteRow = async (id: string, name: string) => {
+    if (isMidwife) return;
     // Cancel any pending auto-save timeout for this row
     if (saveTimeoutsRef.current[id]) {
       clearTimeout(saveTimeoutsRef.current[id]);
@@ -1155,12 +1165,12 @@ const DenguePreventionForm = () => {
           }
           .print-signatures,
           .print-footer-signatures {
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
-            align-items: flex-start !important;
-            width: 100% !important;
           }
+
+          .no-print {
+            display: none !important;
+          }
+
           @page {
             size: A4 portrait;
             margin: 5mm;
@@ -1170,12 +1180,12 @@ const DenguePreventionForm = () => {
 
       {/* Dynamic Theme Banner Header matching Dashboard */}
       <PageHeaderBanner
-        icon={Bug}
+        icon={ShieldAlert}
         badge={language === "tl" ? "Talaan ng Dengue Prevention" : "Dengue Prevention Record"}
         title={language === "tl" ? "Dengue Prevention — Search & Destroy 2026" : "Dengue Prevention — Search & Destroy 2026"}
-        description={language === "tl" ? "Pagsubaybay sa kiti-kiti, inspeksyon ng lalagyan ng tubig, at pagsubaybay sa plano ng pagkilos sa Barangay Subukin." : "Household larvae monitoring, breeding container inspection, and action plan tracking for Barangay Subukin."}
-        rightContent={
-          <div className="flex items-center gap-1.5 p-1 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xs">
+        description={language === "tl" ? "Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue sa Barangay Subukin." : "Search and destruction checklist of dengue vector breeding containers and household inspection records in Barangay Subukin."}
+        action={
+          <div className="flex items-center gap-1.5 bg-black/20 backdrop-blur-md p-1 rounded-xl border border-white/10 self-end sm:self-auto">
             <Button
               type="button"
               variant="ghost"
@@ -1187,8 +1197,8 @@ const DenguePreventionForm = () => {
                   : "text-white/90 hover:text-white hover:bg-white/15"
               }`}
             >
-              <FileText className="h-3.5 w-3.5 mr-1.5" />
-              Form
+              <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" />
+              Active Form
             </Button>
             <Button
               type="button"
@@ -1271,9 +1281,11 @@ const DenguePreventionForm = () => {
                   <th className="border border-border p-2 font-bold text-center w-[10%]" rowSpan={2}>
                     {language === "tl" ? "LAGDA" : "SIGNATURE"}
                   </th>
-                  <th className="border border-border p-2 font-bold text-center w-[5%] no-print" rowSpan={2}>
-                    
-                  </th>
+                  {!isMidwife && (
+                    <th className="border border-border p-2 font-bold text-center w-[5%] no-print" rowSpan={2}>
+                      
+                    </th>
+                  )}
                 </tr>
                 <tr className="bg-primary/10 text-primary font-heading">
                   <th className="border border-border p-1 text-[10px] font-bold text-center">
@@ -1284,7 +1296,7 @@ const DenguePreventionForm = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className={isMidwife ? "pointer-events-none opacity-90" : ""}>
                 {records.map((rec) => (
                   <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
                     <td className="border border-border p-0 font-medium relative">
@@ -1292,12 +1304,14 @@ const DenguePreventionForm = () => {
                         {rec.household_name || ""}
                       </span>
                       <input
+                        disabled={isMidwife}
                         list="household-heads-list"
                         type="text"
                         value={rec.household_name || ""}
                         onKeyDown={allowOnlyLetters}
                         onChange={(e) => handleHouseholdNameChange(rec.id, sanitizeLetters(e.target.value))}
                         onBlur={() => {
+                          if (isMidwife) return;
                           const cleanName = (rec.household_name || "").trim();
                           if (cleanName && !rec.signature) {
                             const matched = householdHeads.find(
@@ -1324,7 +1338,7 @@ const DenguePreventionForm = () => {
                           }
                           autoSaveRowToDb(rec);
                         }}
-                        className="cell-input"
+                        className={`cell-input ${isMidwife ? "cursor-default select-text" : ""}`}
                         placeholder=""
                       />
                     </td>
@@ -1333,25 +1347,26 @@ const DenguePreventionForm = () => {
                         {rec.container_type || ""}
                       </span>
                       <input
+                        disabled={isMidwife}
                         type="text"
                         value={rec.container_type || ""}
                         onChange={(e) => handleContainerTypeChange(rec.id, e.target.value)}
                         onBlur={() => autoSaveRowToDb(rec)}
-                        className="cell-input"
+                        className={`cell-input ${isMidwife ? "cursor-default select-text" : ""}`}
                         placeholder=""
                       />
                     </td>
                     <td 
-                      onClick={() => handleToggleLarvae(rec.id, true)}
-                      className="border border-border p-0 text-center text-base text-primary font-bold cursor-pointer hover:bg-muted/20 select-none w-7 h-10"
+                      onClick={() => !isMidwife && handleToggleLarvae(rec.id, true)}
+                      className={`border border-border p-0 text-center text-base text-primary font-bold ${isMidwife ? "cursor-default" : "cursor-pointer hover:bg-muted/20"} select-none w-7 h-10`}
                     >
                       <div className="flex items-center justify-center h-full w-full">
                         {rec.has_larvae === true ? "✓" : ""}
                       </div>
                     </td>
                     <td 
-                      onClick={() => handleToggleLarvae(rec.id, false)}
-                      className="border border-border p-0 text-center text-base text-muted-foreground font-bold cursor-pointer hover:bg-muted/20 select-none w-7 h-10"
+                      onClick={() => !isMidwife && handleToggleLarvae(rec.id, false)}
+                      className={`border border-border p-0 text-center text-base text-muted-foreground font-bold ${isMidwife ? "cursor-default" : "cursor-pointer hover:bg-muted/20"} select-none w-7 h-10`}
                     >
                       <div className="flex items-center justify-center h-full w-full">
                         {rec.has_larvae === false ? "✓" : ""}
@@ -1362,20 +1377,22 @@ const DenguePreventionForm = () => {
                         {rec.action_plan || ""}
                       </span>
                       <input
+                        disabled={isMidwife}
                         type="text"
                         value={rec.action_plan || ""}
                         onChange={(e) => handleActionPlanChange(rec.id, e.target.value)}
                         onBlur={() => autoSaveRowToDb(rec)}
-                        className="cell-input"
+                        className={`cell-input ${isMidwife ? "cursor-default select-text" : ""}`}
                         placeholder=""
                       />
                     </td>
                     <td 
                       onClick={() => {
+                        if (isMidwife) return;
                         setActiveSignRecordId(rec.id);
                         setSignatureModalOpen(true);
                       }}
-                      className="border border-border p-1 text-center cursor-pointer hover:bg-muted/20 w-[10%] h-10 select-none"
+                      className={`border border-border p-1 text-center ${isMidwife ? "cursor-default" : "cursor-pointer hover:bg-muted/20"} w-[10%] h-10 select-none`}
                     >
                       {rec.signature ? (
                         <img 
@@ -1387,19 +1404,21 @@ const DenguePreventionForm = () => {
                         ""
                       )}
                     </td>
-                    <td className="border border-border p-1 text-center no-print w-10">
-                      {!isRowEmpty(rec) && (
-                        <Button 
-                          onClick={() => setDeleteRowConfirm({ id: rec.id, name: rec.household_name || "this row" })} 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          title="Clear entry"
-                        >
-                          <Trash className="h-4.5 w-4.5" />
-                        </Button>
-                      )}
-                    </td>
+                    {!isMidwife && (
+                      <td className="border border-border p-1 text-center no-print w-10">
+                        {!isRowEmpty(rec) && (
+                          <Button 
+                            onClick={() => setDeleteRowConfirm({ id: rec.id, name: rec.household_name || "this row" })} 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            title="Clear entry"
+                          >
+                            <Trash className="h-4.5 w-4.5" />
+                          </Button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

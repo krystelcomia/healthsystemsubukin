@@ -133,6 +133,7 @@ const ResidentRecords = () => {
   }, []);
 
   const handleAddResident = async () => {
+    if (isMidwife) return;
     const cleanName = newResident.full_name.trim();
     if (!cleanName) { toast.error(t("residents.fullName") + " required"); return; }
     
@@ -182,6 +183,7 @@ const ResidentRecords = () => {
   };
 
   const handleEditResident = async () => {
+    if (isMidwife) return;
     if (!editResident) return;
     const cleanName = (editResident.full_name || "").trim();
     if (!cleanName) {
@@ -206,6 +208,7 @@ const ResidentRecords = () => {
   };
 
   const handleDeleteResident = async (id: string) => {
+    if (isMidwife) return;
     const target = residents.find(r => r.id === id);
     const { error } = await supabase.from("residents").delete().eq("id", id);
     if (error) { toast.error("Failed to delete resident"); return; }
