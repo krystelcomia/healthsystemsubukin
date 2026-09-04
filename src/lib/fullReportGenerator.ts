@@ -1,5 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import JSZip from "jszip";
+import sanjuanLogo from "@/assets/sanjuan_logo.png";
+import barangayLogo from "@/assets/barangay-logo.png";
+import headerTextImg from "@/assets/header_text.png";
 
 interface ReportFile {
   folder: string;
@@ -8,7 +11,81 @@ interface ReportFile {
   type?: string;
 }
 
-const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, landscape = false) => `<!DOCTYPE html>
+let cachedOfficialLogos: { sanjuan: string; headerText: string; barangay: string } | null = null;
+
+const convertImgToDataUrl = (src: string, targetHeight = 180): Promise<string> => {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      resolve(src);
+      return;
+    }
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        const scale = Math.min(1, targetHeight / (img.naturalHeight || img.height || 180));
+        canvas.width = Math.round((img.naturalWidth || img.width) * scale);
+        canvas.height = Math.round((img.naturalHeight || img.height) * scale);
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/png", 0.95);
+          resolve(dataUrl);
+          return;
+        }
+      } catch (e) {
+        console.warn("Canvas export fallback:", e);
+      }
+      // Fallback: fetch blob and read as Data URL
+      fetch(src)
+        .then((r) => r.blob())
+        .then((b) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(b);
+        })
+        .catch(() => resolve(src));
+    };
+    img.onerror = () => {
+      fetch(src)
+        .then((r) => r.blob())
+        .then((b) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(b);
+        })
+        .catch(() => resolve(src));
+    };
+    img.src = src;
+  });
+};
+
+const getOfficialLogos = async (): Promise<{ sanjuan: string; headerText: string; barangay: string }> => {
+  if (cachedOfficialLogos) return cachedOfficialLogos;
+  try {
+    const [sanjuan, headerText, barangay] = await Promise.all([
+      convertImgToDataUrl(sanjuanLogo, 180),
+      convertImgToDataUrl(headerTextImg, 180),
+      convertImgToDataUrl(barangayLogo, 180),
+    ]);
+    cachedOfficialLogos = { sanjuan, headerText, barangay };
+    return cachedOfficialLogos;
+  } catch {
+    return { sanjuan: sanjuanLogo, headerText: headerTextImg, barangay: barangayLogo };
+  }
+};
+
+const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, landscape = false) => {
+  const logos = cachedOfficialLogos || {
+    sanjuan: sanjuanLogo,
+    headerText: headerTextImg,
+    barangay: barangayLogo
+  };
+
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -17,7 +94,7 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
   <style>
     @page {
       size: ${landscape ? "A4 landscape" : "A4 portrait"};
-      margin: 10mm 8mm;
+      margin: 10mm 8mm 12mm 8mm;
     }
     * {
       box-sizing: border-box;
@@ -27,59 +104,142 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
     body {
       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
-      padding: 24px;
-      color: #1e293b;
+      padding: 20px;
+      color: #0f172a;
       background: #ffffff;
       font-size: 11px;
       line-height: 1.4;
     }
-    .header-container {
+
+    /* Multi-page Header Repeat: Outer document layout table forces thead on every page */
+    table.report-document-layout {
+      width: 100%;
+      border-collapse: collapse;
+      border: none;
+      margin: 0;
+      padding: 0;
+    }
+    table.report-document-layout > thead {
+      display: table-header-group !important;
+    }
+    table.report-document-layout > thead > tr > td.report-header-cell {
+      border: none;
+      padding: 0 0 10px 0;
+      background: transparent;
+      vertical-align: top;
+    }
+    table.report-document-layout > tbody > tr > td.report-body-cell {
+      border: none;
+      padding: 0;
+      vertical-align: top;
+      background: transparent;
+    }
+
+    /* Official Barangay Subukin Header Structure */
+    .official-header-block {
+      width: 100%;
       text-align: center;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 3px double #0f172a;
-    }
-    .republic {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #64748b;
       margin-bottom: 2px;
     }
-    .subukin {
-      font-size: 13px;
-      font-weight: 700;
-      color: #0f172a;
-      text-transform: uppercase;
-      margin-bottom: 2px;
+    table.header-seals-grid {
+      width: 100%;
+      border-collapse: collapse;
+      border: none;
+      margin: 0 0 4px 0;
     }
-    .office {
-      font-size: 11px;
-      color: #475569;
-      margin-bottom: 10px;
+    table.header-seals-grid tr, table.header-seals-grid td {
+      border: none;
+      padding: 0;
+      background: transparent;
+    }
+    .seal-left {
+      width: 16%;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .seal-center {
+      width: 68%;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .seal-right {
+      width: 16%;
+      text-align: right;
+      vertical-align: middle;
+    }
+    .seal-left img, .seal-right img {
+      height: 75px;
+      width: auto;
+      max-width: 85px;
+      object-fit: contain;
+      display: inline-block;
+      mix-blend-mode: multiply;
+    }
+    .seal-center img {
+      height: 75px;
+      width: auto;
+      max-width: 95%;
+      object-fit: contain;
+      display: inline-block;
+      mix-blend-mode: multiply;
+    }
+    .header-double-rule {
+      width: 100%;
+      border-bottom: 3.5px double #000000;
+      margin: 2px 0 8px 0;
     }
     .report-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
-      color: #881337;
+      color: #000000;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin: 6px 0 2px 0;
+      margin: 0 0 2px 0;
+      text-align: center;
     }
     .report-subtitle {
       font-size: 11px;
-      color: #64748b;
-      font-weight: 500;
+      color: #475569;
+      font-weight: 600;
+      text-align: center;
+      margin: 0 0 4px 0;
     }
+
+    /* Inner Data Tables */
+    table:not(.report-document-layout):not(.header-seals-grid) {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 10px;
+    }
+    table:not(.report-document-layout):not(.header-seals-grid) th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+      text-align: left;
+      padding: 6px 8px;
+      border: 1px solid #94a3b8;
+      text-transform: uppercase;
+      font-size: 9px;
+    }
+    table:not(.report-document-layout):not(.header-seals-grid) td {
+      padding: 5px 8px;
+      border: 1px solid #cbd5e1;
+      vertical-align: top;
+    }
+    table:not(.report-document-layout):not(.header-seals-grid) tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
     .meta-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      padding: 8px 12px;
+      padding: 6px 12px;
       border-radius: 6px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       font-size: 10px;
       font-weight: 600;
     }
@@ -91,30 +251,6 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
       border-radius: 4px;
       font-weight: 700;
       border: 1px solid #cbd5e1;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-      font-size: 10px;
-    }
-    th {
-      background-color: #f1f5f9;
-      color: #0f172a;
-      font-weight: 700;
-      text-align: left;
-      padding: 6px 8px;
-      border: 1px solid #94a3b8;
-      text-transform: uppercase;
-      font-size: 9px;
-    }
-    td {
-      padding: 5px 8px;
-      border: 1px solid #cbd5e1;
-      vertical-align: top;
-    }
-    tr:nth-child(even) {
-      background-color: #f8fafc;
     }
     .text-center { text-align: center; }
     .text-right { text-align: right; }
@@ -136,14 +272,14 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
       font-size: 12px;
       font-weight: 700;
       color: #0f172a;
-      margin: 16px 0 8px 0;
-      padding-bottom: 4px;
+      margin: 14px 0 6px 0;
+      padding-bottom: 3px;
       border-bottom: 1px solid #e2e8f0;
       text-transform: uppercase;
     }
     .signatures-block {
-      margin-top: 36px;
-      padding-top: 20px;
+      margin-top: 30px;
+      padding-top: 16px;
       border-top: 1px solid #cbd5e1;
       display: flex;
       justify-content: space-between;
@@ -153,7 +289,7 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
       width: 45%;
     }
     .sig-line {
-      margin-top: 35px;
+      margin-top: 30px;
       border-bottom: 1px solid #0f172a;
       width: 80%;
     }
@@ -170,7 +306,7 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
       background: #0f172a;
       color: #ffffff;
       padding: 10px 16px;
-      margin: -24px -24px 20px -24px;
+      margin: -20px -20px 16px -20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -189,6 +325,12 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
     @media print {
       .no-print-bar { display: none !important; }
       body { padding: 0; }
+      table.report-document-layout > thead {
+        display: table-header-group !important;
+      }
+      tr {
+        page-break-inside: avoid;
+      }
     }
   </style>
 </head>
@@ -198,34 +340,58 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
     <button class="print-btn" onclick="window.print()">Print / Save as PDF (Ctrl+P)</button>
   </div>
 
-  <div class="header-container">
-    <div class="republic">Republic of the Philippines • Province of Batangas • Municipality of San Juan</div>
-    <div class="subukin">Barangay Subukin Health Center</div>
-    <div class="office">Office of the Barangay Health Workers & Supervisor Midwife</div>
-    <div class="report-title">${title}</div>
-    <div class="report-subtitle">${subtitle}</div>
-  </div>
-
-  ${bodyContent}
-
-  <div class="signatures-block">
-    <div class="sig-col">
-      <div>Prepared & Certified Correct:</div>
-      <div class="sig-line"></div>
-      <div class="sig-name">ATTENDING BARANGAY HEALTH WORKER (BHW)</div>
-      <div class="sig-role">Health Center Field Staff • Subukin, San Juan</div>
-    </div>
-    <div class="sig-col text-right">
-      <div style="display:inline-block; text-align:left;">
-        <div>Noted & Approved By:</div>
-        <div class="sig-line" style="width: 100%;"></div>
-        <div class="sig-name">BARANGAY HEALTH SUPERVISOR / MIDWIFE</div>
-        <div class="sig-role">Rural Health Unit (RHU) • San Juan, Batangas</div>
-      </div>
-    </div>
-  </div>
+  <table class="report-document-layout">
+    <thead>
+      <tr>
+        <td class="report-header-cell">
+          <div class="official-header-block">
+            <table class="header-seals-grid">
+              <tr>
+                <td class="seal-left">
+                  <img src="${logos.sanjuan}" alt="San Juan Seal" />
+                </td>
+                <td class="seal-center">
+                  <img src="${logos.headerText}" alt="Republika ng Pilipinas • Lalawigan ng Batangas • Bayan ng San Juan • Barangay Subukin" />
+                </td>
+                <td class="seal-right">
+                  <img src="${logos.barangay}" alt="Barangay Subukin Logo" />
+                </td>
+              </tr>
+            </table>
+            <div class="header-double-rule"></div>
+            <div class="report-title">${title}</div>
+            <div class="report-subtitle">${subtitle}</div>
+          </div>
+        </td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="report-body-cell">
+          ${bodyContent}
+          <div class="signatures-block">
+            <div class="sig-col">
+              <div>Prepared &amp; Certified Correct:</div>
+              <div class="sig-line"></div>
+              <div class="sig-name">ATTENDING BARANGAY HEALTH WORKER (BHW)</div>
+              <div class="sig-role">Health Center Field Staff • Subukin, San Juan</div>
+            </div>
+            <div class="sig-col text-right">
+              <div style="display:inline-block; text-align:left;">
+                <div>Noted &amp; Approved By:</div>
+                <div class="sig-line" style="width: 100%;"></div>
+                <div class="sig-name">BARANGAY HEALTH SUPERVISOR / MIDWIFE</div>
+                <div class="sig-role">Rural Health Unit (RHU) • San Juan, Batangas</div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </body>
 </html>`;
+};
 
 export const generateFullReportFolder = async (
   onProgress?: (msg: string) => void
@@ -235,6 +401,9 @@ export const generateFullReportFolder = async (
   };
 
   try {
+    log("Preparing official barangay header seals and letterhead assets...");
+    await getOfficialLogos();
+
     log("Fetching all health center data, forms, and audit logs...");
 
     // 1. Fetch all data across the system in parallel
