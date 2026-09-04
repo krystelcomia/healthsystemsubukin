@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar, Search, FileText } from "lucide-react";
+import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar, Search, FileText, ShieldAlert, FileSpreadsheet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -1184,7 +1184,7 @@ const DenguePreventionForm = () => {
         badge={language === "tl" ? "Talaan ng Dengue Prevention" : "Dengue Prevention Record"}
         title={language === "tl" ? "Dengue Prevention — Search & Destroy 2026" : "Dengue Prevention — Search & Destroy 2026"}
         description={language === "tl" ? "Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue sa Barangay Subukin." : "Search and destruction checklist of dengue vector breeding containers and household inspection records in Barangay Subukin."}
-        action={
+        rightContent={
           <div className="flex items-center gap-1.5 bg-black/20 backdrop-blur-md p-1 rounded-xl border border-white/10 self-end sm:self-auto">
             <Button
               type="button"
