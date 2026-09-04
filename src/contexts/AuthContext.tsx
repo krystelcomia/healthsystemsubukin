@@ -8,6 +8,7 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   userRole: string | null;
+  isMidwife: boolean;
   username: string | null;
   fullName: string | null;
   avatarUrl: string | null;
@@ -23,6 +24,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   userRole: null,
+  isMidwife: false,
   username: null,
   fullName: null,
   avatarUrl: null,
@@ -39,11 +41,43 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
-  const [fullName, setFullName] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("bhw_user_role") || null;
+    } catch {
+      return null;
+    }
+  });
+  const [username, setUsername] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("logged_in_username") || null;
+    } catch {
+      return null;
+    }
+  });
+  const [fullName, setFullName] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("logged_in_fullname") || null;
+    } catch {
+      return null;
+    }
+  });
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const isMidwife = Boolean(
+    userRole?.toLowerCase() === "midwife" ||
+    user?.email?.toLowerCase().includes("maryjanelandicho") ||
+    user?.email?.toLowerCase().includes("midwife") ||
+    fullName?.toLowerCase().includes("mary jane") ||
+    username?.toLowerCase().includes("mary jane") ||
+    (typeof window !== "undefined" && (
+      localStorage.getItem("logged_in_username")?.toLowerCase().includes("mary jane") ||
+      localStorage.getItem("logged_in_fullname")?.toLowerCase().includes("mary jane") ||
+      localStorage.getItem("active_bhw_worker")?.toLowerCase().includes("mary jane") ||
+      localStorage.getItem("bhw_user_role")?.toLowerCase() === "midwife"
+    ))
+  );
 
   const fetchRole = async (userId: string) => {
     try {
@@ -54,8 +88,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .maybeSingle();
 
       if (data?.role) {
-        setUserRole(data.role);
-        return data.role;
+        const cleanRole = data.role.toLowerCase();
+        setUserRole(cleanRole);
+        localStorage.setItem("bhw_user_role", cleanRole);
+        return cleanRole;
       }
 
       // Fallback role detection if user_roles entry is missing
@@ -64,10 +100,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Cristeta R. Lanuza is the BHW Supervisory admin
       const isSupervisor = email.includes("cristetalanuza") || email === "adminsubukin@gmail.com";
       // Mary Jane Landicho is the Midwife (view-only user dashboard)
-      const isMidwife = email.includes("maryjanelandicho");
+      const isMidwifeUser = email.includes("maryjanelandicho") || email.includes("midwife");
       const isBns = email.includes("bns");
-      const fallbackRole = isSupervisor ? "supervisor" : isMidwife ? "midwife" : isBns ? "bns" : "bhw";
+      const fallbackRole = isSupervisor ? "supervisor" : isMidwifeUser ? "midwife" : isBns ? "bns" : "bhw";
       setUserRole(fallbackRole);
+      localStorage.setItem("bhw_user_role", fallbackRole);
       return fallbackRole;
     } catch (e) {
       console.error("Error fetching user role:", e);
@@ -227,6 +264,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAvatarUrl(null);
         localStorage.removeItem("logged_in_username");
         localStorage.removeItem("logged_in_fullname");
+        localStorage.removeItem("bhw_user_role");
       }
 
       if (isMounted) {
@@ -256,6 +294,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     localStorage.removeItem("logged_in_username");
     localStorage.removeItem("logged_in_fullname");
+    localStorage.removeItem("bhw_user_role");
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
@@ -266,7 +305,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, userRole, username, fullName, avatarUrl, loading, signOut, setUsername, setAvatarUrl, refreshProfile, updateProfileState }}>
+    <AuthContext.Provider value={{ session, user, userRole, isMidwife, username, fullName, avatarUrl, loading, signOut, setUsername, setAvatarUrl, refreshProfile, updateProfileState }}>
       {children}
     </AuthContext.Provider>
   );

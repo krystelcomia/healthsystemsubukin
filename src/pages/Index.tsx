@@ -33,8 +33,7 @@ import { getThemeStyle } from "@/lib/themeStyles";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const Index = () => {
-  const { userRole } = useAuth();
-  const isMidwife = userRole === "midwife";
+  const { userRole, isMidwife } = useAuth();
   const { t, colorTheme, language } = useSettings();
   const currentStyle = getThemeStyle(colorTheme);
   const [stats, setStats] = useState({

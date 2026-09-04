@@ -339,8 +339,7 @@ const sanitizeDraftState = (parsed: any): FPFullFormState => {
 };
 
 const FamilyPlanningForm = () => {
-  const { userRole } = useAuth();
-  const isMidwife = userRole === "midwife";
+  const { userRole, isMidwife } = useAuth();
   const { t, language } = useSettings();
   const [fpState, setFpState] = useState<FPFullFormState>(() => {
     try {
@@ -2192,20 +2191,22 @@ const FamilyPlanningForm = () => {
                   <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
                     <span className="text-[10px] text-slate-500">FP Record ID: {selectedRecordForView.id}</span>
                     <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => {
-                          if (parsed) setFpState(parsed);
-                          setActiveView("form");
-                          setViewModalOpen(false);
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                          toast.info("Record loaded into main editor.");
-                        }}
-                        className="bg-primary text-primary-foreground text-xs"
-                      >
-                        Edit Record
-                      </Button>
+                      {!isMidwife && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            if (parsed) setFpState(parsed);
+                            setActiveView("form");
+                            setViewModalOpen(false);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            toast.info("Record loaded into main editor.");
+                          }}
+                          className="bg-primary text-primary-foreground text-xs"
+                        >
+                          Edit Record
+                        </Button>
+                      )}
                       <Button type="button" variant="secondary" size="sm" onClick={() => setViewModalOpen(false)} className="text-xs">
                         Close
                       </Button>

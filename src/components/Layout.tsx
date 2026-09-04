@@ -39,8 +39,7 @@ const BHW_WORKERS = [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { user, userRole, username, fullName } = useAuth();
-  const isMidwife = userRole === "midwife";
+  const { user, userRole, username, fullName, isMidwife } = useAuth();
   const { t, language } = useSettings();
   const [showAlertBadge, setShowAlertBadge] = useState(false);
   const [activeBhw, setActiveBhw] = useState<string | null>(null);

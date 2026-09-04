@@ -132,8 +132,7 @@ export interface MaternalCareRecord {
 const lineInputClass = "border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 focus-visible:ring-0 focus-visible:border-slate-800 dark:focus-visible:border-slate-200 shadow-none h-8 text-sm";
 
 const MaternalCareForm = () => {
-  const { userRole } = useAuth();
-  const isMidwife = userRole === "midwife";
+  const { userRole, isMidwife } = useAuth();
   const { t, language } = useSettings();
   const [residents, setResidents] = useState<any[]>([]);
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);

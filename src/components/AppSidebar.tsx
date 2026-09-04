@@ -40,7 +40,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 export function AppSidebar() {
   const location = useLocation();
-  const { user, userRole, username, avatarUrl, signOut } = useAuth();
+  const { user, userRole, isMidwife, username, avatarUrl, signOut } = useAuth();
   const { t } = useSettings();
   const [signOutOpen, setSignOutOpen] = useState(false);
   const [customForms, setCustomForms] = useState<any[]>(() => {
@@ -84,8 +84,6 @@ export function AppSidebar() {
     url: `/forms/custom/${cf.id}`,
     icon: FileText,
   }));
-
-  const isMidwife = userRole === "midwife";
 
   const bhwFormItems = [
     { title: t("nav.familyData"), url: "/forms/family-data", icon: ClipboardList },

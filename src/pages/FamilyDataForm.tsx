@@ -77,9 +77,8 @@ export interface FamilyRecord {
 
 const FamilyDataForm = () => {
   const { t, language } = useSettings();
-  const { userRole } = useAuth();
+  const { userRole, isMidwife } = useAuth();
   const isAdmin = userRole === "supervisor";
-  const isMidwife = userRole === "midwife";
   const [records, setRecords] = useState<FamilyRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");

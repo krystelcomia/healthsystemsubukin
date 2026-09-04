@@ -73,8 +73,7 @@ interface HealthRecords {
 
 const ResidentRecords = () => {
   const { t, language } = useSettings();
-  const { userRole } = useAuth();
-  const isMidwife = userRole === "midwife";
+  const { userRole, isMidwife } = useAuth();
   const [search, setSearch] = useState("");
   const [residents, setResidents] = useState<Resident[]>([]);
   const [loading, setLoading] = useState(true);

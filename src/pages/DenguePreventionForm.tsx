@@ -125,8 +125,7 @@ const findSignatureForResident = (
 
 const DenguePreventionForm = () => {
   const { t, language } = useSettings();
-  const { userRole } = useAuth();
-  const isMidwife = userRole === "midwife";
+  const { userRole, isMidwife } = useAuth();
   const [records, setRecords] = useState<any[]>([]);
   const [householdHeads, setHouseholdHeads] = useState<HouseholdHeadOption[]>([]);
   const [loading, setLoading] = useState(true);

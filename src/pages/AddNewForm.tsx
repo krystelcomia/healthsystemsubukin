@@ -210,8 +210,7 @@ const StepIndicator = ({ current, onStepClick, canGoTo, language }: { current: n
 const AddNewForm = () => {
   const navigate = useNavigate();
   const { formId } = useParams<{ formId?: string }>();
-  const { userRole } = useAuth();
-  const isMidwife = userRole === "midwife";
+  const { userRole, isMidwife } = useAuth();
   const { t, language } = useSettings();
 
   const [imageData, setImageData] = useState<string | null>(null);
@@ -1432,24 +1431,28 @@ const AddNewForm = () => {
                     </>
                   ) : (
                     <>
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => setCurrentStep(2)}
-                        className="gap-1.5 text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      >
-                        <Settings2 className="h-4 w-4" /> {language === "tl" ? "I-edit ang Fields" : "Edit Fields"}
-                      </Button>
+                      {!isMidwife && (
+                        <>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => setCurrentStep(2)}
+                            className="gap-1.5 text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
+                          >
+                            <Settings2 className="h-4 w-4" /> {language === "tl" ? "I-edit ang Fields" : "Edit Fields"}
+                          </Button>
 
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={resetDraft}
-                        className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      >
-                        <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> {language === "tl" ? "I-reset ang Form" : "Reset Form"}
-                      </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={resetDraft}
+                            className="gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700"
+                          >
+                            <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> {language === "tl" ? "I-reset ang Form" : "Reset Form"}
+                          </Button>
+                        </>
+                      )}
 
                       <Button
                         type="button"
@@ -1480,7 +1483,7 @@ const AddNewForm = () => {
           </Card>
 
           {/* Back to Edit button below the card (for non-formId flows) */}
-          {!formId && (
+          {!formId && !isMidwife && (
             <div className="flex items-center gap-3 no-print">
               <Button type="button" variant="outline" size="sm" onClick={goBack} className="gap-1.5 text-xs">
                 <ChevronLeft className="h-4 w-4" /> {language === "tl" ? "Bumalik sa Pag-edit ng Fields" : "Back to Edit Fields"}
@@ -1535,33 +1538,37 @@ const AddNewForm = () => {
                         >
                           <Eye className="h-3.5 w-3.5" /> {language === "tl" ? "Buksan" : "Open"}
                         </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-8 text-xs gap-1 text-muted-foreground"
-                          onClick={() => {
-                            setDraftTitle(f.title);
-                            setCustomTitleInput(f.title);
-                            setDraftDesc(f.description);
-                            setDraftFields(f.fields);
-                            setImageData(f.imagePreview || null);
-                            setCurrentStep(2);
-                            window.scrollTo({ top: 0, behavior: "smooth" });
-                          }}
-                        >
-                          <Settings2 className="h-3.5 w-3.5" /> {language === "tl" ? "I-edit" : "Edit"}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive"
-                          onClick={() => setDeleteTemplateConfirmId(f.id)}
-                          title={language === "tl" ? "Burahin ang Template" : "Delete Template"}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {!isMidwife && (
+                          <>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-8 text-xs gap-1 text-muted-foreground"
+                              onClick={() => {
+                                setDraftTitle(f.title);
+                                setCustomTitleInput(f.title);
+                                setDraftDesc(f.description);
+                                setDraftFields(f.fields);
+                                setImageData(f.imagePreview || null);
+                                setCurrentStep(2);
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                              }}
+                            >
+                              <Settings2 className="h-3.5 w-3.5" /> {language === "tl" ? "I-edit" : "Edit"}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => setDeleteTemplateConfirmId(f.id)}
+                              title={language === "tl" ? "Burahin ang Template" : "Delete Template"}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1669,22 +1676,24 @@ const AddNewForm = () => {
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  if (rec.fields) {
-                                    setDraftFields(rec.fields);
-                                    if (rec.residentId) setSelectedResidentId(rec.residentId);
-                                    window.scrollTo({ top: 0, behavior: "smooth" });
-                                    toast.info(language === "tl" ? `Na-load ang pagsusumite para kay ${rec.resident_name}` : `Loaded submission for ${rec.resident_name}`);
-                                  }
-                                }}
-                                title={language === "tl" ? "I-load sa Form" : "Load into Form"}
-                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                              >
-                                <Edit3 className="h-3.5 w-3.5" />
-                              </Button>
+                              {!isMidwife && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    if (rec.fields) {
+                                      setDraftFields(rec.fields);
+                                      if (rec.residentId) setSelectedResidentId(rec.residentId);
+                                      window.scrollTo({ top: 0, behavior: "smooth" });
+                                      toast.info(language === "tl" ? `Na-load ang pagsusumite para kay ${rec.resident_name}` : `Loaded submission for ${rec.resident_name}`);
+                                    }
+                                  }}
+                                  title={language === "tl" ? "I-load sa Form" : "Load into Form"}
+                                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                >
+                                  <Edit3 className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
                             </div>
                           </td>
                         </tr>

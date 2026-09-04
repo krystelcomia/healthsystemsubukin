@@ -57,8 +57,7 @@ interface Resident {
 
 const PhilPenHealthForm = () => {
   const { t, language } = useSettings();
-  const { userRole } = useAuth();
-  const isMidwife = userRole === "midwife";
+  const { userRole, isMidwife } = useAuth();
   const [residents, setResidents] = useState<Resident[]>([]);
   const [sitioOptions, setSitioOptions] = useState<string[]>(SUBUKIN_SITIOS);
 

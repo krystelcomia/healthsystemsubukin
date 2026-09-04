@@ -379,8 +379,7 @@ const initialSickForm: SickChildFormFull = {
 
 const ChildHealthForm = () => {
   const { t, language } = useSettings();
-  const { user, fullName, username, userRole } = useAuth();
-  const isMidwife = userRole === "midwife";
+  const { user, fullName, username, userRole, isMidwife } = useAuth();
   const [activeTab, setActiveTab] = useState("sick-children");
   const [activeView, setActiveView] = useState<"form" | "history">("form");
 
