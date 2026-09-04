@@ -72,52 +72,59 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
       text-align: center;
       margin-bottom: 2px;
     }
-    table.header-seals-grid {
+    .header-center-seals-wrap {
       width: 100%;
+      text-align: center;
+      margin: 0 auto 4px auto;
+    }
+    table.header-seals-compact {
+      display: inline-table;
+      margin: 0 auto;
       border-collapse: collapse;
       border: none;
-      margin: 0 0 4px 0;
+      width: auto;
     }
-    table.header-seals-grid tr, table.header-seals-grid td {
+    table.header-seals-compact tr, table.header-seals-compact td {
       border: none;
       padding: 0;
       background: transparent;
+      vertical-align: middle;
+    }
+    .seal-cell {
+      vertical-align: middle;
+      text-align: center;
     }
     .seal-left {
-      width: 16%;
-      text-align: left;
-      vertical-align: middle;
-    }
-    .seal-center {
-      width: 68%;
-      text-align: center;
-      vertical-align: middle;
+      padding-right: 20px !important;
     }
     .seal-right {
-      width: 16%;
-      text-align: right;
-      vertical-align: middle;
+      padding-left: 20px !important;
+    }
+    .seal-center {
+      padding: 0 !important;
     }
     .seal-left img, .seal-right img {
       height: 75px;
       width: auto;
       max-width: 85px;
       object-fit: contain;
-      display: inline-block;
+      display: block;
       mix-blend-mode: multiply;
+      margin: 0 auto;
     }
     .seal-center img {
       height: 75px;
       width: auto;
-      max-width: 95%;
+      max-width: 360px;
       object-fit: contain;
-      display: inline-block;
+      display: block;
       mix-blend-mode: multiply;
+      margin: 0 auto;
     }
     .header-double-rule {
       width: 100%;
       border-bottom: 3.5px double #000000;
-      margin: 2px 0 8px 0;
+      margin: 4px 0 8px 0;
     }
     .report-title {
       font-size: 15px;
@@ -137,13 +144,13 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
     }
 
     /* Inner Data Tables */
-    table:not(.report-document-layout):not(.header-seals-grid) {
+    table:not(.report-document-layout):not(.header-seals-compact) {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
       font-size: 10px;
     }
-    table:not(.report-document-layout):not(.header-seals-grid) th {
+    table:not(.report-document-layout):not(.header-seals-compact) th {
       background-color: #f1f5f9;
       color: #0f172a;
       font-weight: 700;
@@ -153,12 +160,12 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
       text-transform: uppercase;
       font-size: 9px;
     }
-    table:not(.report-document-layout):not(.header-seals-grid) td {
+    table:not(.report-document-layout):not(.header-seals-compact) td {
       padding: 5px 8px;
       border: 1px solid #cbd5e1;
       vertical-align: top;
     }
-    table:not(.report-document-layout):not(.header-seals-grid) tr:nth-child(even) {
+    table:not(.report-document-layout):not(.header-seals-compact) tr:nth-child(even) {
       background-color: #f8fafc;
     }
 
@@ -276,19 +283,21 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
       <tr>
         <td class="report-header-cell">
           <div class="official-header-block">
-            <table class="header-seals-grid">
-              <tr>
-                <td class="seal-left">
-                  <img src="${logos.sanjuan}" alt="San Juan Seal" />
-                </td>
-                <td class="seal-center">
-                  <img src="${logos.headerText}" alt="Republika ng Pilipinas • Lalawigan ng Batangas • Bayan ng San Juan • Barangay Subukin" />
-                </td>
-                <td class="seal-right">
-                  <img src="${logos.barangay}" alt="Barangay Subukin Logo" />
-                </td>
-              </tr>
-            </table>
+            <div class="header-center-seals-wrap">
+              <table class="header-seals-compact">
+                <tr>
+                  <td class="seal-cell seal-left">
+                    <img src="${logos.sanjuan}" alt="San Juan Seal" />
+                  </td>
+                  <td class="seal-cell seal-center">
+                    <img src="${logos.headerText}" alt="Republika ng Pilipinas • Lalawigan ng Batangas • Bayan ng San Juan • Barangay Subukin" />
+                  </td>
+                  <td class="seal-cell seal-right">
+                    <img src="${logos.barangay}" alt="Barangay Subukin Logo" />
+                  </td>
+                </tr>
+              </table>
+            </div>
             <div class="header-double-rule"></div>
             <div class="report-title">${title}</div>
             <div class="report-subtitle">${subtitle}</div>
