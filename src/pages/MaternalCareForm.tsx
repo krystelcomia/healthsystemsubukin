@@ -174,6 +174,7 @@ const MaternalCareForm = () => {
     period: "",
     patient_height: "",
     blood_type: "Unspecified",
+    remarks: "",
     risk_factors: [] as string[],
     prenatal_visits: [] as PrenatalVisit[],
   });
@@ -365,6 +366,7 @@ const MaternalCareForm = () => {
       period: "",
       patient_height: "",
       blood_type: "Unspecified",
+      remarks: "",
       risk_factors: [],
       prenatal_visits: [
         { id: `visit-${Date.now()}`, visit_date: "", visit_number: "1", aog: "", blood_pressure: "", weight: "", fundic_height: "", fhr: "", fhr_location: "", presentation: "", notes: "" }
@@ -439,15 +441,17 @@ const MaternalCareForm = () => {
       const latestVisit = form.prenatal_visits[form.prenatal_visits.length - 1];
       const checkupDate = latestVisit?.visit_date || new Date().toISOString().split("T")[0];
 
-      let remarksText = "";
-      if (latestVisit?.notes) {
-        remarksText += latestVisit.notes + " ";
-      }
-      if (form.risk_factors.length > 0) {
-        remarksText += `[Risk Factors: ${form.risk_factors.join(", ")}]`;
-      }
+      let remarksText = form.remarks || "";
       if (!remarksText.trim()) {
-        remarksText = `EDC: ${form.edc || "N/A"}, Obstetric: ${form.obstetric_score || "N/A"}`;
+        if (latestVisit?.notes) {
+          remarksText += latestVisit.notes + " ";
+        }
+        if (form.risk_factors.length > 0) {
+          remarksText += `[Risk Factors: ${form.risk_factors.join(", ")}]`;
+        }
+        if (!remarksText.trim()) {
+          remarksText = `EDC: ${form.edc || "N/A"}, Obstetric: ${form.obstetric_score || "N/A"}`;
+        }
       }
 
       const payload = {
@@ -555,6 +559,7 @@ const MaternalCareForm = () => {
       period: record.period || "",
       patient_height: record.patient_height || "",
       blood_type: record.blood_type || "Unspecified",
+      remarks: record.remarks || "",
       risk_factors: parsedRisks,
       prenatal_visits: parsedVisits,
     });
@@ -1492,6 +1497,21 @@ const MaternalCareForm = () => {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* CLINICAL REMARKS / MIDWIFE INSTRUCTIONS */}
+            <div className="space-y-2 bg-muted/20 p-4 md:p-5 rounded-lg border border-border/60 no-print">
+              <Label className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 font-heading">
+                Clinical Remarks / Midwife Instructions (Optional)
+              </Label>
+              <p className="text-[11px] text-muted-foreground">Special medical instructions, nutritional advice, or midwife findings.</p>
+              <Input
+                type="text"
+                value={form.remarks}
+                onChange={e => setForm(prev => ({ ...prev, remarks: e.target.value }))}
+                placeholder="e.g. Advised regular prenatal checkups, high-protein diet, iron supplementation..."
+                className={lineInputClass}
+              />
             </div>
             </fieldset>
 

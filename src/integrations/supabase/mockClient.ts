@@ -1,5 +1,6 @@
 import { Database } from './types';
 import { CANONICAL_INITIAL_DATABASE } from '@/lib/canonicalDataset';
+import { sendVerificationCodeEmail } from '@/lib/emailService';
 
 let isCrossBrowserSyncStarted = false;
 let syncBroadcastChannel: BroadcastChannel | null = null;
@@ -687,7 +688,6 @@ class MockAuth {
 
     // Dispatch verification code to user's Gmail inbox via EmailJS
     try {
-      const { sendVerificationCodeEmail } = await import('@/lib/emailService');
       await sendVerificationCodeEmail(
         resolvedEmail,
         resetCode,
