@@ -301,8 +301,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           {activeBhw 
                             ? activeBhw 
                             : userRole === "supervisor" || userRole === "supervisory"
-                            ? (language === "tl" ? "Supervisory Sign In" : "Supervisory Sign In")
-                            : (language === "tl" ? "Mag-Sign In" : "Sign In")}
+                            ? (language === "tl" ? "Supervisory Clock In" : "Supervisory Clock In")
+                            : (language === "tl" ? "Mag-Clock In" : "Clock In")}
                         </span>
                         {activeBhw && (
                           <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background animate-pulse" />
