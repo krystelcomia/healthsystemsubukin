@@ -204,16 +204,24 @@ const PhilPenHealthForm = () => {
 
   const handleFieldChange = (field: string, value: any) => {
     if (isMidwife) return;
+    if (field === "smokes_remarks" && !form.smokes) return;
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleToggle = (yesField: string, noField: string, choice: "yes" | "no") => {
     if (isMidwife) return;
-    setForm(prev => ({
-      ...prev,
-      [yesField]: choice === "yes",
-      [noField]: choice === "no"
-    }));
+    setForm(prev => {
+      const next = {
+        ...prev,
+        [yesField]: choice === "yes",
+        [noField]: choice === "no"
+      };
+      // If smoking is answered 'no', clear remarks (sticks per day)
+      if (yesField === "smokes" && choice === "no") {
+        next.smokes_remarks = "";
+      }
+      return next;
+    });
   };
 
   const handleReset = () => {
@@ -326,7 +334,7 @@ const PhilPenHealthForm = () => {
       diabetes_symptoms: form.diabetes,
       
       // Store extra details as schema-less properties (fully supported in mock database local storage)
-      smokes_remarks: form.smokes_remarks,
+      smokes_remarks: form.smokes ? form.smokes_remarks : "",
       drinks_remarks: form.drinks_remarks,
       bp_remarks_bp: form.bp_remarks_bp,
       bp_remarks_meds: form.bp_remarks_meds,
@@ -795,15 +803,36 @@ const PhilPenHealthForm = () => {
                     >
                       {form.smokes_no ? "✓" : ""}
                     </td>
-                    <td className="border border-border p-1">
+                    <td className={`border border-border p-1 transition-colors ${!form.smokes ? "bg-muted/20" : ""}`}>
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground w-full">
-                        <span className="shrink-0 font-medium">Ilang stick kada araw:</span>
+                        <span className={`shrink-0 font-medium ${!form.smokes ? "opacity-60" : ""}`}>Ilang stick kada araw:</span>
                         <input 
                           type="text"
-                          value={form.smokes_remarks}
-                          onChange={(e) => handleFieldChange("smokes_remarks", e.target.value)}
-                          className="print-input flex-1 text-foreground"
-                          placeholder="sticks/day..."
+                          value={form.smokes ? form.smokes_remarks : ""}
+                          onChange={(e) => {
+                            if (!form.smokes) return;
+                            handleFieldChange("smokes_remarks", e.target.value);
+                          }}
+                          onKeyDown={(e) => {
+                            if (!form.smokes) {
+                              e.preventDefault();
+                              return;
+                            }
+                            allowOnlyNumbers(e);
+                          }}
+                          disabled={!form.smokes || isMidwife}
+                          readOnly={!form.smokes || isMidwife}
+                          className={`print-input flex-1 transition-all ${
+                            !form.smokes 
+                              ? "cursor-not-allowed opacity-50 bg-muted/20 text-muted-foreground placeholder:text-muted-foreground/50 select-none" 
+                              : "text-foreground"
+                          }`}
+                          placeholder={
+                            !form.smokes
+                              ? (form.smokes_no ? "Hindi pinapayagan kung 'No' ang sagot" : "Piliin muna ang 'Yes'...")
+                              : "sticks/day (e.g. 5)"
+                          }
+                          title={!form.smokes ? "Hindi pinapayagan ang input kapag 'No' ang sagot sa paninigarilyo" : "Ilang stick kada araw"}
                         />
                       </div>
                     </td>
@@ -1199,7 +1228,7 @@ const PhilPenHealthForm = () => {
                                         weight: rec.weight || "",
                                         smokes: !!rec.smokes,
                                         smokes_no: !rec.smokes,
-                                        smokes_remarks: rec.smokes_remarks || "",
+                                        smokes_remarks: rec.smokes ? (rec.smokes_remarks || "") : "",
                                         drinks_alcohol: !!rec.drinks_alcohol,
                                         drinks_alcohol_no: !rec.drinks_alcohol,
                                         drinks_remarks: rec.drinks_remarks || "",
@@ -1401,7 +1430,9 @@ const PhilPenHealthForm = () => {
                             <Badge variant="outline" className="text-slate-600">Hindi (No)</Badge>
                           )}
                         </td>
-                        <td className="p-2.5 text-slate-600 dark:text-slate-400">{selectedRecordForView.smokes_remarks || "—"}</td>
+                        <td className="p-2.5 text-slate-600 dark:text-slate-400">
+                          {selectedRecordForView.smokes ? (selectedRecordForView.smokes_remarks ? `${selectedRecordForView.smokes_remarks} sticks/day` : "—") : "Hindi naninigarilyo (N/A)"}
+                        </td>
                       </tr>
                       <tr>
                         <td className="p-2.5 font-medium">2. Umiinom ka ba ng alak? (Alcohol Consumption)</td>

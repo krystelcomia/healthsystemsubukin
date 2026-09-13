@@ -932,7 +932,7 @@ const AdminHealthRecords = () => {
               <td style="border:1px solid #000;padding:6px 8px;font-weight:600;">1. Naninigarilyo?</td>
               <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;">${selectedRecord.smokes ? "✓" : ""}</td>
               <td style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold;">${selectedRecord.smokes_no ? "✓" : (!selectedRecord.smokes ? "✓" : "")}</td>
-              <td style="border:1px solid #000;padding:6px;">${selectedRecord.smokes_remarks ? `Ilang stick kada araw: ${selectedRecord.smokes_remarks}` : ""}</td>
+              <td style="border:1px solid #000;padding:6px;">${selectedRecord.smokes && selectedRecord.smokes_remarks ? `Ilang stick kada araw: ${selectedRecord.smokes_remarks}` : ""}</td>
             </tr>
             <tr>
               <td style="border:1px solid #000;padding:6px 8px;font-weight:600;">2. Manginginom?</td>
@@ -1452,7 +1452,7 @@ const AdminHealthRecords = () => {
                             <td className="p-2.5 font-medium">1. Naninigarilyo?</td>
                             <td className="p-2.5 text-center font-bold text-primary">{selectedRecord.smokes ? "✓" : ""}</td>
                             <td className="p-2.5 text-center font-bold text-muted-foreground">{selectedRecord.smokes_no ? "✓" : (!selectedRecord.smokes ? "✓" : "")}</td>
-                            <td className="p-2.5">{selectedRecord.smokes_remarks ? `Sticks: ${selectedRecord.smokes_remarks}` : "—"}</td>
+                            <td className="p-2.5">{selectedRecord.smokes ? (selectedRecord.smokes_remarks ? `Sticks: ${selectedRecord.smokes_remarks}` : "—") : "Hindi naninigarilyo (N/A)"}</td>
                           </tr>
                           <tr className="border-b border-border/30">
                             <td className="p-2.5 font-medium">2. Manginginom?</td>
