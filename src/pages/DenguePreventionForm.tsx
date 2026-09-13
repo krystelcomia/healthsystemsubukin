@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar, Search, FileText, ShieldAlert, FileSpreadsheet } from "lucide-react";
+import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar, CalendarCheck, Search, FileText, ShieldAlert, FileSpreadsheet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -47,6 +47,67 @@ export interface SavedDengueForm {
 const STORAGE_KEY_SAVED_BATCHES = "bhw_dengue_saved_batches";
 const STORAGE_KEY_ACTIVE_DRAFT = "bhw_dengue_active_draft";
 const STORAGE_KEY_RESIDENT_SIGNATURES = "bhw_resident_signatures";
+const STORAGE_KEY_WEEK_DATE = "bhw_dengue_current_week_date";
+const STORAGE_KEY_WEEKLY_VISITED = "bhw_dengue_weekly_visited";
+
+export const getWeekDetails = (dateStr: string) => {
+  const parts = (dateStr || "").split("-").map(Number);
+  let d: Date;
+  if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+    d = new Date(parts[0], parts[1] - 1, parts[2]);
+  } else {
+    d = new Date();
+  }
+  if (isNaN(d.getTime())) d = new Date();
+
+  const day = d.getDay(); // 0 is Sunday, 1 is Monday, ...
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + diffToMonday);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  const formatShort = (dt: Date) =>
+    dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+  const formatIso = (dt: Date) => {
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, "0");
+    const dayOfMonth = String(dt.getDate()).padStart(2, "0");
+    return `${y}-${m}-${dayOfMonth}`;
+  };
+
+  const target = new Date(Date.UTC(monday.getFullYear(), monday.getMonth(), monday.getDate()));
+  const dayNr = target.getUTCDay() || 7;
+  target.setUTCDate(target.getUTCDate() + 4 - dayNr);
+  const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil(((target.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+
+  const weekKey = `${target.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+
+  return {
+    monday,
+    sunday,
+    mondayStr: formatIso(monday),
+    sundayStr: formatIso(sunday),
+    weekRangeLabel: `${formatShort(monday)} – ${formatShort(sunday)}`,
+    weekKey,
+  };
+};
+
+const getVisitedHeadsForWeek = (weekKey: string): string[] => {
+  try {
+    const stored = localStorage.getItem(`${STORAGE_KEY_WEEKLY_VISITED}_${weekKey}`);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveVisitedHeadsForWeek = (weekKey: string, heads: string[]) => {
+  localStorage.setItem(`${STORAGE_KEY_WEEKLY_VISITED}_${weekKey}`, JSON.stringify(heads));
+};
 
 const getSavedBatchesFromStorage = (): Record<string, { timestamp: string; recordIds: string[]; records?: any[] }> => {
   try {
@@ -164,6 +225,135 @@ const DenguePreventionForm = () => {
 
   const [deleteRowConfirm, setDeleteRowConfirm] = useState<{ id: string; name: string } | null>(null);
   const [deleteSavedFormConfirmId, setDeleteSavedFormConfirmId] = useState<string | null>(null);
+  const [endWeekDialogOpen, setEndWeekDialogOpen] = useState(false);
+  const [clearFormDialogOpen, setClearFormDialogOpen] = useState(false);
+
+  // Weekly home visits date tracking
+  const [currentWeekDate, setCurrentWeekDate] = useState<string>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY_WEEK_DATE);
+    if (stored && /^\d{4}-\d{2}-\d{2}$/.test(stored)) return stored;
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  });
+
+  const weekDetails = useMemo(() => getWeekDetails(currentWeekDate), [currentWeekDate]);
+
+  const [weeklyVisitedHeads, setWeeklyVisitedHeads] = useState<string[]>(() => {
+    try {
+      const wk = getWeekDetails(
+        localStorage.getItem(STORAGE_KEY_WEEK_DATE) || new Date().toISOString().split("T")[0]
+      ).weekKey;
+      return getVisitedHeadsForWeek(wk);
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    const heads = getVisitedHeadsForWeek(weekDetails.weekKey);
+    setWeeklyVisitedHeads(heads);
+  }, [weekDetails.weekKey]);
+
+  const addVisitedHeads = (newNames: string[]) => {
+    setWeeklyVisitedHeads((prev) => {
+      const updated = Array.from(new Set([...prev, ...newNames.map((n) => n.trim())].filter(Boolean)));
+      saveVisitedHeadsForWeek(weekDetails.weekKey, updated);
+      return updated;
+    });
+  };
+
+  const handleWeekDateChange = (newDate: string) => {
+    if (!newDate) return;
+    setCurrentWeekDate(newDate);
+    localStorage.setItem(STORAGE_KEY_WEEK_DATE, newDate);
+  };
+
+  const handleEndWeek = () => {
+    if (isMidwife) return;
+    // 1. Clear weekly visited heads for this week and next
+    saveVisitedHeadsForWeek(weekDetails.weekKey, []);
+    setWeeklyVisitedHeads([]);
+
+    // 2. Advance the calendar date by 7 days to the start of the next week
+    const nextWeekMonday = new Date(weekDetails.monday.getTime() + 7 * 86400000);
+    const y = nextWeekMonday.getFullYear();
+    const m = String(nextWeekMonday.getMonth() + 1).padStart(2, "0");
+    const d = String(nextWeekMonday.getDate()).padStart(2, "0");
+    const nextDateStr = `${y}-${m}-${d}`;
+    setCurrentWeekDate(nextDateStr);
+    localStorage.setItem(STORAGE_KEY_WEEK_DATE, nextDateStr);
+
+    // 3. Reset active form rows to blank so user starts the new week clean
+    const blankRows = createBlankRows(MAX_ROWS);
+    setRecords(blankRows);
+    localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(blankRows));
+
+    setEndWeekDialogOpen(false);
+
+    toast.success(
+      language === "tl"
+        ? "Matagumpay na natapos ang linggo! Lahat ng maybahay ay muling makikita sa mga pagpipilian para sa bagong linggo."
+        : "Week completed! All household head names have been restored to the options list for the new week."
+    );
+
+    logActivity("update_dengue", {
+      entity_type: "dengue_prevention",
+      description: `Completed dengue inspection week (${weekDetails.weekRangeLabel}). Refreshed household head options.`,
+    });
+  };
+
+  const handleClearForm = () => {
+    if (isMidwife) return;
+    const blankRows = createBlankRows(MAX_ROWS);
+    setRecords(blankRows);
+    localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(blankRows));
+    setClearFormDialogOpen(false);
+    toast.success(language === "tl" ? "Na-clear ang aktibong form." : "Active form cleared.");
+  };
+
+  // Visited set for quick normalized lookup
+  const visitedSet = useMemo(() => {
+    return new Set(weeklyVisitedHeads.map((h) => normalizeResidentName(h)).filter(Boolean));
+  }, [weeklyVisitedHeads]);
+
+  // Track household head names already entered in the active form rows
+  const activeEnteredNamesMap = useMemo(() => {
+    const map = new Map<string, string>(); // normalizedName -> rowId
+    records.forEach((r) => {
+      const norm = normalizeResidentName(r.household_name);
+      if (norm) {
+        map.set(norm, r.id);
+      }
+    });
+    return map;
+  }, [records]);
+
+  // Return household head options available for a specific row:
+  // - Excludes heads already visited/saved this week
+  // - Excludes heads entered into other rows on the active form
+  // - Preserves the row's own current selection so it doesn't disappear when focused
+  const getAvailableHeadsForRow = (recId: string, currentRowVal: string) => {
+    const currentNorm = normalizeResidentName(currentRowVal);
+    return householdHeads.filter((head) => {
+      const norm = normalizeResidentName(head.full_name);
+      if (!norm) return false;
+      if (norm === currentNorm) return true;
+      if (visitedSet.has(norm)) return false;
+      const otherRowId = activeEnteredNamesMap.get(norm);
+      if (otherRowId && otherRowId !== recId) return false;
+      return true;
+    });
+  };
+
+  const remainingHeadsCount = useMemo(() => {
+    return householdHeads.filter((head) => {
+      const norm = normalizeResidentName(head.full_name);
+      return !visitedSet.has(norm) && !activeEnteredNamesMap.has(norm);
+    }).length;
+  }, [householdHeads, visitedSet, activeEnteredNamesMap]);
 
   const MAX_ROWS = 20;
 
@@ -325,6 +515,22 @@ const DenguePreventionForm = () => {
 
     setSavedForms(compiledSavedForms);
 
+    // Sync visited heads for the current week from saved batches
+    const currentWeekVisited = new Set<string>(getVisitedHeadsForWeek(weekDetails.weekKey));
+    compiledSavedForms.forEach((sf) => {
+      const sfDate = sf.timestamp ? sf.timestamp.split("T")[0] : "";
+      if (sfDate && getWeekDetails(sfDate).weekKey === weekDetails.weekKey) {
+        (sf.records || []).forEach((r: any) => {
+          if (r.household_name && r.household_name.trim()) {
+            currentWeekVisited.add(r.household_name.trim());
+          }
+        });
+      }
+    });
+    const syncedList = Array.from(currentWeekVisited);
+    saveVisitedHeadsForWeek(weekDetails.weekKey, syncedList);
+    setWeeklyVisitedHeads(syncedList);
+
     // Active form resolution:
     // 1. First try restoring from active draft in localStorage
     // 2. If no draft, load unmapped DB records into the active form so filled-out data persists
@@ -336,17 +542,24 @@ const DenguePreventionForm = () => {
       try {
         const parsed = JSON.parse(activeDraftStr);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const hasAnyData = parsed.some((r: any) => !isRowEmpty(r));
+          // Filter out legacy dummy dengue-* records
+          const cleanParsed = parsed.filter((r: any) => !r.id?.startsWith("dengue-"));
+          const hasAnyData = cleanParsed.some((r: any) => !isRowEmpty(r));
           if (hasAnyData) {
-            initialRows = parsed.slice(0, MAX_ROWS);
+            initialRows = cleanParsed.slice(0, MAX_ROWS);
+          } else {
+            localStorage.removeItem(STORAGE_KEY_ACTIVE_DRAFT);
           }
         }
       } catch {}
     }
 
-    // If no active draft, load unmapped DB records so the form keeps its data
+    // If no active draft, load unmapped DB records (excluding legacy dummy dengue-* records)
     if (initialRows.length === 0 && unmappedDbRecords.length > 0) {
-      initialRows = unmappedDbRecords.slice(0, MAX_ROWS);
+      const cleanDb = unmappedDbRecords.filter((r: any) => !r.id?.startsWith("dengue-"));
+      if (cleanDb.length > 0) {
+        initialRows = cleanDb.slice(0, MAX_ROWS);
+      }
     }
 
     // Only start with fresh blank rows if there is truly no data
@@ -735,6 +948,34 @@ const DenguePreventionForm = () => {
       return;
     }
 
+    // Check for duplicate household head entries within the current form
+    const cleanNames = nonEmptyRecords.map((r) => normalizeResidentName(r.household_name));
+    const duplicate = cleanNames.find((name, idx) => cleanNames.indexOf(name) !== idx);
+    if (duplicate) {
+      const duplicateOriginal = nonEmptyRecords.find(
+        (r) => normalizeResidentName(r.household_name) === duplicate
+      )?.household_name;
+      toast.error(
+        language === "tl"
+          ? `May dobleng maybahay sa talaan: "${duplicateOriginal}". Isa lamang bawat linggo.`
+          : `Duplicate household head: "${duplicateOriginal}". Each household head should only be entered once per week.`
+      );
+      return;
+    }
+
+    // Check if any household head was already visited earlier this week
+    const alreadyVisited = nonEmptyRecords.find((r) =>
+      visitedSet.has(normalizeResidentName(r.household_name))
+    );
+    if (alreadyVisited) {
+      toast.error(
+        language === "tl"
+          ? `Si "${alreadyVisited.household_name}" ay naitala na para sa linggong ito (${weekDetails.weekRangeLabel}).`
+          : `"${alreadyVisited.household_name}" was already recorded for this week (${weekDetails.weekRangeLabel}).`
+      );
+      return;
+    }
+
     const missingInspection = nonEmptyRecords.find(
       (r) =>
         !r.container_type?.trim() &&
@@ -797,12 +1038,10 @@ const DenguePreventionForm = () => {
         })
       );
 
-      // Check if the form is fully populated (all rows have data)
       const savedNonEmpty = updatedRecords.filter((r) => !isRowEmpty(r));
-      const isFormComplete = savedNonEmpty.length >= MAX_ROWS;
 
-      if (isFormComplete) {
-        // Archive the completed form as a saved batch in history
+      if (savedNonEmpty.length > 0) {
+        // Archive the completed set as a saved batch in history
         const batchId = `dengue_batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         const batchTimestamp = new Date().toISOString();
         const savedBatchesMap = getSavedBatchesFromStorage();
@@ -833,28 +1072,31 @@ const DenguePreventionForm = () => {
           ...prev,
         ]);
 
-        // Reset the active form to blank rows for the next batch
+        // Register saved household heads as visited for this week
+        const newlySavedHeads = savedNonEmpty
+          .map((r) => (r.household_name || "").trim())
+          .filter(Boolean);
+        addVisitedHeads(newlySavedHeads);
+
+        // Reset the active form to blank rows for a new set
         const blankRows = createBlankRows(MAX_ROWS);
         setRecords(blankRows);
         localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(blankRows));
 
-        toast.success("Form complete! All entries saved to history. The form has been reset for a new batch.");
-      } else {
-        // Partial save — keep entries on the form
-        setRecords(updatedRecords);
-        localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(updatedRecords));
-        toast.success(t("dengue.saveSuccess") || "Progress saved! All entries remain on the form.");
+        toast.success(
+          language === "tl"
+            ? `Nai-save sa history ang ${savedNonEmpty.length} tala! Na-reset ang form para sa bagong set. Ang mga natitirang maybahay ay maaari pa ring piliin.`
+            : `Saved ${savedNonEmpty.length} record(s) to history! Form reset for a new set; remaining household heads are still available.`
+        );
+
+        logActivity("update_dengue", {
+          entity_type: "dengue_prevention",
+          description: `Archived ${savedNonEmpty.length} record(s) in Dengue prevention checklist for week ${weekDetails.weekRangeLabel}`,
+        });
       }
 
       window.dispatchEvent(new Event("resident-records-updated"));
       window.dispatchEvent(new Event("dengue-records-updated"));
-
-      logActivity("update_dengue", {
-        entity_type: "dengue_prevention",
-        description: isFormComplete
-          ? `Completed and archived ${savedNonEmpty.length} record(s) in Dengue prevention checklist form`
-          : `Saved ${nonEmptyRecords.length} record(s) in Dengue prevention checklist form`,
-      });
 
     } catch (err) {
       console.error("Failed to save progress:", err);
@@ -1239,12 +1481,69 @@ const DenguePreventionForm = () => {
             />
           </div>
 
-          {/* Header Bar with Barangay Subukin note (Hidden when printing) */}
-          <div className="flex items-center justify-between gap-2 no-print pb-2 border-b border-border/40">
-            <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-              BRGY: <strong className="text-foreground">SUBUKIN</strong>
-            </span>
+          {/* Weekly Calendar & Controls Toolbar (Hidden when printing) */}
+          <div className="flex flex-wrap items-center justify-between gap-3 no-print p-3 rounded-xl bg-muted/40 border border-border/60">
+            {/* Left: Barangay indicator & Week Info */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                BRGY: <strong className="text-foreground">SUBUKIN</strong>
+              </span>
+
+              <Badge variant="outline" className="text-xs bg-background text-foreground border-border font-medium flex items-center gap-1.5 py-1 px-2.5 shadow-sm">
+                <Calendar className="h-3.5 w-3.5 text-primary" />
+                <span className="font-semibold">{weekDetails.weekRangeLabel}</span>
+              </Badge>
+
+              <Badge variant="secondary" className="text-[11px] font-semibold py-1 px-2.5">
+                {remainingHeadsCount} {language === "tl" ? "natitirang maybahay" : "remaining head(s)"}
+              </Badge>
+            </div>
+
+            {/* Right: Date Picker & End Week Button & Clear Form Button */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 bg-background border border-input rounded-lg px-2.5 py-1 text-xs shadow-sm hover:border-primary/50 transition-colors">
+                <Calendar className="h-3.5 w-3.5 text-primary" />
+                <span className="text-[11px] text-muted-foreground font-medium mr-1">
+                  {language === "tl" ? "Petsa:" : "Week:"}
+                </span>
+                <input
+                  type="date"
+                  value={currentWeekDate}
+                  onChange={(e) => handleWeekDateChange(e.target.value)}
+                  className="bg-transparent text-xs font-semibold text-foreground focus:outline-none cursor-pointer"
+                  title={language === "tl" ? "Pumili ng petsa para sa linggong ito" : "Select date for the current week"}
+                />
+              </div>
+
+              {!isMidwife && (
+                <>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEndWeekDialogOpen(true)}
+                    className="h-8 gap-1.5 text-xs font-bold border-amber-500/50 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500 shadow-sm"
+                    title={language === "tl" ? "Tapusin ang lingguhang pagbisita at muling ilabas ang lahat ng maybahay" : "Complete the week of visits and refresh all household head options"}
+                  >
+                    <CalendarCheck className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    {language === "tl" ? "Tapusin ang Linggo" : "End Week"}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setClearFormDialogOpen(true)}
+                    className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    title={language === "tl" ? "Burahin ang mga nakasulat sa aktibong form" : "Clear all active rows"}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    {language === "tl" ? "I-clear ang Form" : "Clear Form"}
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="text-center space-y-1 py-2 no-print">
@@ -1296,7 +1595,10 @@ const DenguePreventionForm = () => {
                 </tr>
               </thead>
               <tbody className={isMidwife ? "pointer-events-none opacity-90" : ""}>
-                {records.map((rec) => (
+                {records.map((rec) => {
+                  const availableHeads = getAvailableHeadsForRow(rec.id, rec.household_name || "");
+                  const datalistId = `household-heads-list-${rec.id}`;
+                  return (
                   <tr key={rec.id} className="hover:bg-muted/30 transition-colors">
                     <td className="border border-border p-0 font-medium relative">
                       <span className="print-only px-2 py-0.5 font-medium text-black">
@@ -1304,7 +1606,7 @@ const DenguePreventionForm = () => {
                       </span>
                       <input
                         disabled={isMidwife}
-                        list="household-heads-list"
+                        list={datalistId}
                         type="text"
                         value={rec.household_name || ""}
                         onKeyDown={allowOnlyLetters}
@@ -1340,6 +1642,13 @@ const DenguePreventionForm = () => {
                         className={`cell-input ${isMidwife ? "cursor-default select-text" : ""}`}
                         placeholder=""
                       />
+                      <datalist id={datalistId}>
+                        {availableHeads.map((head, idx) => (
+                          <option key={head.id || `head-${rec.id}-${idx}`} value={head.full_name}>
+                            {head.sitio ? `Sitio ${head.sitio}` : "Household Head"}
+                          </option>
+                        ))}
+                      </datalist>
                     </td>
                     <td className="border border-border p-0">
                       <span className="print-only px-2 py-0.5 text-black">
@@ -1419,7 +1728,8 @@ const DenguePreventionForm = () => {
                       </td>
                     )}
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -1445,24 +1755,27 @@ const DenguePreventionForm = () => {
             </div>
           </div>
 
-          <datalist id="household-heads-list">
-            {householdHeads.map((head, idx) => (
-              <option key={head.id || `head-${idx}`} value={head.full_name}>
-                {head.sitio ? `Sitio ${head.sitio}` : "Household Head"}
-              </option>
-            ))}
-          </datalist>
-
           <div className="flex items-center justify-end gap-2 mt-4 no-print flex-wrap">
             {!isMidwife && (
-              <Button 
-                onClick={handleSaveAll} 
-                disabled={saving} 
-                size="sm" 
-                className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md"
-              >
-                <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Progress"}
-              </Button>
+              <>
+                <Button 
+                  onClick={handleSaveAll} 
+                  disabled={saving} 
+                  size="sm" 
+                  className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md"
+                >
+                  <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Progress"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setClearFormDialogOpen(true)}
+                  className="gap-1.5 text-xs text-muted-foreground hover:text-destructive hover:border-destructive/40"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> {language === "tl" ? "I-clear ang Form" : "Clear Form"}
+                </Button>
+              </>
             )}
             <Button 
               type="button" 
@@ -1875,6 +2188,65 @@ const DenguePreventionForm = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete Batch
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* End Week Confirmation Dialog */}
+      <AlertDialog open={endWeekDialogOpen} onOpenChange={setEndWeekDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <CalendarCheck className="h-5 w-5 text-amber-600" />
+              {language === "tl" ? "Tapusin ang Lingguhang Pagbisita?" : "End Current Week Home Visits?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2 text-sm text-muted-foreground">
+              <p>
+                {language === "tl"
+                  ? `Tatapusin nito ang siklo ng pagbisita para sa kasalukuyang linggo (${weekDetails.weekRangeLabel}).`
+                  : `This marks the completion of home visits for this week (${weekDetails.weekRangeLabel}).`}
+              </p>
+              <p>
+                {language === "tl"
+                  ? "Lahat ng pangalan ng maybahay ay muling makikita sa mga pagpipilian para sa susunod na linggo, at ang petsa ay ililipat sa bagong linggo."
+                  : "All household head names will reappear in the options list for the new week, and the date will advance to the next week."}
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{language === "tl" ? "Kanselahin" : "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleEndWeek}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+            >
+              {language === "tl" ? "Oo, Tapusin ang Linggo" : "Yes, End Week"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Clear Active Form Confirmation Dialog */}
+      <AlertDialog open={clearFormDialogOpen} onOpenChange={setClearFormDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              {language === "tl" ? "I-clear ang Aktibong Form?" : "Clear Active Form Rows?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-muted-foreground">
+              {language === "tl"
+                ? "Mabubura ang lahat ng kasalukuyang nakasulat sa 20 hanay ng aktibong form upang makapagsimula muli. Ang mga naitala na sa History ay hindi maaapektuhan."
+                : "This will clear all 20 rows on the active form so you can start fresh. Records already saved to History will not be affected."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{language === "tl" ? "Kanselahin" : "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleClearForm}
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold"
+            >
+              {language === "tl" ? "I-clear ang Form" : "Clear Form"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

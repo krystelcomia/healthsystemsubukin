@@ -112,21 +112,7 @@ export const CANONICAL_INITIAL_DATABASE: Record<string, any[]> = {
     { id: "phil-2", resident_id: "res-8", family_number: "3", patient_first_name: "Rodrigo", patient_last_name: "Reyes", age: 55, gender: "Male", sitio: "Masaya", blood_pressure: "130/85", fasting_blood_sugar: "105", cholesterol: "195", smoking_status: "Non-smoker", created_at: "2026-08-12T11:00:00.000Z" },
     { id: "phil-3", resident_id: "res-18", family_number: "7", patient_first_name: "Manuel", patient_last_name: "Bautista", age: 58, gender: "Male", sitio: "Masigla", blood_pressure: "125/80", fasting_blood_sugar: "98", cholesterol: "190", smoking_status: "Non-smoker", created_at: "2026-08-13T14:00:00.000Z" }
   ],
-  dengue_prevention: [
-    { id: "dengue-1", household_name: "John Macatangay", container_type: "Used Tires", has_larvae: false, action_plan: "Cover water storage tightly & practice 4S strategy", signature: "Verified by BHW", created_at: "2026-09-01T01:00:00.000Z" },
-    { id: "dengue-2", household_name: "John Macatangay", container_type: "Flower Vases", has_larvae: false, action_plan: "Clean flower vases weekly", signature: "Verified by BHW", created_at: "2026-09-01T01:01:00.000Z" },
-    { id: "dengue-3", household_name: "John Macatangay", container_type: "Drums / Water Tank", has_larvae: false, action_plan: "Keep drums tightly covered", signature: "Verified by BHW", created_at: "2026-09-01T01:02:00.000Z" },
-    { id: "dengue-4", household_name: "Kent Cueto", container_type: "Used Tires", has_larvae: true, action_plan: "Dispose stagnant water and apply larvicide", signature: "Verified by BHW", created_at: "2026-09-01T01:03:00.000Z" },
-    { id: "dengue-5", household_name: "Jayvie Rondero", container_type: "Pails / Buckets", has_larvae: false, action_plan: "Clean and invert pails when empty", signature: "Verified by BHW", created_at: "2026-09-01T01:04:00.000Z" },
-    { id: "dengue-6", household_name: "Jayvie Rondero", container_type: "Roof Gutters", has_larvae: false, action_plan: "Clean roof gutters regularly", signature: "Verified by BHW", created_at: "2026-09-01T01:05:00.000Z" },
-    { id: "dengue-7", household_name: "Gabriel De Guzman", container_type: "Drums / Water Tank", has_larvae: false, action_plan: "Maintain tight screen covers", signature: "Verified by BHW", created_at: "2026-09-01T01:06:00.000Z" },
-    { id: "dengue-8", household_name: "Errol Badillo", container_type: "Flower Vases", has_larvae: false, action_plan: "Replace water frequently", signature: "Verified by BHW", created_at: "2026-09-01T01:07:00.000Z" },
-    { id: "dengue-9", household_name: "Gabriel De Guzman", container_type: "Used Tires", has_larvae: false, action_plan: "Keep tires in covered area", signature: "Verified by BHW", created_at: "2026-09-01T01:08:00.000Z" },
-    { id: "dengue-10", household_name: "Joshua Garcia", container_type: "Pails / Buckets", has_larvae: false, action_plan: "Scrub bucket walls weekly", signature: "Verified by BHW", created_at: "2026-09-01T01:09:00.000Z" },
-    { id: "dengue-11", household_name: "Joshua Garcia", container_type: "Roof Gutters", has_larvae: false, action_plan: "Clear leaves from gutters", signature: "Verified by BHW", created_at: "2026-09-01T01:10:00.000Z" },
-    { id: "dengue-12", household_name: "Joshua Garcia", container_type: "Drums / Water Tank", has_larvae: false, action_plan: "Keep covered with fine mesh", signature: "Verified by BHW", created_at: "2026-09-01T01:11:00.000Z" },
-    { id: "dengue-13", household_name: "Leo Mandigma", container_type: "Drums / Water Tank", has_larvae: false, action_plan: "Cover water storage tightly & practice 4S strategy", signature: "Verified by BHW", created_at: "2026-09-01T01:12:00.000Z" }
-  ],
+  dengue_prevention: [],
   maternal_care: [],
   child_health: [],
   family_planning: [],

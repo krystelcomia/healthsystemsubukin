@@ -1074,6 +1074,7 @@ export function seedMockDatabase() {
   if (!db['family_data']) db['family_data'] = [];
   if (!db['philpen_health']) db['philpen_health'] = [];
   if (!db['dengue_prevention']) db['dengue_prevention'] = [];
+  else db['dengue_prevention'] = db['dengue_prevention'].filter((d: any) => !d.id?.startsWith("dengue-"));
   if (!db['maternal_care']) db['maternal_care'] = [];
   if (!db['child_health']) db['child_health'] = [];
   if (!db['family_planning']) db['family_planning'] = [];
