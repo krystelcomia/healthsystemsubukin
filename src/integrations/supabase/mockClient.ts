@@ -406,6 +406,34 @@ export const KNOWN_DEFAULT_CREDENTIALS: Record<string, string> = {
 // Mock Auth system
 class MockAuth {
   private listeners: Array<(event: string, session: any) => void> = [];
+  private authChannel: BroadcastChannel | null = null;
+
+  constructor() {
+    if (typeof window !== "undefined") {
+      try {
+        if ("BroadcastChannel" in window) {
+          this.authChannel = new BroadcastChannel("bhw_auth_channel");
+          this.authChannel.onmessage = (msgEvent) => {
+            const data = msgEvent?.data;
+            if (data && data.type === "BHW_AUTH_STATE_CHANGE") {
+              this.triggerListeners(data.event, data.session, false);
+            }
+          };
+        }
+      } catch (err) {
+        console.warn("BroadcastChannel initialization warning:", err);
+      }
+
+      window.addEventListener("storage", (storageEvent) => {
+        if (storageEvent.key === "supabase_mock_session") {
+          try {
+            const newSession = storageEvent.newValue ? JSON.parse(storageEvent.newValue) : null;
+            this.triggerListeners(newSession ? "SIGNED_IN" : "SIGNED_OUT", newSession, false);
+          } catch {}
+        }
+      });
+    }
+  }
 
   async signInWithPassword({ email, password }: any) {
     seedMockDatabase();
@@ -834,8 +862,25 @@ class MockAuth {
     return this.resetUserPassword(targetEmail, password);
   }
 
-  private triggerListeners(event: string, session: any) {
-    this.listeners.forEach(callback => callback(event, session));
+  private triggerListeners(event: string, session: any, shouldBroadcast = true) {
+    this.listeners.forEach(callback => {
+      try {
+        callback(event, session);
+      } catch (err) {
+        console.error("Error in mock auth listener:", err);
+      }
+    });
+
+    if (shouldBroadcast && this.authChannel) {
+      try {
+        this.authChannel.postMessage({
+          type: "BHW_AUTH_STATE_CHANGE",
+          event,
+          session,
+          timestamp: Date.now(),
+        });
+      } catch {}
+    }
   }
 }
 

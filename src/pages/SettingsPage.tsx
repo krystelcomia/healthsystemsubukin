@@ -9,7 +9,9 @@ import {
   Lock, 
   ShieldCheck, 
   CheckCircle2,
-  Server
+  Server,
+  Globe,
+  Shield
 } from "lucide-react";
 import { useSettings, COLOR_THEMES } from "@/contexts/SettingsContext";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
@@ -178,6 +180,68 @@ const SettingsPage = () => {
               <Lock className="h-3 w-3 text-red-600 dark:text-red-400" />
               Access restricted to Supervisor Administrator
             </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 4. Single Active Browser Session Policy */}
+      <Card className="border-border/60 shadow-sm overflow-hidden">
+        <CardHeader className="pb-3 border-b border-border/40">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-heading">
+                {t("settings.singleSessionTitle")}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t("settings.singleSessionDesc")}
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6 space-y-4">
+          <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-2">
+            <div className="flex items-center gap-2 text-foreground font-semibold text-xs sm:text-sm">
+              <Lock className="h-4 w-4 text-primary shrink-0" />
+              <span>
+                {language === "tl"
+                  ? "Patakaran sa Pag-iisa ng Aktibong Sesyon (Single Session Rule)"
+                  : "Single Session Enforcement (Facebook-Style Session Architecture)"}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {language === "tl"
+                ? "Hindi pinahihintulutan ang pagbubukas ng dalawang magkaibang account sa parehong browser instance. Kapag may nag-log in na bagong account sa ibang tab, awtomatikong mag-e-expire o magla-log out ang naunang sesyon pabor sa bagong account upang maiwasan ang cross-account contamination ng mga rekord ng kalusugan."
+                : "Opening two separate staff accounts within the same browser instance is prevented by system security. Logging into an account in another tab automatically expires or logs out previous sessions on this browser in favor of the active session (similar to Facebook) to maintain strict clinical data isolation."}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-3.5 rounded-xl border border-border/60 bg-background space-y-1.5">
+              <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                <Globe className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span>{language === "tl" ? "Paggamit ng Ibang Browser" : "Use Multiple Browsers"}</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                {language === "tl"
+                  ? "Maaaring magbukas ng karagdagang account gamit ang ibang browser (tulad ng Microsoft Edge kasabay ng Google Chrome)."
+                  : "Operate a secondary staff account concurrently by launching a distinct browser application (such as Microsoft Edge alongside Google Chrome)."}
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-border/60 bg-background space-y-1.5">
+              <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                <Shield className="h-4 w-4 text-sky-600 dark:text-sky-400 shrink-0" />
+                <span>{language === "tl" ? "Pribado / Incognito Mode" : "Incognito / InPrivate Mode"}</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                {language === "tl"
+                  ? "Bawat Incognito o InPrivate window ay nagtataglay ng sariling hiwalay na imbakan, na may limitasyong isang aktibong account bawat window."
+                  : "Private and Incognito windows maintain isolated storage contexts, with each window instance limited to one active session."}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>

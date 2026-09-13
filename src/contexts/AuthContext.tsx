@@ -1,8 +1,9 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { startSession, endSession, logActivity } from "@/lib/activityLogger";
 import { recordWorkerPresence } from "@/lib/presenceTracker";
+import { toast } from "sonner";
 
 interface AuthContextType {
   session: Session | null;
@@ -38,9 +39,23 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const getSessionNoticeText = (type: "switched" | "logged_out") => {
+  const lang = (typeof window !== "undefined" && localStorage.getItem("language")) || "tl";
+  if (type === "switched") {
+    return lang === "tl"
+      ? "Nag-expire ang iyong sesyon dahil may nag-sign in na ibang account sa browser na ito. Para sa seguridad, isang account lamang ang maaaring aktibo bawat browser (katulad ng Facebook). Upang magbukas ng karagdagang account, gumamit ng Incognito o ibang browser tulad ng Microsoft Edge."
+      : "Session Expired: Another account was logged into on this browser. For system security, only one active account is permitted per browser instance (similar to Facebook). Use Incognito mode or another browser (such as Microsoft Edge) to use multiple accounts.";
+  }
+  return lang === "tl"
+    ? "Naka-log out: Ang iyong sesyon ay isinara mula sa ibang tab o window sa browser na ito."
+    : "Signed out: Your session was ended from another tab or window in this browser.";
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const activeUserIdRef = useRef<string | null>(null);
+  const hasInitializedAuthRef = useRef<boolean>(false);
   const [userRole, setUserRole] = useState<string | null>(() => {
     try {
       return localStorage.getItem("bhw_user_role") || null;
@@ -243,6 +258,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const handleAuthSession = async (event: string | null, currentSession: Session | null) => {
       if (!isMounted) return;
+
+      const previousUserId = activeUserIdRef.current;
+      const nextUserId = currentSession?.user?.id || null;
+
+      // Facebook-style session expiration/override when another account authenticates in this browser
+      if (hasInitializedAuthRef.current) {
+        if (previousUserId && nextUserId && previousUserId !== nextUserId) {
+          toast.warning(getSessionNoticeText("switched"), {
+            duration: 10000,
+            id: "session-switched-warning",
+          });
+        } else if (previousUserId && !nextUserId) {
+          toast.info(getSessionNoticeText("logged_out"), {
+            duration: 6000,
+            id: "session-logged-out-info",
+          });
+        }
+      }
+
+      activeUserIdRef.current = nextUserId;
+      hasInitializedAuthRef.current = true;
+
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
 
@@ -280,13 +317,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       handleAuthSession(null, session);
     });
 
+    // Check browser session on focus/visibility change so inactive tabs re-sync immediately
+    const handleBrowserTabSync = async () => {
+      if (document.visibilityState === "visible" || document.hasFocus()) {
+        try {
+          const { data } = await supabase.auth.getSession();
+          const storedUserId = data.session?.user?.id || null;
+          if (activeUserIdRef.current !== storedUserId) {
+            handleAuthSession("SESSION_SYNC", data.session);
+          }
+        } catch (err) {
+          console.error("Session sync check error:", err);
+        }
+      }
+    };
+
+    window.addEventListener("focus", handleBrowserTabSync);
+    document.addEventListener("visibilitychange", handleBrowserTabSync);
+
     return () => {
       isMounted = false;
       subscription.unsubscribe();
+      window.removeEventListener("focus", handleBrowserTabSync);
+      document.removeEventListener("visibilitychange", handleBrowserTabSync);
     };
   }, []);
 
   const signOut = async () => {
+    activeUserIdRef.current = null;
     if (user) {
       await logActivity("logout", { description: "Signed out of the system" });
       await endSession();

@@ -71,3 +71,17 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## 🔒 Security Architecture: Single Active Session Policy
+
+To protect sensitive barangay clinical records, prevent cross-account contamination, and ensure strict health worker accountability:
+
+1. **One Active Account Per Browser**:
+   - Only one staff account can be active per browser instance at any given time.
+   - Opening or logging into an additional account in another tab or window within the same browser will cause the session of the first logged-in account to expire or log out in favor of the newly authenticated account (similar to how Facebook behaves).
+   - Any background tabs immediately detect session collisions and notify the user to prevent state desynchronization.
+
+2. **Accessing Multiple Accounts Simultaneously**:
+   - If healthcare staff require simultaneous access to multiple accounts (e.g., Supervisory Administrator and Midwife accounts on the same workstation), they must use a **separate browser** (such as Microsoft Edge alongside Google Chrome) or an **Incognito / InPrivate browsing window**.
+   - Even in distinct browsers or Incognito modes, only one account can be active per instance to ensure total data integrity.
+
