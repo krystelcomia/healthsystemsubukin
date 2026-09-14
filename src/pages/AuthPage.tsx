@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, ArrowLeft, KeyRound, Mail, CheckCircle2, ExternalLink, ShieldCheck, ShieldAlert, LockKeyhole } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, KeyRound, Mail, CheckCircle2, ExternalLink, ShieldCheck, LockKeyhole } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
 import loginBg from "@/assets/login-bg.jpg";
 import { supabase } from "@/integrations/supabase/client";
@@ -354,21 +354,6 @@ const AuthPage = () => {
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? t("auth.signingIn") : t("auth.signIn")}
               </Button>
-
-              {/* Single Active Session per Browser Security Notice */}
-              <div className="rounded-xl border border-amber-400/40 bg-amber-500/15 p-3.5 text-xs text-white space-y-2 shadow-sm backdrop-blur-md">
-                <div className="flex items-center gap-2 text-amber-300 font-semibold text-xs">
-                  <ShieldAlert className="h-4 w-4 shrink-0 text-amber-400" />
-                  <span>{t("auth.singleSessionNoticeTitle")}</span>
-                </div>
-                <p className="text-[11px] text-white/90 leading-relaxed">
-                  {t("auth.singleSessionNoticeDesc")}
-                </p>
-                <div className="pt-1.5 border-t border-white/15 flex items-start gap-1.5 text-[10.5px] text-amber-200/90 leading-snug">
-                  <span className="font-bold shrink-0 text-amber-300">Tip:</span>
-                  <span>{t("auth.singleSessionNoticeTip")}</span>
-                </div>
-              </div>
             </form>
           ) : (
             <div className="space-y-4">
