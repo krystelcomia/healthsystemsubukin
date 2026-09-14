@@ -271,13 +271,108 @@ const DenguePreventionForm = () => {
     localStorage.setItem(STORAGE_KEY_WEEK_DATE, newDate);
   };
 
-  const handleEndWeek = () => {
+  const handleEndWeek = async () => {
     if (isMidwife) return;
-    // 1. Clear weekly visited heads for this week and next
+
+    // 1. If there is data entered into the form, save it to the database and history so it can be viewed and printed again
+    const nonEmptyRecords = records.filter((r) => !isRowEmpty(r));
+
+    if (nonEmptyRecords.length > 0) {
+      // Cancel pending debounce timeouts so they don't conflict
+      Object.values(saveTimeoutsRef.current).forEach((tId) => clearTimeout(tId));
+      saveTimeoutsRef.current = {};
+
+      try {
+        const updatedRecords = await Promise.all(
+          records.map(async (record) => {
+            if (isRowEmpty(record)) return record;
+            const resId = await resolveResidentId(record.household_name, record.resident_id);
+
+            if (record.id && !record.id.startsWith("temp-") && !record.id.startsWith("blank-")) {
+              const { data, error } = await supabase
+                .from("dengue_prevention")
+                .update({
+                  resident_id: resId,
+                  household_name: record.household_name || "",
+                  container_type: record.container_type || "",
+                  has_larvae: record.has_larvae,
+                  action_plan: record.action_plan || "",
+                  signature: record.signature || "",
+                })
+                .eq("id", record.id)
+                .select()
+                .single();
+
+              if (!error && data) return { ...record, ...data };
+              return record;
+            } else {
+              const { data, error } = await supabase
+                .from("dengue_prevention")
+                .insert({
+                  resident_id: resId,
+                  household_name: record.household_name || "",
+                  container_type: record.container_type || "",
+                  has_larvae: record.has_larvae,
+                  action_plan: record.action_plan || "",
+                  signature: record.signature || "",
+                })
+                .select()
+                .single();
+
+              if (!error && data) return { ...record, ...data };
+              return record;
+            }
+          })
+        );
+
+        const savedNonEmpty = updatedRecords.filter((r) => !isRowEmpty(r));
+
+        if (savedNonEmpty.length > 0) {
+          // Archive the form data as a saved batch in history
+          const batchId = `dengue_batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+          const batchTimestamp = new Date().toISOString();
+          const savedBatchesMap = getSavedBatchesFromStorage();
+
+          savedBatchesMap[batchId] = {
+            timestamp: batchTimestamp,
+            recordIds: savedNonEmpty.map((r) => r.id).filter(Boolean),
+            records: savedNonEmpty,
+          };
+          saveBatchesToStorage(savedBatchesMap);
+
+          // Add to saved forms state so it appears in history immediately
+          const dateObj = new Date(batchTimestamp);
+          const formattedDate = dateObj.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          setSavedForms((prev) => [
+            {
+              id: batchId,
+              timestamp: batchTimestamp,
+              formattedDate,
+              records: savedNonEmpty,
+            },
+            ...prev,
+          ]);
+
+          window.dispatchEvent(new Event("resident-records-updated"));
+          window.dispatchEvent(new Event("dengue-records-updated"));
+        }
+      } catch (err) {
+        console.error("Error saving records during end-week:", err);
+      }
+    }
+
+    // 2. Clear weekly visited heads for this week and next
     saveVisitedHeadsForWeek(weekDetails.weekKey, []);
     setWeeklyVisitedHeads([]);
 
-    // 2. Advance the calendar date by 7 days to the start of the next week
+    // 3. Advance the calendar date by 7 days to the start of the next week
     const nextWeekMonday = new Date(weekDetails.monday.getTime() + 7 * 86400000);
     const y = nextWeekMonday.getFullYear();
     const m = String(nextWeekMonday.getMonth() + 1).padStart(2, "0");
@@ -286,7 +381,7 @@ const DenguePreventionForm = () => {
     setCurrentWeekDate(nextDateStr);
     localStorage.setItem(STORAGE_KEY_WEEK_DATE, nextDateStr);
 
-    // 3. Reset active form rows to blank so user starts the new week clean
+    // 4. Reset active form rows to blank so user starts the new week clean
     const blankRows = createBlankRows(MAX_ROWS);
     setRecords(blankRows);
     localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(blankRows));
@@ -295,13 +390,17 @@ const DenguePreventionForm = () => {
 
     toast.success(
       language === "tl"
-        ? "Matagumpay na natapos ang linggo! Lahat ng maybahay ay muling makikita sa mga pagpipilian para sa bagong linggo."
-        : "Week completed! All household head names have been restored to the options list for the new week."
+        ? (nonEmptyRecords.length > 0
+            ? `Matagumpay na natapos ang linggo! Na-save sa History ang ${nonEmptyRecords.length} tala upang matingnan at ma-print muli. Lahat ng maybahay ay muling makikita para sa bagong linggo.`
+            : "Matagumpay na natapos ang linggo! Lahat ng maybahay ay muling makikita sa mga pagpipilian para sa bagong linggo.")
+        : (nonEmptyRecords.length > 0
+            ? `Week completed! ${nonEmptyRecords.length} record(s) saved to history for viewing and printing. All household head options have been refreshed for the new week.`
+            : "Week completed! All household head names have been restored to the options list for the new week.")
     );
 
     logActivity("update_dengue", {
       entity_type: "dengue_prevention",
-      description: `Completed dengue inspection week (${weekDetails.weekRangeLabel}). Refreshed household head options.`,
+      description: `Completed dengue inspection week (${weekDetails.weekRangeLabel})${nonEmptyRecords.length > 0 ? ` and archived ${nonEmptyRecords.length} record(s) to history` : ""}. Refreshed household head options.`,
     });
   };
 
@@ -1834,9 +1933,13 @@ const DenguePreventionForm = () => {
             <Card className="border border-dashed border-border/70 p-8 text-center bg-muted/20">
               <CardContent className="p-0 flex flex-col items-center justify-center">
                 <FileCheck className="h-10 w-10 text-muted-foreground/60 mb-2" />
-                <p className="text-sm font-medium text-foreground">No saved forms yet.</p>
+                <p className="text-sm font-medium text-foreground">
+                  {language === "tl" ? "Wala pang nai-save na form sa History." : "No saved forms yet."}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1 max-w-md">
-                  When you fill out the checklist and click "Print Form", the completed form will be saved and listed here so you can view or re-print it anytime.
+                  {language === "tl"
+                    ? "Kapag nag-save ka ng progreso o tinapos ang linggo gamit ang 'Tapusin ang Linggo', ang mga naitalang datos ay awtomatikong mase-save dito upang matingnan at ma-print muli anumang oras."
+                    : "When you save progress or end a week using 'End Week', the entered records will be automatically saved here so they can be viewed and printed again anytime."}
                 </p>
               </CardContent>
             </Card>
@@ -2209,8 +2312,8 @@ const DenguePreventionForm = () => {
               </p>
               <p>
                 {language === "tl"
-                  ? "Lahat ng pangalan ng maybahay ay muling makikita sa mga pagpipilian para sa susunod na linggo, at ang petsa ay ililipat sa bagong linggo."
-                  : "All household head names will reappear in the options list for the new week, and the date will advance to the next week."}
+                  ? "Ang mga naitalang datos sa form ay mase-save sa History upang matingnan at ma-print muli. Lahat ng pangalan ng maybahay ay muling makikita sa mga pagpipilian para sa susunod na linggo."
+                  : "Any data entered into the form will be saved to the history so it can be viewed and printed again. All household head names will reappear in the options list for the new week."}
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
