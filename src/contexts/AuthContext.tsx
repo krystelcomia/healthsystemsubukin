@@ -162,29 +162,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, userEmail?: string | null) => {
     try {
+      const cleanEmail = (userEmail || user?.email || "").toLowerCase().trim();
       const { data } = await supabase
         .from("profiles")
-        .select("username, full_name, avatar_url")
+        .select("username, full_name, avatar_url, settings")
         .eq("user_id", userId)
         .maybeSingle();
 
-      let userAvatar: string | null = (data as any)?.avatar_url || null;
+      // Check if user explicitly removed their avatar
+      const isRemoved = 
+        localStorage.getItem("bhw_avatar_removed_" + userId) === "true" ||
+        (cleanEmail && localStorage.getItem("bhw_avatar_removed_" + cleanEmail) === "true");
 
-      if (!userAvatar) {
-        userAvatar = 
-          localStorage.getItem("bhw_avatar_" + userId) ||
-          (user?.email ? localStorage.getItem("bhw_avatar_" + user.email.toLowerCase().trim()) : null) ||
-          (username ? localStorage.getItem("bhw_avatar_" + username.toLowerCase().trim()) : null);
+      let userAvatar: string | null = null;
+      if (!isRemoved) {
+        userAvatar = (data as any)?.avatar_url || null;
+        if (!userAvatar) {
+          userAvatar = 
+            localStorage.getItem("bhw_avatar_" + userId) ||
+            (cleanEmail ? localStorage.getItem("bhw_avatar_" + cleanEmail) : null) ||
+            (username ? localStorage.getItem("bhw_avatar_" + username.toLowerCase().trim()) : null);
+        }
       }
 
-      if (userAvatar) {
+      if (userAvatar && !isRemoved) {
         localStorage.setItem("bhw_avatar_" + userId, userAvatar);
+        if (cleanEmail) localStorage.setItem("bhw_avatar_" + cleanEmail, userAvatar);
         setAvatarUrl(userAvatar);
       } else {
+        localStorage.removeItem("bhw_avatar_" + userId);
+        if (cleanEmail) localStorage.removeItem("bhw_avatar_" + cleanEmail);
         setAvatarUrl(null);
       }
+
+      // Synchronize user settings (theme, font size, font style, etc.)
+      const savedSettings = (data as any)?.settings;
+      if (savedSettings) {
+        localStorage.setItem("bhw_settings_" + userId, JSON.stringify(savedSettings));
+        if (cleanEmail) localStorage.setItem("bhw_settings_" + cleanEmail, JSON.stringify(savedSettings));
+      }
+      window.dispatchEvent(new CustomEvent("bhw-user-settings-sync", { detail: { userId, email: cleanEmail, settings: savedSettings } }));
 
       if (data) {
         if (data.username) {
@@ -207,7 +226,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshProfile = async () => {
     if (user?.id) {
-      await fetchProfile(user.id);
+      await fetchProfile(user.id, user.email);
     }
   };
 
@@ -227,10 +246,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (user?.id) {
         if (data.avatar_url) {
           localStorage.setItem("bhw_avatar_" + user.id, data.avatar_url);
-          if (user.email) localStorage.setItem("bhw_avatar_" + user.email.toLowerCase().trim(), data.avatar_url);
+          localStorage.removeItem("bhw_avatar_removed_" + user.id);
+          if (user.email) {
+            localStorage.setItem("bhw_avatar_" + user.email.toLowerCase().trim(), data.avatar_url);
+            localStorage.removeItem("bhw_avatar_removed_" + user.email.toLowerCase().trim());
+          }
         } else {
           localStorage.removeItem("bhw_avatar_" + user.id);
-          if (user.email) localStorage.removeItem("bhw_avatar_" + user.email.toLowerCase().trim());
+          localStorage.setItem("bhw_avatar_removed_" + user.id, "true");
+          if (user.email) {
+            localStorage.removeItem("bhw_avatar_" + user.email.toLowerCase().trim());
+            localStorage.setItem("bhw_avatar_removed_" + user.email.toLowerCase().trim(), "true");
+          }
         }
       }
     }
@@ -485,12 +512,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(currentSession?.user ?? null);
 
       if (currentSession?.user) {
+        // Track active user ID & email for persistent settings and avatar synchronization
+        localStorage.setItem("bhw_active_user_id", currentSession.user.id);
+        if (currentSession.user.email) {
+          localStorage.setItem("bhw_active_user_email", currentSession.user.email.toLowerCase().trim());
+        }
+
         // Claim active instance for this tab & specific user account
         claimActiveInstance(myInstanceIdRef.current, currentSession.user.id);
 
         await Promise.all([
           fetchRole(currentSession.user.id),
-          fetchProfile(currentSession.user.id),
+          fetchProfile(currentSession.user.id, currentSession.user.email),
           updateOnlineStatus(currentSession.user.id, true, currentSession.user.email),
         ]);
 

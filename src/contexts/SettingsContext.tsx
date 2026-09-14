@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { translations, Language } from "@/lib/translations";
+import { supabase } from "@/integrations/supabase/client";
 
 export type { Language };
 
@@ -157,14 +158,64 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     return translations[language]?.[key] || translations["tl"]?.[key] || translations["en"]?.[key] || key;
   };
 
+  const persistActiveUserSettings = (settings: {
+    colorTheme?: ColorTheme;
+    fontSize?: string;
+    fontStyle?: string;
+    darkMode?: boolean;
+    language?: Language;
+  }) => {
+    try {
+      const activeUserId = localStorage.getItem("bhw_active_user_id") || localStorage.getItem("active_user_id");
+      const activeEmail = (localStorage.getItem("bhw_active_user_email") || "").toLowerCase().trim();
+
+      let current: any = {};
+      if (activeUserId) {
+        const raw = localStorage.getItem("bhw_settings_" + activeUserId);
+        if (raw) current = JSON.parse(raw);
+      } else if (activeEmail) {
+        const raw = localStorage.getItem("bhw_settings_" + activeEmail);
+        if (raw) current = JSON.parse(raw);
+      }
+
+      const updated = {
+        colorTheme: settings.colorTheme ?? current.colorTheme ?? colorTheme,
+        fontSize: settings.fontSize ?? current.fontSize ?? fontSize,
+        fontStyle: settings.fontStyle ?? current.fontStyle ?? fontStyle,
+        darkMode: settings.darkMode !== undefined ? settings.darkMode : (current.darkMode ?? darkMode),
+        language: settings.language ?? current.language ?? language,
+      };
+
+      const json = JSON.stringify(updated);
+      if (activeUserId) {
+        localStorage.setItem("bhw_settings_" + activeUserId, json);
+      }
+      if (activeEmail) {
+        localStorage.setItem("bhw_settings_" + activeEmail, json);
+      }
+
+      if (activeUserId) {
+        (supabase.from as any)("profiles")
+          .update({ settings: updated })
+          .eq("user_id", activeUserId)
+          .then(() => {})
+          .catch(() => {});
+      }
+    } catch (e) {
+      console.warn("Failed to persist user settings:", e);
+    }
+  };
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
     localStorage.setItem("darkMode", String(darkMode));
+    persistActiveUserSettings({ darkMode });
   }, [darkMode]);
 
   useEffect(() => {
     document.documentElement.style.fontSize = FONT_SIZE_MAP[fontSize] || "16px";
     localStorage.setItem("fontSize", fontSize);
+    persistActiveUserSettings({ fontSize });
   }, [fontSize]);
 
   useEffect(() => {
@@ -174,10 +225,12 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     // Also apply directly to body so all elements inherit the font change immediately
     document.body.style.fontFamily = fontVal;
     localStorage.setItem("fontStyle", fontStyle);
+    persistActiveUserSettings({ fontStyle });
   }, [fontStyle]);
 
   useEffect(() => {
     localStorage.setItem("language", language);
+    persistActiveUserSettings({ language });
   }, [language]);
 
   useEffect(() => {
@@ -186,7 +239,59 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       document.documentElement.style.setProperty(k, v);
     });
     localStorage.setItem("colorTheme", colorTheme);
+    persistActiveUserSettings({ colorTheme });
   }, [colorTheme]);
+
+  // Restore user-specific settings upon sign in or user switch
+  useEffect(() => {
+    const restoreUserSettings = (detail?: { userId?: string; email?: string; settings?: any }) => {
+      try {
+        const uid = detail?.userId || localStorage.getItem("bhw_active_user_id");
+        const email = (detail?.email || localStorage.getItem("bhw_active_user_email") || "").toLowerCase().trim();
+
+        let saved: any = detail?.settings;
+        if (!saved && uid) {
+          const raw = localStorage.getItem("bhw_settings_" + uid);
+          if (raw) saved = JSON.parse(raw);
+        }
+        if (!saved && email) {
+          const raw = localStorage.getItem("bhw_settings_" + email);
+          if (raw) saved = JSON.parse(raw);
+        }
+
+        if (saved) {
+          if (saved.colorTheme && COLOR_THEMES.some((t) => t.id === saved.colorTheme)) {
+            setColorTheme(saved.colorTheme);
+          }
+          if (saved.fontSize && FONT_SIZE_MAP[saved.fontSize]) {
+            setFontSize(saved.fontSize);
+          }
+          if (saved.fontStyle && FONT_STYLE_MAP[saved.fontStyle]) {
+            setFontStyle(saved.fontStyle);
+          }
+          if (saved.darkMode !== undefined) {
+            setDarkMode(Boolean(saved.darkMode));
+          }
+          if (saved.language === "en" || saved.language === "tl") {
+            setLanguage(saved.language);
+          }
+        }
+      } catch (err) {
+        console.warn("Error restoring user settings:", err);
+      }
+    };
+
+    const handleSyncEvent = (e: any) => {
+      restoreUserSettings(e?.detail);
+    };
+
+    window.addEventListener("bhw-user-settings-sync", handleSyncEvent);
+    restoreUserSettings();
+
+    return () => {
+      window.removeEventListener("bhw-user-settings-sync", handleSyncEvent);
+    };
+  }, []);
 
   return (
     <SettingsContext.Provider value={{ darkMode, setDarkMode, fontSize, setFontSize, fontStyle, setFontStyle, language, setLanguage, colorTheme, setColorTheme, t }}>

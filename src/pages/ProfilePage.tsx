@@ -90,20 +90,32 @@ const ProfilePage = () => {
       setFullName(fName);
       setUsername(uName);
 
-      // Load avatar from profiles table or persistent localStorage
-      let persistentAvatar: string | null = (data as any)?.avatar_url || null;
-      if (!persistentAvatar) {
-        persistentAvatar = 
-          localStorage.getItem("bhw_avatar_" + user.id) ||
-          (user.email ? localStorage.getItem("bhw_avatar_" + user.email.toLowerCase().trim()) : null) ||
-          (uName ? localStorage.getItem("bhw_avatar_" + uName.toLowerCase().trim()) : null);
+      // Load avatar from profiles table or persistent localStorage, respecting explicit removal
+      const cleanEmail = (user.email || "").toLowerCase().trim();
+      const isRemoved = 
+        localStorage.getItem("bhw_avatar_removed_" + user.id) === "true" ||
+        (cleanEmail && localStorage.getItem("bhw_avatar_removed_" + cleanEmail) === "true") ||
+        (uName && localStorage.getItem("bhw_avatar_removed_" + uName.toLowerCase().trim()) === "true");
+
+      let persistentAvatar: string | null = null;
+      if (!isRemoved) {
+        persistentAvatar = (data as any)?.avatar_url || null;
+        if (!persistentAvatar) {
+          persistentAvatar = 
+            localStorage.getItem("bhw_avatar_" + user.id) ||
+            (cleanEmail ? localStorage.getItem("bhw_avatar_" + cleanEmail) : null) ||
+            (uName ? localStorage.getItem("bhw_avatar_" + uName.toLowerCase().trim()) : null);
+        }
       }
 
-      if (persistentAvatar) {
+      if (persistentAvatar && !isRemoved) {
         setAvatarUrl(persistentAvatar);
         localStorage.setItem("bhw_avatar_" + user.id, persistentAvatar);
+        if (cleanEmail) localStorage.setItem("bhw_avatar_" + cleanEmail, persistentAvatar);
       } else {
         setAvatarUrl(null);
+        localStorage.removeItem("bhw_avatar_" + user.id);
+        if (cleanEmail) localStorage.removeItem("bhw_avatar_" + cleanEmail);
       }
 
       let sitio = (data as any)?.assigned_sitio;
@@ -131,13 +143,16 @@ const ProfilePage = () => {
       // 1. Resize and optimize image
       const dataUrl = await resizeAvatarImage(file);
       
-      // 2. Persist in localStorage across all sessions/logouts
+      // 2. Persist in localStorage across all sessions/logouts and clear removal flag
       localStorage.setItem("bhw_avatar_" + user.id, dataUrl);
+      localStorage.removeItem("bhw_avatar_removed_" + user.id);
       if (user.email) {
         localStorage.setItem("bhw_avatar_" + user.email.toLowerCase().trim(), dataUrl);
+        localStorage.removeItem("bhw_avatar_removed_" + user.email.toLowerCase().trim());
       }
       if (username) {
         localStorage.setItem("bhw_avatar_" + username.toLowerCase().trim(), dataUrl);
+        localStorage.removeItem("bhw_avatar_removed_" + username.toLowerCase().trim());
       }
 
       // 3. Persist in database
@@ -179,8 +194,15 @@ const ProfilePage = () => {
     if (!user) return;
     try {
       localStorage.removeItem("bhw_avatar_" + user.id);
-      if (user.email) localStorage.removeItem("bhw_avatar_" + user.email.toLowerCase().trim());
-      if (username) localStorage.removeItem("bhw_avatar_" + username.toLowerCase().trim());
+      localStorage.setItem("bhw_avatar_removed_" + user.id, "true");
+      if (user.email) {
+        localStorage.removeItem("bhw_avatar_" + user.email.toLowerCase().trim());
+        localStorage.setItem("bhw_avatar_removed_" + user.email.toLowerCase().trim(), "true");
+      }
+      if (username) {
+        localStorage.removeItem("bhw_avatar_" + username.toLowerCase().trim());
+        localStorage.setItem("bhw_avatar_removed_" + username.toLowerCase().trim(), "true");
+      }
 
       try {
         await supabase.from("profiles").update({ avatar_url: null } as any).eq("user_id", user.id);

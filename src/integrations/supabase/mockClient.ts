@@ -1110,7 +1110,7 @@ export function seedMockDatabase() {
   for (const cp of canonicalProfiles) {
     const existingIndex = db['profiles'].findIndex((p: any) => p.user_id === cp.user_id || p.id === cp.id);
     if (existingIndex >= 0) {
-      db['profiles'][existingIndex] = { ...db['profiles'][existingIndex], ...cp };
+      db['profiles'][existingIndex] = { ...cp, ...db['profiles'][existingIndex] };
     } else {
       db['profiles'].push(cp);
     }
