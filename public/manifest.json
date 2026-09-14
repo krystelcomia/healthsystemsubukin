@@ -1,0 +1,39 @@
+{
+  "short_name": "BHW Subukin",
+  "name": "Barangay Subukin Health System",
+  "description": "Barangay Subukin Health Management Information System",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192-maskable.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512-maskable.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#2e7d32",
+  "display": "standalone",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "tl",
+  "categories": ["health", "medical", "productivity"]
+}

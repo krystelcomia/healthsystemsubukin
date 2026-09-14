@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NavLink } from "@/components/NavLink";
-import { Home, Info, Calendar, Phone, Fingerprint, Clock, UserCheck, LogOut, List, Shield, User, CalendarDays, Printer, AlertTriangle } from "lucide-react";
+import { Home, Info, Calendar, Phone, Fingerprint, Clock, UserCheck, LogOut, List, Shield, User, CalendarDays, Printer, AlertTriangle, Download } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -278,6 +278,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       </Tooltip>
                     );
                   })}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => window.dispatchEvent(new CustomEvent("open-pwa-install-dialog"))}
+                        className="flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-xs font-medium border border-sidebar-border/50"
+                        aria-label="Download Barangay Subukin App"
+                      >
+                        <Download className="h-4 w-4 text-emerald-400" />
+                        <span className="hidden lg:inline text-[11px] font-semibold">Download App</span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Download Barangay Subukin App to your device</TooltipContent>
+                  </Tooltip>
                 </nav>
               </TooltipProvider>
 

@@ -39,6 +39,7 @@ import CalendarPage from "./pages/Calendar";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { InstallAppPrompt } from "@/components/InstallAppPrompt";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <InstallAppPrompt />
           <BrowserRouter>
             <AuthProvider>
               <Routes>
