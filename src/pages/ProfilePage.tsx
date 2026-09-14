@@ -78,7 +78,7 @@ const ProfilePage = () => {
   useEffect(() => {
     if (!user) return;
     setEmail(user.email || "");
-    (async () => {
+    const loadProfileData = async () => {
       const { data } = await supabase
         .from("profiles")
         .select("full_name, username, avatar_url, assigned_sitio")
@@ -92,20 +92,33 @@ const ProfilePage = () => {
 
       // Load avatar from profiles table or persistent localStorage, respecting explicit removal
       const cleanEmail = (user.email || "").toLowerCase().trim();
-      const isRemoved = 
+      let isRemoved = 
         localStorage.getItem("bhw_avatar_removed_" + user.id) === "true" ||
         (cleanEmail && localStorage.getItem("bhw_avatar_removed_" + cleanEmail) === "true") ||
         (uName && localStorage.getItem("bhw_avatar_removed_" + uName.toLowerCase().trim()) === "true");
 
       let persistentAvatar: string | null = null;
-      if (!isRemoved) {
-        persistentAvatar = (data as any)?.avatar_url || null;
-        if (!persistentAvatar) {
-          persistentAvatar = 
-            localStorage.getItem("bhw_avatar_" + user.id) ||
-            (cleanEmail ? localStorage.getItem("bhw_avatar_" + cleanEmail) : null) ||
-            (uName ? localStorage.getItem("bhw_avatar_" + uName.toLowerCase().trim()) : null);
+      if (data) {
+        if (data.avatar_url) {
+          persistentAvatar = data.avatar_url;
+          isRemoved = false;
+          localStorage.removeItem("bhw_avatar_removed_" + user.id);
+          if (cleanEmail) localStorage.removeItem("bhw_avatar_removed_" + cleanEmail);
+        } else if (data.avatar_url === null || data.avatar_url === "") {
+          persistentAvatar = null;
+          isRemoved = true;
+          localStorage.setItem("bhw_avatar_removed_" + user.id, "true");
+          if (cleanEmail) localStorage.setItem("bhw_avatar_removed_" + cleanEmail, "true");
+          localStorage.removeItem("bhw_avatar_" + user.id);
+          if (cleanEmail) localStorage.removeItem("bhw_avatar_" + cleanEmail);
         }
+      }
+
+      if (!isRemoved && !persistentAvatar) {
+        persistentAvatar = 
+          localStorage.getItem("bhw_avatar_" + user.id) ||
+          (cleanEmail ? localStorage.getItem("bhw_avatar_" + cleanEmail) : null) ||
+          (uName ? localStorage.getItem("bhw_avatar_" + uName.toLowerCase().trim()) : null);
       }
 
       if (persistentAvatar && !isRemoved) {
@@ -128,7 +141,21 @@ const ProfilePage = () => {
       }
       setAssignedSitio(sitio || getAssignedSitio(fName || uName || "") || "Maligaya");
       setLoading(false);
-    })();
+    };
+
+    loadProfileData();
+
+    const handleSync = () => {
+      loadProfileData();
+    };
+
+    window.addEventListener("profile-updated", handleSync);
+    window.addEventListener("bhw-db-updated", handleSync);
+
+    return () => {
+      window.removeEventListener("profile-updated", handleSync);
+      window.removeEventListener("bhw-db-updated", handleSync);
+    };
   }, [user]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,6 +237,9 @@ const ProfilePage = () => {
 
       try {
         await (supabase.from("bhw_workers") as any).update({ avatar_url: null }).eq("user_id", user.id);
+        if (user.email) {
+          await (supabase.from("bhw_workers") as any).update({ avatar_url: null }).eq("gmail", user.email);
+        }
       } catch {}
 
       setAvatarUrl(null);

@@ -50,11 +50,20 @@ export default function handler(req, res) {
 
   if (req.method === "POST" || req.method === "PUT") {
     try {
-      const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      let body = req.body;
+      if (Buffer.isBuffer(body)) {
+        body = JSON.parse(body.toString("utf-8"));
+      } else if (typeof body === "string") {
+        body = JSON.parse(body);
+      }
       if (body && typeof body === "object") {
         inMemoryDb = body;
         try {
           fs.writeFileSync(TMP_FILE_PATH, JSON.stringify(body), "utf-8");
+        } catch (e) {}
+        try {
+          const filePath = path.join(process.cwd(), "bhw_shared_database.json");
+          fs.writeFileSync(filePath, JSON.stringify(body, null, 2), "utf-8");
         } catch (e) {}
       }
       return res.status(200).json({ success: true, timestamp: Date.now() });

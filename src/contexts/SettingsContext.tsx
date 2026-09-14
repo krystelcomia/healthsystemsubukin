@@ -170,11 +170,12 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       const activeEmail = (localStorage.getItem("bhw_active_user_email") || "").toLowerCase().trim();
 
       let current: any = {};
+      let raw: string | null = null;
       if (activeUserId) {
-        const raw = localStorage.getItem("bhw_settings_" + activeUserId);
+        raw = localStorage.getItem("bhw_settings_" + activeUserId);
         if (raw) current = JSON.parse(raw);
       } else if (activeEmail) {
-        const raw = localStorage.getItem("bhw_settings_" + activeEmail);
+        raw = localStorage.getItem("bhw_settings_" + activeEmail);
         if (raw) current = JSON.parse(raw);
       }
 
@@ -187,6 +188,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       };
 
       const json = JSON.stringify(updated);
+      if (raw === json) return; // Prevent duplicate DB writes if identical
+
       if (activeUserId) {
         localStorage.setItem("bhw_settings_" + activeUserId, json);
       }
@@ -285,11 +288,28 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       restoreUserSettings(e?.detail);
     };
 
+    const handleDbUpdate = (e: any) => {
+      const db = e?.detail;
+      const uid = localStorage.getItem("bhw_active_user_id");
+      const email = (localStorage.getItem("bhw_active_user_email") || "").toLowerCase().trim();
+      if (db?.profiles && Array.isArray(db.profiles)) {
+        const p = db.profiles.find((x: any) => 
+          (uid && (x.user_id === uid || x.id === uid)) ||
+          (email && x.email && x.email.toLowerCase().trim() === email)
+        );
+        if (p?.settings) {
+          restoreUserSettings({ userId: uid || undefined, email: email || undefined, settings: p.settings });
+        }
+      }
+    };
+
     window.addEventListener("bhw-user-settings-sync", handleSyncEvent);
+    window.addEventListener("bhw-db-updated", handleDbUpdate);
     restoreUserSettings();
 
     return () => {
       window.removeEventListener("bhw-user-settings-sync", handleSyncEvent);
+      window.removeEventListener("bhw-db-updated", handleDbUpdate);
     };
   }, []);
 

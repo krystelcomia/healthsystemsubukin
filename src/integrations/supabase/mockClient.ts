@@ -9,6 +9,8 @@ let remotePushTimeout: any = null;
 let dispatchEventsTimeout: any = null;
 let bcMessageTimeout: any = null;
 
+let hasCompletedInitialRemotePull = false;
+
 function notifyComponentsOfDbUpdate(db: any) {
   if (dispatchEventsTimeout) clearTimeout(dispatchEventsTimeout);
   dispatchEventsTimeout = setTimeout(() => {
@@ -16,8 +18,10 @@ function notifyComponentsOfDbUpdate(db: any) {
       window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: db }));
       window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: db }));
       window.dispatchEvent(new CustomEvent('family-data-updated', { detail: db }));
+      window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
+      window.dispatchEvent(new CustomEvent('profile-updated', { detail: {} }));
     }
-  }, 100);
+  }, 50);
 }
 
 if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
@@ -30,13 +34,8 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
           bcMessageTimeout = setTimeout(() => {
             const dbStr = localStorage.getItem('supabase_mock_db');
             const currentDb = dbStr ? JSON.parse(dbStr) : {};
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('bhw-db-updated', { detail: currentDb }));
-              window.dispatchEvent(new CustomEvent('resident-records-updated', { detail: currentDb }));
-              window.dispatchEvent(new CustomEvent('family-data-updated', { detail: currentDb }));
-              window.dispatchEvent(new CustomEvent('bhw-worker-status-changed', { detail: {} }));
-            }
-          }, 150);
+            notifyComponentsOfDbUpdate(currentDb);
+          }, 80);
         }
       } catch {}
     };
@@ -45,6 +44,9 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
 
 export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
   try {
+    if (db && !db.is_initialized) {
+      db.is_initialized = true;
+    }
     const serialized = JSON.stringify(db);
     localStorage.setItem('supabase_mock_db', serialized);
 
@@ -64,7 +66,7 @@ export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
             .then(() => clearTimeout(timeoutId))
             .catch(() => clearTimeout(timeoutId));
         } catch {}
-      }, 300);
+      }, 150);
     }
 
     // 2. Broadcast across tabs of current browser using persistent channel
@@ -81,48 +83,62 @@ export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
   }
 }
 
+export function syncRemoteDbNow(force = true) {
+  if (typeof window === 'undefined') return;
+  pullRemoteDb(force);
+}
+
+export const pullRemoteDb = (force = false) => {
+  const now = Date.now();
+  if (!force && now - lastRemoteSyncFetch < 2000) return; // Throttled to at most once per 2s
+  lastRemoteSyncFetch = now;
+
+  if (typeof fetch === 'function') {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    fetch('/__db_sync', { signal: controller.signal, cache: 'no-store' })
+      .then((res) => {
+        if (!res.ok) throw new Error('Remote DB sync response not ok');
+        return res.json();
+      })
+      .then((remoteDb) => {
+        clearTimeout(timeoutId);
+        if (remoteDb && (remoteDb.is_initialized || remoteDb.profiles || remoteDb.auth_users || remoteDb.family_data) && Object.keys(remoteDb).length > 0) {
+          remoteDb.is_initialized = true;
+          const currentStr = localStorage.getItem('supabase_mock_db');
+          const remoteStr = JSON.stringify(remoteDb);
+          if (currentStr !== remoteStr || !hasCompletedInitialRemotePull) {
+            hasCompletedInitialRemotePull = true;
+            localStorage.setItem('supabase_mock_db', remoteStr);
+            notifyComponentsOfDbUpdate(remoteDb);
+          }
+        }
+      })
+      .catch(() => {
+        clearTimeout(timeoutId);
+      });
+  }
+};
+
 export function initCrossBrowserSync() {
   if (isCrossBrowserSyncStarted || typeof window === 'undefined') return;
   isCrossBrowserSyncStarted = true;
 
-  const pullRemoteDb = () => {
-    const now = Date.now();
-    if (now - lastRemoteSyncFetch < 5000) return; // Throttled to at most once per 5s
-    lastRemoteSyncFetch = now;
+  // 1. Initial pull from shared backend immediately
+  pullRemoteDb(true);
 
-    if (typeof fetch === 'function') {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-      fetch('/__db_sync', { signal: controller.signal })
-        .then((res) => res.json())
-        .then((remoteDb) => {
-          clearTimeout(timeoutId);
-          if (remoteDb && remoteDb.is_initialized && Object.keys(remoteDb).length > 0) {
-            const currentStr = localStorage.getItem('supabase_mock_db');
-            const remoteStr = JSON.stringify(remoteDb);
-            if (currentStr !== remoteStr) {
-              localStorage.setItem('supabase_mock_db', remoteStr);
-              notifyComponentsOfDbUpdate(remoteDb);
-            }
-          }
-        })
-        .catch(() => {
-          clearTimeout(timeoutId);
-        });
-    }
-  };
+  // 2. Active background sync polling every 3 seconds across devices/browsers/accounts
+  setInterval(() => pullRemoteDb(false), 3000);
 
-  // 1. Initial pull from shared backend
-  pullRemoteDb();
-
-  // 2. Active background sync polling every 6 seconds across devices/accounts
-  setInterval(pullRemoteDb, 6000);
-
-  // 3. Auto sync on tab visibility change or focus
+  // 3. Auto sync on tab visibility change or window focus
   window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      pullRemoteDb();
+      pullRemoteDb(true);
     }
+  });
+
+  window.addEventListener('focus', () => {
+    pullRemoteDb(true);
   });
 }
 

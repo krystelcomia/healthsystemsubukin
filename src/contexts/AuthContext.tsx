@@ -171,20 +171,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq("user_id", userId)
         .maybeSingle();
 
-      // Check if user explicitly removed their avatar
-      const isRemoved = 
+      // Check if user explicitly removed their avatar locally
+      let isRemoved = 
         localStorage.getItem("bhw_avatar_removed_" + userId) === "true" ||
         (cleanEmail && localStorage.getItem("bhw_avatar_removed_" + cleanEmail) === "true");
 
       let userAvatar: string | null = null;
-      if (!isRemoved) {
-        userAvatar = (data as any)?.avatar_url || null;
-        if (!userAvatar) {
-          userAvatar = 
-            localStorage.getItem("bhw_avatar_" + userId) ||
-            (cleanEmail ? localStorage.getItem("bhw_avatar_" + cleanEmail) : null) ||
-            (username ? localStorage.getItem("bhw_avatar_" + username.toLowerCase().trim()) : null);
+      if (data) {
+        if (data.avatar_url) {
+          // Explicit avatar exists in the synchronized database
+          userAvatar = data.avatar_url;
+          isRemoved = false;
+          localStorage.removeItem("bhw_avatar_removed_" + userId);
+          if (cleanEmail) localStorage.removeItem("bhw_avatar_removed_" + cleanEmail);
+        } else if (data.avatar_url === null || data.avatar_url === "") {
+          // Avatar was explicitly removed or cleared in the database
+          userAvatar = null;
+          isRemoved = true;
+          localStorage.setItem("bhw_avatar_removed_" + userId, "true");
+          if (cleanEmail) localStorage.setItem("bhw_avatar_removed_" + cleanEmail, "true");
+          localStorage.removeItem("bhw_avatar_" + userId);
+          if (cleanEmail) localStorage.removeItem("bhw_avatar_" + cleanEmail);
         }
+      }
+
+      if (!isRemoved && !userAvatar) {
+        userAvatar = 
+          localStorage.getItem("bhw_avatar_" + userId) ||
+          (cleanEmail ? localStorage.getItem("bhw_avatar_" + cleanEmail) : null) ||
+          (username ? localStorage.getItem("bhw_avatar_" + username.toLowerCase().trim()) : null);
       }
 
       if (userAvatar && !isRemoved) {
@@ -603,6 +618,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       document.removeEventListener("visibilitychange", handleBrowserTabSync);
     };
   }, []);
+
+  // Sync profile and avatar in real time when remote database updates from another site/browser
+  useEffect(() => {
+    const handleDbUpdate = (e: any) => {
+      const currentUid = activeUserIdRef.current;
+      if (!currentUid) return;
+
+      const db = e?.detail;
+      if (db?.profiles && Array.isArray(db.profiles)) {
+        const myProfile = db.profiles.find((p: any) => p.user_id === currentUid || p.id === currentUid);
+        if (myProfile) {
+          fetchProfile(currentUid, user?.email);
+        }
+      } else {
+        fetchProfile(currentUid, user?.email);
+      }
+    };
+
+    window.addEventListener("bhw-db-updated", handleDbUpdate);
+    window.addEventListener("profile-updated", handleDbUpdate);
+
+    return () => {
+      window.removeEventListener("bhw-db-updated", handleDbUpdate);
+      window.removeEventListener("profile-updated", handleDbUpdate);
+    };
+  }, [user]);
 
   const signOut = async () => {
     const prevUserId = activeUserIdRef.current;

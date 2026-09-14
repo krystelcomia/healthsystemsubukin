@@ -1,4 +1,5 @@
 {
+  "is_initialized": true,
   "auth_users": [
     { "id": "user-1", "email": "krystelcomia@gmail.com", "password": "krystel123", "user_metadata": { "full_name": "Krystel Comia" } },
     { "id": "user-cristeta", "email": "cristetalanuzaADMIN@gmail.com", "password": "adminsubukincristeta2026", "user_metadata": { "full_name": "Cristeta R. Lanuza" } },
