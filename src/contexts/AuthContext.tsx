@@ -4,6 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { startSession, endSession, logActivity } from "@/lib/activityLogger";
 import { recordWorkerPresence } from "@/lib/presenceTracker";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ShieldAlert, LogOut } from "lucide-react";
 
 interface AuthContextType {
   session: Session | null;
@@ -39,6 +49,26 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const STORAGE_KEY_ACTIVE_INSTANCE = "bhw_active_instance_id";
+const INSTANCE_BROADCAST_CHANNEL = "bhw_site_instance_channel";
+
+export const getTabInstanceId = (): string => {
+  if (typeof window === "undefined") return "server";
+  if ((window as any).__bhwTabInstanceId) {
+    return (window as any).__bhwTabInstanceId;
+  }
+  let id = sessionStorage.getItem("bhw_site_tab_instance_id");
+  if (!id || (window.name && window.name !== id)) {
+    id = "inst_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
+    sessionStorage.setItem("bhw_site_tab_instance_id", id);
+    window.name = id;
+  } else if (!window.name) {
+    window.name = id;
+  }
+  (window as any).__bhwTabInstanceId = id;
+  return id;
+};
+
 const getSessionNoticeText = (type: "switched" | "logged_out") => {
   const lang = (typeof window !== "undefined" && localStorage.getItem("language")) || "tl";
   if (type === "switched") {
@@ -55,6 +85,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const activeUserIdRef = useRef<string | null>(null);
+  const activeSessionRef = useRef<Session | null>(null);
+  const myInstanceIdRef = useRef<string>(getTabInstanceId());
+  const [sessionExpiredModalOpen, setSessionExpiredModalOpen] = useState(false);
   const hasInitializedAuthRef = useRef<boolean>(false);
   const [userRole, setUserRole] = useState<string | null>(() => {
     try {
@@ -253,11 +286,131 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [user]);
 
+  const claimActiveInstance = (instanceId: string) => {
+    if (typeof window === "undefined") return;
+    try {
+      sessionStorage.removeItem("bhw_instance_expired");
+      localStorage.setItem(STORAGE_KEY_ACTIVE_INSTANCE, instanceId);
+      localStorage.setItem(STORAGE_KEY_ACTIVE_INSTANCE + "_time", Date.now().toString());
+
+      if ("BroadcastChannel" in window) {
+        const bc = new BroadcastChannel(INSTANCE_BROADCAST_CHANNEL);
+        bc.postMessage({
+          type: "CLAIM_ACTIVE_INSTANCE",
+          instanceId: instanceId,
+          timestamp: Date.now(),
+        });
+        bc.close();
+      }
+    } catch (err) {
+      console.warn("Failed to claim active instance:", err);
+    }
+  };
+
+  const checkInstanceConflict = (claimedInstanceId: string) => {
+    const myId = myInstanceIdRef.current;
+    if (!claimedInstanceId || claimedInstanceId === myId) return;
+
+    // Trigger session expired modal only if this tab has an active user or session
+    if (activeUserIdRef.current || activeSessionRef.current) {
+      sessionStorage.setItem("bhw_instance_expired", "true");
+      setSessionExpiredModalOpen(true);
+    }
+  };
+
+  const handleAcknowledgeSessionExpired = async () => {
+    setSessionExpiredModalOpen(false);
+    sessionStorage.setItem("bhw_instance_expired", "true");
+
+    if (user) {
+      try {
+        await logActivity("logout", { description: "Session expired: acknowledged single active session rule" });
+        await updateOnlineStatus(user.id, false, user.email);
+      } catch (err) {
+        console.warn("Logout error on session expired acknowledge:", err);
+      }
+    }
+
+    // Invalidate local in-memory session only so the other tab retains its valid session
+    setSession(null);
+    setUser(null);
+    setUserRole(null);
+    setUsername(null);
+    setFullName(null);
+    setAvatarUrl(null);
+    activeUserIdRef.current = null;
+    activeSessionRef.current = null;
+
+    // Redirect to login
+    window.location.href = "/auth";
+  };
+
+  useEffect(() => {
+    activeSessionRef.current = session;
+  }, [session]);
+
+  // Enforce single active session per site across tabs/windows
+  useEffect(() => {
+    const myId = myInstanceIdRef.current;
+
+    let bc: BroadcastChannel | null = null;
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      try {
+        bc = new BroadcastChannel(INSTANCE_BROADCAST_CHANNEL);
+        bc.onmessage = (event) => {
+          if (event.data?.type === "CLAIM_ACTIVE_INSTANCE" && event.data?.instanceId) {
+            checkInstanceConflict(event.data.instanceId);
+          }
+        };
+      } catch (err) {
+        console.warn("BroadcastChannel error:", err);
+      }
+    }
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY_ACTIVE_INSTANCE && e.newValue) {
+        checkInstanceConflict(e.newValue);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    const checkActiveInstance = () => {
+      const activeId = localStorage.getItem(STORAGE_KEY_ACTIVE_INSTANCE);
+      if (activeId && activeId !== myId) {
+        checkInstanceConflict(activeId);
+      }
+    };
+
+    const intervalId = setInterval(checkActiveInstance, 2000);
+    window.addEventListener("focus", checkActiveInstance);
+    document.addEventListener("visibilitychange", checkActiveInstance);
+
+    return () => {
+      if (bc) {
+        try {
+          bc.close();
+        } catch (e) {}
+      }
+      window.removeEventListener("storage", handleStorageChange);
+      clearInterval(intervalId);
+      window.removeEventListener("focus", checkActiveInstance);
+      document.removeEventListener("visibilitychange", checkActiveInstance);
+    };
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
     const handleAuthSession = async (event: string | null, currentSession: Session | null) => {
       if (!isMounted) return;
+
+      // If this specific tab instance was marked as expired, do not restore the session
+      if (sessionStorage.getItem("bhw_instance_expired") === "true") {
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
 
       const previousUserId = activeUserIdRef.current;
       const nextUserId = currentSession?.user?.id || null;
@@ -278,12 +431,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       activeUserIdRef.current = nextUserId;
+      activeSessionRef.current = currentSession;
       hasInitializedAuthRef.current = true;
 
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
 
       if (currentSession?.user) {
+        // Claim active instance for this tab
+        claimActiveInstance(myInstanceIdRef.current);
+
         await Promise.all([
           fetchRole(currentSession.user.id),
           fetchProfile(currentSession.user.id),
@@ -345,6 +502,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     activeUserIdRef.current = null;
+    activeSessionRef.current = null;
+    sessionStorage.removeItem("bhw_instance_expired");
+    localStorage.removeItem(STORAGE_KEY_ACTIVE_INSTANCE);
+    localStorage.removeItem(STORAGE_KEY_ACTIVE_INSTANCE + "_time");
     if (user) {
       await logActivity("logout", { description: "Signed out of the system" });
       await endSession();
@@ -365,6 +526,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{ session, user, userRole, isMidwife, username, fullName, avatarUrl, loading, signOut, setUsername, setAvatarUrl, refreshProfile, updateProfileState }}>
       {children}
+
+      {/* Session Expired Modal - Single Active Session Enforcement */}
+      <AlertDialog open={sessionExpiredModalOpen}>
+        <AlertDialogContent className="max-w-md bg-card border border-destructive/30 shadow-2xl p-6">
+          <AlertDialogHeader className="space-y-3">
+            <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center text-destructive mb-1">
+              <ShieldAlert className="h-7 w-7" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold text-center text-foreground">
+              {localStorage.getItem("language") === "en" ? "Session Expired" : "Nag-expire ang Sesyon"}
+            </AlertDialogTitle>
+            <div className="flex justify-center">
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                {localStorage.getItem("language") === "en" ? "Single Active Session Policy" : "Isang Aktibong Sesyon Lamang Bawat Site"}
+              </span>
+            </div>
+            <AlertDialogDescription className="text-sm text-muted-foreground text-center space-y-2 pt-2 leading-relaxed">
+              <span className="block text-foreground font-medium">
+                {localStorage.getItem("language") === "en"
+                  ? "Another instance of this system has been opened in this browser."
+                  : "May isa pang window o tab ng system na binuksan sa browser na ito."}
+              </span>
+              <span className="block text-xs">
+                {localStorage.getItem("language") === "en"
+                  ? "For system security and data integrity, only one active session is allowed per site at a time. The session in this window has expired. Please acknowledge to proceed to log out."
+                  : "Para sa seguridad ng datos at integridad ng system, isang aktibong sesyon lamang ang pinapayagan bawat site. Ang dating sesyon sa window na ito ay nag-expire na. Paki-acknowledge upang mag-log out."}
+              </span>
+              <span className="block text-[11px] text-muted-foreground/80 italic pt-1">
+                {localStorage.getItem("language") === "en"
+                  ? "To use multiple accounts simultaneously, please use Incognito mode or another browser (such as Microsoft Edge)."
+                  : "Upang gumamit ng magkaibang account nang sabay, gumamit ng Incognito o ibang browser tulad ng Microsoft Edge."}
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-6 sm:justify-center">
+            <AlertDialogAction
+              onClick={handleAcknowledgeSessionExpired}
+              className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold py-2.5 flex items-center justify-center gap-2 shadow-md cursor-pointer"
+            >
+              <LogOut className="h-4 w-4" />
+              {localStorage.getItem("language") === "en" ? "Acknowledge & Log Out" : "I-acknowledge at Mag-log Out"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AuthContext.Provider>
   );
 };

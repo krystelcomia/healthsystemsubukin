@@ -53,6 +53,12 @@ const AuthPage = () => {
       toast.error(language === "tl" ? "Mangyaring ilagay ang email at password" : "Please enter email and password");
       return;
     }
+    // Clear instance expired flag so new active session takes over
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("bhw_instance_expired");
+      sessionStorage.removeItem("bhw_site_tab_instance_id");
+      delete (window as any).__bhwTabInstanceId;
+    }
     setLoading(true);
     const cleanEmail = email.trim();
     let { data: signInData, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
