@@ -553,11 +553,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                   ? "For system security and data integrity, only one active session is allowed per site at a time. The session in this window has expired. Please acknowledge to proceed to log out."
                   : "Para sa seguridad ng datos at integridad ng system, isang aktibong sesyon lamang ang pinapayagan bawat site. Ang dating sesyon sa window na ito ay nag-expire na. Paki-acknowledge upang mag-log out."}
               </span>
-              <span className="block text-[11px] text-muted-foreground/80 italic pt-1">
-                {localStorage.getItem("language") === "en"
-                  ? "To use multiple accounts simultaneously, please use Incognito mode or another browser (such as Microsoft Edge)."
-                  : "Upang gumamit ng magkaibang account nang sabay, gumamit ng Incognito o ibang browser tulad ng Microsoft Edge."}
-              </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-6 sm:justify-center">
