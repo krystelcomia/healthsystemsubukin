@@ -32,7 +32,6 @@ import {
   Plus,
   FileText,
   DatabaseBackup,
-  Download,
 } from "lucide-react";
 import barangayLogo from "@/assets/barangay-logo.png";
 import { Button } from "@/components/ui/button";
@@ -226,15 +225,6 @@ export function AppSidebar() {
             </p>
           </div>
         </NavLink>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full justify-start text-sidebar-foreground/90 border-sidebar-border/80 bg-sidebar-accent/40 hover:bg-sidebar-accent hover:text-sidebar-foreground text-xs"
-          onClick={() => window.dispatchEvent(new CustomEvent("open-pwa-install-dialog"))}
-        >
-          <Download className="h-4 w-4 mr-2 text-emerald-400" />
-          Download App
-        </Button>
         <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground" onClick={() => setSignOutOpen(true)}>
           <LogOut className="h-4 w-4 mr-2" /> {t("sidebar.signOut")}
         </Button>
