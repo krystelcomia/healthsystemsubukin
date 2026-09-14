@@ -42,6 +42,73 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
   } catch {}
 }
 
+let hasPendingRemotePush = false;
+let isPushingRemote = false;
+
+// Helper to merge entity collections cleanly between local and remote
+function mergeCollections(localArr: any[] = [], remoteArr: any[] = [], keyProp = 'id'): any[] {
+  if (!Array.isArray(localArr)) localArr = [];
+  if (!Array.isArray(remoteArr)) remoteArr = [];
+
+  const map = new Map<string, any>();
+
+  // 1. Add remote items
+  for (const item of remoteArr) {
+    if (item && item[keyProp] !== undefined) {
+      map.set(String(item[keyProp]).toLowerCase().trim(), item);
+    }
+  }
+
+  // 2. Merge local items: preserve newer local edits and newly added records
+  for (const item of localArr) {
+    if (item && item[keyProp] !== undefined) {
+      const key = String(item[keyProp]).toLowerCase().trim();
+      const existing = map.get(key);
+      if (!existing) {
+        map.set(key, item);
+      } else {
+        const localTime = new Date(item.updated_at || item.created_at || 0).getTime();
+        const remoteTime = new Date(existing.updated_at || existing.created_at || 0).getTime();
+        if (localTime >= remoteTime) {
+          map.set(key, { ...existing, ...item });
+        } else {
+          map.set(key, { ...item, ...existing });
+        }
+      }
+    }
+  }
+
+  return Array.from(map.values());
+}
+
+function mergeDatabases(localDb: any, remoteDb: any): any {
+  if (!localDb || typeof localDb !== 'object') return remoteDb || {};
+  if (!remoteDb || typeof remoteDb !== 'object') return localDb || {};
+
+  const merged: any = { ...remoteDb, ...localDb };
+  merged.is_initialized = true;
+
+  // Merge each collection cleanly so neither remote nor local records are lost
+  merged.residents = mergeCollections(localDb.residents, remoteDb.residents, 'id');
+  merged.family_data = mergeCollections(localDb.family_data, remoteDb.family_data, 'id');
+  merged.consultations = mergeCollections(localDb.consultations, remoteDb.consultations, 'id');
+  merged.philpen_health = mergeCollections(localDb.philpen_health, remoteDb.philpen_health, 'id');
+  merged.dengue_prevention = mergeCollections(localDb.dengue_prevention, remoteDb.dengue_prevention, 'id');
+  merged.maternal_care = mergeCollections(localDb.maternal_care, remoteDb.maternal_care, 'id');
+  merged.child_health = mergeCollections(localDb.child_health, remoteDb.child_health, 'id');
+  merged.family_planning = mergeCollections(localDb.family_planning, remoteDb.family_planning, 'id');
+  merged.user_activity_logs = mergeCollections(localDb.user_activity_logs, remoteDb.user_activity_logs, 'id');
+  merged.user_sessions = mergeCollections(localDb.user_sessions, remoteDb.user_sessions, 'id');
+
+  // Account tables: preserve updated local passwords, names, contact numbers, and assignments
+  merged.auth_users = mergeCollections(localDb.auth_users, remoteDb.auth_users, 'email');
+  merged.bhw_workers = mergeCollections(localDb.bhw_workers, remoteDb.bhw_workers, 'gmail');
+  merged.profiles = mergeCollections(localDb.profiles, remoteDb.profiles, 'user_id');
+  merged.user_roles = mergeCollections(localDb.user_roles, remoteDb.user_roles, 'user_id');
+
+  return merged;
+}
+
 export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
   try {
     if (db && !db.is_initialized) {
@@ -49,23 +116,13 @@ export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
     }
     const serialized = JSON.stringify(db);
     localStorage.setItem('supabase_mock_db', serialized);
+    hasPendingRemotePush = true;
 
     // 1. Fast debounced remote push to sync shared serverless backend
     if (shouldBroadcastRemote && typeof fetch === 'function') {
       if (remotePushTimeout) clearTimeout(remotePushTimeout);
       remotePushTimeout = setTimeout(() => {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 8000);
-          fetch('/__db_sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: serialized,
-            signal: controller.signal,
-          })
-            .then(() => clearTimeout(timeoutId))
-            .catch(() => clearTimeout(timeoutId));
-        } catch {}
+        executeRemotePush(serialized);
       }, 150);
     }
 
@@ -83,6 +140,43 @@ export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
   }
 }
 
+function executeRemotePush(serialized?: string) {
+  if (isPushingRemote || typeof fetch !== 'function') return;
+  isPushingRemote = true;
+
+  try {
+    const dataToSend = serialized || localStorage.getItem('supabase_mock_db');
+    if (!dataToSend) {
+      isPushingRemote = false;
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    fetch('/__db_sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: dataToSend,
+      signal: controller.signal,
+    })
+      .then((res) => {
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          hasPendingRemotePush = false;
+        }
+      })
+      .catch(() => {
+        clearTimeout(timeoutId);
+      })
+      .finally(() => {
+        isPushingRemote = false;
+      });
+  } catch {
+    isPushingRemote = false;
+  }
+}
+
 export function syncRemoteDbNow(force = true) {
   if (typeof window === 'undefined') return;
   pullRemoteDb(force);
@@ -90,7 +184,7 @@ export function syncRemoteDbNow(force = true) {
 
 export const pullRemoteDb = (force = false) => {
   const now = Date.now();
-  if (!force && now - lastRemoteSyncFetch < 2000) return; // Throttled to at most once per 2s
+  if (!force && now - lastRemoteSyncFetch < 1500) return; // Throttled to at most once per 1.5s
   lastRemoteSyncFetch = now;
 
   if (typeof fetch === 'function') {
@@ -105,12 +199,30 @@ export const pullRemoteDb = (force = false) => {
         clearTimeout(timeoutId);
         if (remoteDb && (remoteDb.is_initialized || remoteDb.profiles || remoteDb.auth_users || remoteDb.family_data) && Object.keys(remoteDb).length > 0) {
           remoteDb.is_initialized = true;
+
           const currentStr = localStorage.getItem('supabase_mock_db');
-          const remoteStr = JSON.stringify(remoteDb);
-          if (currentStr !== remoteStr || !hasCompletedInitialRemotePull) {
+          let currentDb: any = {};
+          if (currentStr) {
+            try { currentDb = JSON.parse(currentStr); } catch {}
+          }
+
+          // If local has pending changes that haven't been pushed to remote, MERGE and push!
+          if (hasPendingRemotePush) {
+            const merged = mergeDatabases(currentDb, remoteDb);
+            const mergedStr = JSON.stringify(merged);
+            localStorage.setItem('supabase_mock_db', mergedStr);
+            executeRemotePush(mergedStr);
+            notifyComponentsOfDbUpdate(merged);
+            return;
+          }
+
+          // Otherwise merge remote changes smoothly into local state
+          const merged = mergeDatabases(currentDb, remoteDb);
+          const mergedStr = JSON.stringify(merged);
+          if (currentStr !== mergedStr || !hasCompletedInitialRemotePull) {
             hasCompletedInitialRemotePull = true;
-            localStorage.setItem('supabase_mock_db', remoteStr);
-            notifyComponentsOfDbUpdate(remoteDb);
+            localStorage.setItem('supabase_mock_db', mergedStr);
+            notifyComponentsOfDbUpdate(merged);
           }
         }
       })
@@ -127,19 +239,51 @@ export function initCrossBrowserSync() {
   // 1. Initial pull from shared backend immediately
   pullRemoteDb(true);
 
-  // 2. Active background sync polling every 3 seconds across devices/browsers/accounts
-  setInterval(() => pullRemoteDb(false), 3000);
+  // 2. Active background sync polling every 2.5 seconds across devices/browsers/accounts
+  setInterval(() => pullRemoteDb(false), 2500);
 
-  // 3. Auto sync on tab visibility change or window focus
+  // 3. Auto sync on tab visibility change or window focus (especially crucial for downloaded PWA when resumed)
   window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       pullRemoteDb(true);
+      if (hasPendingRemotePush) {
+        executeRemotePush();
+      }
     }
   });
 
   window.addEventListener('focus', () => {
     pullRemoteDb(true);
+    if (hasPendingRemotePush) {
+      executeRemotePush();
+    }
   });
+
+  // 4. Online reconnect listener: flush pending changes and pull updates immediately
+  window.addEventListener('online', () => {
+    if (hasPendingRemotePush) {
+      executeRemotePush();
+    }
+    pullRemoteDb(true);
+  });
+
+  // 5. Connect to real-time Server-Sent Events (SSE) if supported
+  try {
+    if (typeof EventSource !== 'undefined') {
+      const eventSource = new EventSource('/__db_sync/events');
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data || '{}');
+          if (data && Object.keys(data).length > 0) {
+            pullRemoteDb(true);
+          }
+        } catch {}
+      };
+      eventSource.addEventListener('db_update', () => {
+        pullRemoteDb(true);
+      });
+    }
+  } catch {}
 }
 
 // Mock Query Builder mimicking Supabase's JS library behavior
@@ -1108,7 +1252,8 @@ export function seedMockDatabase() {
       (u.email || "").toLowerCase().trim() === cu.email.toLowerCase().trim() || u.id === cu.id
     );
     if (existingIndex >= 0) {
-      db['auth_users'][existingIndex] = { ...db['auth_users'][existingIndex], ...cu };
+      // Preserve any updated passwords or profile data from the active account
+      db['auth_users'][existingIndex] = { ...cu, ...db['auth_users'][existingIndex] };
     } else {
       db['auth_users'].push(cu);
     }
@@ -1117,7 +1262,7 @@ export function seedMockDatabase() {
   for (const cr of canonicalRoles) {
     const existingIndex = db['user_roles'].findIndex((r: any) => r.user_id === cr.user_id || r.id === cr.id);
     if (existingIndex >= 0) {
-      db['user_roles'][existingIndex] = { ...db['user_roles'][existingIndex], ...cr };
+      db['user_roles'][existingIndex] = { ...cr, ...db['user_roles'][existingIndex] };
     } else {
       db['user_roles'].push(cr);
     }
@@ -1137,13 +1282,10 @@ export function seedMockDatabase() {
       (w.gmail || "").toLowerCase().trim() === cw.gmail.toLowerCase().trim() || w.id === cw.id
     );
     if (existingIndex >= 0) {
+      // Preserve worker updates (phone, age, assigned sitio, etc.)
       db['bhw_workers'][existingIndex] = { 
-        ...db['bhw_workers'][existingIndex], 
-        name: cw.name, 
-        gmail: cw.gmail, 
-        assigned_sitio: cw.assigned_sitio, 
-        number: cw.number, 
-        user_id: cw.user_id 
+        ...cw,
+        ...db['bhw_workers'][existingIndex] 
       };
     } else {
       db['bhw_workers'].push(cw);
