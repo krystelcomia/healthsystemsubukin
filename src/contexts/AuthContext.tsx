@@ -50,6 +50,7 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 const STORAGE_KEY_ACTIVE_INSTANCE = "bhw_active_instance_id";
+const STORAGE_KEY_ACTIVE_INSTANCE_USER_PREFIX = "bhw_active_instance_for_";
 const INSTANCE_BROADCAST_CHANNEL = "bhw_site_instance_channel";
 
 export const getTabInstanceId = (): string => {
@@ -286,10 +287,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [user]);
 
-  const claimActiveInstance = (instanceId: string) => {
+  const claimActiveInstance = (instanceId: string, targetUserId?: string | null) => {
     if (typeof window === "undefined") return;
     try {
+      const uid = targetUserId || activeUserIdRef.current;
       sessionStorage.removeItem("bhw_instance_expired");
+      if (uid) {
+        localStorage.setItem(`${STORAGE_KEY_ACTIVE_INSTANCE_USER_PREFIX}${uid}`, instanceId);
+        localStorage.setItem(`${STORAGE_KEY_ACTIVE_INSTANCE_USER_PREFIX}${uid}_time`, Date.now().toString());
+      }
       localStorage.setItem(STORAGE_KEY_ACTIVE_INSTANCE, instanceId);
       localStorage.setItem(STORAGE_KEY_ACTIVE_INSTANCE + "_time", Date.now().toString());
 
@@ -298,6 +304,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         bc.postMessage({
           type: "CLAIM_ACTIVE_INSTANCE",
           instanceId: instanceId,
+          userId: uid,
           timestamp: Date.now(),
         });
         bc.close();
@@ -307,14 +314,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const checkInstanceConflict = (claimedInstanceId: string) => {
+  const checkInstanceConflict = (claimedInstanceId: string, claimedUserId?: string | null) => {
     const myId = myInstanceIdRef.current;
     if (!claimedInstanceId || claimedInstanceId === myId) return;
 
-    // Trigger session expired modal only if this tab has an active user or session
-    if (activeUserIdRef.current || activeSessionRef.current) {
+    const myUserId = activeUserIdRef.current;
+    if (!myUserId) return;
+
+    // Rule: "You are not allowed to open the same account on any site. You may only use different accounts on different sites simultaneously."
+    // If the claim is explicitly for a DIFFERENT user account: allow them to run simultaneously!
+    if (claimedUserId && claimedUserId !== myUserId) {
+      return;
+    }
+
+    // If claimed session is for the SAME account or active instance for my account changed:
+    const activeInstanceForMyUser = localStorage.getItem(`${STORAGE_KEY_ACTIVE_INSTANCE_USER_PREFIX}${myUserId}`);
+    const isSameAccountConflict = (claimedUserId && claimedUserId === myUserId) || (activeInstanceForMyUser && activeInstanceForMyUser !== myId);
+
+    if (isSameAccountConflict && (activeUserIdRef.current || activeSessionRef.current)) {
       sessionStorage.setItem("bhw_instance_expired", "true");
       setSessionExpiredModalOpen(true);
+    }
+  };
+
+  const checkRemoteSameAccountConflict = async (userId: string) => {
+    try {
+      const mySessionId = sessionStorage.getItem("bhw_current_session_id") || localStorage.getItem("active_session_id");
+      if (!mySessionId) return;
+
+      const { data, error } = await (supabase.from as any)("user_sessions")
+        .select("id, login_at")
+        .eq("user_id", userId)
+        .is("logout_at", null)
+        .order("login_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data?.id && data.id !== mySessionId) {
+        // A newer session for the same account was opened on another site or browser
+        sessionStorage.setItem("bhw_instance_expired", "true");
+        setSessionExpiredModalOpen(true);
+      }
+    } catch (err) {
+      // ignore
     }
   };
 
@@ -324,7 +366,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (user) {
       try {
-        await logActivity("logout", { description: "Session expired: acknowledged single active session rule" });
+        await logActivity("logout", { description: "Session expired: acknowledged single account policy" });
         await updateOnlineStatus(user.id, false, user.email);
       } catch (err) {
         console.warn("Logout error on session expired acknowledge:", err);
@@ -349,7 +391,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     activeSessionRef.current = session;
   }, [session]);
 
-  // Enforce single active session per site across tabs/windows
+  // Enforce single active session per account across tabs/windows and remote sites
   useEffect(() => {
     const myId = myInstanceIdRef.current;
 
@@ -359,7 +401,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         bc = new BroadcastChannel(INSTANCE_BROADCAST_CHANNEL);
         bc.onmessage = (event) => {
           if (event.data?.type === "CLAIM_ACTIVE_INSTANCE" && event.data?.instanceId) {
-            checkInstanceConflict(event.data.instanceId);
+            checkInstanceConflict(event.data.instanceId, event.data.userId);
           }
         };
       } catch (err) {
@@ -368,20 +410,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY_ACTIVE_INSTANCE && e.newValue) {
-        checkInstanceConflict(e.newValue);
+      const myUserId = activeUserIdRef.current;
+      if (myUserId && e.key === `${STORAGE_KEY_ACTIVE_INSTANCE_USER_PREFIX}${myUserId}` && e.newValue) {
+        checkInstanceConflict(e.newValue, myUserId);
       }
     };
     window.addEventListener("storage", handleStorageChange);
 
     const checkActiveInstance = () => {
-      const activeId = localStorage.getItem(STORAGE_KEY_ACTIVE_INSTANCE);
-      if (activeId && activeId !== myId) {
-        checkInstanceConflict(activeId);
+      const myUserId = activeUserIdRef.current;
+      if (myUserId) {
+        const activeIdForMyUser = localStorage.getItem(`${STORAGE_KEY_ACTIVE_INSTANCE_USER_PREFIX}${myUserId}`);
+        if (activeIdForMyUser && activeIdForMyUser !== myId) {
+          checkInstanceConflict(activeIdForMyUser, myUserId);
+        }
+        checkRemoteSameAccountConflict(myUserId);
       }
     };
 
-    const intervalId = setInterval(checkActiveInstance, 2000);
+    const intervalId = setInterval(checkActiveInstance, 3000);
     window.addEventListener("focus", checkActiveInstance);
     document.addEventListener("visibilitychange", checkActiveInstance);
 
@@ -438,8 +485,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(currentSession?.user ?? null);
 
       if (currentSession?.user) {
-        // Claim active instance for this tab
-        claimActiveInstance(myInstanceIdRef.current);
+        // Claim active instance for this tab & specific user account
+        claimActiveInstance(myInstanceIdRef.current, currentSession.user.id);
 
         await Promise.all([
           fetchRole(currentSession.user.id),
@@ -448,8 +495,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ]);
 
         if (event === "SIGNED_IN") {
-          startSession(currentSession.user.id);
+          startSession(currentSession.user.id).then((newId) => {
+            if (newId) sessionStorage.setItem("bhw_current_session_id", newId);
+          });
           logActivity("login", { description: "Signed in to the system" });
+        } else {
+          // Verify or initialize active session record in sessionStorage
+          const existingSessionId = sessionStorage.getItem("bhw_current_session_id") || localStorage.getItem("active_session_id");
+          if (!existingSessionId) {
+            (supabase.from as any)("user_sessions")
+              .select("id")
+              .eq("user_id", currentSession.user.id)
+              .is("logout_at", null)
+              .order("login_at", { ascending: false })
+              .limit(1)
+              .maybeSingle()
+              .then(({ data }: any) => {
+                if (data?.id) {
+                  sessionStorage.setItem("bhw_current_session_id", data.id);
+                  localStorage.setItem("active_session_id", data.id);
+                } else {
+                  startSession(currentSession.user.id).then((newId) => {
+                    if (newId) sessionStorage.setItem("bhw_current_session_id", newId);
+                  });
+                }
+              });
+          }
         }
       } else {
         setUserRole(null);
@@ -501,11 +572,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = async () => {
+    const prevUserId = activeUserIdRef.current;
     activeUserIdRef.current = null;
     activeSessionRef.current = null;
     sessionStorage.removeItem("bhw_instance_expired");
+    sessionStorage.removeItem("bhw_current_session_id");
     localStorage.removeItem(STORAGE_KEY_ACTIVE_INSTANCE);
     localStorage.removeItem(STORAGE_KEY_ACTIVE_INSTANCE + "_time");
+    if (prevUserId) {
+      localStorage.removeItem(`${STORAGE_KEY_ACTIVE_INSTANCE_USER_PREFIX}${prevUserId}`);
+      localStorage.removeItem(`${STORAGE_KEY_ACTIVE_INSTANCE_USER_PREFIX}${prevUserId}_time`);
+    }
     if (user) {
       await logActivity("logout", { description: "Signed out of the system" });
       await endSession();
@@ -527,7 +604,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{ session, user, userRole, isMidwife, username, fullName, avatarUrl, loading, signOut, setUsername, setAvatarUrl, refreshProfile, updateProfileState }}>
       {children}
 
-      {/* Session Expired Modal - Single Active Session Enforcement */}
+      {/* Session Expired Modal - Single Account Across Sites Policy */}
       <AlertDialog open={sessionExpiredModalOpen}>
         <AlertDialogContent className="max-w-md bg-card border border-destructive/30 shadow-2xl p-6">
           <AlertDialogHeader className="space-y-3">
@@ -539,19 +616,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             </AlertDialogTitle>
             <div className="flex justify-center">
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                {localStorage.getItem("language") === "en" ? "Single Active Session Policy" : "Isang Aktibong Sesyon Lamang Bawat Site"}
+                {localStorage.getItem("language") === "en" ? "Single Account Policy • One Site at a Time" : "Patakaran sa Iisang Account • Isang Site Lamang"}
               </span>
             </div>
             <AlertDialogDescription className="text-sm text-muted-foreground text-center space-y-2 pt-2 leading-relaxed">
               <span className="block text-foreground font-medium">
                 {localStorage.getItem("language") === "en"
-                  ? "Another instance of this system has been opened in this browser."
-                  : "May isa pang window o tab ng system na binuksan sa browser na ito."}
+                  ? "This account has been opened in another site or window."
+                  : "Ang account na ito ay binuksan sa ibang site o window."}
               </span>
               <span className="block text-xs">
                 {localStorage.getItem("language") === "en"
-                  ? "For system security and data integrity, only one active session is allowed per site at a time. The session in this window has expired. Please acknowledge to proceed to log out."
-                  : "Para sa seguridad ng datos at integridad ng system, isang aktibong sesyon lamang ang pinapayagan bawat site. Ang dating sesyon sa window na ito ay nag-expire na. Paki-acknowledge upang mag-log out."}
+                  ? "You are not allowed to open the same account on any site simultaneously. You may only use different accounts on different sites simultaneously. The previous session in this window has expired. Please acknowledge to proceed to log out."
+                  : "Hindi pinapayagang buksan ang parehong account sa alinmang site nang sabay. Maaari lamang gumamit ng magkaibang account sa magkaibang site nang sabay. Ang dating sesyon sa window na ito ay nag-expire na. Paki-acknowledge upang mag-log out."}
               </span>
             </AlertDialogDescription>
           </AlertDialogHeader>

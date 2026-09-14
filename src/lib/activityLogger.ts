@@ -2,17 +2,24 @@ import { supabase } from "@/integrations/supabase/client";
 
 const SESSION_KEY = "active_session_id";
 
-export async function startSession(userId: string) {
+export async function startSession(userId: string): Promise<string | null> {
   try {
     const { data, error } = await (supabase.from as any)("user_sessions")
       .insert({ user_id: userId, login_at: new Date().toISOString() })
       .select("id")
       .single();
     if (error) throw error;
-    if (data?.id) localStorage.setItem(SESSION_KEY, data.id);
+    if (data?.id) {
+      localStorage.setItem(SESSION_KEY, data.id);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("bhw_current_session_id", data.id);
+      }
+      return data.id;
+    }
   } catch (e) {
     console.warn("startSession failed", e);
   }
+  return null;
 }
 
 export async function endSession() {
