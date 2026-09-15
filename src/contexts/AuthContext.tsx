@@ -92,21 +92,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const hasInitializedAuthRef = useRef<boolean>(false);
   const [userRole, setUserRole] = useState<string | null>(() => {
     try {
-      return localStorage.getItem("bhw_user_role") || null;
+      localStorage.removeItem("bhw_user_role");
+      return sessionStorage.getItem("bhw_user_role") || null;
     } catch {
       return null;
     }
   });
   const [username, setUsername] = useState<string | null>(() => {
     try {
-      return localStorage.getItem("logged_in_username") || null;
+      localStorage.removeItem("logged_in_username");
+      return sessionStorage.getItem("logged_in_username") || null;
     } catch {
       return null;
     }
   });
   const [fullName, setFullName] = useState<string | null>(() => {
     try {
-      return localStorage.getItem("logged_in_fullname") || null;
+      localStorage.removeItem("logged_in_fullname");
+      return sessionStorage.getItem("logged_in_fullname") || null;
     } catch {
       return null;
     }
@@ -139,7 +142,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (data?.role) {
         const cleanRole = data.role.toLowerCase();
         setUserRole(cleanRole);
-        localStorage.setItem("bhw_user_role", cleanRole);
+        sessionStorage.setItem("bhw_user_role", cleanRole);
+        try { localStorage.removeItem("bhw_user_role"); } catch {}
         return cleanRole;
       }
 
@@ -153,7 +157,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const isBns = email.includes("bns");
       const fallbackRole = isSupervisor ? "supervisor" : isMidwifeUser ? "midwife" : isBns ? "bns" : "bhw";
       setUserRole(fallbackRole);
-      localStorage.setItem("bhw_user_role", fallbackRole);
+      sessionStorage.setItem("bhw_user_role", fallbackRole);
+      try { localStorage.removeItem("bhw_user_role"); } catch {}
       return fallbackRole;
     } catch (e) {
       console.error("Error fetching user role:", e);
@@ -222,13 +227,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (data) {
         if (data.username) {
-          localStorage.setItem("logged_in_username", data.username);
+          sessionStorage.setItem("logged_in_username", data.username);
+          try { localStorage.removeItem("logged_in_username"); } catch {}
           setUsername(data.username);
         } else {
           setUsername(null);
         }
         if ((data as any).full_name) {
-          localStorage.setItem("logged_in_fullname", (data as any).full_name);
+          sessionStorage.setItem("logged_in_fullname", (data as any).full_name);
+          try { localStorage.removeItem("logged_in_fullname"); } catch {}
           setFullName((data as any).full_name);
         } else {
           setFullName(null);
@@ -575,9 +582,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUsername(null);
         setFullName(null);
         setAvatarUrl(null);
-        localStorage.removeItem("logged_in_username");
-        localStorage.removeItem("logged_in_fullname");
-        localStorage.removeItem("bhw_user_role");
+        sessionStorage.removeItem("logged_in_username");
+        sessionStorage.removeItem("logged_in_fullname");
+        sessionStorage.removeItem("bhw_user_role");
+        sessionStorage.removeItem("bhw_active_user_id");
+        sessionStorage.removeItem("bhw_active_user_email");
+        try {
+          localStorage.removeItem("logged_in_username");
+          localStorage.removeItem("logged_in_fullname");
+          localStorage.removeItem("bhw_user_role");
+          localStorage.removeItem("supabase_mock_session");
+        } catch {}
       }
 
       if (isMounted) {
@@ -662,9 +677,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await endSession();
       await updateOnlineStatus(user.id, false, user.email);
     }
-    localStorage.removeItem("logged_in_username");
-    localStorage.removeItem("logged_in_fullname");
-    localStorage.removeItem("bhw_user_role");
+    sessionStorage.removeItem("logged_in_username");
+    sessionStorage.removeItem("logged_in_fullname");
+    sessionStorage.removeItem("bhw_user_role");
+    sessionStorage.removeItem("bhw_active_user_id");
+    sessionStorage.removeItem("bhw_active_user_email");
+    try {
+      localStorage.removeItem("logged_in_username");
+      localStorage.removeItem("logged_in_fullname");
+      localStorage.removeItem("bhw_user_role");
+      localStorage.removeItem("supabase_mock_session");
+    } catch {}
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);

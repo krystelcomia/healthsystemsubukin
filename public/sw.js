@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bhw-subukin-v3';
+const CACHE_NAME = 'bhw-subukin-v4';
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',

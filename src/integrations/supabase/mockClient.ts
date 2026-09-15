@@ -571,28 +571,36 @@ class MockAuth {
   constructor() {
     if (typeof window !== "undefined") {
       try {
-        if ("BroadcastChannel" in window) {
-          this.authChannel = new BroadcastChannel("bhw_auth_channel");
-          this.authChannel.onmessage = (msgEvent) => {
-            const data = msgEvent?.data;
-            if (data && data.type === "BHW_AUTH_STATE_CHANGE") {
-              this.triggerListeners(data.event, data.session, false);
-            }
-          };
-        }
-      } catch (err) {
-        console.warn("BroadcastChannel initialization warning:", err);
-      }
-
-      window.addEventListener("storage", (storageEvent) => {
-        if (storageEvent.key === "supabase_mock_session") {
-          try {
-            const newSession = storageEvent.newValue ? JSON.parse(storageEvent.newValue) : null;
-            this.triggerListeners(newSession ? "SIGNED_IN" : "SIGNED_OUT", newSession, false);
-          } catch {}
-        }
-      });
+        localStorage.removeItem('supabase_mock_session');
+      } catch {}
     }
+  }
+
+  private getStoredSession(): any {
+    try {
+      if (typeof sessionStorage !== "undefined") {
+        const s = sessionStorage.getItem('supabase_mock_session');
+        if (s) return JSON.parse(s);
+      }
+    } catch {}
+    return null;
+  }
+
+  private setStoredSession(session: any) {
+    try {
+      if (typeof sessionStorage !== "undefined") {
+        if (session) {
+          sessionStorage.setItem('supabase_mock_session', JSON.stringify(session));
+        } else {
+          sessionStorage.removeItem('supabase_mock_session');
+        }
+      }
+    } catch {}
+    try {
+      if (typeof localStorage !== "undefined") {
+        localStorage.removeItem('supabase_mock_session');
+      }
+    } catch {}
   }
 
   async signInWithPassword({ email, password }: any) {
@@ -713,8 +721,8 @@ class MockAuth {
       saveAndBroadcastMockDb(db);
     }
 
-    localStorage.setItem('supabase_mock_session', JSON.stringify(session));
-    this.triggerListeners("SIGNED_IN", session);
+    this.setStoredSession(session);
+    this.triggerListeners("SIGNED_IN", session, false);
     window.dispatchEvent(new CustomEvent("bhw-worker-status-changed", { detail: { email: cleanEmail, userId: user.id, isOnline: true } }));
     window.dispatchEvent(new Event("storage"));
     return { data: { user: session.user, session }, error: null };
@@ -724,15 +732,14 @@ class MockAuth {
     let emailToSignOut = "";
     let userIdToSignOut = "";
     try {
-      const sessionStr = localStorage.getItem('supabase_mock_session');
-      if (sessionStr) {
-        const sess = JSON.parse(sessionStr);
+      const sess = this.getStoredSession();
+      if (sess) {
         emailToSignOut = (sess?.user?.email || "").toLowerCase().trim();
         userIdToSignOut = sess?.user?.id || "";
       }
     } catch {}
 
-    localStorage.removeItem('supabase_mock_session');
+    this.setStoredSession(null);
 
     const dbStr = localStorage.getItem('supabase_mock_db');
     if (dbStr) {
@@ -751,28 +758,25 @@ class MockAuth {
       } catch {}
     }
 
-    this.triggerListeners("SIGNED_OUT", null);
+    this.triggerListeners("SIGNED_OUT", null, false);
     window.dispatchEvent(new CustomEvent("bhw-worker-status-changed", { detail: { email: emailToSignOut, userId: userIdToSignOut, isOnline: false } }));
     window.dispatchEvent(new Event("storage"));
     return { error: null };
   }
 
   async getSession() {
-    const sessionStr = localStorage.getItem('supabase_mock_session');
-    const session = sessionStr ? JSON.parse(sessionStr) : null;
+    const session = this.getStoredSession();
     return { data: { session }, error: null };
   }
 
   async getUser() {
-    const sessionStr = localStorage.getItem('supabase_mock_session');
-    const session = sessionStr ? JSON.parse(sessionStr) : null;
+    const session = this.getStoredSession();
     return { data: { user: session ? session.user : null }, error: null };
   }
 
   onAuthStateChange(callback: (event: string, session: any) => void) {
     this.listeners.push(callback);
-    const sessionStr = localStorage.getItem('supabase_mock_session');
-    const session = sessionStr ? JSON.parse(sessionStr) : null;
+    const session = this.getStoredSession();
     setTimeout(() => {
       callback(session ? "SIGNED_IN" : "SIGNED_OUT", session);
     }, 0);
@@ -1001,12 +1005,9 @@ class MockAuth {
     let targetEmail = (email || "").toLowerCase().trim();
 
     if (!targetEmail) {
-      const sessionStr = localStorage.getItem('supabase_mock_session');
-      if (sessionStr) {
-        try {
-          const sess = JSON.parse(sessionStr);
-          targetEmail = (sess?.user?.email || "").toLowerCase().trim();
-        } catch {}
+      const sess = this.getStoredSession();
+      if (sess) {
+        targetEmail = (sess?.user?.email || "").toLowerCase().trim();
       }
     }
 
@@ -1306,7 +1307,7 @@ export function seedMockDatabase() {
     let currentEmail = "";
     let currentUserId = "";
     try {
-      const sessionStr = localStorage.getItem('supabase_mock_session');
+      const sessionStr = typeof sessionStorage !== "undefined" ? sessionStorage.getItem('supabase_mock_session') : null;
       if (sessionStr) {
         const session = JSON.parse(sessionStr);
         currentEmail = (session?.user?.email || "").toLowerCase().trim();
@@ -1395,6 +1396,7 @@ export function seedMockDatabase() {
         }
       }
       keysToRemove.forEach((k) => localStorage.removeItem(k));
+      localStorage.removeItem('supabase_mock_session');
     } catch {}
   }
 

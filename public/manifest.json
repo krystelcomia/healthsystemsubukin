@@ -28,7 +28,7 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": "/",
+  "start_url": "/auth",
   "background_color": "#ffffff",
   "theme_color": "#2e7d32",
   "display": "standalone",

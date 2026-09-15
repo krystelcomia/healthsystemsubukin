@@ -88,9 +88,13 @@ const AuthPage = () => {
           if (!signUpError && signUpData.user) {
             const userId = signUpData.user.id;
 
-            // Set localStorage profile cache
-            localStorage.setItem("logged_in_username", official.username);
-            localStorage.setItem("logged_in_fullname", official.fullName);
+            // Set sessionStorage profile cache
+            sessionStorage.setItem("logged_in_username", official.username);
+            sessionStorage.setItem("logged_in_fullname", official.fullName);
+            try {
+              localStorage.removeItem("logged_in_username");
+              localStorage.removeItem("logged_in_fullname");
+            } catch {}
 
             // Upsert role & profile
             try {
