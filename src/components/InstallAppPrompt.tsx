@@ -179,23 +179,7 @@ export function InstallAppPrompt() {
         </div>
       )}
 
-      {/* Persistent Floating Install Pill Button at the very bottom of the user profile section */}
-      <div className="fixed bottom-4 left-4 z-40 print:hidden">
-        <Button
-          onClick={handleTriggerInstall}
-          className="group flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-xs py-2 px-3.5 rounded-full shadow-lg hover:shadow-xl border border-emerald-400/40 transition-all duration-200 active:scale-95"
-          title="Download Barangay Subukin App"
-        >
-          <div className="relative">
-            <Download className="h-4 w-4 text-emerald-100 group-hover:animate-bounce" />
-            <span className="absolute -top-1 -right-1 flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-300"></span>
-            </span>
-          </div>
-          <span>Download App</span>
-        </Button>
-      </div>
+
 
       {/* Detailed Install Guide Dialog (for iOS Safari, Desktop browsers, etc.) */}
       <Dialog open={showGuideModal} onOpenChange={setShowGuideModal}>
