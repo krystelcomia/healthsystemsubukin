@@ -1374,14 +1374,28 @@ export function seedMockDatabase() {
     }
   }
 
-  // Ensure default profile avatar for Krystel is saved in localStorage too
+  // Ensure profile pictures are removed from all accounts
+  if (db['profiles']) {
+    db['profiles'].forEach((p: any) => {
+      p.avatar_url = null;
+    });
+  }
+  if (db['bhw_workers']) {
+    db['bhw_workers'].forEach((w: any) => {
+      w.avatar_url = null;
+    });
+  }
   if (typeof localStorage !== 'undefined') {
-    const krystelProfile = (CANONICAL_INITIAL_DATABASE.profiles || []).find((p: any) => p.user_id === 'user-1');
-    if (krystelProfile?.avatar_url && !localStorage.getItem('bhw_avatar_user-1')) {
-      localStorage.setItem('bhw_avatar_user-1', krystelProfile.avatar_url);
-      localStorage.setItem('bhw_avatar_krystelcomia@gmail.com', krystelProfile.avatar_url);
-      localStorage.setItem('bhw_avatar_krystel', krystelProfile.avatar_url);
-    }
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('bhw_avatar_') && !k.startsWith('bhw_avatar_removed_')) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    } catch {}
   }
 
   const isFreshLocalInit = !dbStr;
