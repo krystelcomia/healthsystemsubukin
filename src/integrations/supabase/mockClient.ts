@@ -645,7 +645,7 @@ class MockAuth {
     }
 
     // 2. Check supervisor and midwife roles
-    const isSupervisor = (cleanEmail.includes("cristetalanuza") || (cleanEmail.includes("admin") && !cleanEmail.includes("maryjane") && !cleanEmail.includes("midwife"))) ||
+    const isSupervisor = (cleanEmail === "cristetalanuzaadmin@gmail.com" || cleanEmail === "adminsubukin@gmail.com" || (cleanEmail.includes("admin") && !cleanEmail.includes("bhw") && !cleanEmail.includes("maryjane") && !cleanEmail.includes("midwife"))) ||
       roles.some((r: any) => r.user_id === userWithEmail?.id && r.role === "supervisor");
     const isMidwife = cleanEmail.includes("maryjanelandicho") || cleanEmail.includes("midwife") ||
       roles.some((r: any) => r.user_id === userWithEmail?.id && r.role === "midwife");

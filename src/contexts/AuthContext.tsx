@@ -149,8 +149,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Fallback role detection if user_roles entry is missing
       const { data: userData } = await supabase.auth.getUser();
       const email = (userData?.user?.email || "").toLowerCase();
-      // Cristeta R. Lanuza is the BHW Supervisory admin
-      const isSupervisor = email.includes("cristetalanuza") || email === "adminsubukin@gmail.com";
+      // Cristeta R. Lanuza has separate accounts: admin (supervisor) and BHW (bhw)
+      const isSupervisor = email === "cristetalanuzaadmin@gmail.com" || email === "adminsubukin@gmail.com" || (email.includes("admin") && !email.includes("bhw") && !email.includes("midwife"));
       // Mary Jane Landicho is the Midwife (view-only user dashboard)
       const isMidwifeUser = email.includes("maryjanelandicho") || email.includes("midwife");
       const isBns = email.includes("bns");

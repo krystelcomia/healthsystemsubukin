@@ -36,7 +36,7 @@ export const CANONICAL_INITIAL_DATABASE: Record<string, any[]> = {
   profiles: [
     { id: "profile-1", user_id: "user-1", full_name: "Krystel Comia", username: "krystel", assigned_sitio: "Maligaya" },
     { id: "profile-cristeta", user_id: "user-cristeta", full_name: "Cristeta R. Lanuza", username: "Cristeta", assigned_sitio: "Masigla" },
-    { id: "profile-cristeta-bhw", user_id: "user-cristeta-bhw", full_name: "Cristeta R. Lanuza", username: "Cristeta BHW", assigned_sitio: "Masigla" },
+    { id: "profile-cristeta-bhw", user_id: "user-cristeta-bhw", full_name: "Cristeta R. Lanuza", username: "Cristeta", assigned_sitio: "Masigla" },
     { id: "profile-midwife", user_id: "user-midwife", full_name: "Mary Jane Landicho", username: "Mary Jane", assigned_sitio: "Subukin Main" },
     { id: "profile-evelyn", user_id: "user-evelyn", full_name: "Evelyn T. Ilao", username: "Evelyn", assigned_sitio: "Manggahan 1" },
     { id: "profile-cecilia", user_id: "user-cecilia", full_name: "Cecilia G. Benosa", username: "Cecilia", assigned_sitio: "Maligaya" },
