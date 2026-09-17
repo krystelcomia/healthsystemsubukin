@@ -321,8 +321,8 @@ const AuthPage = () => {
                 <Input
                   className={`h-10 text-sm transition-colors ${
                     darkMode
-                      ? "bg-black/50 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
-                      : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-white focus:ring-1 focus:ring-white/40"
+                      ? "bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
+                      : "bg-white/20 border-white/40 text-black font-medium placeholder:text-black/60 focus:border-white focus:ring-1 focus:ring-white/40"
                   }`}
                   type="email"
                   value={email}
@@ -337,8 +337,8 @@ const AuthPage = () => {
                   <Input
                     className={`h-10 text-sm pr-10 transition-colors ${
                       darkMode
-                        ? "bg-black/50 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
-                        : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-white focus:ring-1 focus:ring-white/40"
+                        ? "bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
+                        : "bg-white/20 border-white/40 text-black font-medium placeholder:text-black/60 focus:border-white focus:ring-1 focus:ring-white/40"
                     }`}
                     type={showPassword ? "text" : "password"}
                     value={password}
@@ -349,7 +349,7 @@ const AuthPage = () => {
                   <button
                     type="button"
                     className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
-                      darkMode ? "text-white/70 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                      darkMode ? "text-white/70 hover:text-white" : "text-black/70 hover:text-black"
                     }`}
                     onClick={() => setShowPassword(!showPassword)}
                   >
@@ -385,8 +385,8 @@ const AuthPage = () => {
                       <Input
                         className={`h-10 text-xs font-medium transition-colors ${
                           darkMode
-                            ? "bg-black/50 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
-                            : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-white focus:ring-1 focus:ring-white/40"
+                            ? "bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
+                            : "bg-white/20 border-white/40 text-black font-medium placeholder:text-black/60 focus:border-white focus:ring-1 focus:ring-white/40"
                         }`}
                         type="text"
                         value={forgotFullName}
@@ -404,8 +404,8 @@ const AuthPage = () => {
                       <Input
                         className={`h-10 text-xs font-medium transition-colors ${
                           darkMode
-                            ? "bg-black/50 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
-                            : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-white focus:ring-1 focus:ring-white/40"
+                            ? "bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
+                            : "bg-white/20 border-white/40 text-black font-medium placeholder:text-black/60 focus:border-white focus:ring-1 focus:ring-white/40"
                         }`}
                         type="text"
                         value={forgotUsername}
@@ -496,8 +496,8 @@ const AuthPage = () => {
                     <Input
                       className={`font-mono tracking-widest text-center text-lg font-extrabold h-11 transition-colors ${
                         darkMode
-                          ? "bg-black/50 border-white/20 text-white placeholder:text-white/40 placeholder:font-normal placeholder:tracking-normal focus:border-white focus:ring-1 focus:ring-white/40"
-                          : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal focus:border-white focus:ring-1 focus:ring-white/40"
+                          ? "bg-black/40 border-white/20 text-white placeholder:text-white/40 placeholder:font-normal placeholder:tracking-normal focus:border-white focus:ring-1 focus:ring-white/40"
+                          : "bg-white/20 border-white/40 text-black placeholder:text-black/50 placeholder:font-normal placeholder:tracking-normal focus:border-white focus:ring-1 focus:ring-white/40"
                       }`}
                       type="text"
                       maxLength={6}
@@ -563,8 +563,8 @@ const AuthPage = () => {
                       <Input
                         className={`h-10 pr-10 transition-colors ${
                           darkMode
-                            ? "bg-black/50 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
-                            : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-white focus:ring-1 focus:ring-white/40"
+                            ? "bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
+                            : "bg-white/20 border-white/40 text-black font-medium placeholder:text-black/60 focus:border-white focus:ring-1 focus:ring-white/40"
                         }`}
                         type={showNewPassword ? "text" : "password"}
                         value={newPassword}
@@ -575,7 +575,7 @@ const AuthPage = () => {
                       <button
                         type="button"
                         className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
-                          darkMode ? "text-white/70 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                          darkMode ? "text-white/70 hover:text-white" : "text-black/70 hover:text-black"
                         }`}
                         onClick={() => setShowNewPassword(!showNewPassword)}
                       >
@@ -590,8 +590,8 @@ const AuthPage = () => {
                       <Input
                         className={`h-10 pr-10 transition-colors ${
                           darkMode
-                            ? "bg-black/50 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
-                            : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-white focus:ring-1 focus:ring-white/40"
+                            ? "bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
+                            : "bg-white/20 border-white/40 text-black font-medium placeholder:text-black/60 focus:border-white focus:ring-1 focus:ring-white/40"
                         }`}
                         type={showConfirmPassword ? "text" : "password"}
                         value={confirmPassword}
@@ -601,7 +601,7 @@ const AuthPage = () => {
                       <button
                         type="button"
                         className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
-                          darkMode ? "text-white/70 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                          darkMode ? "text-white/70 hover:text-white" : "text-black/70 hover:text-black"
                         }`}
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       >
