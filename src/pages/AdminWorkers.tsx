@@ -122,22 +122,15 @@ const AdminWorkers = () => {
       setUserRoles(rolesMap);
 
       if (workersRes.error) { toast.error("Failed to load workers"); return; }
-      const mapped = (workersRes.data || []).map((w: any) => {
-        const isSuper = isSupervisorWorker(w);
-        return {
+      const mapped = (workersRes.data || [])
+        .filter((w: any) => !isSupervisorWorker(w))
+        .map((w: any) => ({
           ...w,
-          is_online: !isSuper && isWorkerOnline(w)
-        };
-      });
+          is_online: isWorkerOnline(w)
+        }));
 
-      // Sort so Cristeta R. Lanuza / Supervisory is pinned to the very top (index 0), then others alphabetically
-      const sorted = [...mapped].sort((a, b) => {
-        const isSupervisorA = isSupervisorWorker(a);
-        const isSupervisorB = isSupervisorWorker(b);
-        if (isSupervisorA && !isSupervisorB) return -1;
-        if (!isSupervisorA && isSupervisorB) return 1;
-        return a.name.localeCompare(b.name);
-      });
+      // Sort alphabetically by worker name
+      const sorted = [...mapped].sort((a, b) => a.name.localeCompare(b.name));
 
       setWorkers(sorted);
       setLoading(false);
@@ -466,7 +459,7 @@ const AdminWorkers = () => {
                 <tr key={w.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
                   <td style={{ border: "1px solid #cbd5e1", padding: "8px 10px", textAlign: "center" }}>{i + 1}</td>
                   <td style={{ border: "1px solid #cbd5e1", padding: "8px 10px", fontWeight: "bold" }}>
-                    {w.name} {isSupervisorWorker(w) ? "(BHW Supervisory)" : ""}
+                    {w.name}
                   </td>
                   <td style={{ border: "1px solid #cbd5e1", padding: "8px 10px" }}>{w.assigned_sitio || getAssignedSitio(w.name) || "—"}</td>
                   <td style={{ border: "1px solid #cbd5e1", padding: "8px 10px" }}>{w.gmail || "—"}</td>
@@ -491,7 +484,6 @@ const AdminWorkers = () => {
           {loading ? (<p className="text-center text-muted-foreground py-8">{t("workers.loadingWorkers")}</p>
           ) : workers.length === 0 ? (<p className="text-center text-muted-foreground py-8">{t("workers.noWorkers")}</p>
           ) : workers.map((w) => {
-            const isSupervisor = isSupervisorWorker(w);
             return (
               <Card 
                 key={w.id} 
@@ -501,19 +493,14 @@ const AdminWorkers = () => {
                   <div className="flex items-center gap-4 flex-1">
                     <div className="h-11 w-11 rounded-full bg-primary/10 text-primary flex items-center justify-center relative shrink-0">
                       <span className="text-sm font-bold">{w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
-                      <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card ${!isSupervisor && w.is_online ? "bg-emerald-500 shadow-sm shadow-emerald-500/50 ring-2 ring-emerald-500/30 animate-pulse" : "bg-slate-400/60 dark:bg-slate-600"}`} />
+                      <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card ${w.is_online ? "bg-emerald-500 shadow-sm shadow-emerald-500/50 ring-2 ring-emerald-500/30 animate-pulse" : "bg-slate-400/60 dark:bg-slate-600"}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-bold text-foreground">
                           {w.name}
                         </p>
-                        {isSupervisor ? (
-                          <Badge variant="outline" className="text-[11px] font-semibold text-muted-foreground bg-muted/50 border-border/60 gap-1 py-0.5 px-2">
-                            <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground" />
-                            BHW Supervisory
-                          </Badge>
-                        ) : w.is_online ? (
+                        {w.is_online ? (
                           <Badge className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-600 text-white border-emerald-500 shadow-xs gap-1 py-0.5 px-2">
                             <span className="h-2 w-2 rounded-full bg-white animate-pulse inline-block" />
                             <UserCheck className="h-3 w-3" />
@@ -534,9 +521,7 @@ const AdminWorkers = () => {
                   <div className="flex gap-1 shrink-0">
                     <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => { setViewWorker(w); setViewDialogOpen(true); }} title="View details"><Eye className="h-4 w-4 text-muted-foreground" /></Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => { setEditWorker(w); setEditNewPassword(""); setShowEditPassword(false); setEditDialogOpen(true); }} title="Edit worker"><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
-                    {!isSupervisor && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => setDeleteConfirmId(w.id)} title="Delete worker"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                    )}
+                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => setDeleteConfirmId(w.id)} title="Delete worker"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
                 </CardContent>
               </Card>

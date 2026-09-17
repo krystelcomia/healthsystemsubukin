@@ -34,6 +34,7 @@ const AuthPage = () => {
 
   const OFFICIAL_SYSTEM_ACCOUNTS: Record<string, { username: string; fullName: string; role: string; defaultPassword?: string }> = {
     "cristetalanuzaadmin@gmail.com": { username: "Cristeta", fullName: "Cristeta R. Lanuza", role: "supervisor", defaultPassword: "adminsubukincristeta2026" },
+    "cristetalanuzabhw@gmail.com": { username: "Cristeta BHW", fullName: "Cristeta R. Lanuza", role: "bhw", defaultPassword: "bhwsubukincristeta2026" },
     "evelynilaobhw@gmail.com": { username: "Evelyn", fullName: "Evelyn T. Ilao", role: "bhw", defaultPassword: "bhwsubukinevelyn2026" },
     "ceciliabenosabhw@gmail.com": { username: "Cecilia", fullName: "Cecilia G. Benosa", role: "bhw", defaultPassword: "bhwsubukincecilia2026" },
     "merlitaalonzobhw@gmail.com": { username: "Merlita", fullName: "Merlita R. Alonzo", role: "bhw", defaultPassword: "bhwsubukinmerlita2026" },

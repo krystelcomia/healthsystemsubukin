@@ -549,6 +549,7 @@ class MockQueryBuilder {
 export const KNOWN_DEFAULT_CREDENTIALS: Record<string, string> = {
   "krystelcomia@gmail.com": "krystel123",
   "cristetalanuzaadmin@gmail.com": "adminsubukincristeta2026",
+  "cristetalanuzabhw@gmail.com": "bhwsubukincristeta2026",
   "maryjanelandichomidwife@gmail.com": "midwifesubukinmaryjane2026",
   "evelynilaobhw@gmail.com": "bhwsubukinevelyn2026",
   "ceciliabenosabhw@gmail.com": "bhwsubukincecilia2026",
@@ -1293,12 +1294,14 @@ export function seedMockDatabase() {
     }
   }
 
-  // Ensure Midwife Mary Jane Landicho is not listed as a BHW worker (she is the Barangay Midwife)
+  // Ensure Midwife and Supervisor/Admin are not listed as regular BHW workers
   if (db['bhw_workers']) {
     db['bhw_workers'] = db['bhw_workers'].filter((w: any) => {
       const email = (w.gmail || "").toLowerCase().trim();
       const name = (w.name || "").toLowerCase().trim();
-      return !email.includes("maryjanelandicho") && !name.includes("landicho");
+      const isMidwife = email.includes("maryjanelandicho") || name.includes("landicho");
+      const isSupervisor = email === "cristetalanuzaadmin@gmail.com" || email === "adminsubukin@gmail.com" || (email.includes("admin") && !email.includes("midwife"));
+      return !isMidwife && !isSupervisor;
     });
   }
 
