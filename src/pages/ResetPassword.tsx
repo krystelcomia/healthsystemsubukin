@@ -197,7 +197,7 @@ const ResetPassword = () => {
                 <div className="space-y-1.5">
                   <Label className="text-white text-xs font-semibold">{language === "tl" ? "Buong Pangalan ng Manggagawa" : "Worker's Full Name"}</Label>
                   <Input
-                    className="bg-background/90 border-border/60 text-foreground h-10 text-xs font-medium"
+                    className="bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40 h-10 text-xs font-medium"
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
@@ -210,7 +210,7 @@ const ResetPassword = () => {
                 <div className="space-y-1.5">
                   <Label className="text-white text-xs font-semibold">{language === "tl" ? "Username ng Manggagawa" : "Worker's Username"}</Label>
                   <Input
-                    className="bg-background/90 border-border/60 text-foreground h-10 text-xs font-medium"
+                    className="bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40 h-10 text-xs font-medium"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -295,7 +295,7 @@ const ResetPassword = () => {
                   </button>
                 </div>
                 <Input
-                  className="bg-background/70 border-border/60 text-slate-900 font-mono tracking-widest text-center text-lg font-extrabold placeholder:font-normal placeholder:tracking-normal h-11"
+                  className="bg-black/40 border-white/20 text-white font-mono tracking-widest text-center text-lg font-extrabold placeholder:text-white/40 placeholder:font-normal placeholder:tracking-normal h-11 focus:border-white focus:ring-1 focus:ring-white/40"
                   type="text"
                   maxLength={6}
                   value={verificationCode}
@@ -352,19 +352,19 @@ const ResetPassword = () => {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-white">{t("reset.newPassword")}</Label>
+                <Label className="text-white font-medium">{t("reset.newPassword")}</Label>
                 <div className="relative">
                   <Input
-                    className="bg-background/70 border-border/60 text-slate-900"
+                    className="bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40 h-10 pr-10"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder="•••••••• (Min 8 characters)"
                     autoFocus
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -373,10 +373,10 @@ const ResetPassword = () => {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-white">{t("reset.confirmPassword")}</Label>
+                <Label className="text-white font-medium">{t("reset.confirmPassword")}</Label>
                 <div className="relative">
                   <Input
-                    className="bg-background/70 border-border/60 text-slate-900"
+                    className="bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40 h-10 pr-10"
                     type={showConfirm ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}

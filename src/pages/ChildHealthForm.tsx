@@ -386,11 +386,10 @@ const ChildHealthForm = () => {
   const loggedInWorkerName = useMemo(() => {
     const raw = 
       fullName ||
-      localStorage.getItem("logged_in_fullname") ||
-      localStorage.getItem("active_bhw_worker") ||
+      sessionStorage.getItem("logged_in_fullname") ||
       user?.user_metadata?.full_name ||
       username ||
-      localStorage.getItem("logged_in_username") ||
+      sessionStorage.getItem("logged_in_username") ||
       user?.email?.split("@")[0] ||
       "";
     return resolveBhwFullName(raw);

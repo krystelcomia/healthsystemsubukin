@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { startSession, endSession, logActivity } from "@/lib/activityLogger";
+import { startSession, endSession, logActivity, bhwCheckOut } from "@/lib/activityLogger";
 import { recordWorkerPresence } from "@/lib/presenceTracker";
 import { toast } from "sonner";
 import {
@@ -124,10 +124,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fullName?.toLowerCase().includes("mary jane") ||
     username?.toLowerCase().includes("mary jane") ||
     (typeof window !== "undefined" && (
-      localStorage.getItem("logged_in_username")?.toLowerCase().includes("mary jane") ||
-      localStorage.getItem("logged_in_fullname")?.toLowerCase().includes("mary jane") ||
-      localStorage.getItem("active_bhw_worker")?.toLowerCase().includes("mary jane") ||
-      localStorage.getItem("bhw_user_role")?.toLowerCase() === "midwife"
+      sessionStorage.getItem("logged_in_username")?.toLowerCase().includes("mary jane") ||
+      sessionStorage.getItem("logged_in_fullname")?.toLowerCase().includes("mary jane") ||
+      sessionStorage.getItem("bhw_user_role")?.toLowerCase() === "midwife"
     ))
   );
 
@@ -518,6 +517,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             duration: 10000,
             id: "session-switched-warning",
           });
+          try {
+            localStorage.removeItem(`bhw_active_shift_${previousUserId}`);
+            localStorage.removeItem("active_bhw_worker");
+            localStorage.removeItem("active_bhw_session_id");
+            localStorage.removeItem("bhw_active_shift");
+            window.dispatchEvent(new Event("bhw-attendance-updated"));
+          } catch {}
         } else if (previousUserId && !nextUserId) {
           toast.info(getSessionNoticeText("logged_out"), {
             duration: 6000,
@@ -671,7 +677,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (prevUserId) {
       localStorage.removeItem(`${STORAGE_KEY_ACTIVE_INSTANCE_USER_PREFIX}${prevUserId}`);
       localStorage.removeItem(`${STORAGE_KEY_ACTIVE_INSTANCE_USER_PREFIX}${prevUserId}_time`);
+      try {
+        bhwCheckOut({ userId: prevUserId, userEmail: user?.email });
+        localStorage.removeItem(`bhw_active_shift_${prevUserId}`);
+      } catch {}
     }
+    localStorage.removeItem("active_bhw_worker");
+    localStorage.removeItem("active_bhw_session_id");
+    localStorage.removeItem("bhw_active_shift");
+    window.dispatchEvent(new Event("bhw-attendance-updated"));
     if (user) {
       await logActivity("logout", { description: "Signed out of the system" });
       await endSession();

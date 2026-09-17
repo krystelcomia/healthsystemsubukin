@@ -316,9 +316,9 @@ const AuthPage = () => {
           {mode === "login" ? (
             <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4" autoComplete="off">
               <div className="space-y-2">
-                <Label className="text-white">{t("auth.email")}</Label>
+                <Label className="text-white font-medium">{t("auth.email")}</Label>
                 <Input
-                  className="bg-background/70 border-border/60 text-slate-900"
+                  className="bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40 h-10 text-sm"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -327,10 +327,10 @@ const AuthPage = () => {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-white">{t("auth.password")}</Label>
+                <Label className="text-white font-medium">{t("auth.password")}</Label>
                 <div className="relative">
                   <Input
-                    className="bg-background/70 border-border/60 text-slate-900"
+                    className="bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40 h-10 text-sm pr-10"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -339,7 +339,7 @@ const AuthPage = () => {
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -355,7 +355,7 @@ const AuthPage = () => {
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full font-semibold" disabled={loading}>
                 {loading ? t("auth.signingIn") : t("auth.signIn")}
               </Button>
             </form>
@@ -370,7 +370,7 @@ const AuthPage = () => {
                     <div className="space-y-1.5">
                       <Label className="text-white text-xs font-semibold">{language === "tl" ? "Buong Pangalan ng Manggagawa" : "Worker's Full Name"}</Label>
                       <Input
-                        className="bg-background/90 border-border/60 text-foreground h-10 text-xs font-medium"
+                        className="bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40 h-10 text-xs font-medium"
                         type="text"
                         value={forgotFullName}
                         onChange={(e) => setForgotFullName(e.target.value)}
@@ -383,7 +383,7 @@ const AuthPage = () => {
                     <div className="space-y-1.5">
                       <Label className="text-white text-xs font-semibold">{language === "tl" ? "Username ng Manggagawa" : "Worker's Username"}</Label>
                       <Input
-                        className="bg-background/90 border-border/60 text-foreground h-10 text-xs font-medium"
+                        className="bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40 h-10 text-xs font-medium"
                         type="text"
                         value={forgotUsername}
                         onChange={(e) => setForgotUsername(e.target.value)}
@@ -474,7 +474,7 @@ const AuthPage = () => {
                       </button>
                     </div>
                     <Input
-                      className="bg-background/70 border-border/60 text-slate-900 font-mono tracking-widest text-center text-lg font-extrabold placeholder:font-normal placeholder:tracking-normal h-11"
+                      className="bg-black/40 border-white/20 text-white font-mono tracking-widest text-center text-lg font-extrabold placeholder:text-white/40 placeholder:font-normal placeholder:tracking-normal h-11 focus:border-white focus:ring-1 focus:ring-white/40"
                       type="text"
                       maxLength={6}
                       value={verificationCode}
@@ -540,16 +540,16 @@ const AuthPage = () => {
                     <Label className="text-white text-xs font-semibold">{t("reset.newPassword")}</Label>
                     <div className="relative">
                       <Input
-                        className="bg-background/70 border-border/60 text-slate-900"
+                        className="bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40 h-10 pr-10"
                         type={showNewPassword ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="•••••••• (Min 6 characters)"
+                        placeholder="•••••••• (Min 8 characters)"
                         autoFocus
                       />
                       <button
                         type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
                         onClick={() => setShowNewPassword(!showNewPassword)}
                       >
                         {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -562,7 +562,7 @@ const AuthPage = () => {
                     <Label className="text-white text-xs font-semibold">{t("reset.confirmPassword")}</Label>
                     <div className="relative">
                       <Input
-                        className="bg-background/70 border-border/60 text-slate-900"
+                        className="bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40 h-10 pr-10"
                         type={showConfirmPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -570,7 +570,7 @@ const AuthPage = () => {
                       />
                       <button
                         type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { bhwCheckIn, bhwCheckOut } from "@/lib/activityLogger";
+import { bhwCheckIn, bhwCheckOut, getActiveBhwShift } from "@/lib/activityLogger";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import OfficialHeader from "@/components/OfficialHeader";
 
@@ -22,9 +23,10 @@ const getHeaderLinks = (t: (key: string) => string) => [
   { label: t("nav.contact"), to: "/contact", Icon: Phone, isCalendar: false },
 ];
 
-const BHW_WORKERS = [
+const DEFAULT_BHW_WORKERS = [
   { name: "Mary Jane Landicho", phone: "0912-345-6789", role: "midwife", sitio: "Subukin Main" },
   { name: "Cristeta R. Lanuza", phone: "0919-6980-712", role: "supervisor", sitio: "Masigla" },
+  { name: "Krystel Comia", phone: "0912-345-6789", role: "worker", sitio: "Maligaya" },
   { name: "Evelyn T. Ilao", phone: "0935-5638-247", role: "worker", sitio: "Manggahan 1" },
   { name: "Cecilia G. Benosa", phone: "0921-8509-320", role: "worker", sitio: "Maligaya" },
   { name: "Merlita R. Alonzo", phone: "0930-9085-713", role: "worker", sitio: "Matahimik/Punta" },
@@ -51,14 +53,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [attendanceLogs, setAttendanceLogs] = useState<any[]>([]);
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [workersList, setWorkersList] = useState<any[]>(DEFAULT_BHW_WORKERS);
 
   // Get active worker display name (full name, username or email local part)
   const workerDisplayName = fullName || username || user?.user_metadata?.full_name || (userRole === "supervisor" ? "Cristeta R. Lanuza" : userRole === "midwife" ? "Mary Jane Landicho" : user?.email?.split("@")[0]) || "Staff";
 
   useEffect(() => {
     const updateBhwState = () => {
-      const active = localStorage.getItem("active_bhw_worker");
-      setActiveBhw(active);
+      if (!user) {
+        setActiveBhw(null);
+        setAttendanceLogs([]);
+        setActivityLogs([]);
+        return;
+      }
+
+      // Check active shift strictly for the logged-in user
+      const activeShift = getActiveBhwShift(user);
+      setActiveBhw(activeShift ? activeShift.workerName : null);
       
       const att = localStorage.getItem("bhw_attendance_logs");
       setAttendanceLogs(att ? JSON.parse(att) : []);
@@ -67,14 +78,57 @@ export function Layout({ children }: { children: React.ReactNode }) {
     };
 
     updateBhwState();
+
+    // BroadcastChannel for instant real-time synchronization across all tabs and browser windows
+    let bc: BroadcastChannel | null = null;
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      try {
+        bc = new BroadcastChannel("bhw_attendance_channel");
+        bc.onmessage = () => {
+          updateBhwState();
+        };
+      } catch {}
+    }
+
     window.addEventListener("bhw-attendance-updated", updateBhwState);
+    window.addEventListener("bhw-db-updated", updateBhwState);
     window.addEventListener("storage", updateBhwState);
 
     return () => {
+      if (bc) bc.close();
       window.removeEventListener("bhw-attendance-updated", updateBhwState);
+      window.removeEventListener("bhw-db-updated", updateBhwState);
       window.removeEventListener("storage", updateBhwState);
     };
-  }, [logsDialogOpen]);
+  }, [user, logsDialogOpen]);
+
+  // Load dynamic workers list from database to ensure all registered workers are present
+  useEffect(() => {
+    const fetchWorkers = async () => {
+      try {
+        const { data } = await (supabase.from as any)("bhw_workers").select("*").order("name");
+        if (data && data.length > 0) {
+          const mapped = data.map((w: any) => ({
+            name: w.name,
+            phone: w.number || w.gmail || "—",
+            role: (w.gmail || "").toLowerCase().includes("cristeta") || (w.name || "").toLowerCase().includes("cristeta")
+              ? "supervisor"
+              : (w.gmail || "").toLowerCase().includes("maryjane") || (w.name || "").toLowerCase().includes("mary jane")
+              ? "midwife"
+              : (w.gmail || "").toLowerCase().includes("bns")
+              ? "bns"
+              : "worker",
+            sitio: w.assigned_sitio || w.address || "Subukin",
+            is_online: w.is_online,
+          }));
+          setWorkersList(mapped);
+        }
+      } catch {}
+    };
+    fetchWorkers();
+    window.addEventListener("bhw-db-updated", fetchWorkers);
+    return () => window.removeEventListener("bhw-db-updated", fetchWorkers);
+  }, []);
 
   useEffect(() => {
     const checkUpcomingEvents = () => {
@@ -155,17 +209,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [workerDisplayName, userRole, logsDialogOpen]);
 
   useEffect(() => {
-    if (!activeBhw) {
+    if (!activeBhw || !user) {
       setSessionDuration("00:00:00");
       return;
     }
 
     const timer = setInterval(() => {
       try {
+        const activeShift = getActiveBhwShift(user);
+        if (activeShift?.loginAt) {
+          const diffMs = new Date().getTime() - new Date(activeShift.loginAt).getTime();
+          const hrs = String(Math.floor(diffMs / 3600000)).padStart(2, "0");
+          const mins = String(Math.floor((diffMs % 3600000) / 60000)).padStart(2, "0");
+          const secs = String(Math.floor((diffMs % 60000) / 1000)).padStart(2, "0");
+          setSessionDuration(`${hrs}:${mins}:${secs}`);
+          return;
+        }
+
         const storedLogs = localStorage.getItem("bhw_attendance_logs");
         if (!storedLogs) return;
         const logs = JSON.parse(storedLogs);
-        const activeLog = logs.find((l: any) => l.workerName === activeBhw && !l.logoutAt);
+        const activeLog = logs.find((l: any) =>
+          !l.logoutAt &&
+          ((l.userId && l.userId === user.id) || l.workerName === activeBhw)
+        );
         if (activeLog) {
           const diffMs = new Date().getTime() - new Date(activeLog.loginAt).getTime();
           const hrs = String(Math.floor(diffMs / 3600000)).padStart(2, "0");
@@ -179,18 +246,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [activeBhw]);
+  }, [activeBhw, user]);
 
   const getWorkerAttendance = (workerName: string) => {
-    const cleanWorkerName = workerName.toLowerCase();
+    const cleanWorkerName = (workerName || "").toLowerCase().trim();
     return attendanceLogs
       .filter((l: any) => {
-        const logWorker = l.workerName.toLowerCase();
+        const logWorker = (l.workerName || "").toLowerCase().trim();
+        const logEmail = (l.userEmail || "").toLowerCase().trim();
+        const logUserId = l.userId;
+        const currentUid = user?.id;
+
+        if (logUserId && currentUid && logUserId === currentUid && workerName === workerDisplayName) {
+          return true;
+        }
         return logWorker === cleanWorkerName || 
                cleanWorkerName.includes(logWorker) ||
                logWorker.includes(cleanWorkerName.split(" ")[0]);
       })
-      .sort((a: any, b: any) => b.loginAt.localeCompare(a.loginAt));
+      .sort((a: any, b: any) => (b.loginAt || "").localeCompare(a.loginAt || ""));
   };
 
   const formatDuration = (login: Date, logout: Date) => {
@@ -340,7 +414,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 size="sm" 
                                 className="w-full text-xs h-8 mt-1 gap-1 font-semibold"
                                 onClick={() => {
-                                  bhwCheckOut();
+                                  bhwCheckOut({ userId: user?.id, userEmail: user?.email });
                                   toast.success(language === "tl" ? "Matagumpay na natapos ang shift!" : "Shift ended successfully!");
                                 }}
                               >
@@ -359,7 +433,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 size="sm" 
                                 className="w-full text-xs h-8 gap-1.5 font-semibold"
                                 onClick={() => {
-                                  bhwCheckIn(workerDisplayName);
+                                  bhwCheckIn(workerDisplayName, { userId: user?.id, userEmail: user?.email });
                                   toast.success(language === "tl" ? `Maligayang pagdating, ${workerDisplayName}! Nagsimula na ang iyong shift.` : `Welcome, ${workerDisplayName}! Shift started.`);
                                 }}
                               >
@@ -413,7 +487,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   size="sm"
                   className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 text-xs shadow-md shrink-0 gap-2 w-full md:w-auto"
                   onClick={() => {
-                    bhwCheckIn(workerDisplayName);
+                    bhwCheckIn(workerDisplayName, { userId: user?.id, userEmail: user?.email });
                     toast.success(language === "tl" ? `Maligayang pagdating, ${workerDisplayName}! Naka-check in ka na sa attendance ngayong araw.` : `Welcome, ${workerDisplayName}! You are now checked in for today's attendance.`);
                     setAttendanceNoticeOpen(false);
                     setNoticeDismissed(true);
@@ -448,11 +522,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {userRole === "supervisor" ? (
               <div className="border-r border-border/30 pr-4 overflow-y-auto space-y-2 h-full">
                 <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
-                  {language === "tl" ? "Direktoryo ng mga Tauhan ng BHW" : "BHW Personnel Directory"} ({BHW_WORKERS.length})
+                  {language === "tl" ? "Direktoryo ng mga Tauhan ng BHW" : "BHW Personnel Directory"} ({workersList.length})
                 </Label>
-                {BHW_WORKERS.map((worker) => {
+                {workersList.map((worker) => {
                   const isSelected = selectedWorker?.name === worker.name;
-                  const isOnline = activeBhw === worker.name;
+                  const isOnline = 
+                    (activeBhw && (worker.name.toLowerCase() === activeBhw.toLowerCase() || activeBhw.toLowerCase().includes(worker.name.toLowerCase()))) ||
+                    Boolean(worker.is_online);
                   return (
                     <button
                       key={worker.name}
@@ -467,7 +543,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 ${
                           isSelected ? "bg-primary text-white" : "bg-muted text-muted-foreground"
                         }`}>
-                          {worker.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                          {worker.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
                         </div>
                         <div className="min-w-0">
                           <p className={`truncate text-xs ${isSelected ? "text-foreground font-semibold" : "text-foreground/95"}`}>
@@ -676,7 +752,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <Button
               size="sm"
               onClick={() => {
-                bhwCheckIn(workerDisplayName);
+                bhwCheckIn(workerDisplayName, { userId: user?.id, userEmail: user?.email });
                 toast.success(language === "tl" ? `Maligayang pagdating, ${workerDisplayName}! Naka-check in ka na sa attendance ngayong araw.` : `Welcome, ${workerDisplayName}! You are now checked in.`);
                 setNoticeDismissed(true);
                 setAttendanceNoticeOpen(false);
