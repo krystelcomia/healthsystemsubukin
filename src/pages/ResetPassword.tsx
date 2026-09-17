@@ -181,34 +181,25 @@ const ResetPassword = () => {
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative transition-colors duration-300 ${
-        darkMode ? "bg-slate-950" : "bg-slate-100"
-      }`}
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${loginBg})` }}
     >
-      {/* Dark tint overlay when dark mode is enabled */}
-      {darkMode && <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] pointer-events-none" />}
-
-      <Card className={`relative z-10 w-full max-w-md shadow-2xl transition-all duration-300 ${
-        darkMode
-          ? "bg-slate-950/85 border border-white/20 text-white backdrop-blur-md"
-          : "bg-white/95 border border-slate-200/90 text-slate-900 backdrop-blur-md"
-      }`}>
+      <Card className="w-full max-w-md bg-white/95 border border-slate-200/90 text-slate-900 backdrop-blur-md shadow-2xl">
         <CardHeader className="text-center space-y-2">
           <img src={barangayLogo} alt="Barangay Subukin Logo" className="mx-auto h-20 w-20 rounded-full object-cover shadow-sm" />
-          <CardTitle className={`text-2xl font-heading font-bold ${darkMode ? "text-white" : "text-slate-900"}`}>{t("reset.title")}</CardTitle>
-          <CardDescription className={darkMode ? "text-white/80" : "text-slate-600 font-medium"}>{t("reset.desc")}</CardDescription>
+          <CardTitle className="text-2xl font-heading font-bold text-slate-900">{t("reset.title")}</CardTitle>
+          <CardDescription className="text-slate-600 font-medium">{t("reset.desc")}</CardDescription>
         </CardHeader>
         <CardContent>
           {step === 1 && (
             <form onSubmit={(e) => { e.preventDefault(); handleSendResetCode(); }} className="space-y-4" autoComplete="off">
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label className={`text-xs font-semibold ${darkMode ? "text-white" : "text-slate-700"}`}>{language === "tl" ? "Buong Pangalan ng Manggagawa" : "Worker's Full Name"}</Label>
+                  <Label className="text-xs font-semibold text-slate-700">{language === "tl" ? "Buong Pangalan ng Manggagawa" : "Worker's Full Name"}</Label>
                   <Input
                     className={`h-10 text-xs font-medium transition-colors ${
                       darkMode
-                        ? "bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
+                        ? "bg-black/80 border-slate-700 text-white placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary/40"
                         : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary/30"
                     }`}
                     type="text"
@@ -221,11 +212,11 @@ const ResetPassword = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className={`text-xs font-semibold ${darkMode ? "text-white" : "text-slate-700"}`}>{language === "tl" ? "Username ng Manggagawa" : "Worker's Username"}</Label>
+                  <Label className="text-xs font-semibold text-slate-700">{language === "tl" ? "Username ng Manggagawa" : "Worker's Username"}</Label>
                   <Input
                     className={`h-10 text-xs font-medium transition-colors ${
                       darkMode
-                        ? "bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
+                        ? "bg-black/80 border-slate-700 text-white placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary/40"
                         : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary/30"
                     }`}
                     type="text"
@@ -236,7 +227,7 @@ const ResetPassword = () => {
                   />
                 </div>
 
-                <p className={`text-[11px] leading-relaxed pt-1 ${darkMode ? "text-white/80" : "text-slate-600 font-medium"}`}>
+                <p className="text-[11px] leading-relaxed pt-1 text-slate-600 font-medium">
                   {language === "tl"
                     ? "Ilagay lamang ang iyong buong pangalan at username. Ang 6-digit reset code ay direktang ipapadala sa iyong nakarehistrong email address."
                     : "Enter your registered worker full name and username. The 6-digit reset verification code will be dispatched directly to your email inbox."}
@@ -251,9 +242,7 @@ const ResetPassword = () => {
               <Button
                 type="button"
                 variant="ghost"
-                className={`w-full gap-1.5 text-xs transition-colors ${
-                  darkMode ? "text-white/90 hover:text-white hover:bg-white/10" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                }`}
+                className="w-full gap-1.5 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                 onClick={() => navigate("/auth")}
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
@@ -264,19 +253,13 @@ const ResetPassword = () => {
 
           {step === 2 && (
             <form onSubmit={(e) => { e.preventDefault(); handleVerifyCode(); }} className="space-y-4" autoComplete="off">
-              <div className={`rounded-xl p-3.5 text-xs space-y-2 border transition-colors ${
-                darkMode
-                  ? "bg-emerald-500/20 border-emerald-500/40 text-white"
-                  : "bg-emerald-50 border-emerald-200 text-emerald-950"
-              }`}>
-                <div className={`flex items-center gap-2 font-semibold ${darkMode ? "text-emerald-300" : "text-emerald-700"}`}>
+              <div className="rounded-xl p-3.5 text-xs space-y-2 border bg-emerald-50 border-emerald-200 text-emerald-950 transition-colors">
+                <div className="flex items-center gap-2 font-semibold text-emerald-700">
                   <Mail className="h-4 w-4" />
                   <span>{language === "tl" ? "Naipadala ang Code sa Gmail:" : "Verification Code Sent to Gmail:"}</span>
                 </div>
-                <p className={`font-mono font-bold text-xs break-all p-2 rounded-md border ${
-                  darkMode ? "bg-black/40 text-white border-white/10" : "bg-white text-emerald-950 border-emerald-200"
-                }`}>{email}</p>
-                <p className={`text-[11px] leading-relaxed ${darkMode ? "text-white/80" : "text-emerald-800"}`}>
+                <p className="font-mono font-bold text-xs break-all p-2 rounded-md border bg-white text-emerald-950 border-emerald-200">{email}</p>
+                <p className="text-[11px] leading-relaxed text-emerald-800">
                   {language === "tl"
                     ? "Ang 6-digit verification code ay ipinadala sa iyong Gmail inbox. Mangyaring buksan ang email sa iyong Primary Inbox o Spam folder, at ilagay ang code sa ibaba."
                     : "The 6-digit verification code has been dispatched to your Gmail. Please check your Primary inbox or Spam folder, retrieve the code, and enter it below."}
@@ -286,9 +269,7 @@ const ResetPassword = () => {
                     type="button"
                     size="sm"
                     variant="secondary"
-                    className={`h-7 text-[11px] px-2.5 gap-1.5 border-0 ${
-                      darkMode ? "bg-white/20 hover:bg-white/30 text-white" : "bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium"
-                    }`}
+                    className="h-7 text-[11px] px-2.5 gap-1.5 border-0 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium"
                     onClick={() => window.open("https://mail.google.com/mail/u/0/#inbox", "_blank")}
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
@@ -298,9 +279,7 @@ const ResetPassword = () => {
                     type="button"
                     size="sm"
                     variant="secondary"
-                    className={`h-7 text-[11px] px-2.5 gap-1.5 border-0 ${
-                      darkMode ? "bg-white/20 hover:bg-white/30 text-white" : "bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium"
-                    }`}
+                    className="h-7 text-[11px] px-2.5 gap-1.5 border-0 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium"
                     onClick={() => window.open(`https://mail.google.com/mail/u/0/#search/${encodeURIComponent(email)}`, "_blank")}
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
@@ -311,14 +290,12 @@ const ResetPassword = () => {
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label className={`text-xs font-semibold ${darkMode ? "text-white" : "text-slate-700"}`}>
+                  <Label className="text-xs font-semibold text-slate-700">
                     {language === "tl" ? "6-Digit Verification Code (Galing sa Gmail) *" : "6-Digit Verification Code (From Gmail) *"}
                   </Label>
                   <button
                     type="button"
-                    className={`text-[11px] underline font-medium cursor-pointer ${
-                      darkMode ? "text-emerald-300 hover:text-emerald-200" : "text-emerald-700 hover:text-emerald-800"
-                    }`}
+                    className="text-[11px] underline font-medium cursor-pointer text-emerald-700 hover:text-emerald-800"
                     onClick={handleSendResetCode}
                     disabled={loading}
                   >
@@ -328,7 +305,7 @@ const ResetPassword = () => {
                 <Input
                   className={`font-mono tracking-widest text-center text-lg font-extrabold h-11 transition-colors ${
                     darkMode
-                      ? "bg-black/40 border-white/20 text-white placeholder:text-white/40 placeholder:font-normal placeholder:tracking-normal focus:border-white focus:ring-1 focus:ring-white/40"
+                      ? "bg-black/80 border-slate-700 text-white placeholder:text-slate-500 placeholder:font-normal placeholder:tracking-normal focus:border-primary focus:ring-1 focus:ring-primary/40"
                       : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal focus:border-primary focus:ring-1 focus:ring-primary/30"
                   }`}
                   type="text"
@@ -338,7 +315,7 @@ const ResetPassword = () => {
                   placeholder="••••••"
                   autoFocus
                 />
-                <p className={`text-[10px] ${darkMode ? "text-white/70" : "text-slate-500"}`}>
+                <p className="text-[10px] text-slate-500">
                   {language === "tl"
                     ? "Kailangang ma-verify ang tamang code bago payagang magpalit ng password."
                     : "The correct code must be verified before new password fields are unlocked."}
@@ -354,9 +331,7 @@ const ResetPassword = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  className={`flex-1 text-xs transition-colors ${
-                    darkMode ? "bg-white/10 hover:bg-white/20 text-white border-white/30" : "bg-white hover:bg-slate-100 text-slate-700 border-slate-300"
-                  }`}
+                  className="flex-1 text-xs transition-colors bg-white hover:bg-slate-100 text-slate-700 border-slate-300"
                   onClick={() => { setStep(1); setVerificationCode(""); }}
                 >
                   {language === "tl" ? "Palitan ang Email" : "Change Email"}
@@ -364,9 +339,7 @@ const ResetPassword = () => {
                 <Button
                   type="button"
                   variant="ghost"
-                  className={`flex-1 text-xs transition-colors ${
-                    darkMode ? "text-white/90 hover:text-white hover:bg-white/10" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                  }`}
+                  className="flex-1 text-xs transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                   onClick={() => navigate("/auth")}
                 >
                   {t("auth.backToSignIn")}
@@ -377,15 +350,13 @@ const ResetPassword = () => {
 
           {step === 3 && (
             <form onSubmit={(e) => { e.preventDefault(); handleReset(); }} className="space-y-4" autoComplete="off">
-              <div className={`rounded-xl p-3 text-xs space-y-1 border transition-colors ${
-                darkMode ? "bg-emerald-500/20 border-emerald-500/40 text-white" : "bg-emerald-50 border-emerald-200 text-emerald-950"
-              }`}>
-                <div className={`flex items-center gap-2 font-semibold ${darkMode ? "text-emerald-300" : "text-emerald-700"}`}>
-                  <CheckCircle2 className={`h-4 w-4 ${darkMode ? "text-emerald-400" : "text-emerald-600"}`} />
+              <div className="rounded-xl p-3 text-xs space-y-1 border bg-emerald-50 border-emerald-200 text-emerald-950 transition-colors">
+                <div className="flex items-center gap-2 font-semibold text-emerald-700">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                   <span>{language === "tl" ? "Code Na-verify Nang Matagumpay!" : "Code Verified Successfully!"}</span>
                 </div>
-                <p className={`font-mono text-xs break-all ${darkMode ? "text-white/90" : "text-emerald-900 font-medium"}`}>{email}</p>
-                <p className={`text-[11px] ${darkMode ? "text-white/80" : "text-emerald-800"}`}>
+                <p className="font-mono text-xs break-all text-emerald-900 font-medium">{email}</p>
+                <p className="text-[11px] text-emerald-800">
                   {language === "tl"
                     ? "Maaari mo nang itakda ang iyong bagong password sa ibaba."
                     : "You may now set and confirm your new account password below."}
@@ -393,12 +364,12 @@ const ResetPassword = () => {
               </div>
 
               <div className="space-y-1.5">
-                <Label className={`text-xs font-semibold ${darkMode ? "text-white" : "text-slate-700"}`}>{t("reset.newPassword")}</Label>
+                <Label className="text-xs font-semibold text-slate-700">{t("reset.newPassword")}</Label>
                 <div className="relative">
                   <Input
                     className={`h-10 pr-10 transition-colors ${
                       darkMode
-                        ? "bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
+                        ? "bg-black/80 border-slate-700 text-white placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary/40"
                         : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary/30"
                     }`}
                     type={showPassword ? "text" : "password"}
@@ -410,7 +381,7 @@ const ResetPassword = () => {
                   <button
                     type="button"
                     className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
-                      darkMode ? "text-white/70 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                      darkMode ? "text-slate-300 hover:text-white" : "text-slate-400 hover:text-slate-700"
                     }`}
                     onClick={() => setShowPassword(!showPassword)}
                   >
@@ -420,12 +391,12 @@ const ResetPassword = () => {
               </div>
 
               <div className="space-y-1.5">
-                <Label className={`text-xs font-semibold ${darkMode ? "text-white" : "text-slate-700"}`}>{t("reset.confirmPassword")}</Label>
+                <Label className="text-xs font-semibold text-slate-700">{t("reset.confirmPassword")}</Label>
                 <div className="relative">
                   <Input
                     className={`h-10 pr-10 transition-colors ${
                       darkMode
-                        ? "bg-black/40 border-white/20 text-white placeholder:text-white/50 focus:border-white focus:ring-1 focus:ring-white/40"
+                        ? "bg-black/80 border-slate-700 text-white placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary/40"
                         : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary/30"
                     }`}
                     type={showConfirm ? "text" : "password"}
@@ -436,7 +407,7 @@ const ResetPassword = () => {
                   <button
                     type="button"
                     className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
-                      darkMode ? "text-white/70 hover:text-white" : "text-slate-400 hover:text-slate-700"
+                      darkMode ? "text-slate-300 hover:text-white" : "text-slate-400 hover:text-slate-700"
                     }`}
                     onClick={() => setShowConfirm(!showConfirm)}
                   >
@@ -454,9 +425,7 @@ const ResetPassword = () => {
                 <Button
                   type="button"
                   variant="ghost"
-                  className={`w-full text-xs transition-colors ${
-                    darkMode ? "text-white/90 hover:text-white hover:bg-white/10" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                  }`}
+                  className="w-full text-xs transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                   onClick={() => navigate("/auth")}
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
