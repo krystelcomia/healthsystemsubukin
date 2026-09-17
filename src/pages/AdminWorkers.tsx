@@ -46,19 +46,15 @@ const AdminWorkers = () => {
 
   const isSupervisorWorker = (w: BHWWorker) => {
     const email = (w.gmail || "").toLowerCase().trim();
-    const name = (w.name || "").toLowerCase().trim();
     const role = w.user_id ? userRoles[w.user_id] : null;
 
     return (
       role === "supervisor" ||
       role === "supervisory" ||
-      email.includes("cristetalanuza") ||
-      email.includes("adminsubukin") ||
+      email === "cristetalanuzaadmin@gmail.com" ||
+      email === "adminsubukin@gmail.com" ||
       (email.includes("admin") && !email.includes("midwife")) ||
-      email.includes("supervisor") ||
-      name.includes("cristeta") ||
-      name.includes("lanuza") ||
-      name.includes("supervisor")
+      email.includes("supervisor")
     );
   };
 
@@ -126,10 +122,13 @@ const AdminWorkers = () => {
       setUserRoles(rolesMap);
 
       if (workersRes.error) { toast.error("Failed to load workers"); return; }
-      const mapped = (workersRes.data || []).map((w: any) => ({
-        ...w,
-        is_online: isWorkerOnline(w)
-      }));
+      const mapped = (workersRes.data || []).map((w: any) => {
+        const isSuper = isSupervisorWorker(w);
+        return {
+          ...w,
+          is_online: !isSuper && isWorkerOnline(w)
+        };
+      });
 
       // Sort so Cristeta R. Lanuza / Supervisory is pinned to the very top (index 0), then others alphabetically
       const sorted = [...mapped].sort((a, b) => {
@@ -502,20 +501,19 @@ const AdminWorkers = () => {
                   <div className="flex items-center gap-4 flex-1">
                     <div className="h-11 w-11 rounded-full bg-primary/10 text-primary flex items-center justify-center relative shrink-0">
                       <span className="text-sm font-bold">{w.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
-                      <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card ${w.is_online ? "bg-emerald-500 shadow-sm shadow-emerald-500/50 ring-2 ring-emerald-500/30 animate-pulse" : "bg-slate-400/60 dark:bg-slate-600"}`} />
+                      <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card ${!isSupervisor && w.is_online ? "bg-emerald-500 shadow-sm shadow-emerald-500/50 ring-2 ring-emerald-500/30 animate-pulse" : "bg-slate-400/60 dark:bg-slate-600"}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-bold text-foreground">
                           {w.name}
                         </p>
-                        {isSupervisor && (
+                        {isSupervisor ? (
                           <Badge variant="outline" className="text-[11px] font-semibold text-muted-foreground bg-muted/50 border-border/60 gap-1 py-0.5 px-2">
                             <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground" />
                             BHW Supervisory
                           </Badge>
-                        )}
-                        {w.is_online ? (
+                        ) : w.is_online ? (
                           <Badge className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-600 text-white border-emerald-500 shadow-xs gap-1 py-0.5 px-2">
                             <span className="h-2 w-2 rounded-full bg-white animate-pulse inline-block" />
                             <UserCheck className="h-3 w-3" />

@@ -32,11 +32,22 @@ export const isWorkerOnline = (worker: {
   is_online?: boolean;
   last_seen?: string | null;
 }): boolean => {
+  const emailKey = worker.gmail?.toLowerCase().trim();
+
+  // Supervisor / Admin accounts NEVER appear as online BHW workers
+  if (
+    emailKey?.includes("admin") ||
+    emailKey?.includes("supervisor") ||
+    emailKey === "cristetalanuzaadmin@gmail.com" ||
+    emailKey === "adminsubukin@gmail.com"
+  ) {
+    return false;
+  }
+
   const now = Date.now();
 
   // 1. Check local presence cache first (instant local tab/device detection)
   const presences = getActivePresences();
-  const emailKey = worker.gmail?.toLowerCase().trim();
   const userKey = worker.user_id;
 
   if (emailKey && presences[emailKey]) {
@@ -53,23 +64,10 @@ export const isWorkerOnline = (worker: {
     }
   }
 
-  // 2. Check remote database last_seen timestamp (cross-device & external site detection)
-  if (worker.last_seen) {
+  // 2. Check remote database last_seen timestamp
+  if (worker.last_seen && worker.is_online) {
     const lastSeenTime = new Date(worker.last_seen).getTime();
-    if (!isNaN(lastSeenTime)) {
-      const timeDiff = now - lastSeenTime;
-      // If heartbeated on any device within the active timeout window
-      if (timeDiff < ACTIVE_TIMEOUT_MS) {
-        return worker.is_online !== false;
-      }
-    }
-  }
-
-  // 3. If marked online but last_seen is missing or within recent threshold
-  if (worker.is_online) {
-    if (!worker.last_seen) return true;
-    const lastSeenTime = new Date(worker.last_seen).getTime();
-    if (!isNaN(lastSeenTime) && now - lastSeenTime < ACTIVE_TIMEOUT_MS) {
+    if (!isNaN(lastSeenTime) && (now - lastSeenTime < ACTIVE_TIMEOUT_MS)) {
       return true;
     }
   }
@@ -89,6 +87,17 @@ export const recordWorkerPresence = async (
 ) => {
   try {
     const cleanEmail = (email || "").toLowerCase().trim();
+
+    // Do NOT record supervisor / admin presence as an online BHW worker
+    if (
+      cleanEmail.includes("admin") ||
+      cleanEmail.includes("supervisor") ||
+      cleanEmail === "cristetalanuzaadmin@gmail.com" ||
+      cleanEmail === "adminsubukin@gmail.com"
+    ) {
+      return;
+    }
+
     const now = new Date().toISOString();
 
     const presences = getActivePresences();
