@@ -1,5 +1,6 @@
 {
   "is_initialized": true,
+  "bhw_records_purged_family_and_dengue_v1": true,
   "auth_users": [
     { "id": "user-1", "email": "krystelcomia@gmail.com", "password": "krystel123", "user_metadata": { "full_name": "Krystel Comia" } },
     { "id": "user-cristeta", "email": "cristetalanuzaADMIN@gmail.com", "password": "adminsubukincristeta2026", "user_metadata": { "full_name": "Cristeta R. Lanuza" } },
@@ -66,17 +67,7 @@
     { "id": "worker-renalyn", "name": "Renalyn D. Laurante", "age": 37, "address": "Matahimik / Burol", "gmail": "renalynlauranteBHW@gmail.com", "number": "0985-1086-472", "is_online": false, "user_id": "user-renalyn", "assigned_sitio": "Matahimik / Burol", "created_at": "2026-08-01T08:00:00.000Z", "updated_at": "2026-08-01T08:00:00.000Z" },
     { "id": "worker-maribel", "name": "Maribel M. Abayon", "age": 44, "address": "Masigla", "gmail": "maribelabayonBNS@gmail.com", "number": "0922-6722-134", "is_online": false, "user_id": "user-maribel", "assigned_sitio": "Masigla", "created_at": "2026-08-01T08:00:00.000Z", "updated_at": "2026-08-01T08:00:00.000Z" }
   ],
-  "family_data": [
-    { "id": "fam-1", "family_number": "1", "father_name": "Juan Dela Cruz", "mother_name": "Maria Dela Cruz", "num_males": 2, "num_females": 2, "num_households": 1, "total_members": 4, "sitio": "Cama", "created_at": "2026-08-02T08:00:00.000Z" },
-    { "id": "fam-2", "family_number": "2", "father_name": "Pedro Santos", "mother_name": "Ana Santos", "num_males": 1, "num_females": 2, "num_households": 1, "total_members": 3, "sitio": "Maligaya", "created_at": "2026-08-03T09:00:00.000Z" },
-    { "id": "fam-3", "family_number": "3", "father_name": "Rodrigo Reyes", "mother_name": "Elena Reyes", "num_males": 1, "num_females": 1, "num_households": 1, "total_members": 2, "sitio": "Masaya", "created_at": "2026-08-04T10:00:00.000Z" },
-    { "id": "fam-4", "family_number": "4", "father_name": "Antonio Ramos", "mother_name": "Lourdes Ramos", "num_males": 2, "num_females": 1, "num_households": 1, "total_members": 3, "sitio": "Manggahan 1", "created_at": "2026-08-05T11:00:00.000Z" },
-    { "id": "fam-5", "family_number": "5", "father_name": "Eduardo Garcia", "mother_name": "Carmen Garcia", "num_males": 1, "num_females": 2, "num_households": 1, "total_members": 3, "sitio": "Puntor", "created_at": "2026-08-06T12:00:00.000Z" },
-    { "id": "fam-6", "family_number": "6", "father_name": "Fernando Mendoza", "mother_name": "Teresa Mendoza", "num_males": 1, "num_females": 1, "num_households": 1, "total_members": 2, "sitio": "Makalintal 1", "created_at": "2026-08-07T13:00:00.000Z" },
-    { "id": "fam-7", "family_number": "7", "father_name": "Manuel Bautista", "mother_name": "Rosa Bautista", "num_males": 2, "num_females": 1, "num_households": 1, "total_members": 3, "sitio": "Masigla", "created_at": "2026-08-08T14:00:00.000Z" },
-    { "id": "fam-8", "family_number": "8", "father_name": "Leo Mandigma", "mother_name": "Chichi Badillo", "num_males": 3, "num_females": 1, "num_households": 1, "total_members": 4, "sitio": "Manggahan 1", "created_at": "2026-08-15T08:00:00.000Z" },
-    { "id": "fam-9", "family_number": "9", "father_name": "Gabriel De Guzman", "mother_name": "Jayvie Rondero", "num_males": 2, "num_females": 1, "num_households": 1, "total_members": 3, "sitio": "Makalintal 2", "created_at": "2026-08-16T09:00:00.000Z" }
-  ],
+  "family_data": [],
   "residents": [
     { "id": "res-1", "full_name": "Juan Dela Cruz", "gender": "Male", "age": 45, "status": "Married", "sitio": "Cama", "birthday": "1981-05-12", "family_number": "1", "role_in_family": "Father", "created_at": "2026-08-02T08:00:00.000Z" },
     { "id": "res-2", "full_name": "Maria Dela Cruz", "gender": "Female", "age": 42, "status": "Married", "sitio": "Cama", "birthday": "1984-08-20", "family_number": "1", "role_in_family": "Mother", "created_at": "2026-08-02T08:00:00.000Z" },
@@ -122,8 +113,6 @@
   "family_planning": [],
   "user_sessions": [],
   "user_activity_logs": [
-    { "id": "act-1", "user_id": "user-1", "user_name": "krystel", "action": "Dengue inspection cleared", "entity_type": "dengue_prevention", "entity_name": "Leo Mandigma", "sitio": "Manggahan 1", "created_at": "2026-09-01T01:00:00.000Z" },
-    { "id": "act-2", "user_id": "user-1", "user_name": "krystel", "action": "Household census profile registered", "entity_type": "family_data", "entity_name": "Leo Mandigma", "sitio": "Manggahan 1", "created_at": "2026-09-01T01:02:00.000Z" },
     { "id": "act-3", "user_id": "user-1", "user_name": "krystel", "action": "Registered in resident registry (Manggahan 1)", "entity_type": "residents", "entity_name": "Chichi Badillo", "sitio": "Manggahan 1", "created_at": "2026-09-01T01:05:00.000Z" },
     { "id": "act-4", "user_id": "user-1", "user_name": "krystel", "action": "Registered in resident registry (Subukin)", "entity_type": "residents", "entity_name": "Chichi", "sitio": "Subukin", "created_at": "2026-09-01T01:06:00.000Z" },
     { "id": "act-5", "user_id": "user-1", "user_name": "krystel", "action": "Child health & immunization check", "entity_type": "child_health", "entity_name": "Child", "sitio": "Maligaya", "created_at": "2026-09-01T01:10:00.000Z" },

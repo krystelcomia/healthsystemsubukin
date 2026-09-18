@@ -85,8 +85,23 @@ function mergeDatabases(localDb: any, remoteDb: any): any {
   if (!localDb || typeof localDb !== 'object') return remoteDb || {};
   if (!remoteDb || typeof remoteDb !== 'object') return localDb || {};
 
+  const PURGE_KEY = 'bhw_records_purged_family_and_dengue_v1';
+  if (remoteDb[PURGE_KEY] || localDb[PURGE_KEY]) {
+    if (!localDb[PURGE_KEY]) {
+      localDb.family_data = [];
+      localDb.dengue_prevention = [];
+      localDb[PURGE_KEY] = true;
+    }
+    if (!remoteDb[PURGE_KEY]) {
+      remoteDb.family_data = [];
+      remoteDb.dengue_prevention = [];
+      remoteDb[PURGE_KEY] = true;
+    }
+  }
+
   const merged: any = { ...remoteDb, ...localDb };
   merged.is_initialized = true;
+  merged[PURGE_KEY] = true;
 
   // Merge each collection cleanly so neither remote nor local records are lost
   merged.residents = mergeCollections(localDb.residents, remoteDb.residents, 'id');
@@ -1220,8 +1235,8 @@ export function seedMockDatabase() {
     }
   }
 
-  // If not initialized or missing core tables, populate with canonical dataset
-  if (!db['is_initialized'] || !db['family_data'] || db['family_data'].length === 0) {
+  // If not initialized, populate with canonical dataset
+  if (!db['is_initialized']) {
     db = JSON.parse(JSON.stringify(CANONICAL_INITIAL_DATABASE));
     db['is_initialized'] = true;
   }
@@ -1236,12 +1251,32 @@ export function seedMockDatabase() {
   if (!db['family_data']) db['family_data'] = [];
   if (!db['philpen_health']) db['philpen_health'] = [];
   if (!db['dengue_prevention']) db['dengue_prevention'] = [];
-  else db['dengue_prevention'] = db['dengue_prevention'].filter((d: any) => !d.id?.startsWith("dengue-"));
   if (!db['maternal_care']) db['maternal_care'] = [];
   if (!db['child_health']) db['child_health'] = [];
   if (!db['family_planning']) db['family_planning'] = [];
   if (!db['user_sessions']) db['user_sessions'] = [];
   if (!db['user_activity_logs']) db['user_activity_logs'] = [];
+
+  // One-time purge of all existing records in family_data and dengue_prevention
+  const PURGE_KEY = 'bhw_records_purged_family_and_dengue_v1';
+  if (!db[PURGE_KEY]) {
+    db['family_data'] = [];
+    db['dengue_prevention'] = [];
+    db[PURGE_KEY] = true;
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.removeItem('bhw_dengue_active_draft');
+        localStorage.removeItem('bhw_dengue_saved_batches');
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('bhw_dengue_')) {
+            localStorage.removeItem(k);
+          }
+        }
+      } catch {}
+    }
+  }
+  db['user_activity_logs'] = (db['user_activity_logs'] || []).filter((a: any) => a.id !== 'act-1' && a.id !== 'act-2');
 
   // Upsert canonical default accounts, passwords, and workers into active db
   const canonicalUsers = CANONICAL_INITIAL_DATABASE.auth_users || [];
