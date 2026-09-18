@@ -70,7 +70,7 @@ const AdminWorkers = () => {
     return (
       email === "cristetalanuzaadmin@gmail.com" ||
       email === "cristetalanuzabhw@gmail.com" ||
-      name.includes("cristeta") && name.includes("lanuza")
+      (name.includes("cristeta") && name.includes("lanuza"))
     );
   };
 
