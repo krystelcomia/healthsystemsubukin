@@ -208,17 +208,78 @@
   }
 
   /* Reset layout flex/grid constraints so printable content takes 100% full paper width */
-  html, body {
+  /* Force light-mode CSS variables — overrides .dark class so printing is always on white paper */
+  html, html.dark, body {
+    /* Core light-mode color tokens */
+    --background: 120 20% 97% !important;
+    --foreground: 210 18% 22% !important;
+    --card: 0 0% 100% !important;
+    --card-foreground: 210 18% 20% !important;
+    --popover: 0 0% 100% !important;
+    --popover-foreground: 210 18% 20% !important;
+    --primary: 123 38% 46% !important;
+    --primary-foreground: 0 0% 100% !important;
+    --secondary: 123 30% 93% !important;
+    --secondary-foreground: 123 50% 32% !important;
+    --muted: 120 18% 93% !important;
+    --muted-foreground: 120 10% 46% !important;
+    --accent: 123 38% 54% !important;
+    --accent-foreground: 0 0% 100% !important;
+    --destructive: 0 65% 52% !important;
+    --destructive-foreground: 0 0% 100% !important;
+    --border: 123 18% 86% !important;
+    --input: 123 18% 86% !important;
+    --ring: 123 38% 46% !important;
+
+    /* Physical layout & color */
     height: auto !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
+    background-color: #ffffff !important;
     color: #000000 !important;
     overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     -moz-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  /* Strip dark backgrounds & dark text from every element so nothing prints dark */
+  *, *::before, *::after {
+    background-color: transparent !important;
+    color: inherit !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Restore white background explicitly on semantic containers */
+  html, body,
+  main, article, section, div,
+  table, thead, tbody, tfoot, tr, th, td,
+  .card, [class*="card"],
+  .print-only, [id*="-print-area"], [id*="-printable"],
+  .official-header-wrapper, .official-barangay-header {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Keep explicit cell/row background overrides used in print forms */
+  th, td {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #000000 !important;
+  }
+
+  /* Borders should stay visible and dark */
+  *, *::before, *::after {
+    border-color: #cccccc !important;
+  }
+
+  /* Links should print in dark colour (no blue) */
+  a, a:visited {
+    color: #000000 !important;
+    text-decoration: none !important;
   }
 
   main {
