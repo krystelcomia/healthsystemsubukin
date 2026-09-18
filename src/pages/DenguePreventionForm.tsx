@@ -404,13 +404,60 @@ const DenguePreventionForm = () => {
     });
   };
 
-  const handleClearForm = () => {
+  const handleClearForm = async () => {
     if (isMidwife) return;
+
+    // Cancel all pending auto-save timeouts for active rows
+    Object.values(saveTimeoutsRef.current).forEach((tId) => clearTimeout(tId));
+    saveTimeoutsRef.current = {};
+
+    // 1. Collect all non-blank rows that exist in the database
+    const rowsToDelete = records.filter(
+      (r) => r.id && !r.id.startsWith("temp-") && !r.id.startsWith("blank-")
+    );
+
+    // 2. Permanently delete each real row from the database
+    for (const row of rowsToDelete) {
+      await supabase
+        .from("dengue_prevention")
+        .delete()
+        .eq("id", row.id);
+    }
+
+    // 3. Also delete by household_name for any rows with a name (catches orphaned DB entries)
+    const namedRows = records.filter((r) => (r.household_name || "").trim() !== "");
+    for (const row of namedRows) {
+      await supabase
+        .from("dengue_prevention")
+        .delete()
+        .eq("household_name", row.household_name.trim());
+    }
+
+    // 4. Clear the active draft from localStorage
     const blankRows = createBlankRows(MAX_ROWS);
-    setRecords(blankRows);
     localStorage.setItem(STORAGE_KEY_ACTIVE_DRAFT, JSON.stringify(blankRows));
+
+    // 5. Clear weekly visited heads for the current week (they no longer exist in the DB)
+    saveVisitedHeadsForWeek(weekDetails.weekKey, []);
+    setWeeklyVisitedHeads([]);
+
+    // 6. Reset UI state
+    setRecords(blankRows);
     setClearFormDialogOpen(false);
-    toast.success(language === "tl" ? "Na-clear ang aktibong form." : "Active form cleared.");
+
+    logActivity("delete_dengue", {
+      entity_type: "dengue_prevention",
+      description: `Permanently cleared all active form rows (${rowsToDelete.length} records) via Clear Form`
+    });
+
+    toast.success(
+      language === "tl"
+        ? "Permanenteng nabura ang lahat ng datos sa aktibong form at database."
+        : "All active form records permanently deleted from the form and database."
+    );
+    window.dispatchEvent(new Event("resident-records-updated"));
+    window.dispatchEvent(new Event("dengue-records-updated"));
+    window.dispatchEvent(new CustomEvent("bhw-db-updated"));
   };
 
   // Visited set for quick normalized lookup
@@ -2412,12 +2459,12 @@ const DenguePreventionForm = () => {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <Trash2 className="h-5 w-5 text-destructive" />
-              {language === "tl" ? "I-clear ang Aktibong Form?" : "Clear Active Form Rows?"}
+              {language === "tl" ? "Permanenteng I-clear ang Form?" : "Permanently Clear Form?"}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-muted-foreground">
               {language === "tl"
-                ? "Mabubura ang lahat ng kasalukuyang nakasulat sa 20 hanay ng aktibong form upang makapagsimula muli. Ang mga naitala na sa History ay hindi maaapektuhan."
-                : "This will clear all 20 rows on the active form so you can start fresh. Records already saved to History will not be affected."}
+                ? "BABALA: Permanenteng mabubura ang LAHAT ng datos sa aktibong form mula sa system at database. Hindi ito maaaring ibalik maliban kung mayroon kang backup. Tiyaking tama bago magpatuloy."
+                : "WARNING: This will PERMANENTLY delete ALL data currently entered in the active form from both the system and the database. This action cannot be undone unless you have a backup. Make sure before proceeding."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
