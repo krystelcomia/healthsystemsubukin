@@ -85,15 +85,14 @@ function mergeDatabases(localDb: any, remoteDb: any): any {
   if (!localDb || typeof localDb !== 'object') return remoteDb || {};
   if (!remoteDb || typeof remoteDb !== 'object') return localDb || {};
 
-  const PURGE_KEY = 'bhw_records_purged_family_and_dengue_v2';
+  const PURGE_KEY = 'bhw_records_purged_all_v3';
+  const dataTables = ['family_data', 'dengue_prevention', 'residents', 'consultations', 'philpen_health', 'user_activity_logs'] as const;
   if (!localDb[PURGE_KEY]) {
-    localDb.family_data = [];
-    localDb.dengue_prevention = [];
+    for (const t of dataTables) localDb[t] = [];
     localDb[PURGE_KEY] = true;
   }
   if (!remoteDb[PURGE_KEY]) {
-    remoteDb.family_data = [];
-    remoteDb.dengue_prevention = [];
+    for (const t of dataTables) remoteDb[t] = [];
     remoteDb[PURGE_KEY] = true;
   }
 

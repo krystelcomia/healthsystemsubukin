@@ -1,5 +1,5 @@
 export const CANONICAL_INITIAL_DATABASE: Record<string, any> = {
-  bhw_records_purged_family_and_dengue_v2: true,
+  bhw_records_purged_all_v3: true,
   auth_users: [
     { id: "user-1", email: "krystelcomia@gmail.com", password: "krystel123", user_metadata: { full_name: "Krystel Comia" } },
     { id: "user-cristeta", email: "cristetalanuzaADMIN@gmail.com", password: "adminsubukincristeta2026", user_metadata: { full_name: "Cristeta R. Lanuza" } },
@@ -67,54 +67,13 @@ export const CANONICAL_INITIAL_DATABASE: Record<string, any> = {
     { id: "worker-maribel", name: "Maribel M. Abayon", age: 44, address: "Masigla", gmail: "maribelabayonBNS@gmail.com", number: "0922-6722-134", is_online: false, user_id: "user-maribel", assigned_sitio: "Masigla", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" }
   ],
   family_data: [],
-  residents: [
-    { id: "res-1", full_name: "Juan Dela Cruz", gender: "Male", age: 45, status: "Married", sitio: "Cama", birthday: "1981-05-12", family_number: "1", role_in_family: "Father", created_at: "2026-08-02T08:00:00.000Z" },
-    { id: "res-2", full_name: "Maria Dela Cruz", gender: "Female", age: 42, status: "Married", sitio: "Cama", birthday: "1984-08-20", family_number: "1", role_in_family: "Mother", created_at: "2026-08-02T08:00:00.000Z" },
-    { id: "res-3", full_name: "Carlo Dela Cruz", gender: "Male", age: 10, status: "Single", sitio: "Cama", birthday: "2016-03-15", family_number: "1", role_in_family: "Child", created_at: "2026-08-02T08:00:00.000Z" },
-    { id: "res-4", full_name: "Jenny Dela Cruz", gender: "Female", age: 7, status: "Single", sitio: "Cama", birthday: "2019-11-04", family_number: "1", role_in_family: "Child", created_at: "2026-08-02T08:00:00.000Z" },
-    { id: "res-5", full_name: "Pedro Santos", gender: "Male", age: 38, status: "Married", sitio: "Maligaya", birthday: "1988-02-14", family_number: "2", role_in_family: "Father", created_at: "2026-08-03T09:00:00.000Z" },
-    { id: "res-6", full_name: "Ana Santos", gender: "Female", age: 35, status: "Married", sitio: "Maligaya", birthday: "1991-09-25", family_number: "2", role_in_family: "Mother", created_at: "2026-08-03T09:00:00.000Z" },
-    { id: "res-7", full_name: "Baby Joy Santos", gender: "Female", age: 4, status: "Single", sitio: "Maligaya", birthday: "2022-01-10", family_number: "2", role_in_family: "Child", created_at: "2026-08-03T09:00:00.000Z" },
-    { id: "res-8", full_name: "Rodrigo Reyes", gender: "Male", age: 55, status: "Married", sitio: "Masaya", birthday: "1971-06-18", family_number: "3", role_in_family: "Father", created_at: "2026-08-04T10:00:00.000Z" },
-    { id: "res-9", full_name: "Elena Reyes", gender: "Female", age: 52, status: "Married", sitio: "Masaya", birthday: "1974-12-03", family_number: "3", role_in_family: "Mother", created_at: "2026-08-04T10:00:00.000Z" },
-    { id: "res-10", full_name: "Antonio Ramos", gender: "Male", age: 49, status: "Married", sitio: "Manggahan 1", birthday: "1977-04-22", family_number: "4", role_in_family: "Father", created_at: "2026-08-05T11:00:00.000Z" },
-    { id: "res-11", full_name: "Lourdes Ramos", gender: "Female", age: 46, status: "Married", sitio: "Manggahan 1", birthday: "1980-07-19", family_number: "4", role_in_family: "Mother", created_at: "2026-08-05T11:00:00.000Z" },
-    { id: "res-12", full_name: "Mark Anthony Ramos", gender: "Male", age: 12, status: "Single", sitio: "Manggahan 1", birthday: "2014-09-10", family_number: "4", role_in_family: "Child", created_at: "2026-08-05T11:00:00.000Z" },
-    { id: "res-13", full_name: "Eduardo Garcia", gender: "Male", age: 40, status: "Married", sitio: "Puntor", birthday: "1986-10-08", family_number: "5", role_in_family: "Father", created_at: "2026-08-06T12:00:00.000Z" },
-    { id: "res-14", full_name: "Carmen Garcia", gender: "Female", age: 38, status: "Married", sitio: "Puntor", birthday: "1988-03-30", family_number: "5", role_in_family: "Mother", created_at: "2026-08-06T12:00:00.000Z" },
-    { id: "res-15", full_name: "Angela Garcia", gender: "Female", age: 6, status: "Single", sitio: "Puntor", birthday: "2020-04-18", family_number: "5", role_in_family: "Child", created_at: "2026-08-06T12:00:00.000Z" },
-    { id: "res-16", full_name: "Fernando Mendoza", gender: "Male", age: 33, status: "Married", sitio: "Makalintal 1", birthday: "1993-01-14", family_number: "6", role_in_family: "Father", created_at: "2026-08-07T13:00:00.000Z" },
-    { id: "res-17", full_name: "Teresa Mendoza", gender: "Female", age: 31, status: "Married", sitio: "Makalintal 1", birthday: "1995-06-20", family_number: "6", role_in_family: "Mother", created_at: "2026-08-07T13:00:00.000Z" },
-    { id: "res-18", full_name: "Manuel Bautista", gender: "Male", age: 58, status: "Married", sitio: "Masigla", birthday: "1968-11-28", family_number: "7", role_in_family: "Father", created_at: "2026-08-08T14:00:00.000Z" },
-    { id: "res-19", full_name: "Rosa Bautista", gender: "Female", age: 54, status: "Married", sitio: "Masigla", birthday: "1972-03-15", family_number: "7", role_in_family: "Mother", created_at: "2026-08-08T14:00:00.000Z" },
-    { id: "res-20", full_name: "Joshua Garcia", gender: "Male", age: 24, status: "Single", sitio: "Masigla", birthday: "2002-08-14", family_number: "7", role_in_family: "Other", created_at: "2026-08-08T14:00:00.000Z" },
-    { id: "res-21", full_name: "Leo Mandigma", gender: "Male", age: 43, status: "Married", sitio: "Manggahan 1", birthday: "1983-04-10", family_number: "8", role_in_family: "Father", created_at: "2026-08-15T08:00:00.000Z" },
-    { id: "res-22", full_name: "Chichi Badillo", gender: "Female", age: 40, status: "Married", sitio: "Manggahan 1", birthday: "1986-07-22", family_number: "8", role_in_family: "Mother", created_at: "2026-08-15T08:00:00.000Z" },
-    { id: "res-23", full_name: "Errol Badillo", gender: "Male", age: 19, status: "Single", sitio: "Manggahan 1", birthday: "2007-02-15", family_number: "8", role_in_family: "Child", created_at: "2026-08-15T08:00:00.000Z" },
-    { id: "res-24", full_name: "John Macatangay", gender: "Male", age: 22, status: "Single", sitio: "Manggahan 1", birthday: "2004-11-03", family_number: "8", role_in_family: "Other", created_at: "2026-08-15T08:00:00.000Z" },
-    { id: "res-25", full_name: "Gabriel De Guzman", gender: "Male", age: 36, status: "Married", sitio: "Makalintal 2", birthday: "1990-10-05", family_number: "9", role_in_family: "Father", created_at: "2026-08-16T09:00:00.000Z" },
-    { id: "res-26", full_name: "Jayvie Rondero", gender: "Female", age: 34, status: "Married", sitio: "Makalintal 2", birthday: "1992-05-18", family_number: "9", role_in_family: "Mother", created_at: "2026-08-16T09:00:00.000Z" },
-    { id: "res-27", full_name: "Kent Cueto", gender: "Male", age: 21, status: "Single", sitio: "Makalintal 2", birthday: "2005-09-29", family_number: "9", role_in_family: "Other", created_at: "2026-08-16T09:00:00.000Z" }
-  ],
-  consultations: [
-    { id: "cons-1", resident_id: "res-1", consultation_date: "2026-08-10", consultation_cause: "Routine Health Checkup & Blood Pressure Monitoring", blood_pressure: "120/80", temperature: "36.5", weight: "68", height: "168", pulse_rate: "74", respiration_rate: "18", sitio: "Cama", created_at: "2026-08-10T09:30:00.000Z" },
-    { id: "cons-2", resident_id: "res-5", consultation_date: "2026-08-14", consultation_cause: "Fever and Cough Consultation", blood_pressure: "118/76", temperature: "37.8", weight: "64", height: "165", pulse_rate: "80", respiration_rate: "20", sitio: "Maligaya", created_at: "2026-08-14T10:15:00.000Z" },
-    { id: "cons-3", resident_id: "res-21", consultation_date: "2026-08-20", consultation_cause: "Hypertension Assessment & Blood Pressure Monitoring", blood_pressure: "130/85", temperature: "36.6", weight: "72", height: "170", pulse_rate: "76", respiration_rate: "18", sitio: "Manggahan 1", created_at: "2026-08-20T08:30:00.000Z" }
-  ],
-  philpen_health: [
-    { id: "phil-1", resident_id: "res-1", family_number: "1", patient_first_name: "Juan", patient_last_name: "Dela Cruz", age: 45, gender: "Male", sitio: "Cama", blood_pressure: "120/80", fasting_blood_sugar: "95", cholesterol: "180", smoking_status: "Non-smoker", created_at: "2026-08-11T08:30:00.000Z" },
-    { id: "phil-2", resident_id: "res-8", family_number: "3", patient_first_name: "Rodrigo", patient_last_name: "Reyes", age: 55, gender: "Male", sitio: "Masaya", blood_pressure: "130/85", fasting_blood_sugar: "105", cholesterol: "195", smoking_status: "Non-smoker", created_at: "2026-08-12T11:00:00.000Z" },
-    { id: "phil-3", resident_id: "res-18", family_number: "7", patient_first_name: "Manuel", patient_last_name: "Bautista", age: 58, gender: "Male", sitio: "Masigla", blood_pressure: "125/80", fasting_blood_sugar: "98", cholesterol: "190", smoking_status: "Non-smoker", created_at: "2026-08-13T14:00:00.000Z" }
-  ],
+  residents: [],
+  consultations: [],
+  philpen_health: [],
   dengue_prevention: [],
   maternal_care: [],
   child_health: [],
   family_planning: [],
   user_sessions: [],
-  user_activity_logs: [
-    { id: "act-3", user_id: "user-1", user_name: "krystel", action: "Registered in resident registry (Manggahan 1)", entity_type: "residents", entity_name: "Chichi Badillo", sitio: "Manggahan 1", created_at: "2026-09-01T01:05:00.000Z" },
-    { id: "act-4", user_id: "user-1", user_name: "krystel", action: "Registered in resident registry (Subukin)", entity_type: "residents", entity_name: "Chichi", sitio: "Subukin", created_at: "2026-09-01T01:06:00.000Z" },
-    { id: "act-5", user_id: "user-1", user_name: "krystel", action: "Child health & immunization check", entity_type: "child_health", entity_name: "Child", sitio: "Maligaya", created_at: "2026-09-01T01:10:00.000Z" },
-    { id: "act-6", user_id: "user-1", user_name: "krystel", action: "Resident record created", entity_type: "residents", entity_name: "Joshua Garcia", sitio: "Masigla", created_at: "2026-09-01T01:15:00.000Z" }
-  ]
+  user_activity_logs: []
 };

@@ -29,13 +29,13 @@ function loadDatabase() {
   }
 
   if (db) {
-    const PURGE_KEY = "bhw_records_purged_family_and_dengue_v2";
+    const PURGE_KEY = 'bhw_records_purged_all_v3';
+    const dataTables = ['family_data', 'dengue_prevention', 'residents', 'consultations', 'philpen_health', 'user_activity_logs'];
     if (!db[PURGE_KEY]) {
-      db.family_data = [];
-      db.dengue_prevention = [];
+      for (const t of dataTables) db[t] = [];
       db[PURGE_KEY] = true;
       try {
-        fs.writeFileSync(TMP_FILE_PATH, JSON.stringify(db), "utf-8");
+        fs.writeFileSync(TMP_FILE_PATH, JSON.stringify(db), 'utf-8');
       } catch (e) {}
     }
     inMemoryDb = db;
@@ -72,11 +72,11 @@ export default function handler(req, res) {
       } else if (typeof body === "string") {
         body = JSON.parse(body);
       }
-      if (body && typeof body === "object") {
-        const PURGE_KEY = "bhw_records_purged_family_and_dengue_v2";
+      if (body && typeof body === 'object') {
+        const PURGE_KEY = 'bhw_records_purged_all_v3';
+        const dataTables = ['family_data', 'dengue_prevention', 'residents', 'consultations', 'philpen_health', 'user_activity_logs'];
         if (!body[PURGE_KEY]) {
-          body.family_data = [];
-          body.dengue_prevention = [];
+          for (const t of dataTables) body[t] = [];
           body[PURGE_KEY] = true;
         }
         inMemoryDb = body;
