@@ -48,17 +48,33 @@ const AdminWorkers = () => {
     const email = (w.gmail || "").toLowerCase().trim();
     const role = w.user_id ? userRoles[w.user_id] : null;
 
+    // Cristeta R. Lanuza (admin) is shown in the list — exclude only other supervisor/admin emails
+    if (
+      email === "cristetalanuzaadmin@gmail.com" ||
+      email === "cristetalanuzabhw@gmail.com"
+    ) return false;
+
     return (
       role === "supervisor" ||
       role === "supervisory" ||
-      email === "cristetalanuzaadmin@gmail.com" ||
       email === "adminsubukin@gmail.com" ||
       (email.includes("admin") && !email.includes("midwife")) ||
       email.includes("supervisor")
     );
   };
 
-  // Pinned worker: always appears first in the list and cannot be deleted
+  // Admin worker: Cristeta R. Lanuza — pinned first, no delete button
+  const isAdminWorker = (w: BHWWorker) => {
+    const email = (w.gmail || "").toLowerCase().trim();
+    const name  = (w.name  || "").toLowerCase().trim();
+    return (
+      email === "cristetalanuzaadmin@gmail.com" ||
+      email === "cristetalanuzabhw@gmail.com" ||
+      name.includes("cristeta") && name.includes("lanuza")
+    );
+  };
+
+  // Pinned worker: Krystel Comia — appears after admin, no delete button
   const isPinnedWorker = (w: BHWWorker) => {
     const email = (w.gmail || "").toLowerCase().trim();
     const name  = (w.name  || "").toLowerCase().trim();
@@ -136,11 +152,12 @@ const AdminWorkers = () => {
           is_online: isWorkerOnline(w)
         }));
 
-      // Sort: pinned worker first, then alphabetically by name
+      // Sort: admin (Cristeta) first, then pinned (Krystel), then alphabetically
       const sorted = [...mapped].sort((a, b) => {
-        const aPin = isPinnedWorker(a) ? 0 : 1;
-        const bPin = isPinnedWorker(b) ? 0 : 1;
-        if (aPin !== bPin) return aPin - bPin;
+        const rank = (w: BHWWorker) => isAdminWorker(w) ? 0 : isPinnedWorker(w) ? 1 : 2;
+        const aRank = rank(a);
+        const bRank = rank(b);
+        if (aRank !== bRank) return aRank - bRank;
         return a.name.localeCompare(b.name);
       });
 
@@ -533,7 +550,7 @@ const AdminWorkers = () => {
                   <div className="flex gap-1 shrink-0">
                     <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => { setViewWorker(w); setViewDialogOpen(true); }} title="View details"><Eye className="h-4 w-4 text-muted-foreground" /></Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => { setEditWorker(w); setEditNewPassword(""); setShowEditPassword(false); setEditDialogOpen(true); }} title="Edit worker"><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
-                    {!isPinnedWorker(w) && (
+                    {!isAdminWorker(w) && !isPinnedWorker(w) && (
                       <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => setDeleteConfirmId(w.id)} title="Delete worker"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     )}
                   </div>
