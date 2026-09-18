@@ -46,33 +46,39 @@ let hasPendingRemotePush = false;
 let isPushingRemote = false;
 
 // Helper to merge entity collections cleanly between local and remote
-function mergeCollections(localArr: any[] = [], remoteArr: any[] = [], keyProp = 'id'): any[] {
+function mergeCollections(localArr: any[] = [], remoteArr: any[] = [], keyProp = 'id', deletedIds: string[] = []): any[] {
   if (!Array.isArray(localArr)) localArr = [];
   if (!Array.isArray(remoteArr)) remoteArr = [];
+  const deletedSet = new Set((deletedIds || []).map(id => String(id).toLowerCase().trim()));
 
   const map = new Map<string, any>();
 
-  // 1. Add remote items
+  // 1. Add remote items (skipping any deleted IDs)
   for (const item of remoteArr) {
     if (item && item[keyProp] !== undefined) {
-      map.set(String(item[keyProp]).toLowerCase().trim(), item);
+      const key = String(item[keyProp]).toLowerCase().trim();
+      if (!deletedSet.has(key)) {
+        map.set(key, item);
+      }
     }
   }
 
-  // 2. Merge local items: preserve newer local edits and newly added records
+  // 2. Merge local items: preserve newer local edits and newly added records (skipping any deleted IDs)
   for (const item of localArr) {
     if (item && item[keyProp] !== undefined) {
       const key = String(item[keyProp]).toLowerCase().trim();
-      const existing = map.get(key);
-      if (!existing) {
-        map.set(key, item);
-      } else {
-        const localTime = new Date(item.updated_at || item.created_at || 0).getTime();
-        const remoteTime = new Date(existing.updated_at || existing.created_at || 0).getTime();
-        if (localTime >= remoteTime) {
-          map.set(key, { ...existing, ...item });
+      if (!deletedSet.has(key)) {
+        const existing = map.get(key);
+        if (!existing) {
+          map.set(key, item);
         } else {
-          map.set(key, { ...item, ...existing });
+          const localTime = new Date(item.updated_at || item.created_at || 0).getTime();
+          const remoteTime = new Date(existing.updated_at || existing.created_at || 0).getTime();
+          if (localTime >= remoteTime) {
+            map.set(key, { ...existing, ...item });
+          } else {
+            map.set(key, { ...item, ...existing });
+          }
         }
       }
     }
@@ -100,28 +106,38 @@ function mergeDatabases(localDb: any, remoteDb: any): any {
   merged.is_initialized = true;
   merged[PURGE_KEY] = true;
 
-  // Merge each collection cleanly so neither remote nor local records are lost
-  merged.residents = mergeCollections(localDb.residents, remoteDb.residents, 'id');
-  merged.family_data = mergeCollections(localDb.family_data, remoteDb.family_data, 'id');
-  merged.consultations = mergeCollections(localDb.consultations, remoteDb.consultations, 'id');
-  merged.philpen_health = mergeCollections(localDb.philpen_health, remoteDb.philpen_health, 'id');
-  merged.dengue_prevention = mergeCollections(localDb.dengue_prevention, remoteDb.dengue_prevention, 'id');
-  merged.maternal_care = mergeCollections(localDb.maternal_care, remoteDb.maternal_care, 'id');
-  merged.child_health = mergeCollections(localDb.child_health, remoteDb.child_health, 'id');
-  merged.family_planning = mergeCollections(localDb.family_planning, remoteDb.family_planning, 'id');
-  merged.user_activity_logs = mergeCollections(localDb.user_activity_logs, remoteDb.user_activity_logs, 'id');
-  merged.user_sessions = mergeCollections(localDb.user_sessions, remoteDb.user_sessions, 'id');
+  // Merge tombstoned deleted IDs so deletes across tabs/devices persist
+  const localDeleted = localDb._deleted_ids || {};
+  const remoteDeleted = remoteDb._deleted_ids || {};
+  const mergedDeleted: Record<string, string[]> = {};
+  const allTables = new Set([...Object.keys(localDeleted), ...Object.keys(remoteDeleted)]);
+  for (const t of allTables) {
+    mergedDeleted[t] = Array.from(new Set([...(localDeleted[t] || []), ...(remoteDeleted[t] || [])]));
+  }
+  merged._deleted_ids = mergedDeleted;
+
+  // Merge each collection cleanly so neither remote nor local records are lost, respecting deleted items
+  merged.residents = mergeCollections(localDb.residents, remoteDb.residents, 'id', mergedDeleted.residents);
+  merged.family_data = mergeCollections(localDb.family_data, remoteDb.family_data, 'id', mergedDeleted.family_data);
+  merged.consultations = mergeCollections(localDb.consultations, remoteDb.consultations, 'id', mergedDeleted.consultations);
+  merged.philpen_health = mergeCollections(localDb.philpen_health, remoteDb.philpen_health, 'id', mergedDeleted.philpen_health);
+  merged.dengue_prevention = mergeCollections(localDb.dengue_prevention, remoteDb.dengue_prevention, 'id', mergedDeleted.dengue_prevention);
+  merged.maternal_care = mergeCollections(localDb.maternal_care, remoteDb.maternal_care, 'id', mergedDeleted.maternal_care);
+  merged.child_health = mergeCollections(localDb.child_health, remoteDb.child_health, 'id', mergedDeleted.child_health);
+  merged.family_planning = mergeCollections(localDb.family_planning, remoteDb.family_planning, 'id', mergedDeleted.family_planning);
+  merged.user_activity_logs = mergeCollections(localDb.user_activity_logs, remoteDb.user_activity_logs, 'id', mergedDeleted.user_activity_logs);
+  merged.user_sessions = mergeCollections(localDb.user_sessions, remoteDb.user_sessions, 'id', mergedDeleted.user_sessions);
 
   // Account tables: preserve updated local passwords, names, contact numbers, and assignments
-  merged.auth_users = mergeCollections(localDb.auth_users, remoteDb.auth_users, 'email');
-  merged.bhw_workers = mergeCollections(localDb.bhw_workers, remoteDb.bhw_workers, 'gmail');
-  merged.profiles = mergeCollections(localDb.profiles, remoteDb.profiles, 'user_id');
-  merged.user_roles = mergeCollections(localDb.user_roles, remoteDb.user_roles, 'user_id');
+  merged.auth_users = mergeCollections(localDb.auth_users, remoteDb.auth_users, 'email', mergedDeleted.auth_users);
+  merged.bhw_workers = mergeCollections(localDb.bhw_workers, remoteDb.bhw_workers, 'gmail', mergedDeleted.bhw_workers);
+  merged.profiles = mergeCollections(localDb.profiles, remoteDb.profiles, 'user_id', mergedDeleted.profiles);
+  merged.user_roles = mergeCollections(localDb.user_roles, remoteDb.user_roles, 'user_id', mergedDeleted.user_roles);
 
   return merged;
 }
 
-export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
+export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true, immediatePush = false) {
   try {
     if (db && !db.is_initialized) {
       db.is_initialized = true;
@@ -130,12 +146,16 @@ export function saveAndBroadcastMockDb(db: any, shouldBroadcastRemote = true) {
     localStorage.setItem('supabase_mock_db', serialized);
     hasPendingRemotePush = true;
 
-    // 1. Fast debounced remote push to sync shared serverless backend
+    // 1. Fast debounced or immediate remote push to sync shared serverless backend
     if (shouldBroadcastRemote && typeof fetch === 'function') {
       if (remotePushTimeout) clearTimeout(remotePushTimeout);
-      remotePushTimeout = setTimeout(() => {
+      if (immediatePush) {
         executeRemotePush(serialized);
-      }, 150);
+      } else {
+        remotePushTimeout = setTimeout(() => {
+          executeRemotePush(serialized);
+        }, 150);
+      }
     }
 
     // 2. Broadcast across tabs of current browser using persistent channel
@@ -452,6 +472,13 @@ class MockQueryBuilder {
           return newItem;
         }
       });
+      // Remove any restored/re-created items from tombstone
+      if (db._deleted_ids && db._deleted_ids[this.tableName]) {
+        const addedIds = new Set(results.map(r => String(r.id).toLowerCase().trim()));
+        db._deleted_ids[this.tableName] = db._deleted_ids[this.tableName].filter(
+          (id: string) => !addedIds.has(String(id).toLowerCase().trim())
+        );
+      }
       saveAndBroadcastMockDb(db);
       return { data: Array.isArray(this.upsertData) ? results : results[0], error: null };
     }
@@ -468,6 +495,13 @@ class MockQueryBuilder {
         db[this.tableName].push(newItem);
         return newItem;
       });
+      // Remove any newly inserted/restored items from tombstone
+      if (db._deleted_ids && db._deleted_ids[this.tableName]) {
+        const addedIds = new Set(inserted.map(r => String(r.id).toLowerCase().trim()));
+        db._deleted_ids[this.tableName] = db._deleted_ids[this.tableName].filter(
+          (id: string) => !addedIds.has(String(id).toLowerCase().trim())
+        );
+      }
       saveAndBroadcastMockDb(db);
       return { data: Array.isArray(this.insertData) ? inserted : inserted[0], error: null };
     }
@@ -495,12 +529,27 @@ class MockQueryBuilder {
 
     if (this.isDelete) {
       const initialLength = db[this.tableName].length;
+      const deletedIds: string[] = [];
       db[this.tableName] = db[this.tableName].filter((item: any) => {
         const matches = this.filters.every(filter => filter(item));
+        if (matches && item.id) {
+          deletedIds.push(String(item.id));
+        }
         return !matches;
       });
       const deletedCount = initialLength - db[this.tableName].length;
-      saveAndBroadcastMockDb(db);
+
+      // Track tombstoned deleted IDs so background polling cannot resurrect them
+      if (!db._deleted_ids) db._deleted_ids = {};
+      if (!db._deleted_ids[this.tableName]) db._deleted_ids[this.tableName] = [];
+      deletedIds.forEach(id => {
+        if (!db._deleted_ids[this.tableName].includes(id)) {
+          db._deleted_ids[this.tableName].push(id);
+        }
+      });
+
+      // Immediate remote push so backend database file is purged synchronously
+      saveAndBroadcastMockDb(db, true, true);
       return { data: null, error: null, count: deletedCount };
     }
 

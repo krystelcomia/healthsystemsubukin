@@ -1216,29 +1216,52 @@ const DenguePreventionForm = () => {
     const savedBatchesMap = getSavedBatchesFromStorage();
     const batchInfo = savedBatchesMap[batchId];
 
-    if (batchInfo && batchInfo.recordIds && batchInfo.recordIds.length > 0) {
-      const { error } = await supabase
-        .from("dengue_prevention")
-        .delete()
-        .in("id", batchInfo.recordIds);
+    if (batchInfo) {
+      const allIds = Array.from(
+        new Set([
+          ...(batchInfo.recordIds || []),
+          ...(batchInfo.records || []).map((r: any) => r.id).filter((i: any) => i && !i.startsWith("temp-") && !i.startsWith("blank-")),
+        ])
+      );
+      if (allIds.length > 0) {
+        const { error } = await supabase
+          .from("dengue_prevention")
+          .delete()
+          .in("id", allIds);
 
-      if (error) {
-        toast.error("Failed to delete saved form records");
-        return;
+        if (error) {
+          toast.error("Failed to delete saved form records from database");
+          return;
+        }
       }
+
+      // Also clean up any weekly visited heads from this batch
+      (batchInfo.records || []).forEach((r: any) => {
+        if (r.household_name?.trim()) {
+          const currentVisited = getVisitedHeadsForWeek(weekDetails.weekKey);
+          const filteredVisited = currentVisited.filter(
+            (h) => h.toLowerCase() !== r.household_name.trim().toLowerCase()
+          );
+          saveVisitedHeadsForWeek(weekDetails.weekKey, filteredVisited);
+          setWeeklyVisitedHeads(filteredVisited);
+        }
+      });
     }
 
     delete savedBatchesMap[batchId];
     saveBatchesToStorage(savedBatchesMap);
-    setSavedForms(prev => prev.filter(f => f.id !== batchId));
+    setSavedForms((prev) => prev.filter((f) => f.id !== batchId));
     setDeleteSavedFormConfirmId(null);
-    toast.success("Saved form deleted");
+    toast.success("Saved form batch permanently deleted from database");
 
     logActivity("delete_dengue_batch", {
       entity_type: "dengue_prevention",
-      description: `Deleted saved Dengue prevention batch`
+      description: `Permanently deleted saved Dengue prevention batch`
     });
 
+    window.dispatchEvent(new Event("resident-records-updated"));
+    window.dispatchEvent(new Event("dengue-records-updated"));
+    window.dispatchEvent(new CustomEvent("bhw-db-updated"));
     await fetchRecords();
   };
 
@@ -1259,7 +1282,9 @@ const DenguePreventionForm = () => {
       delete saveTimeoutsRef.current[id];
     }
 
-    // 1. If the row had a persistent database record, remove it from the DB
+    const cleanName = (name && name !== "this row") ? name.trim() : "";
+
+    // 1. Permanently remove from database
     if (id && !id.startsWith("temp-") && !id.startsWith("blank-")) {
       const { error } = await supabase
         .from("dengue_prevention")
@@ -1267,12 +1292,63 @@ const DenguePreventionForm = () => {
         .eq("id", id);
 
       if (error) {
-        toast.error("Failed to clear row from database");
+        toast.error("Failed to delete entry from database");
         return;
       }
     }
 
-    // 2. Clear only the data entered in this row in-place so the row structure is preserved (always maintaining 20 rows)
+    // Also delete any existing entry by household_name from database if present
+    if (cleanName) {
+      await supabase
+        .from("dengue_prevention")
+        .delete()
+        .eq("household_name", cleanName);
+    }
+
+    // 2. Remove from saved batches in localStorage if archived
+    const savedBatchesMap = getSavedBatchesFromStorage();
+    let batchChanged = false;
+    Object.keys(savedBatchesMap).forEach((bId) => {
+      const b = savedBatchesMap[bId];
+      if (b) {
+        const initialCount = (b.records || []).length;
+        b.records = (b.records || []).filter(
+          (r: any) => r.id !== id && (!cleanName || (r.household_name || "").trim().toLowerCase() !== cleanName.toLowerCase())
+        );
+        b.recordIds = (b.recordIds || []).filter((rId: string) => rId !== id);
+        if (b.records.length !== initialCount) {
+          batchChanged = true;
+        }
+        if (b.records.length === 0) {
+          delete savedBatchesMap[bId];
+          batchChanged = true;
+        }
+      }
+    });
+
+    if (batchChanged) {
+      saveBatchesToStorage(savedBatchesMap);
+      setSavedForms((prev) =>
+        prev
+          .map((f) => ({
+            ...f,
+            records: (f.records || []).filter(
+              (r: any) => r.id !== id && (!cleanName || (r.household_name || "").trim().toLowerCase() !== cleanName.toLowerCase())
+            ),
+          }))
+          .filter((f) => f.records.length > 0)
+      );
+    }
+
+    // 3. Clear from weekly visited list if applicable
+    if (cleanName) {
+      const currentVisited = getVisitedHeadsForWeek(weekDetails.weekKey);
+      const filteredVisited = currentVisited.filter((h) => h.toLowerCase() !== cleanName.toLowerCase());
+      saveVisitedHeadsForWeek(weekDetails.weekKey, filteredVisited);
+      setWeeklyVisitedHeads(filteredVisited);
+    }
+
+    // 4. Erase entry from active form and maintain 20 blank rows
     const blankRowTemplate = {
       id: `temp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       resident_id: null,
@@ -1303,15 +1379,16 @@ const DenguePreventionForm = () => {
       return final20;
     });
 
-    const displayName = name?.trim() || "unnamed row";
+    const displayName = cleanName || "unnamed row";
     logActivity("delete_dengue", {
       entity_type: "dengue_prevention",
-      description: `Cleared Dengue prevention record row for: ${displayName}`
+      description: `Permanently deleted Dengue prevention record: ${displayName}`
     });
 
-    toast.success("Row data cleared successfully");
+    toast.success("Entry completely erased from form and database");
     window.dispatchEvent(new Event("resident-records-updated"));
     window.dispatchEvent(new Event("dengue-records-updated"));
+    window.dispatchEvent(new CustomEvent("bhw-db-updated"));
   };
 
   return (
@@ -1819,7 +1896,7 @@ const DenguePreventionForm = () => {
                             variant="ghost" 
                             size="icon" 
                             className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            title="Clear entry"
+                            title="Delete entry"
                           >
                             <Trash className="h-4.5 w-4.5" />
                           </Button>
@@ -2245,13 +2322,13 @@ const DenguePreventionForm = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Clear Row Confirmation Dialog */}
+      {/* Delete Row Confirmation Dialog */}
       <AlertDialog open={!!deleteRowConfirm} onOpenChange={() => setDeleteRowConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Clear entry data?</AlertDialogTitle>
+            <AlertDialogTitle>Delete Dengue record permanently?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to clear the entered data for &ldquo;{deleteRowConfirm?.name}&rdquo;? The row will be reset to blank and stay on the form so it maintains a total of 20 rows.
+              Are you sure you want to permanently delete the Dengue prevention entry for &ldquo;{deleteRowConfirm?.name}&rdquo;? This will completely erase the entry from the form and the database, and it will not be restored unless the admin has saved a backup and performs a recovery.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -2265,7 +2342,7 @@ const DenguePreventionForm = () => {
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Clear Entry
+              Delete Entry
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -2275,9 +2352,9 @@ const DenguePreventionForm = () => {
       <AlertDialog open={!!deleteSavedFormConfirmId} onOpenChange={() => setDeleteSavedFormConfirmId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete saved Dengue form batch?</AlertDialogTitle>
+            <AlertDialogTitle>Delete saved Dengue form batch permanently?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to permanently delete this saved Dengue form and its recorded entries? This action cannot be undone.
+              Are you sure you want to permanently delete this saved Dengue form and its recorded entries from both the form and the database? This action cannot be undone unless the admin has saved a backup and performs a recovery.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

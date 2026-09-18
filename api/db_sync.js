@@ -79,6 +79,14 @@ export default function handler(req, res) {
           for (const t of dataTables) body[t] = [];
           body[PURGE_KEY] = true;
         }
+        if (body._deleted_ids && typeof body._deleted_ids === 'object') {
+          for (const [tbl, ids] of Object.entries(body._deleted_ids)) {
+            if (Array.isArray(ids) && Array.isArray(body[tbl])) {
+              const delSet = new Set(ids.map(i => String(i).toLowerCase().trim()));
+              body[tbl] = body[tbl].filter(r => !delSet.has(String(r.id).toLowerCase().trim()));
+            }
+          }
+        }
         inMemoryDb = body;
         try {
           fs.writeFileSync(TMP_FILE_PATH, JSON.stringify(body), "utf-8");

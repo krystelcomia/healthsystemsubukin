@@ -69,8 +69,16 @@ function crossBrowserDbSyncPlugin(): Plugin {
                     parsed.family_data = [];
                     parsed.dengue_prevention = [];
                     parsed[PURGE_KEY] = true;
-                    body = JSON.stringify(parsed, null, 2);
                   }
+                  if (parsed._deleted_ids && typeof parsed._deleted_ids === "object") {
+                    for (const [tbl, ids] of Object.entries(parsed._deleted_ids)) {
+                      if (Array.isArray(ids) && Array.isArray(parsed[tbl])) {
+                        const delSet = new Set(ids.map((i: any) => String(i).toLowerCase().trim()));
+                        parsed[tbl] = parsed[tbl].filter((r: any) => !delSet.has(String(r.id).toLowerCase().trim()));
+                      }
+                    }
+                  }
+                  body = JSON.stringify(parsed, null, 2);
                 } catch {}
                 fs.writeFileSync(dbFilePath, body, "utf-8");
                 subscribers.forEach((cb) => cb(body));

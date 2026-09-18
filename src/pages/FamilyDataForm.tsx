@@ -779,6 +779,7 @@ const FamilyDataForm = () => {
     if (id.startsWith("temp-")) {
       setRecords((prev) => prev.filter((r) => r.id !== id));
       setFileDialogOpen(false);
+      setDeleteFileConfirm(null);
       toast.success("Family file removed");
       return;
     }
@@ -788,7 +789,7 @@ const FamilyDataForm = () => {
 
     const { error } = await supabase.from("family_data").delete().eq("id", id);
     if (error) {
-      toast.error("Failed to delete family file");
+      toast.error("Failed to delete family file from database");
     } else {
       if (famNumToDelete) {
         const { error: resDeleteError } = await supabase
@@ -798,19 +799,33 @@ const FamilyDataForm = () => {
         
         if (resDeleteError) {
           console.error("Failed to delete corresponding resident records:", resDeleteError);
-          toast.warning("Family file deleted, but failed to remove some resident records.");
-        } else {
-          toast.success("Family file and associated resident records deleted successfully");
         }
-      } else {
-        toast.success("Family file deleted successfully");
       }
+
+      // Also remove any linked resident records by ID if present
+      if (fileToDelete?.resident_id) {
+        await supabase.from("residents").delete().eq("id", fileToDelete.resident_id);
+      }
+      if (Array.isArray(fileToDelete?.members_detail)) {
+        for (const m of fileToDelete.members_detail) {
+          if (m?.resident_id) {
+            await supabase.from("residents").delete().eq("id", m.resident_id);
+          }
+        }
+      }
+
+      toast.success("Family file permanently deleted from system and database");
       logActivity("delete_family_data", {
         entity_type: "family_data",
-        description: `Deleted family file: ${name}`
+        description: `Permanently deleted family file: ${name}`
       });
       setFileDialogOpen(false);
-      fetchRecords();
+      setDeleteFileConfirm(null);
+      setRecords((prev) => prev.filter((r) => r.id !== id));
+      window.dispatchEvent(new Event("family-data-updated"));
+      window.dispatchEvent(new Event("resident-records-updated"));
+      window.dispatchEvent(new CustomEvent("bhw-db-updated"));
+      await fetchRecords();
     }
   };
 
@@ -1061,7 +1076,7 @@ const FamilyDataForm = () => {
           </span>
         </div>
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto justify-start sm:justify-end">
-          {!isAdmin && !isMidwife && (
+          {!isMidwife && (
             <Button
               onClick={handleOpenCreateModal}
               size="sm"
@@ -1178,7 +1193,24 @@ const FamilyDataForm = () => {
                           </h3>
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                      <div className="flex items-center gap-1">
+                        {!isMidwife && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                            title="Delete family file"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteFileConfirm({ id: rec.id, name: `${famNum} - ${fatherName || motherName || "Family"}` });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                      </div>
                     </div>
 
                     {/* File Folder Body Preview */}
@@ -1328,14 +1360,27 @@ const FamilyDataForm = () => {
                           {displayTotal}
                         </td>
                         <td className="border border-border p-1.5 text-center no-print">
-                          <Button
-                            onClick={() => handleOpenFile(rec)}
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs px-2.5 text-primary hover:bg-primary/10"
-                          >
-                            <FolderOpen className="h-3.5 w-3.5 mr-1" /> Open
-                          </Button>
+                          <div className="flex items-center justify-center gap-1">
+                            <Button
+                              onClick={() => handleOpenFile(rec)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs px-2 text-primary hover:bg-primary/10"
+                            >
+                              <FolderOpen className="h-3.5 w-3.5 mr-1" /> Open
+                            </Button>
+                            {!isMidwife && (
+                              <Button
+                                onClick={() => setDeleteFileConfirm({ id: rec.id, name: `${rec.family_number || "FN"} - ${rec.father_name || rec.mother_name || "Family"}` })}
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                title="Delete family file"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1446,7 +1491,7 @@ const FamilyDataForm = () => {
                 </div>
 
                 <div className="flex items-center gap-2 no-print self-end md:self-auto">
-                  {!isAdmin && !isMidwife && (
+                  {!isMidwife && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -1594,7 +1639,7 @@ const FamilyDataForm = () => {
                     </h3>
                   </div>
 
-                  {!isAdmin && !isMidwife && (
+                  {!isMidwife && (
                     <Button
                       size="sm"
                       onClick={() => setAddMemberDialogOpen(true)}
@@ -1616,7 +1661,7 @@ const FamilyDataForm = () => {
                         <th className="p-3 font-semibold text-center">Age</th>
                         <th className="p-3 font-semibold">Role</th>
                         <th className="p-3 font-semibold text-center">Gender</th>
-                        {!isAdmin && !isMidwife && <th className="p-3 font-semibold text-center no-print">Action</th>}
+                        {!isMidwife && <th className="p-3 font-semibold text-center no-print">Action</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -1635,7 +1680,7 @@ const FamilyDataForm = () => {
                             <td className="p-3 text-center">{m.age || "—"}</td>
                             <td className="p-3">{m.relationship}</td>
                             <td className="p-3 text-center">{m.gender}</td>
-                            {!isAdmin && !isMidwife && (
+                            {!isMidwife && (
                               <td className="p-3 text-center no-print">
                                 <Button
                                   onClick={() => setRemoveMemberConfirm({ id: m.id, name: m.full_name })}
@@ -1689,7 +1734,7 @@ const FamilyDataForm = () => {
 
               {/* Dialog Footer Actions */}
               <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border/50 no-print">
-                {!isAdmin && !isMidwife && (
+                {!isMidwife && (
                   <Button
                     type="button"
                     variant="outline"
@@ -1710,7 +1755,7 @@ const FamilyDataForm = () => {
                   >
                     Close
                   </Button>
-                  {!isAdmin && !isMidwife && (
+                  {!isMidwife && (
                     <Button
                       type="button"
                       size="sm"
@@ -2110,9 +2155,9 @@ const FamilyDataForm = () => {
       <AlertDialog open={!!deleteFileConfirm} onOpenChange={() => setDeleteFileConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Family File?</AlertDialogTitle>
+            <AlertDialogTitle>Delete Family File Permanently?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the family file &ldquo;{deleteFileConfirm?.name}&rdquo;? This will permanently remove the family record and associated resident records.
+              Are you sure you want to delete the family file &ldquo;{deleteFileConfirm?.name}&rdquo;? Any record deleted from the system using this button will be permanently removed from both the system and the database. It will not be restored unless the admin has saved a backup and performs a recovery.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -2121,12 +2166,11 @@ const FamilyDataForm = () => {
               onClick={() => {
                 if (deleteFileConfirm) {
                   handleDeleteFile(deleteFileConfirm.id, deleteFileConfirm.name);
-                  setDeleteFileConfirm(null);
                 }
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete File
+              Delete Permanently
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
