@@ -1609,12 +1609,28 @@ const DenguePreventionForm = () => {
           }
 
           td img {
-            height: 22px !important;
-            max-height: 24px !important;
+            height: 28px !important;
+            max-height: 32px !important;
             width: auto !important;
             object-fit: contain !important;
             margin: 0 auto !important;
             display: block !important;
+            filter: contrast(1.4) brightness(0.85) !important;
+          }
+
+          /* Hard-enforce black borders on table cells to override the global print border-color reset */
+          table, thead, tbody, tfoot, tr, th, td {
+            border-color: #000000 !important;
+            border-style: solid !important;
+          }
+          table {
+            border-width: 1.5px !important;
+          }
+          th, td {
+            border-width: 1px !important;
+          }
+          thead th {
+            background-color: #e8f0e8 !important;
           }
           .no-print {
             display: none !important;

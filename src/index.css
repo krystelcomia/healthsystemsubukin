@@ -271,9 +271,16 @@
     border-color: #000000 !important;
   }
 
-  /* Borders should stay visible and dark */
-  *, *::before, *::after {
+  /* Borders should stay visible and muted for non-table elements */
+  *:not(table):not(thead):not(tbody):not(tfoot):not(tr):not(th):not(td)::before,
+  *:not(table):not(thead):not(tbody):not(tfoot):not(tr):not(th):not(td)::after {
     border-color: #cccccc !important;
+  }
+
+  /* Table borders must always be black and solid for proper table formatting */
+  table, thead, tbody, tfoot, tr, th, td {
+    border-color: #000000 !important;
+    border-style: solid !important;
   }
 
   /* Links should print in dark colour (no blue) */
