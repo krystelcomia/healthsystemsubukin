@@ -6,25 +6,41 @@ let inMemoryDb = null;
 const TMP_FILE_PATH = "/tmp/bhw_shared_database.json";
 
 function loadDatabase() {
-  if (inMemoryDb && Object.keys(inMemoryDb).length > 0) {
-    return inMemoryDb;
-  }
-  try {
-    if (fs.existsSync(TMP_FILE_PATH)) {
-      const content = fs.readFileSync(TMP_FILE_PATH, "utf-8");
-      inMemoryDb = JSON.parse(content);
-      return inMemoryDb;
-    }
-  } catch (e) {}
-
+  let db = null;
   try {
     const filePath = path.join(process.cwd(), "bhw_shared_database.json");
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, "utf-8");
-      inMemoryDb = JSON.parse(content);
-      return inMemoryDb;
+      db = JSON.parse(content);
     }
   } catch (e) {}
+
+  if (!db) {
+    try {
+      if (fs.existsSync(TMP_FILE_PATH)) {
+        const content = fs.readFileSync(TMP_FILE_PATH, "utf-8");
+        db = JSON.parse(content);
+      }
+    } catch (e) {}
+  }
+
+  if (inMemoryDb && Object.keys(inMemoryDb).length > 0) {
+    db = { ...db, ...inMemoryDb };
+  }
+
+  if (db) {
+    const PURGE_KEY = "bhw_records_purged_family_and_dengue_v2";
+    if (!db[PURGE_KEY]) {
+      db.family_data = [];
+      db.dengue_prevention = [];
+      db[PURGE_KEY] = true;
+      try {
+        fs.writeFileSync(TMP_FILE_PATH, JSON.stringify(db), "utf-8");
+      } catch (e) {}
+    }
+    inMemoryDb = db;
+    return db;
+  }
 
   return null;
 }
@@ -57,6 +73,12 @@ export default function handler(req, res) {
         body = JSON.parse(body);
       }
       if (body && typeof body === "object") {
+        const PURGE_KEY = "bhw_records_purged_family_and_dengue_v2";
+        if (!body[PURGE_KEY]) {
+          body.family_data = [];
+          body.dengue_prevention = [];
+          body[PURGE_KEY] = true;
+        }
         inMemoryDb = body;
         try {
           fs.writeFileSync(TMP_FILE_PATH, JSON.stringify(body), "utf-8");

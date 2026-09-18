@@ -85,18 +85,16 @@ function mergeDatabases(localDb: any, remoteDb: any): any {
   if (!localDb || typeof localDb !== 'object') return remoteDb || {};
   if (!remoteDb || typeof remoteDb !== 'object') return localDb || {};
 
-  const PURGE_KEY = 'bhw_records_purged_family_and_dengue_v1';
-  if (remoteDb[PURGE_KEY] || localDb[PURGE_KEY]) {
-    if (!localDb[PURGE_KEY]) {
-      localDb.family_data = [];
-      localDb.dengue_prevention = [];
-      localDb[PURGE_KEY] = true;
-    }
-    if (!remoteDb[PURGE_KEY]) {
-      remoteDb.family_data = [];
-      remoteDb.dengue_prevention = [];
-      remoteDb[PURGE_KEY] = true;
-    }
+  const PURGE_KEY = 'bhw_records_purged_family_and_dengue_v2';
+  if (!localDb[PURGE_KEY]) {
+    localDb.family_data = [];
+    localDb.dengue_prevention = [];
+    localDb[PURGE_KEY] = true;
+  }
+  if (!remoteDb[PURGE_KEY]) {
+    remoteDb.family_data = [];
+    remoteDb.dengue_prevention = [];
+    remoteDb[PURGE_KEY] = true;
   }
 
   const merged: any = { ...remoteDb, ...localDb };
@@ -1258,7 +1256,7 @@ export function seedMockDatabase() {
   if (!db['user_activity_logs']) db['user_activity_logs'] = [];
 
   // One-time purge of all existing records in family_data and dengue_prevention
-  const PURGE_KEY = 'bhw_records_purged_family_and_dengue_v1';
+  const PURGE_KEY = 'bhw_records_purged_family_and_dengue_v2';
   if (!db[PURGE_KEY]) {
     db['family_data'] = [];
     db['dengue_prevention'] = [];
@@ -1269,7 +1267,7 @@ export function seedMockDatabase() {
         localStorage.removeItem('bhw_dengue_saved_batches');
         for (let i = localStorage.length - 1; i >= 0; i--) {
           const k = localStorage.key(i);
-          if (k && k.startsWith('bhw_dengue_')) {
+          if (k && (k.startsWith('bhw_dengue_') || k.startsWith('bhw_family_'))) {
             localStorage.removeItem(k);
           }
         }

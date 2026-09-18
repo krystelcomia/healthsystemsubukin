@@ -1,5 +1,5 @@
 export const CANONICAL_INITIAL_DATABASE: Record<string, any> = {
-  bhw_records_purged_family_and_dengue_v1: true,
+  bhw_records_purged_family_and_dengue_v2: true,
   auth_users: [
     { id: "user-1", email: "krystelcomia@gmail.com", password: "krystel123", user_metadata: { full_name: "Krystel Comia" } },
     { id: "user-cristeta", email: "cristetalanuzaADMIN@gmail.com", password: "adminsubukincristeta2026", user_metadata: { full_name: "Cristeta R. Lanuza" } },

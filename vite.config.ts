@@ -62,6 +62,16 @@ function crossBrowserDbSyncPlugin(): Plugin {
           req.on("end", () => {
             try {
               if (body) {
+                try {
+                  const parsed = JSON.parse(body);
+                  const PURGE_KEY = "bhw_records_purged_family_and_dengue_v2";
+                  if (!parsed[PURGE_KEY]) {
+                    parsed.family_data = [];
+                    parsed.dengue_prevention = [];
+                    parsed[PURGE_KEY] = true;
+                    body = JSON.stringify(parsed, null, 2);
+                  }
+                } catch {}
                 fs.writeFileSync(dbFilePath, body, "utf-8");
                 subscribers.forEach((cb) => cb(body));
               }
