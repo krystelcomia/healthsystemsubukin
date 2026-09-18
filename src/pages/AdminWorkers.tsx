@@ -58,6 +58,13 @@ const AdminWorkers = () => {
     );
   };
 
+  // Pinned worker: always appears first in the list and cannot be deleted
+  const isPinnedWorker = (w: BHWWorker) => {
+    const email = (w.gmail || "").toLowerCase().trim();
+    const name  = (w.name  || "").toLowerCase().trim();
+    return email === "krystelcomia@gmail.com" || name === "krystel comia";
+  };
+
   useEffect(() => {
     fetchWorkers();
 
@@ -129,8 +136,13 @@ const AdminWorkers = () => {
           is_online: isWorkerOnline(w)
         }));
 
-      // Sort alphabetically by worker name
-      const sorted = [...mapped].sort((a, b) => a.name.localeCompare(b.name));
+      // Sort: pinned worker first, then alphabetically by name
+      const sorted = [...mapped].sort((a, b) => {
+        const aPin = isPinnedWorker(a) ? 0 : 1;
+        const bPin = isPinnedWorker(b) ? 0 : 1;
+        if (aPin !== bPin) return aPin - bPin;
+        return a.name.localeCompare(b.name);
+      });
 
       setWorkers(sorted);
       setLoading(false);
@@ -521,7 +533,9 @@ const AdminWorkers = () => {
                   <div className="flex gap-1 shrink-0">
                     <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => { setViewWorker(w); setViewDialogOpen(true); }} title="View details"><Eye className="h-4 w-4 text-muted-foreground" /></Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => { setEditWorker(w); setEditNewPassword(""); setShowEditPassword(false); setEditDialogOpen(true); }} title="Edit worker"><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => setDeleteConfirmId(w.id)} title="Delete worker"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    {!isPinnedWorker(w) && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => setDeleteConfirmId(w.id)} title="Delete worker"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
