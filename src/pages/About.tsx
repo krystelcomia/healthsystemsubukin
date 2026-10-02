@@ -62,6 +62,21 @@ const About = () => {
 
     let isMounted = true;
 
+    // Approximate sitio locations within Barangay Subukin
+    const SITIO_LOCATIONS: { name: string; coords: [number, number]; color: string }[] = [
+      { name: "Sitio Cama",             coords: [13.7200, 121.4360], color: "#7c3aed" },
+      { name: "Sitio Makalintal 1",     coords: [13.7215, 121.4385], color: "#db2777" },
+      { name: "Sitio Makalintal 2",     coords: [13.7225, 121.4395], color: "#ea580c" },
+      { name: "Sitio Maligaya",         coords: [13.7240, 121.4375], color: "#16a34a" },
+      { name: "Sitio Manggahan 1",      coords: [13.7255, 121.4355], color: "#0284c7" },
+      { name: "Sitio Manggahan 2",      coords: [13.7265, 121.4345], color: "#0891b2" },
+      { name: "Sitio Masaya",           coords: [13.7235, 121.4330], color: "#65a30d" },
+      { name: "Sitio Masigla",          coords: [13.7220, 121.4350], color: "#d97706" },
+      { name: "Sitio Matahimik / Burol",coords: [13.7250, 121.4410], color: "#9333ea" },
+      { name: "Sitio Matahimik / Punta",coords: [13.7245, 121.4425], color: "#be185d" },
+      { name: "Sitio Puntor",           coords: [13.7210, 121.4415], color: "#0f766e" },
+    ];
+
     const initLeaflet = async () => {
       if (!(window as any).L) {
         if (!document.querySelector('link[href*="leaflet.css"]')) {
@@ -90,24 +105,41 @@ const About = () => {
       }
 
       const subukinCoords: [number, number] = [SUBUKIN_COORDS.lat, SUBUKIN_COORDS.lng];
-      const map = L.map(mapContainerRef.current).setView(subukinCoords, 15);
+
+      // Tight bounds that encompass only Barangay Subukin and its sitios
+      const barangayBounds = L.latLngBounds(
+        L.latLng(13.7180, 121.4300), // SW corner
+        L.latLng(13.7290, 121.4500)  // NE corner
+      );
+
+      const map = L.map(mapContainerRef.current, {
+        center: subukinCoords,
+        zoom: 15,
+        minZoom: 14,
+        maxZoom: 18,
+        maxBounds: barangayBounds,
+        maxBoundsViscosity: 1.0,
+      });
       mapRef.current = map;
 
       // Use CartoDB Voyager tiles for clear, crisp, modern labeling
       L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: "abcd",
-        maxZoom: 19,
+        maxZoom: 18,
       }).addTo(map);
 
-      // Highlight Barangay Subukin Area Circle
+      // Fit map to barangay bounds
+      map.fitBounds(barangayBounds, { padding: [20, 20] });
+
+      // Highlight Barangay Subukin territorial boundary circle
       L.circle(subukinCoords, {
         color: "#059669",
         fillColor: "#10b981",
-        fillOpacity: 0.15,
-        radius: 950,
-        weight: 2,
-        dashArray: "6, 6",
+        fillOpacity: 0.10,
+        radius: 900,
+        weight: 2.5,
+        dashArray: "8, 6",
       }).addTo(map).bindTooltip("Barangay Subukin Territorial Boundary", { permanent: false });
 
       // Primary Marker: Subukin Barangay Hall & Health Center
@@ -122,27 +154,51 @@ const About = () => {
             📍 San Juan, Batangas • Postal 4226
           </div>
           <div style="font-size: 11px; background: #f1f5f9; padding: 4px 6px; border-radius: 4px; color: #1e293b; margin-top: 4px;">
-            🏥 <strong>Subukin Health Center & Barangay Hall</strong><br/>
-            Primary Public Health Services & Registry
+            🏥 <strong>Subukin Health Center &amp; Barangay Hall</strong><br/>
+            Primary Public Health Services &amp; Registry
           </div>
         </div>
       `).openPopup();
 
-      // Secondary Marker: Subukin Elementary School
+      // Subukin Elementary School
       L.marker([13.72400, 121.44140]).addTo(map).bindPopup(`
         <div style="font-family: inherit; font-size: 12px;">
           <strong style="color: #1e40af;">🏫 Subukin Elementary School</strong><br/>
-          <span style="color: #64748b; font-size: 11px;">DepEd San Juan District • Plus Code: PCFR+JHH</span>
+          <span style="color: #64748b; font-size: 11px;">DepEd San Juan District</span>
         </div>
       `);
 
-      // Tertiary Marker: Subukin Port (San Juan Seaport)
+      // Subukin Port
       L.marker([13.72186, 121.44861]).addTo(map).bindPopup(`
         <div style="font-family: inherit; font-size: 12px;">
           <strong style="color: #0891b2;">⚓ San Juan Seaport (Subukin Port)</strong><br/>
           <span style="color: #64748b; font-size: 11px;">Barangay Subukin • Tayabas Bay Coastline</span>
         </div>
       `);
+
+      // Sitio markers with colored circle icons
+      SITIO_LOCATIONS.forEach(({ name, coords, color }) => {
+        const icon = L.divIcon({
+          className: "",
+          html: `<div style="
+            width: 22px; height: 22px;
+            background: ${color};
+            border: 2.5px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+            display: flex; align-items: center; justify-content: center;
+          "><span style="color:white; font-size: 9px; font-weight: 700;">S</span></div>`,
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+          popupAnchor: [0, -14],
+        });
+        L.marker(coords, { icon }).addTo(map).bindPopup(`
+          <div style="font-family: inherit; font-size: 12px; line-height: 1.5;">
+            <strong style="color: ${color};">📍 ${name}</strong><br/>
+            <span style="color: #64748b; font-size: 11px;">Barangay Subukin, San Juan, Batangas</span>
+          </div>
+        `);
+      });
     };
 
     initLeaflet();
@@ -277,7 +333,7 @@ const About = () => {
             {mapViewMode === "google" && (
               <iframe
                 title="Barangay Subukin Google Map"
-                src="https://maps.google.com/maps?q=Barangay+Subukin,+San+Juan,+Batangas&t=m&z=15&ie=UTF8&iwloc=&output=embed"
+                src="https://maps.google.com/maps?q=13.72335,121.44059&t=m&z=16&ie=UTF8&iwloc=B&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -287,7 +343,7 @@ const About = () => {
             {mapViewMode === "satellite" && (
               <iframe
                 title="Barangay Subukin Satellite Map"
-                src="https://maps.google.com/maps?q=Barangay+Subukin,+San+Juan,+Batangas&t=k&z=16&ie=UTF8&iwloc=&output=embed"
+                src="https://maps.google.com/maps?q=13.72335,121.44059&t=k&z=17&ie=UTF8&iwloc=B&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
