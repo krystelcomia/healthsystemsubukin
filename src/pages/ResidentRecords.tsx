@@ -724,7 +724,7 @@ const ResidentRecords = () => {
               <DialogHeader><DialogTitle>{t("residents.editResident")}</DialogTitle><DialogDescription>{t("residents.editResidentDesc")}</DialogDescription></DialogHeader>
               {editResident && (
                 <div className="space-y-3">
-                  <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input value={editResident.full_name} onKeyDown={allowOnlyLetters} onChange={(e) => setEditResident({ ...editResident, full_name: sanitizeLetters(e.target.value) })} /></div>
+                  <div className="space-y-1"><Label>{t("residents.fullName")} * <span className="font-normal text-muted-foreground text-xs">(Surname, First Name, Middle Name)</span></Label><Input placeholder="Surname, First Name, Middle Name" value={editResident.full_name} onKeyDown={allowOnlyLetters} onChange={(e) => setEditResident({ ...editResident, full_name: sanitizeLetters(e.target.value) })} /></div>
                   <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={editResident.birthday || ""} onChange={(e) => {
                     const bday = e.target.value;
                     const computed = calculateAge(bday);
