@@ -127,11 +127,14 @@ const About = () => {
       });
       mapRef.current = map;
 
-      // Use CartoDB Voyager tiles for clear, crisp, modern labeling
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: "abcd",
-        maxZoom: 18,
+      // OpenStreetMap standard tiles — free, no API key required, no watermarks.
+      // (Replaced CartoDB Voyager which now requires a paid API key and stamps
+      //  "API KEY REQUIRED" across every tile.)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+        // Optional: subdomains a/b/c for load-balancing across OSM tile servers
+        subdomains: "abc",
       }).addTo(map);
 
       // Fit map to barangay bounds
