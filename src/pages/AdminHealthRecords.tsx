@@ -35,6 +35,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
+import { formatHouseholdHeadName } from "@/lib/nameFormatter";
 
 interface FormMeta {
   id: string;
@@ -379,7 +380,7 @@ const AdminHealthRecords = () => {
 
         <div style="background:#fffbeb;border:1px solid #fde68a;padding:8px 12px;border-radius:4px;margin-bottom:16px;">
           <div style="font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;">Generated File Folder Name:</div>
-          <div style="font-family:monospace;font-size:12px;font-weight:700;color:#78350f;margin-top:2px;">FN - Father's Name</div>
+          <div style="font-family:monospace;font-size:12px;font-weight:700;color:#78350f;margin-top:2px;">FN - SURNAME, First Name</div>
         </div>
 
         <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
@@ -826,7 +827,7 @@ const AdminHealthRecords = () => {
 
         <div style="background:#fffbeb;border:1px solid #fde68a;padding:8px 12px;border-radius:4px;margin-bottom:16px;">
           <div style="font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;">Generated File Folder Name:</div>
-          <div style="font-family:monospace;font-size:12px;font-weight:700;color:#78350f;margin-top:2px;">${selectedRecord.family_number || "FN"} - ${selectedRecord.father_name || "Father's Name"}</div>
+          <div style="font-family:monospace;font-size:12px;font-weight:700;color:#78350f;margin-top:2px;">${selectedRecord.family_number || "FN"} - ${formatHouseholdHeadName(selectedRecord.father_name || selectedRecord.mother_name) || "Household Head"}</div>
         </div>
 
         <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
@@ -1335,7 +1336,7 @@ const AdminHealthRecords = () => {
                         Generated File Folder Name:
                       </span>
                       <span className="font-mono font-bold text-amber-900 dark:text-amber-300 text-xs md:text-sm">
-                        {`${selectedRecord.family_number || "FN"} - ${selectedRecord.father_name || "Father's Name"}`}
+                        {`${selectedRecord.family_number || "FN"} - ${formatHouseholdHeadName(selectedRecord.father_name || selectedRecord.mother_name) || "Household Head"}`}
                       </span>
                     </div>
                   </Card>

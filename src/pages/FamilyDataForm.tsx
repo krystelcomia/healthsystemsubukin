@@ -39,6 +39,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
+import { formatResidentName, formatHouseholdHeadName } from "@/lib/nameFormatter";
 import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 import { logActivity } from "@/lib/activityLogger";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
@@ -330,26 +331,37 @@ const FamilyDataForm = () => {
         const famNumMatch = rec.family_number?.toLowerCase().includes(q);
         const fatherMatch = rec.father_name?.toLowerCase().includes(q);
         const motherMatch = rec.mother_name?.toLowerCase().includes(q);
+        const formattedFatherMatch = formatHouseholdHeadName(rec.father_name)?.toLowerCase().includes(q);
+        const formattedMotherMatch = formatHouseholdHeadName(rec.mother_name)?.toLowerCase().includes(q);
         const sitioMatch = rec.sitio?.toLowerCase().includes(q);
 
         const membersList = parseMembers(rec.members_detail);
         const memberNameMatch = membersList.some((m) =>
-          m.full_name?.toLowerCase().includes(q)
+          m.full_name?.toLowerCase().includes(q) ||
+          formatHouseholdHeadName(m.full_name)?.toLowerCase().includes(q)
         );
 
-        return famNumMatch || fatherMatch || motherMatch || sitioMatch || memberNameMatch;
+        return famNumMatch || fatherMatch || motherMatch || formattedFatherMatch || formattedMotherMatch || sitioMatch || memberNameMatch;
       });
     }
     return [...result].sort((a, b) => compareFamilyNumbers(a.family_number, b.family_number));
   }, [records, searchQuery]);
 
-  // Non-empty valid records for folder grid view
+  // Non-empty valid records for folder grid view, arranged alphabetically by household head surname (e.g., BADILLO, Errol)
   const activeFamilyFiles = useMemo(() => {
     return filteredRecords
       .filter(
         (r) => r.family_number?.trim() || r.father_name?.trim() || r.mother_name?.trim()
       )
-      .sort((a, b) => compareFamilyNumbers(a.family_number, b.family_number));
+      .sort((a, b) => {
+        const headA = formatHouseholdHeadName(a.father_name || a.mother_name) || "";
+        const headB = formatHouseholdHeadName(b.father_name || b.mother_name) || "";
+        if (headA && !headB) return -1;
+        if (!headA && headB) return 1;
+        const cmp = headA.localeCompare(headB, undefined, { sensitivity: "base" });
+        if (cmp !== 0) return cmp;
+        return compareFamilyNumbers(a.family_number, b.family_number);
+      });
   }, [filteredRecords]);
 
 
@@ -529,10 +541,11 @@ const FamilyDataForm = () => {
     if (error) {
       toast.error("Failed to create family file");
     } else {
-      toast.success(`Family file "${newFamNum} - ${newFather || "Family"}" created!`);
+      const headDisplayName = formatHouseholdHeadName(newFather || newMother) || "Family";
+      toast.success(`Family file "${newFamNum} - ${headDisplayName}" created!`);
       logActivity("submit_family_data", {
         entity_type: "family_data",
-        description: `Created new family file: ${newFamNum} - ${newFather || newMother}`
+        description: `Created new family file: ${newFamNum} - ${headDisplayName}`
       });
       setCreateDialogOpen(false);
       fetchRecords();
@@ -693,7 +706,8 @@ const FamilyDataForm = () => {
       if (error) {
         toast.error("Failed to save family file. Please try again.");
       } else {
-        toast.success(`Family file "${editFamNum} - ${editFather || editMother || "Family"}" created and saved!`);
+        const headDisplayName = formatHouseholdHeadName(editFather || editMother) || "Family";
+        toast.success(`Family file "${editFamNum} - ${headDisplayName}" created and saved!`);
         setSelectedFile(data);
         setActiveMembers(deduplicatedActiveMembers);
         fetchRecords();
@@ -707,10 +721,11 @@ const FamilyDataForm = () => {
       if (error) {
         toast.error("Failed to update family file. Please try again.");
       } else {
-        toast.success(`Family file "${editFamNum} - ${editFather || editMother || "Family"}" updated and saved successfully!`);
+        const headDisplayName = formatHouseholdHeadName(editFather || editMother) || "Family";
+        toast.success(`Family file "${editFamNum} - ${headDisplayName}" updated and saved successfully!`);
         logActivity("update_family_data", {
           entity_type: "family_data",
-          description: `Updated family file ${editFamNum} - ${editFather || editMother}`
+          description: `Updated family file ${editFamNum} - ${headDisplayName}`
         });
         setSelectedFile((prev) => (prev ? { ...prev, ...updatePayload } : null));
         setActiveMembers(deduplicatedActiveMembers);
@@ -1167,9 +1182,10 @@ const FamilyDataForm = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {activeFamilyFiles.map((rec) => {
                 const famNum = rec.family_number || "FN";
-                const fatherName = rec.father_name || "Father's Name";
-                const motherName = rec.mother_name || "";
-                const fileName = `${famNum} - ${fatherName}`;
+                const headName = formatHouseholdHeadName(rec.father_name || rec.mother_name) || "Household Head";
+                const fatherName = rec.father_name ? formatHouseholdHeadName(rec.father_name) : "Father's Name";
+                const motherName = rec.mother_name ? formatHouseholdHeadName(rec.mother_name) : "";
+                const fileName = `${famNum} - ${headName}`;
                 const membersList = parseMembers(rec.members_detail);
                 const totalCount = rec.total_members || membersList.length || 0;
 
@@ -1189,8 +1205,8 @@ const FamilyDataForm = () => {
                           <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary bg-primary/10">
                             {famNum}
                           </Badge>
-                          <h3 className="font-heading font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1 mt-0.5">
-                            {fatherName}
+                          <h3 className="font-heading font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1 mt-0.5" title={headName}>
+                            {headName}
                           </h3>
                         </div>
                       </div>
@@ -1204,7 +1220,7 @@ const FamilyDataForm = () => {
                             title="Delete family file"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setDeleteFileConfirm({ id: rec.id, name: `${famNum} - ${fatherName || motherName || "Family"}` });
+                              setDeleteFileConfirm({ id: rec.id, name: `${famNum} - ${headName || "Family"}` });
                             }}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -1218,14 +1234,14 @@ const FamilyDataForm = () => {
                     <div className="text-xs text-muted-foreground space-y-1 bg-background/50 p-2.5 rounded-lg border border-border/40">
                       <div className="flex justify-between items-center">
                         <span className="text-muted-foreground/80">File Folder Name:</span>
-                        <span className="font-medium text-foreground font-mono truncate max-w-[170px]">
+                        <span className="font-medium text-foreground font-mono truncate max-w-[170px]" title={fileName}>
                           {fileName}
                         </span>
                       </div>
                       {motherName && (
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground/80">Mother:</span>
-                          <span className="font-medium text-foreground truncate max-w-[170px]">
+                          <span className="font-medium text-foreground truncate max-w-[170px]" title={motherName}>
                             {motherName}
                           </span>
                         </div>
@@ -1346,10 +1362,10 @@ const FamilyDataForm = () => {
                           {rec.num_households === "" ? "—" : (rec.num_households ?? "—")}
                         </td>
                         <td className="border border-border p-2.5 text-foreground font-medium">
-                          {rec.father_name || "—"}
+                          {formatResidentName(rec.father_name) || "—"}
                         </td>
                         <td className="border border-border p-2.5 text-foreground">
-                          {rec.mother_name || "—"}
+                          {formatResidentName(rec.mother_name) || "—"}
                         </td>
                         <td className="border border-border p-2.5 text-center text-foreground/80">
                           {displayMales}
@@ -1426,7 +1442,7 @@ const FamilyDataForm = () => {
               <div className="print-only w-full">
                 <OfficialHeader
                   title="Official Barangay Family File & Demographics Record"
-                  subtitle={`Barangay Subukin Health Center • San Juan, Batangas • Family #${editFamNum || selectedFile.family_number || ""} — ${editFather || selectedFile.father_name || "Head of Household"}`}
+                  subtitle={`Barangay Subukin Health Center • San Juan, Batangas • Family #${editFamNum || selectedFile.family_number || ""} — ${formatHouseholdHeadName(editFather || selectedFile.father_name) || "Head of Household"}`}
                   showDoubleBorder={true}
                   logoHeight="95px"
                 />
@@ -1445,11 +1461,11 @@ const FamilyDataForm = () => {
                   </div>
                   <div>
                     <span className="text-slate-500 font-semibold uppercase text-[10px] block">Father / Household Head</span>
-                    <strong className="text-black text-sm">{editFather || selectedFile.father_name || "—"}</strong>
+                    <strong className="text-black text-sm">{formatHouseholdHeadName(editFather || selectedFile.father_name) || "—"}</strong>
                   </div>
                   <div>
                     <span className="text-slate-500 font-semibold uppercase text-[10px] block">Mother</span>
-                    <strong className="text-black text-sm">{editMother || selectedFile.mother_name || "—"}</strong>
+                    <strong className="text-black text-sm">{formatHouseholdHeadName(editMother || selectedFile.mother_name) || "—"}</strong>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4 text-xs mt-3 pt-3 border-t border-slate-200">
@@ -1486,7 +1502,7 @@ const FamilyDataForm = () => {
                       </span>
                     </div>
                     <h2 className="text-lg md:text-xl font-heading font-bold text-foreground mt-0.5">
-                      {`${editFamNum || "FN"} - ${editFather || "Father's Name"}`}
+                      {`${editFamNum || "FN"} - ${formatHouseholdHeadName(editFather || editMother) || "Father's Name"}`}
                     </h2>
                   </div>
                 </div>
@@ -1612,11 +1628,11 @@ const FamilyDataForm = () => {
                         </div>
                         <div>
                           <span className="text-muted-foreground block text-[11px] font-semibold uppercase">Father (Head)</span>
-                          <strong className="text-foreground text-sm font-semibold">{editFather || "—"}</strong>
+                          <strong className="text-foreground text-sm font-semibold">{formatHouseholdHeadName(editFather) || "—"}</strong>
                         </div>
                         <div>
                           <span className="text-muted-foreground block text-[11px] font-semibold uppercase">Mother</span>
-                          <strong className="text-foreground text-sm font-semibold">{editMother || "—"}</strong>
+                          <strong className="text-foreground text-sm font-semibold">{formatHouseholdHeadName(editMother) || "—"}</strong>
                         </div>
                       </div>
                       <div className="bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-lg text-xs space-y-0.5">
@@ -1624,7 +1640,7 @@ const FamilyDataForm = () => {
                           Generated File Folder Name:
                         </span>
                         <span className="font-mono font-bold text-amber-900 dark:text-amber-300 text-xs md:text-sm">
-                          {`${editFamNum || "FN"} - ${editFather || "Father's Name"}`}
+                          {`${editFamNum || "FN"} - ${formatHouseholdHeadName(editFather || editMother) || "Father's Name"}`}
                         </span>
                       </div>
                     </div>
@@ -1659,7 +1675,7 @@ const FamilyDataForm = () => {
                     <thead>
                       <tr className="bg-muted/40 border-b border-border/80">
                         <th className="p-3 font-semibold text-center w-[40px]">#</th>
-                        <th className="p-3 font-semibold">Full Name</th>
+                        <th className="p-3 font-semibold">Full Name <span className="font-normal text-muted-foreground text-xs">(Surname, First Name, Middle Name)</span></th>
                         <th className="p-3 font-semibold text-center">Birthday *</th>
                         <th className="p-3 font-semibold text-center">Age</th>
                         <th className="p-3 font-semibold">Role</th>
@@ -1678,7 +1694,7 @@ const FamilyDataForm = () => {
                         activeMembers.map((m, idx) => (
                           <tr key={m.id || idx} className="border-b border-border/40 hover:bg-muted/20">
                             <td className="p-3 text-center text-muted-foreground text-xs">{idx + 1}</td>
-                            <td className="p-3 font-medium">{m.full_name}</td>
+                            <td className="p-3 font-medium">{formatResidentName(m.full_name)}</td>
                             <td className="p-3 text-center">{m.birthday || "—"}</td>
                             <td className="p-3 text-center">{m.age || "—"}</td>
                             <td className="p-3">{m.relationship}</td>
@@ -1857,7 +1873,7 @@ const FamilyDataForm = () => {
             <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs w-full overflow-hidden">
               <span className="text-muted-foreground">Generated File Folder Name:</span>
               <div className="font-mono font-bold text-foreground text-sm mt-0.5 truncate">
-                {`${newFamNum || "FN"} - ${newFather.trim() || "Father's Name"}`}
+                {`${newFamNum || "FN"} - ${formatHouseholdHeadName(newFather || newMother) || "Father's Name"}`}
               </div>
             </div>
 
@@ -1885,7 +1901,7 @@ const FamilyDataForm = () => {
                 <table className="w-full text-xs min-w-[660px]">
                   <thead>
                     <tr className="bg-muted/60 border-b border-border/50 text-muted-foreground font-semibold">
-                      <th className="p-2 text-left w-48">Full Name <span className="font-normal text-muted-foreground">(Surname, First, Middle)</span></th>
+                      <th className="p-2 text-left w-48">Full Name <span className="font-normal text-muted-foreground">(Surname, First Name, Middle Name)</span></th>
                       <th className="p-2 text-left w-44">Birthday *</th>
                       <th className="p-2 text-center w-20">Age</th>
                       <th className="p-2 text-left w-24">Role</th>

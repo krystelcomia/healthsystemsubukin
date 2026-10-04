@@ -566,7 +566,7 @@ const AdminWorkers = () => {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>{t("workers.addNewWorker")}</DialogTitle><DialogDescription>{t("workers.addNewWorkerDesc")}</DialogDescription></DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-1"><Label>{t("workers.name")} *</Label><Input value={newWorker.name} onKeyDown={allowOnlyLetters} onChange={e => setNewWorker({ ...newWorker, name: sanitizeLetters(e.target.value) })} placeholder={t("workers.name")} /></div>
+            <div className="space-y-1"><Label>{t("workers.name")} *</Label><Input value={newWorker.name} onKeyDown={allowOnlyLetters} onChange={e => setNewWorker({ ...newWorker, name: sanitizeLetters(e.target.value) })} placeholder="Surname, First Name, Middle Name" /></div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1"><Label>{t("workers.age")}</Label><Input type="number" value={newWorker.age} onKeyDown={allowOnlyNumbers} onChange={e => setNewWorker({ ...newWorker, age: sanitizeNumbers(e.target.value) })} /></div>
               <div className="space-y-1"><Label>{t("workers.contact")}</Label><Input value={newWorker.number} onKeyDown={allowOnlyNumbers} onChange={e => setNewWorker({ ...newWorker, number: sanitizeNumbers(e.target.value) })} placeholder="09xxxxxxxxx" /></div>
@@ -634,7 +634,7 @@ const AdminWorkers = () => {
           <DialogHeader><DialogTitle>{t("workers.editWorker")}</DialogTitle><DialogDescription>{t("workers.editWorkerDesc")}</DialogDescription></DialogHeader>
           {editWorker && (
             <div className="space-y-3">
-              <div className="space-y-1"><Label>{t("workers.name")} *</Label><Input value={editWorker.name} onKeyDown={allowOnlyLetters} onChange={e => setEditWorker({ ...editWorker, name: sanitizeLetters(e.target.value) })} /></div>
+              <div className="space-y-1"><Label>{t("workers.name")} *</Label><Input value={editWorker.name} onKeyDown={allowOnlyLetters} onChange={e => setEditWorker({ ...editWorker, name: sanitizeLetters(e.target.value) })} placeholder="Surname, First Name, Middle Name" /></div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1"><Label>{t("workers.age")}</Label><Input type="number" value={editWorker.age} onKeyDown={allowOnlyNumbers} onChange={e => setEditWorker({ ...editWorker, age: Number(sanitizeNumbers(String(e.target.value))) })} /></div>
                 <div className="space-y-1"><Label>{t("workers.contact")}</Label><Input value={editWorker.number} onKeyDown={allowOnlyNumbers} onChange={e => setEditWorker({ ...editWorker, number: sanitizeNumbers(e.target.value) })} /></div>

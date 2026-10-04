@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { formatResidentName } from "@/lib/nameFormatter";
 
 export function calculateAge(birthday: string | null | undefined): number {
   if (!birthday) return 0;
@@ -321,10 +322,14 @@ export async function getFamilyOnlyResidents(): Promise<any[]> {
     // First add all residents from residents table
     for (const r of resData) {
       if (!r.full_name || !r.full_name.trim()) continue;
-      const key = r.full_name.trim().toLowerCase();
+      const formatted = formatResidentName(r.full_name);
+      const key = formatted.toLowerCase();
       if (!seen.has(key)) {
         seen.add(key);
-        uniqueResidents.push(r);
+        uniqueResidents.push({
+          ...r,
+          full_name: formatted,
+        });
       }
     }
 
@@ -337,12 +342,13 @@ export async function getFamilyOnlyResidents(): Promise<any[]> {
       }
 
       if (fam.father_name && fam.father_name.trim()) {
-        const k = fam.father_name.trim().toLowerCase();
+        const formattedFather = formatResidentName(fam.father_name);
+        const k = formattedFather.toLowerCase();
         if (!seen.has(k)) {
           seen.add(k);
           uniqueResidents.push({
             id: `f-${fam.id}`,
-            full_name: fam.father_name.trim(),
+            full_name: formattedFather,
             gender: "Male",
             age: 0,
             status: "Married",
@@ -353,12 +359,13 @@ export async function getFamilyOnlyResidents(): Promise<any[]> {
       }
 
       if (fam.mother_name && fam.mother_name.trim()) {
-        const k = fam.mother_name.trim().toLowerCase();
+        const formattedMother = formatResidentName(fam.mother_name);
+        const k = formattedMother.toLowerCase();
         if (!seen.has(k)) {
           seen.add(k);
           uniqueResidents.push({
             id: `m-${fam.id}`,
-            full_name: fam.mother_name.trim(),
+            full_name: formattedMother,
             gender: "Female",
             age: 0,
             status: "Married",
@@ -370,12 +377,13 @@ export async function getFamilyOnlyResidents(): Promise<any[]> {
 
       for (const mem of members) {
         if (!mem.full_name || !mem.full_name.trim()) continue;
-        const k = mem.full_name.trim().toLowerCase();
+        const formattedMem = formatResidentName(mem.full_name);
+        const k = formattedMem.toLowerCase();
         if (!seen.has(k)) {
           seen.add(k);
           uniqueResidents.push({
             id: `mem-${fam.id}-${k}`,
-            full_name: mem.full_name.trim(),
+            full_name: formattedMem,
             gender: mem.gender || "Male",
             age: Number(mem.age) || (mem.birthday ? calculateAge(mem.birthday) : 0),
             status: mem.civil_status || "Single",

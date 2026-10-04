@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ensureResidentExists, calculateAge, getFamilyOnlyResidents } from "@/lib/residentLinker";
+import { formatResidentName, parseNameParts } from "@/lib/nameFormatter";
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
@@ -212,23 +213,7 @@ const MaternalCareForm = () => {
     };
   }, []);
 
-  // Split name helper
-  const parseNameParts = (fullName: string) => {
-    const clean = (fullName || "").trim();
-    if (!clean) return { last: "", first: "", middle: "" };
-    if (clean.includes(",")) {
-      const parts = clean.split(",");
-      const last = parts[0].trim();
-      const rest = parts[1].trim().split(" ");
-      const first = rest[0] || "";
-      const middle = rest.slice(1).join(" ") || "";
-      return { last, first, middle };
-    }
-    const parts = clean.split(" ");
-    if (parts.length === 1) return { last: parts[0], first: "", middle: "" };
-    if (parts.length === 2) return { last: parts[1], first: parts[0], middle: "" };
-    return { last: parts[parts.length - 1], first: parts.slice(0, -1).join(" "), middle: "" };
-  };
+  // Use imported parseNameParts helper
 
   const handleSelectResident = async (residentId: string) => {
     const res = residents.find(r => r.id === residentId);
@@ -1066,15 +1051,15 @@ const MaternalCareForm = () => {
                   <UserCheck className="h-4 w-4 shrink-0" /> Patient General Information
                 </h3>
                 <div className="flex items-center gap-2 no-print w-full sm:w-auto">
-                  <Label className="text-xs shrink-0 font-medium text-foreground whitespace-nowrap">Select Resident:</Label>
+                  <Label className="text-xs shrink-0 font-medium text-foreground whitespace-nowrap">Select Resident (Surname, First Name, Middle Name):</Label>
                   <Select value={form.resident_id} onValueChange={handleSelectResident}>
-                    <SelectTrigger className="h-8 text-xs bg-background text-foreground w-full sm:w-56 min-w-[140px]">
-                      <SelectValue placeholder={language === "tl" ? "Pumili..." : "Select..."} />
+                    <SelectTrigger className="h-8 text-xs bg-background text-foreground w-full sm:w-64 min-w-[140px]">
+                      <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select resident (Surname, First Name, Middle Name)..."} />
                     </SelectTrigger>
                     <SelectContent>
                       {residents.map(r => (
                         <SelectItem key={r.id} value={r.id} className="text-xs">
-                          {r.full_name} {r.sitio ? `(${r.sitio})` : ""}
+                          {formatResidentName(r.full_name)} {r.sitio ? `(${r.sitio})` : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>

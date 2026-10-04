@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ensureResidentExists, getFamilyOnlyResidents, calculateAge } from "@/lib/residentLinker";
+import { formatResidentName } from "@/lib/nameFormatter";
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { OfficialHeader } from "@/components/OfficialHeader";
@@ -493,19 +494,19 @@ const ConsultationForm = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-foreground">Name</Label>
+                  <Label className="text-xs font-semibold text-foreground">Name * <span className="font-normal text-muted-foreground text-xs">(Surname, First Name, Middle Name)</span></Label>
                   <div className="no-print">
                     <Select value={form.resident_id} onValueChange={handleSelectResident} disabled={isMidwife}>
                       <SelectTrigger className={lineSelectClass}>
-                        <SelectValue placeholder={t("consultation.selectResident")} />
+                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select resident (Surname, First Name, Middle Name)..."} />
                       </SelectTrigger>
                       <SelectContent>
-                        {residents.map((r) => <SelectItem key={r.id} value={r.id}>{r.full_name}</SelectItem>)}
+                        {residents.map((r) => <SelectItem key={r.id} value={r.id}>{formatResidentName(r.full_name)}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
                   <span className="hidden print:block border-b-2 border-slate-300 w-full min-h-[1.5rem] px-1 font-medium">
-                    {residents.find(r => r.id === form.resident_id)?.full_name || ""}
+                    {formatResidentName(residents.find(r => r.id === form.resident_id)?.full_name || "")}
                   </span>
                 </div>
               </div>
@@ -908,7 +909,7 @@ const ConsultationForm = () => {
                   <div>
                     <span className="text-slate-500 text-[10px] block">Patient Full Name:</span>
                     <strong className="text-sm text-slate-900 dark:text-slate-100">
-                      {selectedRecordForView.residents?.full_name || "—"}
+                      {formatResidentName(selectedRecordForView.residents?.full_name) || "—"}
                     </strong>
                   </div>
                   <div>

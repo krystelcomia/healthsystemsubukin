@@ -16,6 +16,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { logActivity } from "@/lib/activityLogger";
 import { getFamilyOnlyResidents } from "@/lib/residentLinker";
 import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
+import { formatResidentName, parseNameParts } from "@/lib/nameFormatter";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
@@ -412,21 +413,8 @@ const FamilyPlanningForm = () => {
     if (!res) return;
 
     // Parse name into last name, given name, middle name
-    const parts = (res.full_name || "").trim().split(" ");
-    let lastName = "";
-    let givenName = "";
-    let mi = "";
-
-    if (parts.length === 1) {
-      givenName = parts[0];
-    } else if (parts.length === 2) {
-      givenName = parts[0];
-      lastName = parts[1];
-    } else {
-      givenName = parts[0];
-      mi = parts[1].substring(0, 1).toUpperCase();
-      lastName = parts.slice(2).join(" ");
-    }
+    const { last: lastName, first: givenName, middle: middleName } = parseNameParts(res.full_name);
+    const mi = middleName ? middleName.substring(0, 1).toUpperCase() : "";
 
     setFpState((prev) => ({
       ...prev,
@@ -822,19 +810,21 @@ const FamilyPlanningForm = () => {
         <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Select a registered resident to auto-fill demographic info:</span>
+            <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
+              <UserCheck className="h-4 w-4" /> Link Resident (Surname, First Name, Middle Name):
+            </span>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap shrink-0">
-            <div className="w-full sm:w-56 shrink-0">
+            <div className="w-full sm:w-80 shrink-0">
               <Select value={selectedResidentId} onValueChange={handleSelectResident} disabled={isMidwife}>
                 <SelectTrigger className="h-9 text-xs bg-background w-full">
-                  <SelectValue placeholder={language === "tl" ? "Pumili..." : "Select..."} />
+                  <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select resident (Surname, First Name, Middle Name)..."} />
                 </SelectTrigger>
                 <SelectContent>
                   {residents.map((r) => (
                     <SelectItem key={r.id} value={r.id} className="text-xs">
-                      {r.full_name} ({r.sitio || "Subukin"})
+                      {formatResidentName(r.full_name)} ({r.sitio || "Subukin"})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1848,7 +1838,7 @@ const FamilyPlanningForm = () => {
                   <TableBody>
                     {filteredHistoryRecords.map((rec) => {
                       const parsed = parseRecordDetails(rec);
-                      const clientName = rec.residents?.full_name || (parsed?.sideA ? `${parsed.sideA.client_given_name} ${parsed.sideA.client_last_name}`.trim() : "—");
+                      const clientName = formatResidentName(rec.residents?.full_name) || (parsed?.sideA ? formatResidentName(`${parsed.sideA.client_last_name}, ${parsed.sideA.client_given_name}${parsed.sideA.client_mi ? `, ${parsed.sideA.client_mi}` : ""}`) : "—");
                       const dateStr = rec.start_date || (rec.created_at ? new Date(rec.created_at).toLocaleDateString() : "—");
                       const fpNum = parsed?.sideA?.fp_no || "—";
 
@@ -1950,7 +1940,7 @@ const FamilyPlanningForm = () => {
           <tbody>
             {filteredHistoryRecords.map((rec, index) => {
               const parsed = parseRecordDetails(rec);
-              const clientName = rec.residents?.full_name || (parsed?.sideA ? `${parsed.sideA.client_given_name} ${parsed.sideA.client_last_name}`.trim() : "—");
+              const clientName = formatResidentName(rec.residents?.full_name) || (parsed?.sideA ? formatResidentName(`${parsed.sideA.client_last_name}, ${parsed.sideA.client_given_name}${parsed.sideA.client_mi ? `, ${parsed.sideA.client_mi}` : ""}`) : "—");
               const dateStr = rec.start_date || (rec.created_at ? new Date(rec.created_at).toLocaleDateString() : "—");
               const method = rec.method || parsed?.sideA?.chosen_method || "—";
               return (
@@ -1986,7 +1976,7 @@ const FamilyPlanningForm = () => {
           {selectedRecordForView && (
             (() => {
               const parsed: any = parseRecordDetails(selectedRecordForView);
-              const clientName = selectedRecordForView.residents?.full_name || (parsed?.sideA ? `${parsed.sideA.client_given_name} ${parsed.sideA.client_mi || ''} ${parsed.sideA.client_last_name}`.trim() : "Patient");
+              const clientName = formatResidentName(selectedRecordForView.residents?.full_name) || (parsed?.sideA ? formatResidentName(`${parsed.sideA.client_last_name}, ${parsed.sideA.client_given_name}${parsed.sideA.client_mi ? `, ${parsed.sideA.client_mi}` : ""}`) : "Patient");
               const sideA: any = parsed?.sideA;
               const sideB: any = parsed?.sideBVisits || parsed?.sideB;
 

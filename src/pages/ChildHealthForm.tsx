@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ensureResidentExists, getFamilyOnlyResidents } from "@/lib/residentLinker";
+import { formatResidentName, parseNameParts } from "@/lib/nameFormatter";
 import { logActivity } from "@/lib/activityLogger";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
@@ -1306,11 +1307,8 @@ const ChildHealthForm = () => {
     const res = residents.find(r => r.id === resId);
     if (!res) return;
 
-    // Split name
-    const parts = (res.full_name || "").trim().split(" ");
-    let fName = parts[0] || "";
-    let sName = parts.length > 1 ? parts[parts.length - 1] : "";
-    let mName = parts.length > 2 ? parts.slice(1, -1).join(" ") : "";
+    // Split name using standardized name parser
+    const { last: sName, first: fName, middle: mName } = parseNameParts(res.full_name);
 
     let computedMonths = "";
     if (res.birthday) {
@@ -1365,7 +1363,7 @@ const ChildHealthForm = () => {
 
       updated[targetIdx] = {
         ...updated[targetIdx],
-        child_name: res.full_name || "",
+        child_name: formatResidentName(res.full_name) || "",
         dob: res.birthday || (res.age ? `Age: ${res.age}y` : ""),
       };
 
@@ -1382,10 +1380,7 @@ const ChildHealthForm = () => {
     const res = residents.find(r => r.id === resId);
     if (!res) return;
 
-    const parts = (res.full_name || "").trim().split(" ");
-    let fName = parts[0] || "";
-    let lName = parts.length > 1 ? parts[parts.length - 1] : "";
-    let mName = parts.length > 2 ? parts.slice(1, -1).join(" ") : "";
+    const { last: lName, first: fName, middle: mName } = parseNameParts(res.full_name);
 
     let computedMonths = "";
     const m = calculateAgeMonths(res.birthday);
@@ -1395,10 +1390,7 @@ const ChildHealthForm = () => {
       computedMonths = String(Number(res.age) * 12);
     }
 
-    const motherParts = (res.mother_name || "").trim().split(" ");
-    let momFirst = motherParts[0] || "";
-    let momLast = motherParts.length > 1 ? motherParts[motherParts.length - 1] : "";
-    let momMid = motherParts.length > 2 ? motherParts.slice(1, -1).join(" ") : "";
+    const { last: momLast, first: momFirst, middle: momMid } = parseNameParts(res.mother_name);
 
     setSiaRows(prev => {
       let targetIdx = prev.findIndex(r => !r.child_given_name && !r.child_family_name);
@@ -2518,16 +2510,16 @@ const ChildHealthForm = () => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-card p-3 rounded-lg border border-border/60 shadow-xs w-full">
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
-                      <UserCheck className="h-4 w-4" /> Select a Resident (0–5y / 0–60m):
+                      <UserCheck className="h-4 w-4" /> Select a Resident (Surname, First Name, Middle Name):
                     </span>
                     <Select disabled={isMidwife} value={selectedResidentId} onValueChange={handleSelectResidentForSick}>
                       <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
-                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente..." : "Select a child resident..."} />
+                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select a child resident (Surname, First Name, Middle Name)..."} />
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
                         {childResidents.map(r => (
                           <SelectItem key={r.id} value={r.id} className="text-xs">
-                            {r.full_name} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos / ${calculateAgeYears(r.birthday, r.age)}y)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
+                            {formatResidentName(r.full_name)} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos / ${calculateAgeYears(r.birthday, r.age)}y)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -2571,16 +2563,16 @@ const ChildHealthForm = () => {
                 <div className="border border-slate-300 dark:border-slate-700 rounded-md p-3 space-y-3 bg-card">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
+                      <Label className="text-[11px] font-medium text-slate-500">Surname:</Label>
+                      <Input type="text" value={sickForm.surname} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, surname: sanitizeLetters(e.target.value) }))} placeholder="Surname" className={lineInputClass} />
+                    </div>
+                    <div>
                       <Label className="text-[11px] font-medium text-slate-500">First Name:</Label>
                       <Input type="text" value={sickForm.first_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, first_name: sanitizeLetters(e.target.value) }))} placeholder="First Name" className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Middle Name:</Label>
                       <Input type="text" value={sickForm.middle_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, middle_name: sanitizeLetters(e.target.value) }))} placeholder="Middle Name" className={lineInputClass} />
-                    </div>
-                    <div>
-                      <Label className="text-[11px] font-medium text-slate-500">Surname:</Label>
-                      <Input type="text" value={sickForm.surname} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, surname: sanitizeLetters(e.target.value) }))} placeholder="Surname" className={lineInputClass} />
                     </div>
                   </div>
 
@@ -2625,12 +2617,12 @@ const ChildHealthForm = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                      <Label className="text-[11px] font-medium text-slate-500">Pangalan ng Ina:</Label>
-                      <Input type="text" value={sickForm.mother_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, mother_name: sanitizeLetters(e.target.value) }))} placeholder="Pangalan ng Ina" className={lineInputClass} />
+                      <Label className="text-[11px] font-medium text-slate-500">Pangalan ng Ina (Surname, First Name, Middle Name):</Label>
+                      <Input type="text" value={sickForm.mother_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, mother_name: sanitizeLetters(e.target.value) }))} placeholder="Surname, First Name, Middle Name" className={lineInputClass} />
                     </div>
                     <div>
-                      <Label className="text-[11px] font-medium text-slate-500">Pangalan ng Ama:</Label>
-                      <Input type="text" value={sickForm.father_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, father_name: sanitizeLetters(e.target.value) }))} placeholder="Pangalan ng Ama" className={lineInputClass} />
+                      <Label className="text-[11px] font-medium text-slate-500">Pangalan ng Ama (Surname, First Name, Middle Name):</Label>
+                      <Input type="text" value={sickForm.father_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, father_name: sanitizeLetters(e.target.value) }))} placeholder="Surname, First Name, Middle Name" className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Contact Number:</Label>
@@ -3626,16 +3618,16 @@ const ChildHealthForm = () => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
-                      <UserCheck className="h-4 w-4" /> Select a Resident (0–5y / 0–60m):
+                      <UserCheck className="h-4 w-4" /> Select a Resident (Surname, First Name, Middle Name):
                     </span>
                     <Select disabled={isMidwife} value="" onValueChange={handleSelectResidentForVitA}>
                       <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
-                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente..." : "Select a child resident..."} />
+                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select a child resident (Surname, First Name, Middle Name)..."} />
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
                         {childResidents.map(r => (
                           <SelectItem key={r.id} value={r.id} className="text-xs">
-                            {r.full_name} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
+                            {formatResidentName(r.full_name)} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -3651,7 +3643,7 @@ const ChildHealthForm = () => {
                     <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
                       <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-8 print:w-[3%]">NO.</th>
                       <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[280px] w-[280px] print:w-[17%]">
-                        NAME OF CHILD<br/><span className="text-[10px] font-normal text-slate-600 dark:text-slate-400">(First Name, MI, Last Name)</span>
+                        NAME OF CHILD<br/><span className="text-[10px] font-normal text-slate-600 dark:text-slate-400">(Surname, First Name, Middle Name)</span>
                       </th>
                       <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px] print:w-[8%]">BIRTH DATE</th>
                       
@@ -3723,7 +3715,7 @@ const ChildHealthForm = () => {
                               const val = e.target.value;
                               setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, child_name: val } : r));
                             }} 
-                            placeholder="" 
+                            placeholder="Surname, First Name, Middle Name" 
                             className="cell-input w-full bg-transparent border-0 outline-none text-xs px-1 font-medium"
                           />
                         </td>
@@ -3864,16 +3856,16 @@ const ChildHealthForm = () => {
                 <div className="flex flex-col gap-3 bg-card p-3 rounded-lg border border-border/60 shadow-xs text-xs w-full">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
-                      <UserCheck className="h-4 w-4" /> Select a Resident (0–5y / 0–60m):
+                      <UserCheck className="h-4 w-4" /> Select a Resident (Surname, First Name, Middle Name):
                     </span>
                     <Select disabled={isMidwife} value="" onValueChange={handleSelectResidentForSIA}>
                       <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
-                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente..." : "Select a child resident..."} />
+                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select a child resident (Surname, First Name, Middle Name)..."} />
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
                         {childResidents.map(r => (
                           <SelectItem key={r.id} value={r.id} className="text-xs">
-                            {r.full_name} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
+                            {formatResidentName(r.full_name)} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -51,6 +51,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { getFamilyOnlyResidents, calculateAge, ensureResidentExists } from "@/lib/residentLinker";
+import { formatResidentName } from "@/lib/nameFormatter";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { 
   allowOnlyNumbers, 
@@ -1146,12 +1147,12 @@ const AddNewForm = () => {
             <div className="w-full sm:w-64">
               <Select value={selectedResidentId} onValueChange={handleSelectResident}>
                 <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder={language === "tl" ? "I-link ang Residente para sa Auto-fill" : "Link Resident to Auto-fill"} />
+                  <SelectValue placeholder={language === "tl" ? "I-link ang Residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Link Resident (Surname, First Name, Middle Name)..."} />
                 </SelectTrigger>
                 <SelectContent>
                   {residents.map((r) => (
                     <SelectItem key={r.id} value={r.id} className="text-xs">
-                      {r.full_name} ({r.sitio || "Subukin"})
+                      {formatResidentName(r.full_name)} ({r.sitio || "Subukin"})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1286,16 +1287,16 @@ const AddNewForm = () => {
                 {/* Resident Selector */}
                 <div className="w-full sm:w-64 no-print">
                   <Label className="text-xs font-semibold mb-1 block">
-                    {language === "tl" ? "I-link ang Rehistradong Residente" : "Link Registered Resident"}
+                    {language === "tl" ? "I-link ang Rehistradong Residente (Apelyido, Pangalan, Gitnang Pangalan)" : "Link Registered Resident (Surname, First Name, Middle Name)"}
                   </Label>
                   <Select value={selectedResidentId} onValueChange={handleSelectResident}>
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder={language === "tl" ? "Pumili ng residente..." : "Select resident..."} />
+                      <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select resident (Surname, First Name, Middle Name)..."} />
                     </SelectTrigger>
                     <SelectContent>
                       {residents.map((r) => (
                         <SelectItem key={r.id} value={r.id} className="text-xs">
-                          {r.full_name} ({r.sitio || "Subukin"})
+                          {formatResidentName(r.full_name)} ({r.sitio || "Subukin"})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1657,7 +1658,7 @@ const AddNewForm = () => {
                             </span>
                           </td>
                           <td className="p-3 font-semibold text-foreground">
-                            {rec.resident_name || "—"}
+                            {formatResidentName(rec.resident_name) || "—"}
                           </td>
                           <td className="p-3 text-muted-foreground max-w-[320px] truncate" title={summaryEntries}>
                             {summaryEntries || "—"}
@@ -1725,7 +1726,7 @@ const AddNewForm = () => {
                 <div>
                   <span className="text-slate-500 text-[10px] block">{language === "tl" ? "Residente / Kliyente:" : "Resident / Client:"}</span>
                   <strong className="text-sm text-slate-900 dark:text-slate-100">
-                    {selectedSubmissionForView.resident_name || "—"}
+                    {formatResidentName(selectedSubmissionForView.resident_name) || "—"}
                   </strong>
                 </div>
                 <div>
