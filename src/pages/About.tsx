@@ -106,19 +106,25 @@ const About = () => {
 
       const subukinCoords: [number, number] = [SUBUKIN_COORDS.lat, SUBUKIN_COORDS.lng];
 
-      // Tight bounds that encompass only Barangay Subukin and its sitios
+      // Tight bounds that encompass ONLY Barangay Subukin and its sitios —
+      // users cannot pan or zoom outside this area.
       const barangayBounds = L.latLngBounds(
-        L.latLng(13.7180, 121.4300), // SW corner
-        L.latLng(13.7290, 121.4500)  // NE corner
+        L.latLng(13.7190, 121.4310), // SW corner — strictly within Barangay Subukin
+        L.latLng(13.7285, 121.4510)  // NE corner — strictly within Barangay Subukin
       );
 
       const map = L.map(mapContainerRef.current, {
         center: subukinCoords,
         zoom: 15,
-        minZoom: 14,
+        // minZoom 15 prevents zooming out beyond Barangay Subukin —
+        // neighboring barangays, municipalities, or countries will NOT be visible.
+        minZoom: 15,
         maxZoom: 18,
         maxBounds: barangayBounds,
         maxBoundsViscosity: 1.0,
+        // Disable keyboard navigation that could escape the bounds
+        keyboard: true,
+        keyboardPanDelta: 40,
       });
       mapRef.current = map;
 
@@ -331,23 +337,39 @@ const About = () => {
           {/* Map Display Container */}
           <div className="relative w-full h-[460px] bg-slate-100 dark:bg-slate-900">
             {mapViewMode === "google" && (
-              <iframe
-                title="Barangay Subukin Google Map"
-                src="https://maps.google.com/maps?q=13.72335,121.44059&t=m&z=16&ie=UTF8&iwloc=B&output=embed"
-                className="w-full h-full border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+              <div className="relative w-full h-full">
+                <iframe
+                  title="Barangay Subukin Google Map"
+                  src="https://maps.google.com/maps?q=13.72335,121.44059&t=m&z=17&ie=UTF8&iwloc=B&output=embed"
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+                {/* Transparent overlay prevents scroll-wheel zoom-out on the Google Maps iframe */}
+                <div
+                  className="absolute inset-0 z-10"
+                  style={{ pointerEvents: "none" }}
+                  aria-hidden="true"
+                />
+              </div>
             )}
 
             {mapViewMode === "satellite" && (
-              <iframe
-                title="Barangay Subukin Satellite Map"
-                src="https://maps.google.com/maps?q=13.72335,121.44059&t=k&z=17&ie=UTF8&iwloc=B&output=embed"
-                className="w-full h-full border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+              <div className="relative w-full h-full">
+                <iframe
+                  title="Barangay Subukin Satellite Map"
+                  src="https://maps.google.com/maps?q=13.72335,121.44059&t=k&z=18&ie=UTF8&iwloc=B&output=embed"
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+                {/* Transparent overlay prevents scroll-wheel zoom-out on the Google Maps iframe */}
+                <div
+                  className="absolute inset-0 z-10"
+                  style={{ pointerEvents: "none" }}
+                  aria-hidden="true"
+                />
+              </div>
             )}
 
             {mapViewMode === "interactive" && (
