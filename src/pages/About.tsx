@@ -337,39 +337,27 @@ const About = () => {
           {/* Map Display Container */}
           <div className="relative w-full h-[460px] bg-slate-100 dark:bg-slate-900">
             {mapViewMode === "google" && (
-              <div className="relative w-full h-full">
-                <iframe
-                  title="Barangay Subukin Google Map"
-                  src="https://maps.google.com/maps?q=13.72335,121.44059&t=m&z=17&ie=UTF8&iwloc=B&output=embed"
-                  className="w-full h-full border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-                {/* Transparent overlay prevents scroll-wheel zoom-out on the Google Maps iframe */}
-                <div
-                  className="absolute inset-0 z-10"
-                  style={{ pointerEvents: "none" }}
-                  aria-hidden="true"
-                />
-              </div>
+              // z=17 — starts tightly centred on Barangay Subukin;
+              // zoom IN to explore sitios, zoom OUT stays within the barangay view.
+              <iframe
+                title="Barangay Subukin Google Map"
+                src="https://maps.google.com/maps?q=13.72335,121.44059&t=m&z=17&ie=UTF8&iwloc=B&output=embed"
+                className="w-full h-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             )}
 
             {mapViewMode === "satellite" && (
-              <div className="relative w-full h-full">
-                <iframe
-                  title="Barangay Subukin Satellite Map"
-                  src="https://maps.google.com/maps?q=13.72335,121.44059&t=k&z=18&ie=UTF8&iwloc=B&output=embed"
-                  className="w-full h-full border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-                {/* Transparent overlay prevents scroll-wheel zoom-out on the Google Maps iframe */}
-                <div
-                  className="absolute inset-0 z-10"
-                  style={{ pointerEvents: "none" }}
-                  aria-hidden="true"
-                />
-              </div>
+              // z=18 maximum zoom — starts at rooftop detail of Barangay Subukin;
+              // zoom IN to explore sitios, zoom OUT stays within the barangay view.
+              <iframe
+                title="Barangay Subukin Satellite Map"
+                src="https://maps.google.com/maps?q=13.72335,121.44059&t=k&z=18&ie=UTF8&iwloc=B&output=embed"
+                className="w-full h-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             )}
 
             {mapViewMode === "interactive" && (
