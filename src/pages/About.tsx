@@ -40,7 +40,8 @@ const About = () => {
   const { t, language } = useSettings();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
-  const [mapViewMode, setMapViewMode] = useState<"google" | "satellite" | "interactive">("google");
+  // Default to GIS/Sitios so sitio markers are immediately visible
+  const [mapViewMode, setMapViewMode] = useState<"google" | "satellite" | "interactive">("interactive");
 
   // Historical census data for Barangay Subukin
   const demographicData = [
@@ -106,23 +107,21 @@ const About = () => {
 
       const subukinCoords: [number, number] = [SUBUKIN_COORDS.lat, SUBUKIN_COORDS.lng];
 
-      // Tight bounds that encompass ONLY Barangay Subukin and its sitios —
-      // users cannot pan or zoom outside this area.
+      // Bounds encompass all sitios + Subukin Port — expanded east to 121.4900
+      // to include the port marker at 121.44861. Users cannot pan outside.
       const barangayBounds = L.latLngBounds(
-        L.latLng(13.7190, 121.4310), // SW corner — strictly within Barangay Subukin
-        L.latLng(13.7285, 121.4510)  // NE corner — strictly within Barangay Subukin
+        L.latLng(13.7165, 121.4295), // SW corner — south of Sitio Cama
+        L.latLng(13.7300, 121.4900)  // NE corner — east of Subukin Port coastline
       );
 
       const map = L.map(mapContainerRef.current, {
         center: subukinCoords,
-        zoom: 15,
-        // minZoom 15 prevents zooming out beyond Barangay Subukin —
-        // neighboring barangays, municipalities, or countries will NOT be visible.
-        minZoom: 15,
+        // minZoom 13 lets fitBounds land at ~z14 so ALL sitios are visible at once;
+        // users can then zoom IN freely up to z18 for fine detail.
+        minZoom: 13,
         maxZoom: 18,
         maxBounds: barangayBounds,
         maxBoundsViscosity: 1.0,
-        // Disable keyboard navigation that could escape the bounds
         keyboard: true,
         keyboardPanDelta: 40,
       });
@@ -337,33 +336,79 @@ const About = () => {
           {/* Map Display Container */}
           <div className="relative w-full h-[460px] bg-slate-100 dark:bg-slate-900">
             {mapViewMode === "google" && (
-              // z=17 — starts tightly centred on Barangay Subukin;
-              // zoom IN to explore sitios, zoom OUT stays within the barangay view.
-              <iframe
-                title="Barangay Subukin Google Map"
-                src="https://maps.google.com/maps?q=13.72335,121.44059&t=m&z=17&ie=UTF8&iwloc=B&output=embed"
-                className="w-full h-full border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+              <div className="relative w-full h-full">
+                {/* Street map — centred on Barangay Subukin at z=15 */}
+                <iframe
+                  title="Barangay Subukin Google Map"
+                  src="https://maps.google.com/maps?q=13.72335,121.44059&t=m&z=15&ie=UTF8&iwloc=B&output=embed"
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+                {/* Sitio-layer hint overlay — sits in the bottom-left corner */}
+                <div className="absolute bottom-3 left-3 z-20 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-border/60 rounded-lg px-3 py-2 shadow-md flex items-center gap-2 text-xs font-medium text-foreground pointer-events-none">
+                  <Compass className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>Switch to <strong>GIS / Sitios</strong> tab to see sitio markers</span>
+                </div>
+              </div>
             )}
 
             {mapViewMode === "satellite" && (
-              // z=18 maximum zoom — starts at rooftop detail of Barangay Subukin;
-              // zoom IN to explore sitios, zoom OUT stays within the barangay view.
-              <iframe
-                title="Barangay Subukin Satellite Map"
-                src="https://maps.google.com/maps?q=13.72335,121.44059&t=k&z=18&ie=UTF8&iwloc=B&output=embed"
-                className="w-full h-full border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+              <div className="relative w-full h-full">
+                {/* Satellite imagery — centred on Barangay Subukin at z=17 */}
+                <iframe
+                  title="Barangay Subukin Satellite Map"
+                  src="https://maps.google.com/maps?q=13.72335,121.44059&t=k&z=17&ie=UTF8&iwloc=B&output=embed"
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+                {/* Sitio-layer hint overlay — sits in the bottom-left corner */}
+                <div className="absolute bottom-3 left-3 z-20 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-border/60 rounded-lg px-3 py-2 shadow-md flex items-center gap-2 text-xs font-medium text-foreground pointer-events-none">
+                  <Compass className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>Switch to <strong>GIS / Sitios</strong> tab to see sitio markers</span>
+                </div>
+              </div>
             )}
 
             {mapViewMode === "interactive" && (
+              // GIS/Sitios: Leaflet map with all sitio markers, zoom-in friendly.
+              // fitBounds shows all sitios at once; click any marker for details.
               <div ref={mapContainerRef} className="w-full h-full z-10" />
             )}
           </div>
+
+          {/* Sitio Legend — only shown on the GIS/Sitios (interactive) tab */}
+          {mapViewMode === "interactive" && (
+            <div className="px-4 pt-3 pb-2 border-t border-border/40 bg-muted/10">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Compass className="h-3 w-3 text-primary" /> Sitio Locations — click a marker on the map for details
+              </p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                {[
+                  { name: "Sitio Cama",              color: "#7c3aed" },
+                  { name: "Sitio Makalintal 1",      color: "#db2777" },
+                  { name: "Sitio Makalintal 2",      color: "#ea580c" },
+                  { name: "Sitio Maligaya",           color: "#16a34a" },
+                  { name: "Sitio Manggahan 1",        color: "#0284c7" },
+                  { name: "Sitio Manggahan 2",        color: "#0891b2" },
+                  { name: "Sitio Masaya",             color: "#65a30d" },
+                  { name: "Sitio Masigla",            color: "#d97706" },
+                  { name: "Sitio Matahimik / Burol",  color: "#9333ea" },
+                  { name: "Sitio Matahimik / Punta",  color: "#be185d" },
+                  { name: "Sitio Puntor",             color: "#0f766e" },
+                ].map(({ name, color }) => (
+                  <span key={name} className="flex items-center gap-1.5 text-[11px] text-foreground">
+                    <span
+                      style={{ background: color }}
+                      className="inline-block w-3 h-3 rounded-full border border-white/80 shadow-sm shrink-0"
+                    />
+                    {name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Quick Geographic Information Banner */}
           <div className="p-4 sm:p-5 bg-card border-t border-border/40 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
