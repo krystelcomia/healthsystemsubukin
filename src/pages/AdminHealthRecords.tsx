@@ -8,10 +8,7 @@ import {
   ClipboardList,
   Stethoscope,
   Activity,
-  Bug,
-  HeartPulse,
   Baby,
-  Syringe,
   FileText,
   Printer,
   Eye,
@@ -28,6 +25,7 @@ import {
   MapPin,
   type LucideIcon,
 } from "lucide-react";
+import { MosquitoIcon, PregnantWomanIcon, FamilyPlanningIcon } from "@/components/icons/CustomHealthIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -42,7 +40,7 @@ interface FormMeta {
   title: string;
   category: string;
   description: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string; size?: number | string }> | LucideIcon;
   table: string;
   color: string;
   badgeBg: string;
@@ -88,7 +86,7 @@ const BASE_FORM_GALLERY: FormMeta[] = [
     title: "Dengue Larval Inspection Form",
     category: "Environmental Sanitation",
     description: "Community surveillance form for breeding container inspections and vector prevention.",
-    icon: Bug,
+    icon: MosquitoIcon,
     table: "dengue_prevention",
     color: "border-teal-500/30 text-teal-600 dark:text-teal-400 bg-teal-500/5",
     badgeBg: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20",
@@ -99,7 +97,7 @@ const BASE_FORM_GALLERY: FormMeta[] = [
     title: "Maternal Health & Prenatal Form",
     category: "Maternal & Child Health",
     description: "Obstetric scoring, trimester checkups, risk factor identification, and prenatal care tracking.",
-    icon: HeartPulse,
+    icon: PregnantWomanIcon,
     table: "maternal_care",
     color: "border-pink-500/30 text-pink-600 dark:text-pink-400 bg-pink-500/5",
     badgeBg: "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20",
@@ -121,7 +119,7 @@ const BASE_FORM_GALLERY: FormMeta[] = [
     title: "Family Planning Service Form",
     category: "Reproductive Health",
     description: "Contraceptive method counseling, supply distribution, and reproductive health monitoring.",
-    icon: Syringe,
+    icon: FamilyPlanningIcon,
     table: "family_planning",
     color: "border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/5",
     badgeBg: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",

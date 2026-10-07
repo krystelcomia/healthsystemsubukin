@@ -6,10 +6,7 @@ import {
   Stethoscope,
   ClipboardList,
   Activity,
-  Bug,
-  HeartPulse,
   Baby,
-  Syringe,
   TrendingUp,
   CalendarDays,
   RefreshCw,
@@ -24,6 +21,7 @@ import {
   CalendarRange,
   type LucideIcon,
 } from "lucide-react";
+import { MosquitoIcon, PregnantWomanIcon, FamilyPlanningIcon } from "@/components/icons/CustomHealthIcons";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -33,7 +31,7 @@ import { OfficialHeader } from "@/components/OfficialHeader";
 interface FormConfig {
   table: string;
   title: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string; size?: number | string }> | LucideIcon;
   columns: string[];
   nameColumn: string;
 }
@@ -63,14 +61,14 @@ const FORM_CONFIGS: Record<string, FormConfig> = {
   dengue_prevention: {
     table: "dengue_prevention",
     title: "Dengue Prevention Records",
-    icon: Bug,
+    icon: MosquitoIcon,
     columns: ["household_name", "container_type", "has_larvae", "action_plan"],
     nameColumn: "household_name",
   },
   maternal_care: {
     table: "maternal_care",
     title: "Maternal Care Records",
-    icon: HeartPulse,
+    icon: PregnantWomanIcon,
     columns: ["created_at"],
     nameColumn: "created_at",
   },
@@ -84,7 +82,7 @@ const FORM_CONFIGS: Record<string, FormConfig> = {
   family_planning: {
     table: "family_planning",
     title: "Family Planning Records",
-    icon: Syringe,
+    icon: FamilyPlanningIcon,
     columns: ["method", "start_date", "remarks"],
     nameColumn: "method",
   },

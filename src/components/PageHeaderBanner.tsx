@@ -4,7 +4,7 @@ import { getThemeStyle } from "@/lib/themeStyles";
 import { LucideIcon } from "lucide-react";
 
 interface PageHeaderBannerProps {
-  icon?: LucideIcon;
+  icon?: React.ComponentType<{ className?: string; size?: number | string }> | LucideIcon;
   badge?: ReactNode;
   title: ReactNode;
   description?: ReactNode;

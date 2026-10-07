@@ -22,6 +22,7 @@ import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
+import { FamilyPlanningIcon } from "@/components/icons/CustomHealthIcons";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { useAuth } from "@/contexts/AuthContext";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
@@ -763,7 +764,7 @@ const FamilyPlanningForm = () => {
 
       {/* Dynamic Theme Banner Header matching Dashboard */}
       <PageHeaderBanner
-        icon={Heart}
+        icon={FamilyPlanningIcon}
         badge={language === "tl" ? "Talaan ng Family Planning" : "Family Planning Assessment"}
         title={t("nav.familyPlanning")}
         description={language === "tl" ? "Opisyal na digital replica ng DOH FP Form 1 (Side A at Side B) – Pagtatasa sa klinikal ng kliyente, pagsusuri ng kasaysayan sa medisina, at pagsubaybay sa paraan." : "Official Digital Replica of Department of Health FP Form 1 (Side A & Side B) – Client clinical assessment, medical history evaluation, method tracking, and follow-up records."}

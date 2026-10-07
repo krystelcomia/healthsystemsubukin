@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Bug, Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar, CalendarCheck, Search, FileText, ShieldAlert, FileSpreadsheet } from "lucide-react";
+import { Printer, Trash2, Trash, Save, Eye, History, FileCheck, Calendar, CalendarCheck, Search, FileText, ShieldAlert, FileSpreadsheet } from "lucide-react";
+import { MosquitoIcon } from "@/components/icons/CustomHealthIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -1660,7 +1661,7 @@ const DenguePreventionForm = () => {
 
       {/* Dynamic Theme Banner Header matching Dashboard */}
       <PageHeaderBanner
-        icon={ShieldAlert}
+        icon={MosquitoIcon}
         badge={language === "tl" ? "Talaan ng Dengue Prevention" : "Dengue Prevention Record"}
         title={language === "tl" ? "Dengue Prevention — Search & Destroy 2026" : "Dengue Prevention — Search & Destroy 2026"}
         description={language === "tl" ? "Paghahanap at pagsugpo ng lamok na nagdadala ng sakit na Dengue sa Barangay Subukin." : "Search and destruction checklist of dengue vector breeding containers and household inspection records in Barangay Subukin."}

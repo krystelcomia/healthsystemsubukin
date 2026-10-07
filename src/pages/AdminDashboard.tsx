@@ -9,7 +9,6 @@ import {
   Stethoscope, 
   ClipboardList, 
   Activity, 
-  Bug, 
   UserCheck, 
   UserX, 
   TrendingUp,
@@ -18,9 +17,9 @@ import {
   ChevronRight,
   User,
   Heart,
-  Syringe,
   FileText
 } from "lucide-react";
+import { MosquitoIcon } from "@/components/icons/CustomHealthIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { syncFamilyDataToResidents, getFamilyOnlyResidents } from "@/lib/residentLinker";
@@ -236,7 +235,7 @@ const AdminDashboard = () => {
     { label: t("dashboard.consultations"), value: stats.consultations, icon: Stethoscope, desc: t("dashboard.totalConsultations"), color: "from-emerald-500/10 via-emerald-500/5 to-transparent text-emerald-600 dark:text-emerald-400 border-emerald-500/30", badgeColor: "bg-emerald-500/10 text-emerald-600" },
     { label: t("dashboard.familyRecords"), value: stats.familyRecords, icon: ClipboardList, desc: t("dashboard.familiesRegistered"), color: "from-purple-500/10 via-purple-500/5 to-transparent text-purple-600 dark:text-purple-400 border-purple-500/30", badgeColor: "bg-purple-500/10 text-purple-600" },
     { label: t("nav.philpenHealth"), value: stats.philpenRecords, icon: Activity, desc: t("admin.dashboard.healthScreenings"), color: "from-rose-500/10 via-rose-500/5 to-transparent text-rose-600 dark:text-rose-400 border-rose-500/30", badgeColor: "bg-rose-500/10 text-rose-600" },
-    { label: t("nav.denguePrevention"), value: stats.dengueRecords, icon: Bug, desc: t("admin.dashboard.dengueRecords"), color: "from-teal-500/10 via-teal-500/5 to-transparent text-teal-600 dark:text-teal-400 border-teal-500/30", badgeColor: "bg-teal-500/10 text-teal-600" },
+    { label: t("nav.denguePrevention"), value: stats.dengueRecords, icon: MosquitoIcon, desc: t("admin.dashboard.dengueRecords"), color: "from-teal-500/10 via-teal-500/5 to-transparent text-teal-600 dark:text-teal-400 border-teal-500/30", badgeColor: "bg-teal-500/10 text-teal-600" },
   ];
 
   const onlineWorkersList = workers.filter((w) => w.is_online);

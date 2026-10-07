@@ -21,9 +21,6 @@ import {
   ClipboardList,
   Stethoscope,
   Heart,
-  HeartPulse,
-  Syringe,
-  Bug,
   Baby,
   Settings,
   Activity,
@@ -33,6 +30,7 @@ import {
   FileText,
   DatabaseBackup,
 } from "lucide-react";
+import { MosquitoIcon, PregnantWomanIcon, FamilyPlanningIcon } from "@/components/icons/CustomHealthIcons";
 import barangayLogo from "@/assets/barangay-logo.png";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -89,10 +87,10 @@ export function AppSidebar() {
     { title: t("nav.familyData"), url: "/forms/family-data", icon: ClipboardList },
     { title: t("nav.consultation"), url: "/forms/consultation", icon: Stethoscope },
     { title: t("nav.philpenHealth"), url: "/forms/philpen-health", icon: Activity },
-    { title: t("nav.denguePrevention"), url: "/forms/dengue-prevention", icon: Bug },
-    { title: t("nav.maternalCare"), url: "/forms/maternal-care", icon: HeartPulse },
+    { title: t("nav.denguePrevention"), url: "/forms/dengue-prevention", icon: MosquitoIcon },
+    { title: t("nav.maternalCare"), url: "/forms/maternal-care", icon: PregnantWomanIcon },
     { title: t("nav.childHealth"), url: "/forms/child-health", icon: Baby },
-    { title: t("nav.familyPlanning"), url: "/forms/family-planning", icon: Syringe },
+    { title: t("nav.familyPlanning"), url: "/forms/family-planning", icon: FamilyPlanningIcon },
     ...customBhwItems,
     ...(!isMidwife ? [{ title: t("nav.addNewForm"), url: "/forms/add-new", icon: Plus }] : []),
   ];
@@ -123,10 +121,10 @@ export function AppSidebar() {
     { title: t("nav.familyData"), url: "/admin/forms/family-data", icon: ClipboardList },
     { title: t("nav.consultation"), url: "/admin/forms/consultation", icon: Stethoscope },
     { title: t("nav.philpenHealth"), url: "/admin/forms/philpen-health", icon: Activity },
-    { title: t("nav.denguePrevention"), url: "/admin/forms/dengue-prevention", icon: Bug },
-    { title: t("nav.maternalCare"), url: "/admin/forms/maternal-care", icon: HeartPulse },
+    { title: t("nav.denguePrevention"), url: "/admin/forms/dengue-prevention", icon: MosquitoIcon },
+    { title: t("nav.maternalCare"), url: "/admin/forms/maternal-care", icon: PregnantWomanIcon },
     { title: t("nav.childHealth"), url: "/admin/forms/child-health", icon: Baby },
-    { title: t("nav.familyPlanning"), url: "/admin/forms/family-planning", icon: Syringe },
+    { title: t("nav.familyPlanning"), url: "/admin/forms/family-planning", icon: FamilyPlanningIcon },
     { title: t("nav.viewForms"), url: "/admin/forms/view", icon: FileText },
   ];
 

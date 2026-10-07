@@ -18,8 +18,6 @@ import {
   MapPin, 
   Calendar, 
   Heart, 
-  HeartPulse, 
-  Syringe, 
   Activity, 
   LayoutGrid, 
   List as ListIcon, 
@@ -32,6 +30,7 @@ import {
   ChevronRight,
   RefreshCw,
 } from "lucide-react";
+import { MosquitoIcon, PregnantWomanIcon, FamilyPlanningIcon } from "@/components/icons/CustomHealthIcons";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -563,7 +562,7 @@ const ResidentRecords = () => {
           {healthRecords.dengue_prevention.length > 0 && (
             <div>
               <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <Activity className="h-4 w-4 text-teal-600" /> {t("nav.denguePrevention")} ({healthRecords.dengue_prevention.length})
+                <MosquitoIcon className="h-4 w-4 text-teal-600" /> {t("nav.denguePrevention")} ({healthRecords.dengue_prevention.length})
               </h3>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
@@ -607,7 +606,7 @@ const ResidentRecords = () => {
           {healthRecords.maternal_care.length > 0 && (
             <div>
               <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <HeartPulse className="h-4 w-4 text-pink-600" /> {t("nav.maternalCare")} ({healthRecords.maternal_care.length})
+                <PregnantWomanIcon className="h-4 w-4 text-pink-600" /> {t("nav.maternalCare")} ({healthRecords.maternal_care.length})
               </h3>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
@@ -655,7 +654,7 @@ const ResidentRecords = () => {
           {healthRecords.family_planning.length > 0 && (
             <div>
               <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <Syringe className="h-4 w-4 text-indigo-600" /> {t("nav.familyPlanning")} ({healthRecords.family_planning.length})
+                <FamilyPlanningIcon className="h-4 w-4 text-indigo-600" /> {t("nav.familyPlanning")} ({healthRecords.family_planning.length})
               </h3>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>

@@ -11,9 +11,6 @@ import {
   TrendingUp,
   Baby,
   Heart,
-  HeartPulse,
-  Syringe,
-  Bug,
   Sparkles,
   ArrowUpRight,
   Clock,
@@ -25,6 +22,7 @@ import {
   Plus,
   Eye,
 } from "lucide-react";
+import { MosquitoIcon, PregnantWomanIcon, FamilyPlanningIcon } from "@/components/icons/CustomHealthIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -345,21 +343,21 @@ const Index = () => {
     { 
       title: t("nav.maternalCare"), 
       href: "/forms/maternal-care", 
-      icon: HeartPulse, 
+      icon: PregnantWomanIcon, 
       color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", 
       desc: language === "tl" ? "Talaan ng prenatal at mga buntis" : "Prenatal & pregnant records" 
     },
     { 
       title: t("nav.denguePrevention"), 
       href: "/forms/dengue-prevention", 
-      icon: Bug, 
+      icon: MosquitoIcon, 
       color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", 
       desc: language === "tl" ? "Inspeksyon ng kiti-kiti sa sambahayan" : "Household larvae inspection" 
     },
     { 
       title: t("nav.familyPlanning"), 
       href: "/forms/family-planning", 
-      icon: Syringe, 
+      icon: FamilyPlanningIcon, 
       color: "from-primary/20 to-primary/10 text-primary border-primary/20 hover:border-primary/50", 
       desc: language === "tl" ? "Pagsubaybay sa pamamaraan ng contraceptive" : "Contraceptive method tracking" 
     },

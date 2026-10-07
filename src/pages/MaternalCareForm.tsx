@@ -38,6 +38,7 @@ import barangayLogo from "@/assets/barangay-logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
+import { PregnantWomanIcon } from "@/components/icons/CustomHealthIcons";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
@@ -749,7 +750,7 @@ const MaternalCareForm = () => {
 
       {/* Dynamic Theme Banner Header matching Dashboard */}
       <PageHeaderBanner
-        icon={Heart}
+        icon={PregnantWomanIcon}
         badge={language === "tl" ? "Talaan ng Pangangalaga sa Ina" : "Maternal Care Record"}
         title={t("nav.maternalCare")}
         description={language === "tl" ? "Komprehensibong pagsubaybay sa prenatal checkup, milestones sa obstetrics (FPAL), at pagtatasa ng panganib sa pagbubuntis." : "Comprehensive prenatal checkup tracking, obstetric milestones (FPAL), EDC/LMP calculation, and pregnancy risk factor assessment for mothers of Barangay Subukin."}
