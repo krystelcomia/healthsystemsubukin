@@ -169,48 +169,119 @@ export async function logActivity(
   opts?: { entity_type?: string; entity_id?: string; description?: string }
 ) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    
+    let currentUser: any = null;
+    try {
+      const { data } = await supabase.auth.getUser();
+      currentUser = data?.user || null;
+    } catch {}
+
+    const uid = currentUser?.id || (typeof window !== "undefined" ? (localStorage.getItem("bhw_active_user_id") || localStorage.getItem("active_user_id")) : null);
+    const uEmail = currentUser?.email || (typeof window !== "undefined" ? localStorage.getItem("bhw_active_user_email") || "" : "");
+
     // Log to standard Supabase logs
-    await (supabase.from as any)("user_activity_logs").insert({
-      user_id: user.id,
-      action,
-      entity_type: opts?.entity_type ?? null,
-      entity_id: opts?.entity_id ?? null,
-      description: opts?.description ?? null,
-    });
+    if (uid) {
+      try {
+        await (supabase.from as any)("user_activity_logs").insert({
+          user_id: uid,
+          action,
+          entity_type: opts?.entity_type ?? null,
+          entity_id: opts?.entity_id ?? null,
+          description: opts?.description ?? null,
+        });
+      } catch {}
+    }
 
     // Also log to BHW specific logs with safe worker identification
-    const activeShift = getActiveBhwShift(user);
+    const activeShift = getActiveBhwShift(currentUser || (uid ? { id: uid, email: uEmail } : null));
     const activeBhw = activeShift?.workerName || 
-                      sessionStorage.getItem("logged_in_fullname") || 
-                      sessionStorage.getItem("logged_in_username") ||
-                      user.user_metadata?.full_name ||
-                      user.email?.split("@")[0] ||
-                      "BHW Worker";
+                      (typeof window !== "undefined" ? (
+                        sessionStorage.getItem("logged_in_fullname") || 
+                        sessionStorage.getItem("logged_in_username") ||
+                        localStorage.getItem("active_bhw_worker")
+                      ) : null) ||
+                      currentUser?.user_metadata?.full_name ||
+                      (uEmail ? uEmail.split("@")[0] : null) ||
+                      "BHW Personnel";
 
-    if (activeBhw) {
+    // Categorize action for clear badge & filtering
+    const actLower = action.toLowerCase();
+    let actionCategory: "RECORDING" | "EDITING" | "DELETING" | "PRINTING" | "ATTENDANCE" | "OTHER" = "OTHER";
+    if (actLower.includes("submit") || actLower.includes("create") || actLower.includes("add") || actLower.includes("record")) {
+      actionCategory = "RECORDING";
+    } else if (actLower.includes("update") || actLower.includes("edit") || actLower.includes("modify") || actLower.includes("save")) {
+      actionCategory = "EDITING";
+    } else if (actLower.includes("delete") || actLower.includes("remove")) {
+      actionCategory = "DELETING";
+    } else if (actLower.includes("print")) {
+      actionCategory = "PRINTING";
+    } else if (actLower.includes("check-in") || actLower.includes("check-out") || actLower.includes("shift") || actLower.includes("attendance")) {
+      actionCategory = "ATTENDANCE";
+    }
+
+    const now = new Date();
+    const newLog = {
+      id: crypto.randomUUID(),
+      userId: uid || null,
+      userEmail: uEmail || null,
+      workerName: activeBhw,
+      action,
+      actionCategory,
+      entityType: opts?.entity_type ?? null,
+      entityId: opts?.entity_id ?? null,
+      description: opts?.description ?? action,
+      timestamp: now.toISOString(),
+      dateStr: now.toISOString().split("T")[0],
+      timeStr: now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    };
+
+    if (typeof window !== "undefined") {
       const dbStr = localStorage.getItem("bhw_activity_logs");
       const logs = dbStr ? JSON.parse(dbStr) : [];
-      const newLog = {
-        id: crypto.randomUUID(),
-        userId: user.id,
-        userEmail: user.email,
-        workerName: activeBhw,
-        action,
-        description: opts?.description ?? action,
-        timestamp: new Date().toISOString(),
-        dateStr: new Date().toISOString().split("T")[0]
-      };
       logs.push(newLog);
+      // Keep up to 2000 logs
+      if (logs.length > 2000) {
+        logs.splice(0, logs.length - 2000);
+      }
       localStorage.setItem("bhw_activity_logs", JSON.stringify(logs));
       
-      broadcastAttendance({ type: "ACTIVITY_LOGGED", workerName: activeBhw, action });
+      broadcastAttendance({ type: "ACTIVITY_LOGGED", workerName: activeBhw, action, log: newLog });
+      window.dispatchEvent(new CustomEvent("bhw-activity-updated", { detail: newLog }));
+      window.dispatchEvent(new Event("storage"));
     }
   } catch (e) {
     console.warn("logActivity failed", e);
   }
+}
+
+// Global print event tracker to automatically record printing of any form
+if (typeof window !== "undefined" && !(window as any).__bhwPrintTrackerInitialized) {
+  (window as any).__bhwPrintTrackerInitialized = true;
+  window.addEventListener("beforeprint", () => {
+    try {
+      const path = window.location.pathname;
+      const formMap: Record<string, string> = {
+        "/": "Dashboard Overview",
+        "/family-data": "Family Data Form",
+        "/consultation": "Consultation Form",
+        "/maternal-care": "Maternal Care Form",
+        "/child-health": "Child Health Form",
+        "/family-planning": "Family Planning Form",
+        "/dengue-prevention": "Dengue Prevention Form",
+        "/philpen-health": "PhilPen Health Form",
+        "/residents": "Resident Records",
+        "/calendar": "Barangay Calendar",
+        "/admin": "Admin Dashboard",
+        "/admin/health-records": "Official Health Records",
+        "/admin/workers": "BHW Directory",
+        "/admin/settings": "Admin Settings",
+      };
+      const title = formMap[path] || (document.title ? document.title.replace(" | Subukin", "") : "System Form");
+      logActivity("print", {
+        entity_type: "document",
+        description: `Printed official document / report from ${title}`,
+      });
+    } catch {}
+  });
 }
 
 export function bhwCheckIn(

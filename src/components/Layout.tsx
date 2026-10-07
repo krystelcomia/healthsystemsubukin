@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NavLink } from "@/components/NavLink";
-import { Home, Info, Calendar, Phone, Fingerprint, Clock, UserCheck, LogOut, List, Shield, User, CalendarDays, Printer, AlertTriangle } from "lucide-react";
+import { Home, Info, Calendar, Phone, Fingerprint, Clock, UserCheck, LogOut, List, Shield, User, CalendarDays, Printer, AlertTriangle, History, Search, FilePlus, Edit3, Trash2, Activity, Filter, CheckCircle2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { bhwCheckIn, bhwCheckOut, getActiveBhwShift } from "@/lib/activityLogger";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -47,6 +48,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [activeBhw, setActiveBhw] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState("00:00:00");
   const [logsDialogOpen, setLogsDialogOpen] = useState(false);
+  const [activityLogsDialogOpen, setActivityLogsDialogOpen] = useState(false);
+  const [activitySearchQuery, setActivitySearchQuery] = useState("");
+  const [activityCategoryFilter, setActivityCategoryFilter] = useState("ALL");
+  const [activityDateFilter, setActivityDateFilter] = useState("ALL");
   const [attendanceNoticeOpen, setAttendanceNoticeOpen] = useState(false);
   const [noticeDismissed, setNoticeDismissed] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<any>(null);
@@ -92,15 +97,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
     window.addEventListener("bhw-attendance-updated", updateBhwState);
     window.addEventListener("bhw-db-updated", updateBhwState);
+    window.addEventListener("bhw-activity-updated", updateBhwState);
     window.addEventListener("storage", updateBhwState);
 
     return () => {
       if (bc) bc.close();
       window.removeEventListener("bhw-attendance-updated", updateBhwState);
       window.removeEventListener("bhw-db-updated", updateBhwState);
+      window.removeEventListener("bhw-activity-updated", updateBhwState);
       window.removeEventListener("storage", updateBhwState);
     };
-  }, [user, logsDialogOpen]);
+  }, [user, logsDialogOpen, activityLogsDialogOpen]);
 
   // Load dynamic workers list from database to ensure all registered workers are present
   useEffect(() => {
@@ -286,6 +293,78 @@ export function Layout({ children }: { children: React.ReactNode }) {
     setTimeout(cleanup, 2000);
   };
 
+  const handlePrintActivityLogs = () => {
+    document.body.classList.add("printing-activity-logs");
+    window.print();
+    const cleanup = () => {
+      document.body.classList.remove("printing-activity-logs");
+      window.removeEventListener("afterprint", cleanup);
+    };
+    window.addEventListener("afterprint", cleanup);
+    setTimeout(cleanup, 2000);
+  };
+
+  const resolveActionCategory = (log: any): "RECORDING" | "EDITING" | "DELETING" | "PRINTING" | "ATTENDANCE" | "OTHER" => {
+    if (log.actionCategory) return log.actionCategory;
+    const a = (log.action || "").toLowerCase();
+    const d = (log.description || "").toLowerCase();
+    if (a.includes("submit") || a.includes("create") || a.includes("add") || a.includes("record") || d.includes("recorded") || d.includes("added")) {
+      return "RECORDING";
+    }
+    if (a.includes("update") || a.includes("edit") || a.includes("modify") || a.includes("save") || d.includes("updated") || d.includes("edited")) {
+      return "EDITING";
+    }
+    if (a.includes("delete") || a.includes("remove") || d.includes("deleted") || d.includes("removed")) {
+      return "DELETING";
+    }
+    if (a.includes("print") || d.includes("printed") || d.includes("print")) {
+      return "PRINTING";
+    }
+    if (a.includes("check-in") || a.includes("check-out") || a.includes("shift") || a.includes("attendance") || d.includes("shift") || d.includes("checked in") || d.includes("checked out")) {
+      return "ATTENDANCE";
+    }
+    return "OTHER";
+  };
+
+  const availableActivityDates = Array.from(
+    new Set(
+      activityLogs.map((l: any) => {
+        if (l.dateStr) return l.dateStr;
+        if (l.timestamp) return new Date(l.timestamp).toISOString().split("T")[0];
+        return "";
+      }).filter(Boolean)
+    )
+  ).sort().reverse();
+
+  const filteredActivityLogs = activityLogs
+    .filter((log: any) => {
+      const category = resolveActionCategory(log);
+      if (activityCategoryFilter !== "ALL" && category !== activityCategoryFilter) {
+        return false;
+      }
+      const logDate = log.dateStr || (log.timestamp ? new Date(log.timestamp).toISOString().split("T")[0] : "");
+      if (activityDateFilter !== "ALL" && logDate !== activityDateFilter) {
+        return false;
+      }
+      if (activitySearchQuery.trim()) {
+        const q = activitySearchQuery.toLowerCase().trim();
+        const worker = (log.workerName || "").toLowerCase();
+        const email = (log.userEmail || "").toLowerCase();
+        const desc = (log.description || "").toLowerCase();
+        const act = (log.action || "").toLowerCase();
+        const dateMatch = logDate.includes(q);
+        if (!worker.includes(q) && !email.includes(q) && !desc.includes(q) && !act.includes(q) && !dateMatch) {
+          return false;
+        }
+      }
+      return true;
+    })
+    .sort((a: any, b: any) => {
+      const timeA = new Date(a.timestamp || 0).getTime();
+      const timeB = new Date(b.timestamp || 0).getTime();
+      return timeB - timeA;
+    });
+
   const [sidebarHeaderHeight, setSidebarHeaderHeight] = useState<number | null>(null);
 
   useEffect(() => {
@@ -444,7 +523,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         </>
                       )}
 
-                      <div className="border-t border-border/30 pt-3">
+                      <div className="border-t border-border/30 pt-3 space-y-2">
                         <Button 
                           variant="outline" 
                           size="sm" 
@@ -453,7 +532,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             setLogsDialogOpen(true);
                           }}
                         >
-                          <List className="h-3.5 w-3.5" /> {language === "tl" ? "Tingnan ang Attendance at Logs" : "View Attendance & Logs"}
+                          <List className="h-3.5 w-3.5" /> {language === "tl" ? "Tingnan ang Attendance" : "View Attendance"}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full text-xs h-8 gap-1.5 font-semibold text-primary border-primary/30 hover:bg-primary/10"
+                          onClick={() => {
+                            setActivityLogsDialogOpen(true);
+                          }}
+                        >
+                          <History className="h-3.5 w-3.5" /> {language === "tl" ? "Tingnan ang Activity Logs" : "View Activity Logs"}
                         </Button>
                       </div>
                     </PopoverContent>
@@ -695,14 +784,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           
           <DialogFooter className="pt-4 border-t border-border/30 mt-4 shrink-0 flex items-center justify-between gap-3">
-            <Button
-              onClick={handlePrintAttendance}
-              size="sm"
-              className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-sm"
-            >
-              <Printer className="h-4 w-4" />
-              {language === "tl" ? "I-print ang Attendance" : "Print Attendance Record"}
-            </Button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                onClick={handlePrintAttendance}
+                size="sm"
+                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-sm"
+              >
+                <Printer className="h-4 w-4" />
+                {language === "tl" ? "I-print ang Attendance" : "Print Attendance Record"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setLogsDialogOpen(false);
+                  setActivityLogsDialogOpen(true);
+                }}
+                className="gap-1.5 text-xs font-semibold"
+              >
+                <History className="h-4 w-4 text-primary" />
+                {language === "tl" ? "Tingnan ang Activity Logs" : "View Activity Logs"}
+              </Button>
+            </div>
             <Button variant="outline" size="sm" onClick={() => setLogsDialogOpen(false)}>
               {language === "tl" ? "Isara" : "Close"}
             </Button>
@@ -767,7 +870,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </Dialog>
 
       {/* Printable Official Attendance Record - patterned after AdminWorkers supervisor print */}
-      {logsDialogOpen && (
+       {logsDialogOpen && (
         <div id="attendance-print-area" className="hidden print:block text-black bg-white w-full mx-auto p-0 m-0">
           <style>{`
             @media print {
@@ -896,6 +999,362 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       )}
+
+      {/* Activity Logs Dialog */}
+      <Dialog open={activityLogsDialogOpen} onOpenChange={setActivityLogsDialogOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-6 rounded-xl border border-border/50 bg-background shadow-2xl">
+          <DialogHeader className="pb-4 border-b border-border/30">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <DialogTitle className="text-xl font-heading font-bold flex items-center gap-2 text-foreground">
+                  <History className="h-5 w-5 text-primary" />
+                  {language === "tl" ? "Talaan ng mga Gawain sa Sistema (Activity Logs)" : "System Activity Logs"}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                  {language === "tl"
+                    ? "Talaan ng petsa, tiyak na aksyon (pagtatala sa forms, pag-print, pag-edit, pagbura), kaukulang timestamp, at kung sinong gumawa ng bawat aksyon."
+                    : "Official activity log displaying the date, specific actions (recording data in forms, printing, editing, deleting), exact timestamps, and responsible user."}
+                </DialogDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setActivityLogsDialogOpen(false);
+                    setLogsDialogOpen(true);
+                  }}
+                  className="text-xs gap-1.5 h-8 font-medium"
+                >
+                  <Fingerprint className="h-3.5 w-3.5 text-primary" />
+                  {language === "tl" ? "Tingnan ang Attendance" : "View Attendance"}
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+
+          {/* Filters & Search Toolbar */}
+          <div className="pt-3 pb-1 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={language === "tl" ? "Maghanap ayon sa gumawa, aksyon, form o petsa..." : "Search by user, action, form, or description..."}
+                value={activitySearchQuery}
+                onChange={(e) => setActivitySearchQuery(e.target.value)}
+                className="pl-9 h-9 text-xs"
+              />
+              {activitySearchQuery && (
+                <button
+                  onClick={() => setActivitySearchQuery("")}
+                  className="absolute right-2.5 top-2.5 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+              {/* Category Filter */}
+              <Select value={activityCategoryFilter} onValueChange={setActivityCategoryFilter}>
+                <SelectTrigger className="h-9 w-[150px] text-xs">
+                  <SelectValue placeholder="Action Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">{language === "tl" ? "Lahat ng Aksyon" : "All Actions"}</SelectItem>
+                  <SelectItem value="RECORDING">{language === "tl" ? "Pagtatala (Recording)" : "Data Recording"}</SelectItem>
+                  <SelectItem value="EDITING">{language === "tl" ? "Pag-edit (Editing)" : "Editing / Updating"}</SelectItem>
+                  <SelectItem value="DELETING">{language === "tl" ? "Pagbura (Deleting)" : "Deleting Records"}</SelectItem>
+                  <SelectItem value="PRINTING">{language === "tl" ? "Pag-print (Printing)" : "Printing"}</SelectItem>
+                  <SelectItem value="ATTENDANCE">{language === "tl" ? "Attendance (Shift)" : "Attendance"}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Date Filter */}
+              <Select value={activityDateFilter} onValueChange={setActivityDateFilter}>
+                <SelectTrigger className="h-9 w-[130px] text-xs">
+                  <SelectValue placeholder="Filter Date" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">{language === "tl" ? "Lahat ng Petsa" : "All Dates"}</SelectItem>
+                  {availableActivityDates.map((dateStr) => (
+                    <SelectItem key={dateStr} value={dateStr}>
+                      {dateStr}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Activity Logs Count Summary */}
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground px-0.5">
+            <span>
+              {language === "tl" ? "Kabuuang mga tala: " : "Showing: "}
+              <strong className="text-foreground">{filteredActivityLogs.length}</strong>
+              {language === "tl" ? " aktibidad" : " activity log(s)"}
+            </span>
+            {(activitySearchQuery || activityCategoryFilter !== "ALL" || activityDateFilter !== "ALL") && (
+              <button
+                onClick={() => {
+                  setActivitySearchQuery("");
+                  setActivityCategoryFilter("ALL");
+                  setActivityDateFilter("ALL");
+                }}
+                className="text-primary hover:underline font-semibold"
+              >
+                {language === "tl" ? "I-reset ang mga filter" : "Reset filters"}
+              </button>
+            )}
+          </div>
+
+          {/* Activity Logs Table */}
+          <div className="flex-1 min-h-0 border border-border/40 rounded-xl overflow-hidden bg-card/50 flex flex-col mt-2">
+            <div className="overflow-y-auto flex-1">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm border-b border-border/40 font-semibold text-muted-foreground">
+                  <tr>
+                    <th className="p-3 w-12 text-center">#</th>
+                    <th className="p-3 w-44">{language === "tl" ? "Petsa at Oras (Timestamp)" : "Date & Timestamp"}</th>
+                    <th className="p-3 w-36">{language === "tl" ? "Aksyon" : "Action"}</th>
+                    <th className="p-3 w-48">{language === "tl" ? "Sino ang Gumawa" : "Performed By"}</th>
+                    <th className="p-3">{language === "tl" ? "Mga Detalye / Form" : "Details / Description"}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/20">
+                  {filteredActivityLogs.length > 0 ? (
+                    filteredActivityLogs.map((log: any, idx: number) => {
+                      const logDate = log.timestamp ? new Date(log.timestamp) : new Date();
+                      const category = resolveActionCategory(log);
+                      const displayDate = log.dateStr || logDate.toLocaleDateString(undefined, { dateStyle: "medium" });
+                      const displayTime = log.timeStr || logDate.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+                      return (
+                        <tr key={log.id || idx} className="hover:bg-muted/20 text-foreground/90 transition-colors">
+                          <td className="p-3 text-center font-mono text-[11px] text-muted-foreground">
+                            {idx + 1}
+                          </td>
+                          <td className="p-3 whitespace-nowrap">
+                            <div className="font-semibold text-foreground text-xs flex items-center gap-1.5">
+                              <CalendarDays className="h-3.5 w-3.5 text-primary shrink-0" />
+                              {displayDate}
+                            </div>
+                            <div className="font-mono text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                              <Clock className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+                              {displayTime}
+                            </div>
+                          </td>
+                          <td className="p-3 whitespace-nowrap">
+                            {category === "RECORDING" && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                                <FilePlus className="h-3 w-3" />
+                                {language === "tl" ? "Pagtatala ng Datos" : "Data Recording"}
+                              </span>
+                            )}
+                            {category === "EDITING" && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-300 dark:border-blue-800">
+                                <Edit3 className="h-3 w-3" />
+                                {language === "tl" ? "Pag-edit / Update" : "Editing / Update"}
+                              </span>
+                            )}
+                            {category === "DELETING" && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-300 dark:border-rose-800">
+                                <Trash2 className="h-3 w-3" />
+                                {language === "tl" ? "Pagbura ng Tala" : "Record Deleted"}
+                              </span>
+                            )}
+                            {category === "PRINTING" && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-300 dark:border-purple-800">
+                                <Printer className="h-3 w-3" />
+                                {language === "tl" ? "Pag-print" : "Printed Record"}
+                              </span>
+                            )}
+                            {category === "ATTENDANCE" && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
+                                <Fingerprint className="h-3 w-3" />
+                                {language === "tl" ? "Attendance" : "Attendance Shift"}
+                              </span>
+                            )}
+                            {category === "OTHER" && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-muted text-muted-foreground border border-border/30">
+                                <Activity className="h-3 w-3" />
+                                {log.action || "Action"}
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            <div className="font-semibold text-foreground text-xs flex items-center gap-1.5">
+                              <User className="h-3.5 w-3.5 text-primary shrink-0" />
+                              <span className="truncate max-w-[160px]">{log.workerName || "System Staff"}</span>
+                            </div>
+                            {log.userEmail && (
+                              <div className="text-[10px] text-muted-foreground truncate max-w-[160px] mt-0.5">
+                                {log.userEmail}
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-3 text-foreground/95">
+                            <p className="font-medium text-xs leading-relaxed">{log.description || log.action}</p>
+                            {log.entityType && (
+                              <span className="inline-block mt-1 text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/20">
+                                Entity: {log.entityType}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="p-10 text-center text-muted-foreground">
+                        <History className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
+                        <p className="text-sm font-medium">
+                          {language === "tl" ? "Walang nahanap na tala ng aktibidad." : "No activity logs match your criteria."}
+                        </p>
+                        <p className="text-xs text-muted-foreground/80 mt-1">
+                          {language === "tl"
+                            ? "Maitatala dito ang mga pagkilos tulad ng pagtatala sa forms, pag-print, pag-edit, at pagbura."
+                            : "Actions such as recording form data, printing, editing, and deleting will appear here automatically."}
+                        </p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <DialogFooter className="pt-4 border-t border-border/30 mt-4 shrink-0 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handlePrintActivityLogs}
+                size="sm"
+                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-sm"
+              >
+                <Printer className="h-4 w-4" />
+                {language === "tl" ? "I-print ang Activity Logs" : "Print Activity Logs"}
+              </Button>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setActivityLogsDialogOpen(false)}>
+              {language === "tl" ? "Isara" : "Close"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Activity Logs Print Container */}
+      <div id="activity-logs-print-area" className="hidden print:block text-black bg-white w-full mx-auto p-0 m-0">
+        <style>{`
+          @media print {
+            body:not(.printing-activity-logs) #activity-logs-print-area {
+              display: none !important;
+              visibility: hidden !important;
+            }
+            body.printing-activity-logs * {
+              visibility: hidden !important;
+            }
+            body.printing-activity-logs #activity-logs-print-area,
+            body.printing-activity-logs #activity-logs-print-area * {
+              visibility: visible !important;
+            }
+            body.printing-activity-logs #activity-logs-print-area {
+              position: absolute !important;
+              left: 0 !important;
+              top: 0 !important;
+              width: 100% !important;
+              background: white !important;
+              padding: 16px !important;
+              margin: 0 !important;
+              box-shadow: none !important;
+              border: none !important;
+              color: black !important;
+              display: block !important;
+              box-sizing: border-box !important;
+            }
+            @page {
+              size: A4 landscape;
+              margin: 8mm;
+            }
+          }
+        `}</style>
+
+        {/* Official Header */}
+        <div style={{ width: "100%", marginBottom: "12px" }}>
+          <OfficialHeader
+            title={language === "tl" ? "BARANGAY HEALTH SYSTEM OPISYAL NA TALAAN NG MGA GAWAIN (ACTIVITY LOGS)" : "BARANGAY HEALTH SYSTEM OFFICIAL ACTIVITY & AUDIT LOGS"}
+            subtitle={language === "tl" ? "Barangay Subukin Health Center, San Juan, Batangas • Opisyal na Talaan ng Pagtatala, Pag-edit, Pagbura, Pag-print, at Attendance" : "Barangay Subukin Health Center, San Juan, Batangas • Audit Log of Data Entry, Editing, Deletion, Printing, and Attendance"}
+            showDoubleBorder={true}
+            logoHeight="110px"
+          />
+        </div>
+
+        {/* Summary Meta */}
+        <div style={{ width: "100%", border: "1px solid #000", padding: "8px 10px", marginBottom: "10px", fontSize: "11px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", boxSizing: "border-box", background: "#f8fafc" }}>
+          <div>
+            <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase" }}>Generated By:</span> <span>{workerDisplayName}</span></p>
+            <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase" }}>Category Filter:</span> <span>{activityCategoryFilter}</span></p>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase" }}>Date Filter:</span> <span>{activityDateFilter === "ALL" ? "All Dates" : activityDateFilter}</span></p>
+            <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase" }}>Date Generated:</span> <span>{new Date().toLocaleDateString(undefined, { dateStyle: "medium" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span></p>
+          </div>
+        </div>
+
+        {/* Logs Table */}
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px", tableLayout: "fixed" }}>
+          <thead>
+            <tr style={{ background: "#f1f5f9", borderBottom: "2px solid #000" }}>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", textTransform: "uppercase", fontWeight: "bold", width: "5%" }}>#</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", textTransform: "uppercase", fontWeight: "bold", width: "14%" }}>Date</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", textTransform: "uppercase", fontWeight: "bold", width: "14%" }}>Timestamp</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", textTransform: "uppercase", fontWeight: "bold", width: "16%" }}>Action</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "left", textTransform: "uppercase", fontWeight: "bold", width: "21%" }}>Performed By</th>
+              <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "left", textTransform: "uppercase", fontWeight: "bold", width: "30%" }}>Description / Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredActivityLogs.length > 0 ? (
+              filteredActivityLogs.map((log: any, idx: number) => {
+                const logDate = log.timestamp ? new Date(log.timestamp) : new Date();
+                const dStr = log.dateStr || logDate.toLocaleDateString(undefined, { dateStyle: "medium" });
+                const tStr = log.timeStr || logDate.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+                const cat = resolveActionCategory(log);
+                return (
+                  <tr key={log.id || idx} style={{ borderBottom: "1px solid #000" }}>
+                    <td style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", fontFamily: "monospace" }}>{idx + 1}</td>
+                    <td style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", fontWeight: "bold" }}>{dStr}</td>
+                    <td style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", fontFamily: "monospace" }}>{tStr}</td>
+                    <td style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", fontWeight: "bold" }}>{cat}</td>
+                    <td style={{ border: "1px solid #000", padding: "6px 8px", fontWeight: "600" }}>{log.workerName || log.userEmail || "Staff"}</td>
+                    <td style={{ border: "1px solid #000", padding: "6px 8px" }}>{log.description || log.action}</td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={6} style={{ border: "1px solid #000", padding: "14px", textAlign: "center", fontStyle: "italic" }}>
+                  No activity logs recorded.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+        {/* Signatures */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "48px", paddingTop: "16px", marginTop: "12px", fontSize: "11px", width: "100%" }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ borderBottom: "1px solid #000", width: "60%", margin: "0 auto", paddingBottom: "4px", fontWeight: "bold", fontSize: "12px", textTransform: "uppercase" }}>
+              {workerDisplayName}
+            </div>
+            <p style={{ marginTop: "4px", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase" }}>Generated / Prepared By</p>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ borderBottom: "1px solid #000", width: "60%", margin: "0 auto", paddingBottom: "4px", fontWeight: "bold", fontSize: "12px", textTransform: "uppercase" }}>
+              CRISTETA R. LANUZA
+            </div>
+            <p style={{ marginTop: "4px", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase" }}>BHW Supervisory / Verified Correct</p>
+          </div>
+        </div>
+      </div>
     </SidebarProvider>
   );
 }
