@@ -49,6 +49,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [activeBhw, setActiveBhw] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState("00:00:00");
   const [logsDialogOpen, setLogsDialogOpen] = useState(false);
+  const [attendanceSearchQuery, setAttendanceSearchQuery] = useState("");
+  const [attendanceStatusFilter, setAttendanceStatusFilter] = useState("ALL");
+  const [attendanceDateFilter, setAttendanceDateFilter] = useState("ALL");
+  const [attendanceWorkerFilter, setAttendanceWorkerFilter] = useState("ALL");
   const [activityLogsDialogOpen, setActivityLogsDialogOpen] = useState(false);
   const [activitySearchQuery, setActivitySearchQuery] = useState("");
   const [activityCategoryFilter, setActivityCategoryFilter] = useState("ALL");
@@ -434,6 +438,95 @@ export function Layout({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const availableAttendanceDates = Array.from(
+    new Set(
+      attendanceLogs
+        .map((l: any) => {
+          if (l.dateStr) return l.dateStr;
+          if (l.loginAt) {
+            const d = new Date(l.loginAt);
+            const yr = d.getFullYear();
+            const mo = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            return `${yr}-${mo}-${day}`;
+          }
+          return "";
+        })
+        .filter(Boolean)
+    )
+  ).sort().reverse();
+
+  const filteredAttendanceLogs = attendanceLogs
+    .filter((log: any) => {
+      let loginDateStr = log.dateStr;
+      if (!loginDateStr && log.loginAt) {
+        const d = new Date(log.loginAt);
+        const yr = d.getFullYear();
+        const mo = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        loginDateStr = `${yr}-${mo}-${day}`;
+      }
+      loginDateStr = loginDateStr || "Undated";
+
+      if (attendanceDateFilter !== "ALL" && loginDateStr !== attendanceDateFilter) {
+        return false;
+      }
+      const isCompleted = Boolean(log.logoutAt);
+      if (attendanceStatusFilter === "ACTIVE" && isCompleted) {
+        return false;
+      }
+      if (attendanceStatusFilter === "COMPLETED" && !isCompleted) {
+        return false;
+      }
+      if (attendanceWorkerFilter !== "ALL") {
+        const wName = (log.workerName || "").toLowerCase().trim();
+        const target = attendanceWorkerFilter.toLowerCase().trim();
+        if (!wName.includes(target) && !target.includes(wName)) {
+          return false;
+        }
+      }
+      if (attendanceSearchQuery.trim()) {
+        const q = attendanceSearchQuery.toLowerCase().trim();
+        const worker = (log.workerName || "").toLowerCase();
+        const email = (log.userEmail || "").toLowerCase();
+        const sitio = (log.sitio || "").toLowerCase();
+        const dateMatch = loginDateStr.includes(q);
+        const statusMatch = (isCompleted ? "completed naka-check out" : "on duty nasa trabaho active").includes(q);
+        if (!worker.includes(q) && !email.includes(q) && !sitio.includes(q) && !dateMatch && !statusMatch) {
+          return false;
+        }
+      }
+      return true;
+    })
+    .sort((a: any, b: any) => {
+      const timeA = new Date(a.loginAt || 0).getTime();
+      const timeB = new Date(b.loginAt || 0).getTime();
+      return timeB - timeA;
+    });
+
+  // Group attendance by date so there is a single date entry per day (matching activity logs design)
+  const groupedAttendanceLogsByDate = filteredAttendanceLogs.reduce<Record<string, any[]>>((acc, log: any) => {
+    let logDate = log.dateStr;
+    if (!logDate && log.loginAt) {
+      const d = new Date(log.loginAt);
+      const yr = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      logDate = `${yr}-${mo}-${day}`;
+    }
+    logDate = logDate || "Undated";
+
+    if (!acc[logDate]) {
+      acc[logDate] = [];
+    }
+    acc[logDate].push(log);
+    return acc;
+  }, {});
+
+  const sortedAttendanceDateGroups: [string, any[]][] = Object.entries(groupedAttendanceLogsByDate).sort(
+    ([dateA], [dateB]) => dateB.localeCompare(dateA)
+  );
+
   const [sidebarHeaderHeight, setSidebarHeaderHeight] = useState<number | null>(null);
 
   useEffect(() => {
@@ -660,222 +753,270 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {children}
           </div>
         </main>
-      </div>
-
-      {/* Attendance Logs Dialog */}
+      </div>      {/* Attendance Logs Dialog - Styled identically to Activity Logs */}
       <Dialog open={logsDialogOpen} onOpenChange={setLogsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col p-6 rounded-xl border border-border/50 bg-background">
-          <DialogHeader className="pb-4 border-b border-border/30">
-            <DialogTitle className="text-xl font-heading font-bold flex items-center gap-2 text-foreground">
-              <Fingerprint className="h-5 w-5 text-primary animate-pulse" />
-              {language === "tl" ? "Talaan ng Attendance ng mga Barangay Health Worker" : "Barangay Health Workers Attendance Log"}
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-              {language === "tl" ? "Opisyal na log-in at log-out attendance records ng mga tauhan sa kalusugan ng Barangay Subukin." : "Official time in and time out attendance records for Barangay Subukin health staff."}
-            </DialogDescription>
+        <DialogContent 
+          className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-6 rounded-xl border border-slate-300 bg-white text-black shadow-2xl"
+          style={{ color: "#000000" }}
+        >
+          <DialogHeader className="pb-4 border-b border-slate-300">
+            <div>
+              <DialogTitle className="text-xl font-heading font-extrabold flex items-center gap-2 text-black">
+                <Clock className="h-5 w-5 text-black" />
+                {language === "tl" ? "Talaan ng Attendance sa Sistema (Attendance Logs)" : "System Attendance Logs"}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-black font-medium mt-1">
+                {language === "tl"
+                  ? "Opisyal na talaan ng oras ng pagpasok (Time In) at paglabas (Time Out) ng mga kawani sa kalusugan ng Barangay Subukin."
+                  : "Official attendance log tracking Time In and Time Out records with timestamps, duty shifts, and personnel details."}
+              </DialogDescription>
+            </div>
           </DialogHeader>
 
-          <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 overflow-hidden">
-            {/* Sidebar list of BHW Workers - ONLY VISIBLE TO ADMIN/SUPERVISOR */}
-            {userRole === "supervisor" ? (
-              <div className="border-r border-border/30 pr-4 overflow-y-auto space-y-2 h-full">
-                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
-                  {language === "tl" ? "Direktoryo ng mga Tauhan ng BHW" : "BHW Personnel Directory"} ({workersList.length})
-                </Label>
-                {workersList.map((worker) => {
-                  const isSelected = selectedWorker?.name === worker.name;
-                  const isOnline = 
-                    (activeBhw && (worker.name.toLowerCase() === activeBhw.toLowerCase() || activeBhw.toLowerCase().includes(worker.name.toLowerCase()))) ||
-                    Boolean(worker.is_online);
-                  return (
-                    <button
-                      key={worker.name}
-                      onClick={() => setSelectedWorker(worker)}
-                      className={`w-full text-left p-2.5 rounded-lg border text-xs transition-all flex items-center justify-between gap-2 ${
-                        isSelected 
-                          ? "bg-primary/5 border-primary text-foreground font-semibold" 
-                          : "border-border/30 hover:border-primary/40 hover:bg-muted/30 text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 ${
-                          isSelected ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-                        }`}>
-                          {worker.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
-                        </div>
-                        <div className="min-w-0">
-                          <p className={`truncate text-xs ${isSelected ? "text-foreground font-semibold" : "text-foreground/95"}`}>
-                            {worker.name}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground capitalize truncate">
-                            {worker.role === "supervisor" || worker.role === "supervisory"
-                              ? (language === "tl" ? "BHW Supervisory" : "BHW Supervisory")
-                              : worker.role === "midwife"
-                              ? (language === "tl" ? "Barangay Midwife" : "Barangay Midwife")
-                              : worker.role === "bns"
-                              ? "BNS Scholar"
-                              : "BHW Worker"}
-                          </p>
-                        </div>
-                      </div>
-                      {isOnline && (
-                        <span className="h-2 w-2 rounded-full bg-green-500 shrink-0 animate-ping" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
-
-            {/* Attendance detail view */}
-            <div className={`${userRole === "supervisor" ? "col-span-2" : "col-span-3"} overflow-y-auto h-full space-y-4`}>
-              {selectedWorker ? (
-                <>
-                  {/* Worker header summary */}
-                  <div className="p-4 bg-muted/20 border border-border/30 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between gap-4 flex-wrap">
-                      <div>
-                        <h3 className="text-base font-bold text-foreground">{selectedWorker.name}</h3>
-                        <p className="text-[10px] text-muted-foreground capitalize">
-                          {selectedWorker.role === "supervisor" || selectedWorker.role === "supervisory"
-                            ? (language === "tl" ? "BHW Supervisory" : "BHW Supervisory")
-                            : selectedWorker.role === "midwife"
-                            ? (language === "tl" ? "Barangay Midwife" : "Barangay Midwife")
-                            : selectedWorker.role === "bns"
-                            ? (language === "tl" ? "Barangay Nutrition Scholar" : "Barangay Nutrition Scholar")
-                            : (language === "tl" ? "Barangay Health Worker" : "Barangay Health Worker")}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {activeBhw === selectedWorker.name ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-green-100 text-green-800 dark:bg-green-950/30 dark:text-green-400 border border-green-200 dark:border-green-900/30">
-                            <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                            {language === "tl" ? `Nasa Trabaho (Tagal: ${sessionDuration})` : `On Duty (Duration: ${sessionDuration})`}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-muted text-muted-foreground border border-border/30">
-                            {language === "tl" ? "Wala sa Trabaho (Off Duty)" : "Off Duty"}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground pt-1 border-t border-border/10">
-                      <div>
-                        <strong>{language === "tl" ? "User ID / Telepono:" : "User ID / Phone:"}</strong> {selectedWorker.phone || "—"}
-                      </div>
-                      <div>
-                        <strong>{language === "tl" ? "Itinalagang Sitio:" : "Assigned Sitio:"}</strong> {selectedWorker.sitio || "Subukin Main"}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Attendance Log Table */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                        <CalendarDays className="h-3.5 w-3.5 text-primary" />
-                        {language === "tl" ? "Talaan ng Pagpasok at Paglabas" : "Time In & Time Out History"}
-                      </h4>
-                      <span className="text-[11px] text-muted-foreground">
-                        {getWorkerAttendance(selectedWorker.name).length} {language === "tl" ? "na tala" : "record(s)"}
-                      </span>
-                    </div>
-                    <div className="border border-border/30 rounded-xl overflow-hidden bg-card/50">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead>
-                          <tr className="bg-muted/40 border-b border-border/30 font-semibold text-muted-foreground">
-                            <th className="p-3">{language === "tl" ? "Petsa" : "Date"}</th>
-                            <th className="p-3">{language === "tl" ? "Oras ng Pagpasok (Time In)" : "Time In"}</th>
-                            <th className="p-3">{language === "tl" ? "Oras ng Paglabas (Time Out)" : "Time Out"}</th>
-                            <th className="p-3 text-center">{language === "tl" ? "Tagal ng Shift" : "Shift Duration"}</th>
-                            <th className="p-3 text-center">{language === "tl" ? "Katayuan" : "Status"}</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border/20">
-                          {getWorkerAttendance(selectedWorker.name).length > 0 ? (
-                            getWorkerAttendance(selectedWorker.name).map((log) => {
-                              const loginDate = new Date(log.loginAt);
-                              const durationStr = log.logoutAt 
-                                ? formatDuration(new Date(log.loginAt), new Date(log.logoutAt))
-                                : (language === "tl" ? "Aktibong Shift" : "Active Shift");
-                              return (
-                                <tr key={log.id} className="hover:bg-muted/20 text-foreground/90 transition-colors">
-                                  <td className="p-3 font-medium">{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
-                                  <td className="p-3 font-mono font-medium text-emerald-600 dark:text-emerald-400">
-                                    {loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}
-                                  </td>
-                                  <td className="p-3 font-mono font-medium text-muted-foreground">
-                                    {log.logoutAt 
-                                      ? new Date(log.logoutAt).toLocaleTimeString(undefined, { timeStyle: "short" })
-                                      : <span className="text-amber-600 dark:text-amber-400 font-semibold">({language === "tl" ? "Nasa Trabaho" : "Currently Active"})</span>}
-                                  </td>
-                                  <td className="p-3 text-center">
-                                    <span className={`px-2 py-0.5 rounded text-[10px] font-semibold font-mono ${
-                                      log.logoutAt ? "bg-muted text-muted-foreground" : "bg-green-100 text-green-800 dark:bg-green-950/30 dark:text-green-400 border border-green-200 dark:border-green-900/30"
-                                    }`}>
-                                      {durationStr}
-                                    </span>
-                                  </td>
-                                  <td className="p-3 text-center">
-                                    {log.logoutAt ? (
-                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                                        {language === "tl" ? "Naka-Check Out" : "Completed"}
-                                      </span>
-                                    ) : (
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                        {language === "tl" ? "Nasa Trabaho" : "On Duty"}
-                                      </span>
-                                    )}
-                                  </td>
-                                </tr>
-                              );
-                            })
-                          ) : (
-                            <tr>
-                              <td colSpan={5} className="p-6 text-center text-muted-foreground italic">
-                                {language === "tl" ? "Walang nahanap na tala ng attendance para sa kawaning ito." : "No attendance records found for this personnel."}
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground py-12">
-                  <User className="h-10 w-10 text-muted-foreground/50 mb-2" />
-                  <p className="text-xs">{language === "tl" ? "Pumili ng kawani upang tingnan ang talaan ng attendance." : "Select a personnel to view attendance logs."}</p>
-                </div>
+          {/* Filters & Search Toolbar */}
+          <div className="pt-3 pb-1 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-black">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-black" />
+              <Input
+                placeholder={language === "tl" ? "Maghanap ayon sa kawani, email, oras o katayuan..." : "Search by personnel, email, time, or status..."}
+                value={attendanceSearchQuery}
+                onChange={(e) => setAttendanceSearchQuery(e.target.value)}
+                className="pl-9 h-9 text-xs text-black font-medium placeholder:text-black/60 border-slate-400 bg-slate-50/70"
+              />
+              {attendanceSearchQuery && (
+                <button
+                  onClick={() => setAttendanceSearchQuery("")}
+                  className="absolute right-2.5 top-2.5 text-xs text-black hover:font-bold"
+                >
+                  ×
+                </button>
               )}
             </div>
+
+            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+              {/* Personnel Filter */}
+              <Select value={attendanceWorkerFilter} onValueChange={setAttendanceWorkerFilter}>
+                <SelectTrigger className="h-9 w-[160px] text-xs text-black font-semibold border-slate-400 bg-slate-50/70">
+                  <SelectValue placeholder="Personnel" />
+                </SelectTrigger>
+                <SelectContent className="text-black">
+                  <SelectItem value="ALL">{language === "tl" ? "Lahat ng Kawani" : "All Personnel"}</SelectItem>
+                  {workersList.map((w: any) => (
+                    <SelectItem key={w.name} value={w.name}>
+                      {w.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Status Filter */}
+              <Select value={attendanceStatusFilter} onValueChange={setAttendanceStatusFilter}>
+                <SelectTrigger className="h-9 w-[140px] text-xs text-black font-semibold border-slate-400 bg-slate-50/70">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="text-black">
+                  <SelectItem value="ALL">{language === "tl" ? "Lahat ng Katayuan" : "All Status"}</SelectItem>
+                  <SelectItem value="ACTIVE">{language === "tl" ? "Nasa Trabaho (On Duty)" : "On Duty (Active)"}</SelectItem>
+                  <SelectItem value="COMPLETED">{language === "tl" ? "Naka-Check Out" : "Completed Shift"}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Date Filter */}
+              <Select value={attendanceDateFilter} onValueChange={setAttendanceDateFilter}>
+                <SelectTrigger className="h-9 w-[130px] text-xs text-black font-semibold border-slate-400 bg-slate-50/70">
+                  <SelectValue placeholder="Filter Date" />
+                </SelectTrigger>
+                <SelectContent className="text-black">
+                  <SelectItem value="ALL">{language === "tl" ? "Lahat ng Petsa" : "All Dates"}</SelectItem>
+                  {availableAttendanceDates.map((dateStr) => (
+                    <SelectItem key={dateStr} value={dateStr}>
+                      {dateStr}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          
-          <DialogFooter className="pt-4 border-t border-border/30 mt-4 shrink-0 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 flex-wrap">
+
+          {/* Attendance Logs Count Summary */}
+          <div className="flex items-center justify-between text-[11px] text-black font-semibold px-0.5">
+            <span>
+              {language === "tl" ? "Kabuuang mga tala: " : "Showing: "}
+              <strong className="text-black font-extrabold">{filteredAttendanceLogs.length}</strong>
+              {language === "tl" ? " attendance log(s) sa " : " attendance log(s) across "}
+              <strong className="text-black font-extrabold">{sortedAttendanceDateGroups.length}</strong>
+              {language === "tl" ? " araw" : " day(s)"}
+            </span>
+            {(attendanceSearchQuery || attendanceStatusFilter !== "ALL" || attendanceDateFilter !== "ALL" || attendanceWorkerFilter !== "ALL") && (
+              <button
+                onClick={() => {
+                  setAttendanceSearchQuery("");
+                  setAttendanceStatusFilter("ALL");
+                  setAttendanceDateFilter("ALL");
+                  setAttendanceWorkerFilter("ALL");
+                }}
+                className="text-black underline font-bold hover:opacity-80"
+              >
+                {language === "tl" ? "I-reset ang mga filter" : "Reset filters"}
+              </button>
+            )}
+          </div>
+
+          {/* Attendance Logs Table */}
+          <div className="flex-1 min-h-0 border-2 border-slate-300 rounded-xl overflow-hidden bg-white flex flex-col mt-2 shadow-xs">
+            <div className="overflow-y-auto flex-1 text-black">
+              <table className="w-full text-left text-xs border-collapse text-black" style={{ color: "#000000" }}>
+                <thead className="sticky top-0 z-10 bg-slate-100 border-b-2 border-slate-400 font-extrabold text-black">
+                  <tr>
+                    <th className="p-3 w-12 text-center text-black font-extrabold">#</th>
+                    <th className="p-3 w-36 text-black font-extrabold">{language === "tl" ? "Oras (Timestamp)" : "Time"}</th>
+                    <th className="p-3 w-40 text-black font-extrabold">{language === "tl" ? "Katayuan" : "Status"}</th>
+                    <th className="p-3 w-48 text-black font-extrabold">{language === "tl" ? "Sino ang Kawani" : "Performed By"}</th>
+                    <th className="p-3 text-black font-extrabold">{language === "tl" ? "Mga Detalye / Shift" : "Details / Description"}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-300 text-black">
+                  {sortedAttendanceDateGroups.length > 0 ? (
+                    sortedAttendanceDateGroups.map(([dateKey, dayLogs]: [string, any[]], groupIdx: number) => (
+                      <React.Fragment key={dateKey || groupIdx}>
+                        {/* Single Date Header Entry for all attendance records on this day */}
+                        <tr className="bg-slate-200/90 text-black border-y-2 border-slate-400 font-bold">
+                          <td colSpan={5} className="py-2.5 px-4 text-black font-bold text-xs">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-black font-extrabold text-xs tracking-wide">
+                                <CalendarDays className="h-4 w-4 text-black shrink-0" />
+                                <span className="text-black uppercase">{formatDateHeader(dateKey)}</span>
+                                <span className="font-mono text-[11px] font-bold text-black/90">[{dateKey}]</span>
+                              </div>
+                              <span className="text-[11px] font-bold text-black bg-white px-2.5 py-0.5 rounded-full border border-slate-400 shadow-2xs">
+                                {dayLogs.length} {language === "tl" ? "na attendance record sa araw na ito" : "attendance record(s) on this date"}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Attendance records performed on this single date */}
+                        {dayLogs.map((log: any, idx: number) => {
+                          const loginDate = log.loginAt ? new Date(log.loginAt) : new Date();
+                          const loginDisplay = loginDate.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+                          const logoutDisplay = log.logoutAt
+                            ? new Date(log.logoutAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+                            : null;
+                          const durationStr = log.logoutAt
+                            ? formatDuration(new Date(log.loginAt), new Date(log.logoutAt))
+                            : (language === "tl" ? "Aktibong Shift" : "Active Shift");
+                          const isCompleted = !!log.logoutAt;
+
+                          return (
+                            <tr key={log.id || `${dateKey}-${idx}`} className="hover:bg-slate-50 text-black transition-colors border-b border-slate-200">
+                              <td className="p-3 text-center font-mono text-[11px] font-bold text-black">
+                                {idx + 1}
+                              </td>
+                              <td className="p-3 whitespace-nowrap text-black font-mono font-bold">
+                                <div className="flex items-center gap-1.5 text-black">
+                                  <Clock className="h-3.5 w-3.5 text-black shrink-0" />
+                                  <span className="font-bold text-black text-xs">{loginDisplay}</span>
+                                </div>
+                              </td>
+                              <td className="p-3 whitespace-nowrap text-black">
+                                {isCompleted ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-900 border border-blue-400">
+                                    <CheckCircle2 className="h-3 w-3 text-blue-900" />
+                                    {language === "tl" ? "Naka-Check Out" : "Completed Shift"}
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-400">
+                                    <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
+                                    {language === "tl" ? "Nasa Trabaho" : "On Duty (Active)"}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="p-3 text-black">
+                                <div className="font-bold text-black text-xs flex items-center gap-1.5">
+                                  <User className="h-3.5 w-3.5 text-black shrink-0" />
+                                  <span className="truncate max-w-[160px] text-black font-extrabold">{log.workerName || "BHW Staff"}</span>
+                                </div>
+                                {(log.userEmail || log.sitio) && (
+                                  <div className="text-[10px] text-black font-medium truncate max-w-[160px] mt-0.5">
+                                    {log.userEmail || log.sitio}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="p-3 text-black">
+                                {isCompleted ? (
+                                  <>
+                                    <p className="font-semibold text-black text-xs leading-relaxed">
+                                      {language === "tl"
+                                        ? `Natapos ang shift • Time Out: ${logoutDisplay} (Kabuuang tagal: ${durationStr})`
+                                        : `Completed duty shift • Time Out: ${logoutDisplay} (Total duration: ${durationStr})`}
+                                    </p>
+                                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                                      <span className="inline-block text-[10px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-slate-200 text-black border border-slate-400">
+                                        DURATION: {durationStr}
+                                      </span>
+                                      <span className="inline-block text-[10px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-slate-200 text-black border border-slate-400">
+                                        STATION: {log.sitio || "BARANGAY SUBKIN HEALTH CENTER"}
+                                      </span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <p className="font-semibold text-black text-xs leading-relaxed">
+                                      {language === "tl"
+                                        ? `Kasalukuyang naka-duty sa Barangay • Nagsimula noong ${loginDisplay}`
+                                        : `Currently on active duty shift • Clocked in at ${loginDisplay}`}
+                                    </p>
+                                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                                      <span className="inline-block text-[10px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-400">
+                                        ACTIVE SHIFT
+                                      </span>
+                                      <span className="inline-block text-[10px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-slate-200 text-black border border-slate-400">
+                                        STATION: {log.sitio || "BARANGAY SUBKIN HEALTH CENTER"}
+                                      </span>
+                                    </div>
+                                  </>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="p-10 text-center text-black">
+                        <Clock className="h-10 w-10 text-black mx-auto mb-2 opacity-60" />
+                        <p className="text-sm font-bold text-black">
+                          {language === "tl" ? "Walang nahanap na tala ng attendance." : "No attendance logs match your criteria."}
+                        </p>
+                        <p className="text-xs text-black font-medium mt-1">
+                          {language === "tl" ? "Subukang baguhin ang iyong mga filter o keyword sa paghahanap." : "Try adjusting your filters or search keywords."}
+                        </p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <DialogFooter className="pt-4 border-t border-slate-300 mt-4 shrink-0 flex items-center justify-between gap-3 text-black">
+            <div className="flex items-center gap-2">
               <Button
                 onClick={handlePrintAttendance}
                 size="sm"
-                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs shadow-sm"
+                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm"
               >
                 <Printer className="h-4 w-4" />
-                {language === "tl" ? "I-print ang Attendance" : "Print Attendance Record"}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setLogsDialogOpen(false);
-                  setActivityLogsDialogOpen(true);
-                }}
-                className="gap-1.5 text-xs font-semibold"
-              >
-                <History className="h-4 w-4 text-primary" />
-                {language === "tl" ? "Tingnan ang Activity Logs" : "View Activity Logs"}
+                {language === "tl" ? "I-print ang Attendance Logs" : "Print Attendance Logs"}
               </Button>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setLogsDialogOpen(false)}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setLogsDialogOpen(false)} 
+              className="text-black font-bold border-slate-400"
+            >
               {language === "tl" ? "Isara" : "Close"}
             </Button>
           </DialogFooter>
@@ -990,60 +1131,74 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Worker Summary Box */}
-          {selectedWorker && (
-            <div style={{ width: "100%", border: "1px solid #000", padding: "8px 10px", marginBottom: "10px", fontSize: "12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", boxSizing: "border-box", background: "#f8fafc" }}>
-              <div>
-                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Personnel Name:</span> <span style={{ fontWeight: "bold", fontSize: "13px" }}>{selectedWorker.name}</span></p>
-                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Designation / Role:</span> <span style={{ fontWeight: "600" }}>{selectedWorker.role === "supervisor" || selectedWorker.role === "supervisory" ? "BHW Supervisory" : selectedWorker.role === "midwife" ? "Barangay Midwife" : selectedWorker.role === "bns" ? "Barangay Nutrition Scholar (BNS)" : "Barangay Health Worker (BHW)"}</span></p>
-                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Assigned Station / Sitio:</span> <span style={{ fontWeight: "600" }}>{selectedWorker.sitio || "Subukin Main"}</span></p>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Contact Number:</span> <span style={{ fontWeight: "600" }}>{selectedWorker.phone || "—"}</span></p>
-                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Document Type:</span> <span style={{ fontWeight: "600" }}>Official Time Log & Duty Record</span></p>
-                <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Date Generated:</span> <span style={{ fontWeight: "600" }}>{new Date().toLocaleDateString(undefined, { dateStyle: "medium" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span></p>
-              </div>
+          <div style={{ width: "100%", border: "1px solid #000", padding: "8px 10px", marginBottom: "10px", fontSize: "12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", boxSizing: "border-box", background: "#f8fafc" }}>
+            <div>
+              <p style={{ margin: "2px 0" }}>
+                <span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Personnel Filter:</span>{" "}
+                <span style={{ fontWeight: "bold", fontSize: "13px" }}>{attendanceWorkerFilter === "ALL" ? "All Registered Personnel (Lahat ng Kawani)" : attendanceWorkerFilter}</span>
+              </p>
+              <p style={{ margin: "2px 0" }}>
+                <span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Station:</span>{" "}
+                <span style={{ fontWeight: "600" }}>Barangay Subukin Health Center • San Juan, Batangas</span>
+              </p>
+              <p style={{ margin: "2px 0" }}>
+                <span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Total Records:</span>{" "}
+                <span style={{ fontWeight: "600" }}>{filteredAttendanceLogs.length} attendance record(s) across {sortedAttendanceDateGroups.length} day(s)</span>
+              </p>
             </div>
-          )}
+            <div style={{ textAlign: "right" }}>
+              <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Document Type:</span> <span style={{ fontWeight: "600" }}>Official Attendance Log & Shift Tracker</span></p>
+              <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Date Generated:</span> <span style={{ fontWeight: "600" }}>{new Date().toLocaleDateString(undefined, { dateStyle: "medium" })} {new Date().toLocaleTimeString(undefined, { timeStyle: "short" })}</span></p>
+              <p style={{ margin: "2px 0" }}><span style={{ fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>Status Filter:</span> <span style={{ fontWeight: "600" }}>{attendanceStatusFilter === "ALL" ? "All Shifts" : attendanceStatusFilter === "ACTIVE" ? "Active / On Duty" : "Completed Shifts"}</span></p>
+            </div>
+          </div>
 
           {/* Official Attendance Log Table */}
           <div style={{ width: "100%", marginBottom: "12px" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", tableLayout: "fixed" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px", tableLayout: "fixed", color: "#000" }}>
               <thead>
                 <tr style={{ background: "#f1f5f9", borderBottom: "2px solid #000" }}>
-                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "6%" }}>#</th>
-                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "18%" }}>Date (Petsa)</th>
-                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "22%" }}>Time In (Oras ng Pagpasok)</th>
-                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "22%" }}>Time Out (Oras ng Paglabas)</th>
-                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "16%" }}>Duration (Tagal)</th>
-                  <th style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", textTransform: "uppercase", fontSize: "11px", fontWeight: "bold", width: "16%" }}>Status (Katayuan)</th>
+                  <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", textTransform: "uppercase", fontWeight: "bold", width: "5%" }}>#</th>
+                  <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", textTransform: "uppercase", fontWeight: "bold", width: "16%" }}>Time In</th>
+                  <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", textTransform: "uppercase", fontWeight: "bold", width: "16%" }}>Time Out</th>
+                  <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", textTransform: "uppercase", fontWeight: "bold", width: "15%" }}>Status</th>
+                  <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "left", textTransform: "uppercase", fontWeight: "bold", width: "30%" }}>Personnel</th>
+                  <th style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", textTransform: "uppercase", fontWeight: "bold", width: "18%" }}>Duration</th>
                 </tr>
               </thead>
               <tbody>
-                {selectedWorker && getWorkerAttendance(selectedWorker.name).length > 0 ? (
-                  getWorkerAttendance(selectedWorker.name).map((log: any, idx: number) => {
-                    const loginDate = new Date(log.loginAt);
-                    const durationStr = log.logoutAt
-                      ? formatDuration(new Date(log.loginAt), new Date(log.logoutAt))
-                      : (language === "tl" ? "Aktibong Shift" : "Active Shift");
-                    return (
-                      <tr key={log.id || idx} style={{ borderBottom: "1px solid #000" }}>
-                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontFamily: "monospace", fontWeight: "bold" }}>{idx + 1}</td>
-                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontWeight: "bold" }}>{loginDate.toLocaleDateString(undefined, { dateStyle: "medium" })}</td>
-                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontFamily: "monospace", fontWeight: "600" }}>{loginDate.toLocaleTimeString(undefined, { timeStyle: "short" })}</td>
-                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontFamily: "monospace", fontWeight: "600" }}>
-                          {log.logoutAt ? new Date(log.logoutAt).toLocaleTimeString(undefined, { timeStyle: "short" }) : "— (Active on Duty)"}
-                        </td>
-                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontFamily: "monospace", fontWeight: "bold" }}>{durationStr}</td>
-                        <td style={{ border: "1px solid #000", padding: "8px 10px", textAlign: "center", fontWeight: "bold" }}>
-                          {log.logoutAt ? "Completed Shift" : "On Duty (Active)"}
+                {sortedAttendanceDateGroups.length > 0 ? (
+                  sortedAttendanceDateGroups.map(([dateKey, dayLogs]: [string, any[]], groupIdx: number) => (
+                    <React.Fragment key={dateKey || groupIdx}>
+                      <tr style={{ background: "#e2e8f0", borderTop: "2px solid #000", borderBottom: "1px solid #000" }}>
+                        <td colSpan={6} style={{ border: "1px solid #000", padding: "6px 10px", fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>
+                          DATE: {formatDateHeader(dateKey)} [{dateKey}] • ({dayLogs.length} attendance records)
                         </td>
                       </tr>
-                    );
-                  })
+                      {dayLogs.map((log: any, idx: number) => {
+                        const loginDate = log.loginAt ? new Date(log.loginAt) : new Date();
+                        const tIn = loginDate.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+                        const tOut = log.logoutAt ? new Date(log.logoutAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "— (Active)";
+                        const durationStr = log.logoutAt
+                          ? formatDuration(new Date(log.loginAt), new Date(log.logoutAt))
+                          : "Active Shift";
+                        return (
+                          <tr key={log.id || idx} style={{ borderBottom: "1px solid #000" }}>
+                            <td style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", fontFamily: "monospace", fontWeight: "bold" }}>{idx + 1}</td>
+                            <td style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", fontFamily: "monospace", fontWeight: "bold" }}>{tIn}</td>
+                            <td style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", fontFamily: "monospace", fontWeight: "bold" }}>{tOut}</td>
+                            <td style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", fontWeight: "bold" }}>{log.logoutAt ? "Completed" : "On Duty"}</td>
+                            <td style={{ border: "1px solid #000", padding: "6px 8px", fontWeight: "bold" }}>{log.workerName || "BHW Staff"}</td>
+                            <td style={{ border: "1px solid #000", padding: "6px 8px", textAlign: "center", fontFamily: "monospace", fontWeight: "bold" }}>{durationStr}</td>
+                          </tr>
+                        );
+                      })}
+                    </React.Fragment>
+                  ))
                 ) : (
                   <tr>
-                    <td colSpan={6} style={{ border: "1px solid #000", padding: "16px", textAlign: "center", fontStyle: "italic", color: "#475569" }}>
-                      No official attendance records logged for this personnel during this period.
+                    <td colSpan={6} style={{ border: "1px solid #000", padding: "14px", textAlign: "center", fontStyle: "italic" }}>
+                      No attendance records found for this period.
                     </td>
                   </tr>
                 )}
