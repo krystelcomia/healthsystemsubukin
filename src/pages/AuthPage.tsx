@@ -438,10 +438,10 @@ const AuthPage = () => {
       className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
       style={{ backgroundImage: `url(${loginBg})` }}
     >
-      {/* Soft translucent ambient background overlay to blend smoothly without harsh contrast */}
-      <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]" />
+      {/* Clear background overlay without blur so the background photo of the barangay hall remains sharp and visible */}
+      <div className="absolute inset-0 bg-slate-950/20 pointer-events-none" />
 
-      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/40 dark:border-slate-700/50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden transition-all">
+      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/50 dark:border-slate-700/60 bg-white/75 dark:bg-slate-900/80 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden transition-all">
         <CardHeader className="text-center space-y-3 pt-8 pb-3 px-6 sm:px-8">
           <div className="relative mx-auto inline-block">
             <img
