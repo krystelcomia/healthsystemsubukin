@@ -440,20 +440,20 @@ const AuthPage = () => {
       {/* Clear background overlay without blur so the background photo of the barangay hall remains sharp and visible */}
       <div className="absolute inset-0 bg-slate-950/20 pointer-events-none" />
 
-      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/60 dark:border-white/15 bg-white/65 dark:bg-slate-900/70 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden transition-all">
+      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/70 dark:border-white/20 bg-white/65 dark:bg-slate-900/70 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden transition-all">
         <CardHeader className="text-center space-y-3 pt-8 pb-3 px-6 sm:px-8">
           <div className="relative mx-auto inline-block">
             <img
               src={barangayLogo}
               alt="Barangay Subukin Logo"
-              className="h-20 w-20 rounded-full object-cover shadow-md ring-4 ring-white/60 dark:ring-slate-800/80"
+              className="h-20 w-20 rounded-full object-cover shadow-md ring-4 ring-white/80 dark:ring-slate-800/80"
             />
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-heading font-extrabold text-slate-800 dark:text-white tracking-tight">
+            <CardTitle className="text-2xl font-heading font-extrabold text-slate-950 dark:text-white tracking-tight">
               {t("auth.title")}
             </CardTitle>
-            <CardDescription className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-medium">
+            <CardDescription className="text-slate-800 dark:text-slate-200 text-xs sm:text-sm font-semibold">
               {mode === "login" 
                 ? (language === "tl" ? "Mag-log in gamit ang iyong email address" : "Sign in to access the health records system")
                 : t("auth.forgotDesc")}
@@ -465,34 +465,34 @@ const AuthPage = () => {
           {mode === "login" ? (
             <div className="space-y-4">
               <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4" autoComplete="off">
-                {/* Email Field (Simple Line Style) */}
+                {/* Email Field (Simple Line Style with Crisp Black Underline & Text) */}
                 <div className="space-y-1">
-                  <Label className="text-slate-700 dark:text-slate-200 text-xs font-semibold">
+                  <Label className="text-slate-950 dark:text-white text-xs font-bold">
                     {language === "tl" ? "Email" : "Email"}
                   </Label>
                   <div className="relative">
                     <Input
-                      className="h-10 text-sm pr-8 px-0.5 bg-transparent border-0 border-b border-slate-400/80 dark:border-slate-500 text-slate-900 dark:text-white placeholder:text-slate-500/70 dark:placeholder:text-slate-400 rounded-none focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary focus-visible:bg-transparent shadow-none transition-all duration-200"
+                      className="h-10 text-sm pr-8 px-0.5 bg-transparent border-0 border-b-2 border-slate-900 dark:border-slate-300 text-slate-950 dark:text-white font-medium placeholder:text-slate-600 dark:placeholder:text-slate-400 rounded-none focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary focus-visible:bg-transparent shadow-none transition-all duration-200"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder={language === "tl" ? "Ilagay ang iyong email" : "Enter your email"}
+                      placeholder="name@gmail.com"
                       autoComplete="email"
                     />
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-900 dark:text-slate-200 pointer-events-none">
                       <Mail className="h-4 w-4" />
                     </div>
                   </div>
                 </div>
 
-                {/* Password Field (Simple Line Style) */}
+                {/* Password Field (Simple Line Style with Crisp Black Underline & Text) */}
                 <div className="space-y-1">
-                  <Label className="text-slate-700 dark:text-slate-200 text-xs font-semibold">
+                  <Label className="text-slate-950 dark:text-white text-xs font-bold">
                     {t("auth.password")}
                   </Label>
                   <div className="relative">
                     <Input
-                      className="h-10 text-sm pr-8 px-0.5 bg-transparent border-0 border-b border-slate-400/80 dark:border-slate-500 text-slate-900 dark:text-white placeholder:text-slate-500/70 dark:placeholder:text-slate-400 rounded-none focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary focus-visible:bg-transparent shadow-none transition-all duration-200"
+                      className="h-10 text-sm pr-8 px-0.5 bg-transparent border-0 border-b-2 border-slate-900 dark:border-slate-300 text-slate-950 dark:text-white font-medium placeholder:text-slate-600 dark:placeholder:text-slate-400 rounded-none focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary focus-visible:bg-transparent shadow-none transition-all duration-200"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -502,7 +502,7 @@ const AuthPage = () => {
                     <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
                       <button
                         type="button"
-                        className="text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 transition-colors p-1"
+                        className="text-slate-900 hover:text-black dark:text-slate-200 dark:hover:text-white transition-colors p-1"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -513,19 +513,19 @@ const AuthPage = () => {
 
                 {/* Remember Me & Forgot Password */}
                 <div className="flex items-center justify-between pt-1 text-xs">
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-300 select-none">
+                  <label className="flex items-center gap-2 cursor-pointer text-slate-950 dark:text-slate-200 font-semibold select-none">
                     <input
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="rounded border-slate-300 text-primary focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-950 dark:checked:bg-primary h-3.5 w-3.5 cursor-pointer"
+                      className="rounded border-slate-900 text-primary focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-950 dark:checked:bg-primary h-3.5 w-3.5 cursor-pointer"
                     />
                     <span>{language === "tl" ? "Tandaan Ako" : "Remember Me"}</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => { setMode("forgot"); setForgotStep(1); }}
-                    className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors hover:underline cursor-pointer font-medium"
+                    className="text-slate-950 dark:text-slate-200 hover:text-black dark:hover:text-white transition-colors hover:underline cursor-pointer font-semibold"
                   >
                     {t("auth.forgotPassword")}
                   </button>
@@ -543,7 +543,7 @@ const AuthPage = () => {
 
               {/* Account creation notice */}
               <div className="text-center pt-1 pb-0.5">
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                <p className="text-[11px] text-slate-900 dark:text-slate-200 font-semibold">
                   {language === "tl" 
                     ? "Para lamang sa mga awtorisadong kawani at BHW ng Barangay Subukin" 
                     : "Authorized BHW & Staff Portal • Account creation disabled"}
@@ -552,11 +552,11 @@ const AuthPage = () => {
 
               {/* Divider */}
               <div className="relative flex items-center py-1">
-                <div className="flex-grow border-t border-slate-300/70 dark:border-slate-700/60" />
-                <span className="flex-shrink mx-3 text-[11px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wider">
+                <div className="flex-grow border-t-2 border-slate-900/30 dark:border-white/30" />
+                <span className="flex-shrink mx-3 text-[11px] text-slate-900 dark:text-slate-200 font-bold uppercase tracking-wider">
                   {language === "tl" ? "O mag-sign in gamit ang" : "Or"}
                 </span>
-                <div className="flex-grow border-t border-slate-300/70 dark:border-slate-700/60" />
+                <div className="flex-grow border-t-2 border-slate-900/30 dark:border-white/30" />
               </div>
 
               {/* Login with Google Button */}
@@ -566,7 +566,7 @@ const AuthPage = () => {
                   setGoogleEmailInput(email.includes("@") ? email : "");
                   setGoogleModalOpen(true);
                 }}
-                className="w-full h-11 px-4 bg-white/70 hover:bg-white/90 dark:bg-slate-800/80 dark:hover:bg-slate-700/90 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] flex items-center justify-center gap-2.5 transition-all cursor-pointer"
+                className="w-full h-11 px-4 bg-white/85 hover:bg-white dark:bg-slate-800/90 dark:hover:bg-slate-700/90 backdrop-blur-md border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm flex items-center justify-center gap-2.5 transition-all cursor-pointer"
               >
                 <GoogleIcon className="h-4 w-4" />
                 <span>{language === "tl" ? "Mag-log in gamit ang Google" : "Login with Google"}</span>
