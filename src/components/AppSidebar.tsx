@@ -139,7 +139,7 @@ export function AppSidebar() {
     return location.pathname.startsWith(path);
   };
 
-  const renderItems = (items: typeof mainItems) => (
+  const renderItems = (items: Array<{ title: string; url: string; icon: React.ComponentType<{ className?: string }> }>) => (
     <SidebarMenu>
       {items.map((item) => {
         const isItemActive = isActive(item.url);

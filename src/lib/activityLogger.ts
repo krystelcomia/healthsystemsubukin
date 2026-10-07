@@ -164,14 +164,31 @@ export function getActiveBhwShift(user?: { id?: string; email?: string } | null)
   return null;
 }
 
+export interface LogActivityOptions {
+  entity_type?: string;
+  entityType?: string;
+  entity_id?: string;
+  entityId?: string;
+  description?: string;
+  workerName?: string;
+  userEmail?: string;
+  action?: string;
+}
+
 export async function logActivity(
-  action: string,
-  opts?: { entity_type?: string; entity_id?: string; description?: string }
+  actionOrEntry: string | ({ action: string } & LogActivityOptions),
+  opts?: LogActivityOptions
 ) {
   try {
+    const action = typeof actionOrEntry === "string" ? actionOrEntry : actionOrEntry.action;
+    const resolvedOpts: LogActivityOptions =
+      typeof actionOrEntry === "object" ? { ...actionOrEntry, ...opts } : (opts || {});
+    const entityType = resolvedOpts.entity_type || resolvedOpts.entityType;
+    const entityId = resolvedOpts.entity_id || resolvedOpts.entityId;
+    const description = resolvedOpts.description;
     // Do not include user sign-ins and sign-outs in the activity logs, as those belong in the attendance logs.
     const actLower = action.toLowerCase();
-    const descLower = (opts?.description || "").toLowerCase();
+    const descLower = (description || "").toLowerCase();
     const isAuthOrAttendance =
       actLower.includes("login") ||
       actLower.includes("logout") ||
@@ -199,7 +216,7 @@ export async function logActivity(
     } catch {}
 
     const uid = currentUser?.id || (typeof window !== "undefined" ? (localStorage.getItem("bhw_active_user_id") || localStorage.getItem("active_user_id")) : null);
-    const uEmail = currentUser?.email || (typeof window !== "undefined" ? localStorage.getItem("bhw_active_user_email") || "" : "");
+    const uEmail = resolvedOpts.userEmail || currentUser?.email || (typeof window !== "undefined" ? localStorage.getItem("bhw_active_user_email") || "" : "");
 
     // Log to standard Supabase logs
     if (uid) {
@@ -207,16 +224,17 @@ export async function logActivity(
         await (supabase.from as any)("user_activity_logs").insert({
           user_id: uid,
           action,
-          entity_type: opts?.entity_type ?? null,
-          entity_id: opts?.entity_id ?? null,
-          description: opts?.description ?? null,
+          entity_type: entityType ?? null,
+          entity_id: entityId ?? null,
+          description: description ?? null,
         });
       } catch {}
     }
 
     // Also log to BHW specific logs with safe worker identification
     const activeShift = getActiveBhwShift(currentUser || (uid ? { id: uid, email: uEmail } : null));
-    const activeBhw = activeShift?.workerName || 
+    const activeBhw = resolvedOpts.workerName ||
+                      activeShift?.workerName || 
                       (typeof window !== "undefined" ? (
                         sessionStorage.getItem("logged_in_fullname") || 
                         sessionStorage.getItem("logged_in_username") ||
@@ -246,9 +264,9 @@ export async function logActivity(
       workerName: activeBhw,
       action,
       actionCategory,
-      entityType: opts?.entity_type ?? null,
-      entityId: opts?.entity_id ?? null,
-      description: opts?.description ?? action,
+      entityType: entityType ?? null,
+      entityId: entityId ?? null,
+      description: description ?? action,
       timestamp: now.toISOString(),
       dateStr: now.toISOString().split("T")[0],
       timeStr: now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
