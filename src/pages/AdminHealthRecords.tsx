@@ -33,7 +33,7 @@ import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
-import { formatHouseholdHeadName } from "@/lib/nameFormatter";
+import { formatHouseholdHeadName, sortFamilyMembers } from "@/lib/nameFormatter";
 
 interface FormMeta {
   id: string;
@@ -791,9 +791,10 @@ const AdminHealthRecords = () => {
         : typeof selectedRecord.members_detail === "string"
         ? (JSON.parse(selectedRecord.members_detail || "[]") as any[])
         : [];
-      const membersList = [...rawList].sort((a: any, b: any) =>
-        (a.full_name || "").trim().localeCompare((b.full_name || "").trim())
-      );
+      const membersList = sortFamilyMembers(rawList, {
+        fatherName: selectedRecord.father_name,
+        motherName: selectedRecord.mother_name,
+      });
 
       const html = `
         <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#000000;border-bottom:1.5px solid #000000;padding-bottom:4px;margin-top:18px;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
@@ -1362,9 +1363,10 @@ const AdminHealthRecords = () => {
                               : typeof selectedRecord.members_detail === "string"
                               ? (JSON.parse(selectedRecord.members_detail || "[]") as any[])
                               : [];
-                            const mems = [...rawMems].sort((a: any, b: any) =>
-                              (a.full_name || "").trim().localeCompare((b.full_name || "").trim())
-                            );
+                            const mems = sortFamilyMembers(rawMems, {
+                              fatherName: selectedRecord.father_name,
+                              motherName: selectedRecord.mother_name,
+                            });
                             if (mems.length === 0) {
                               return (
                                 <tr>

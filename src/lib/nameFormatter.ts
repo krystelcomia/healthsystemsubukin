@@ -168,3 +168,140 @@ export function formatHouseholdHeadName(fullName: string | null | undefined): st
   }
   return `${formattedLast}, ${formattedFirst}`.trim();
 }
+
+export interface FamilyMemberLike {
+  id?: string;
+  resident_id?: string | null;
+  full_name?: string;
+  relationship?: string;
+  age?: number | string;
+  birthday?: string;
+  gender?: string;
+  civil_status?: string;
+  notes?: string;
+  [key: string]: any;
+}
+
+/**
+ * Standardized family member sorting:
+ * 1. Father (Household Head) comes first
+ * 2. Mother comes second
+ * 3. Children (Son, Daughter, Child) come next, arranged according to age (oldest to youngest)
+ * 4. Other household members follow by age / seniority
+ */
+export function sortFamilyMembers<T extends FamilyMemberLike>(
+  members: T[],
+  context?: { fatherName?: string; motherName?: string }
+): T[] {
+  if (!Array.isArray(members)) return [];
+
+  const cleanFather = (context?.fatherName || "").trim().toLowerCase();
+  const cleanMother = (context?.motherName || "").trim().toLowerCase();
+
+  const getRoleRank = (m: T): number => {
+    const r = (m.relationship || "").trim().toLowerCase();
+    const name = (m.full_name || "").trim().toLowerCase();
+
+    // Check relationship or direct name match for Father / Head
+    if (
+      r === "father" ||
+      r === "head" ||
+      r === "household head" ||
+      r === "husband" ||
+      r === "ama" ||
+      r === "tatay" ||
+      r === "padre de familia" ||
+      (cleanFather && name && (name === cleanFather || cleanFather.includes(name) || name.includes(cleanFather)))
+    ) {
+      return 1;
+    }
+
+    // Check relationship or direct name match for Mother
+    if (
+      r === "mother" ||
+      r === "wife" ||
+      r === "ina" ||
+      r === "nanay" ||
+      r === "madre de familia" ||
+      (cleanMother && name && (name === cleanMother || cleanMother.includes(name) || name.includes(cleanMother)))
+    ) {
+      return 2;
+    }
+
+    // Children
+    if (
+      r === "child" ||
+      r === "son" ||
+      r === "daughter" ||
+      r === "anak" ||
+      r.includes("son") ||
+      r.includes("daughter") ||
+      r.includes("child")
+    ) {
+      return 3;
+    }
+
+    // Grandparents / Senior members
+    if (r.includes("grandfather") || r.includes("grandmother") || r.includes("lolo") || r.includes("lola")) {
+      return 2.5;
+    }
+
+    return 4;
+  };
+
+  const getAgeNumber = (m: T): number => {
+    if (m.age !== undefined && m.age !== null && m.age !== "" && !isNaN(Number(m.age))) {
+      return Number(m.age);
+    }
+    if (m.birthday) {
+      const bDate = new Date(m.birthday);
+      if (!isNaN(bDate.getTime())) {
+        const today = new Date();
+        let calculatedAge = today.getFullYear() - bDate.getFullYear();
+        const mDiff = today.getMonth() - bDate.getMonth();
+        if (mDiff < 0 || (mDiff === 0 && today.getDate() < bDate.getDate())) {
+          calculatedAge--;
+        }
+        return calculatedAge;
+      }
+    }
+    return -1;
+  };
+
+  const getBirthTimestamp = (m: T): number => {
+    if (m.birthday) {
+      const bDate = new Date(m.birthday);
+      if (!isNaN(bDate.getTime())) {
+        return bDate.getTime();
+      }
+    }
+    return 0;
+  };
+
+  return [...members].sort((a, b) => {
+    const rankA = getRoleRank(a);
+    const rankB = getRoleRank(b);
+
+    if (rankA !== rankB) {
+      return rankA - rankB;
+    }
+
+    // When both are children (or same rank), sort by age (oldest to youngest)
+    const ageA = getAgeNumber(a);
+    const ageB = getAgeNumber(b);
+
+    if (ageA !== -1 && ageB !== -1 && ageA !== ageB) {
+      return ageB - ageA; // Higher age = older -> comes first
+    }
+
+    const birthA = getBirthTimestamp(a);
+    const birthB = getBirthTimestamp(b);
+    if (birthA > 0 && birthB > 0 && birthA !== birthB) {
+      return birthA - birthB; // Earlier birthday = older -> comes first
+    }
+
+    // Fallback alphabetical by name
+    return (a.full_name || "").trim().localeCompare((b.full_name || "").trim());
+  });
+}
+

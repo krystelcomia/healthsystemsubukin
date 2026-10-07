@@ -39,7 +39,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ensureResidentExists, calculateAge } from "@/lib/residentLinker";
-import { formatResidentName, formatHouseholdHeadName } from "@/lib/nameFormatter";
+import { formatResidentName, formatHouseholdHeadName, sortFamilyMembers } from "@/lib/nameFormatter";
 import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 import { logActivity } from "@/lib/activityLogger";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
@@ -149,7 +149,7 @@ const FamilyDataForm = () => {
     return strA.localeCompare(strB, undefined, { numeric: true, sensitivity: "base" });
   };
 
-  const parseMembers = (membersData: any): FamilyMember[] => {
+  const parseMembers = (membersData: any, context?: { fatherName?: string; motherName?: string }): FamilyMember[] => {
     let list: any[] = [];
     if (!membersData) list = [];
     else if (Array.isArray(membersData)) list = membersData;
@@ -174,8 +174,7 @@ const FamilyDataForm = () => {
         uniqueList.push(m);
       }
     }
-    uniqueList.sort((a, b) => (a.full_name || "").trim().localeCompare((b.full_name || "").trim()));
-    return uniqueList;
+    return sortFamilyMembers(uniqueList, context);
   };
 
   // Helper to check if a resident is registered in any family file
@@ -476,11 +475,11 @@ const FamilyDataForm = () => {
       seenNew.add(key);
       deduplicatedNewMembers.push({ ...mem, full_name: clean });
     }
-    deduplicatedNewMembers.sort((a, b) => (a.full_name || "").trim().localeCompare((b.full_name || "").trim()));
+    const sortedNewMembers = sortFamilyMembers(deduplicatedNewMembers, { fatherName: newFather, motherName: newMother });
 
-    const malesCount = deduplicatedNewMembers.filter((m) => m.gender === "Male").length;
-    const femalesCount = deduplicatedNewMembers.filter((m) => m.gender === "Female").length;
-    const totalCount = deduplicatedNewMembers.length || (newFather ? 1 : 0) + (newMother ? 1 : 0);
+    const malesCount = sortedNewMembers.filter((m) => m.gender === "Male").length;
+    const femalesCount = sortedNewMembers.filter((m) => m.gender === "Female").length;
+    const totalCount = sortedNewMembers.length || (newFather ? 1 : 0) + (newMother ? 1 : 0);
 
     // Auto-link residents in system database
     let mainResidentId: string | null = null;
@@ -508,7 +507,7 @@ const FamilyDataForm = () => {
       if (!mainResidentId) mainResidentId = motherId;
     }
 
-    for (const mem of deduplicatedNewMembers) {
+    for (const mem of sortedNewMembers) {
       await ensureResidentExists({
         fullName: mem.full_name,
         sitio: newSitio,
@@ -529,7 +528,7 @@ const FamilyDataForm = () => {
       num_males: malesCount,
       num_females: femalesCount,
       total_members: totalCount,
-      members_detail: deduplicatedNewMembers
+      members_detail: sortedNewMembers
     };
 
     const { data, error } = await supabase
@@ -560,7 +559,7 @@ const FamilyDataForm = () => {
   // Open a Family File
   const handleOpenFile = (rec: FamilyRecord) => {
     setSelectedFile(rec);
-    const members = parseMembers(rec.members_detail);
+    const members = parseMembers(rec.members_detail, { fatherName: rec.father_name, motherName: rec.mother_name });
     
     if (members.length === 0) {
       const defaultMembers: FamilyMember[] = [];
@@ -570,11 +569,9 @@ const FamilyDataForm = () => {
       if (rec.mother_name && rec.mother_name.trim()) {
         defaultMembers.push({ id: `m-${Date.now()}`, full_name: rec.mother_name.trim(), relationship: "Mother", age: "", gender: "Female" });
       }
-      defaultMembers.sort((a, b) => (a.full_name || "").trim().localeCompare((b.full_name || "").trim()));
-      setActiveMembers(defaultMembers);
+      setActiveMembers(sortFamilyMembers(defaultMembers, { fatherName: rec.father_name, motherName: rec.mother_name }));
     } else {
-      const sortedMembers = [...members].sort((a, b) => (a.full_name || "").trim().localeCompare((b.full_name || "").trim()));
-      setActiveMembers(sortedMembers);
+      setActiveMembers(sortFamilyMembers(members, { fatherName: rec.father_name, motherName: rec.mother_name }));
     }
 
     setEditFamNum(rec.family_number || "");
@@ -635,23 +632,23 @@ const FamilyDataForm = () => {
       seenActive.add(key);
       deduplicatedActiveMembers.push({ ...mem, full_name: clean });
     }
-    deduplicatedActiveMembers.sort((a, b) => (a.full_name || "").trim().localeCompare((b.full_name || "").trim()));
+    const sortedActiveMembers = sortFamilyMembers(deduplicatedActiveMembers, { fatherName: editFather, motherName: editMother });
 
     // Require birthday for all active members
-    for (const mem of deduplicatedActiveMembers) {
+    for (const mem of sortedActiveMembers) {
       if (!mem.birthday || !mem.birthday.trim()) {
         toast.error(`Please enter a birthday for "${mem.full_name}". Birthday is required.`);
         return;
       }
     }
 
-    const malesCount = deduplicatedActiveMembers.filter((m) => m.gender === "Male").length;
-    const femalesCount = deduplicatedActiveMembers.filter((m) => m.gender === "Female").length;
-    const totalCount = deduplicatedActiveMembers.length;
+    const malesCount = sortedActiveMembers.filter((m) => m.gender === "Male").length;
+    const femalesCount = sortedActiveMembers.filter((m) => m.gender === "Female").length;
+    const totalCount = sortedActiveMembers.length;
 
     // Link father, mother, and all family members to the family_number in residents system
     const famNumStr = editFamNum.trim();
-    const editFatherMem = deduplicatedActiveMembers.find(m => m.full_name.toLowerCase() === editFather.trim().toLowerCase() || m.relationship === "Father");
+    const editFatherMem = sortedActiveMembers.find(m => m.full_name.toLowerCase() === editFather.trim().toLowerCase() || m.relationship === "Father");
     if (editFather.trim()) {
       await ensureResidentExists({
         fullName: editFather.trim(),
@@ -662,7 +659,7 @@ const FamilyDataForm = () => {
         familyNumber: famNumStr
       });
     }
-    const editMotherMem = deduplicatedActiveMembers.find(m => m.full_name.toLowerCase() === editMother.trim().toLowerCase() || m.relationship === "Mother");
+    const editMotherMem = sortedActiveMembers.find(m => m.full_name.toLowerCase() === editMother.trim().toLowerCase() || m.relationship === "Mother");
     if (editMother.trim()) {
       await ensureResidentExists({
         fullName: editMother.trim(),
@@ -673,7 +670,7 @@ const FamilyDataForm = () => {
         familyNumber: famNumStr
       });
     }
-    for (const mem of deduplicatedActiveMembers) {
+    for (const mem of sortedActiveMembers) {
       await ensureResidentExists({
         fullName: mem.full_name,
         sitio: editSitio,
@@ -693,7 +690,7 @@ const FamilyDataForm = () => {
       num_males: malesCount,
       num_females: femalesCount,
       total_members: totalCount,
-      members_detail: deduplicatedActiveMembers
+      members_detail: sortedActiveMembers
     };
 
     if (selectedFile.id.startsWith("temp-")) {
@@ -769,9 +766,10 @@ const FamilyDataForm = () => {
       civil_status: memStatus
     };
 
-    const updated = [...activeMembers, newMemObj].sort((a, b) =>
-      (a.full_name || "").trim().localeCompare((b.full_name || "").trim())
-    );
+    const updated = sortFamilyMembers([...activeMembers, newMemObj], {
+      fatherName: editFather,
+      motherName: editMother,
+    });
     setActiveMembers(updated);
     setMemName("");
     setMemAge("");
