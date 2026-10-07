@@ -16,6 +16,7 @@ import { bhwCheckIn, bhwCheckOut, getActiveBhwShift } from "@/lib/activityLogger
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import OfficialHeader from "@/components/OfficialHeader";
+import { AteBhwChatbot } from "@/components/AteBhwChatbot";
 
 const getHeaderLinks = (t: (key: string) => string) => [
   { label: t("nav.dashboard"), to: "/", Icon: Home, isCalendar: false },
@@ -1355,6 +1356,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </div>
+
+      {/* Intelligent Barangay Health Assistant Chatbot */}
+      <AteBhwChatbot />
     </SidebarProvider>
   );
 }
