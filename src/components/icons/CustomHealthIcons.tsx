@@ -98,8 +98,8 @@ export const PregnantWomanIcon: React.FC<CustomIconProps> = ({
 };
 
 /**
- * Custom Family Planning Icon (Family with Child / Couple with Child)
- * Depicts a mother and father (couple) with a small child in the center.
+ * Custom Family Planning Icon (Married Couple - Husband & Wife)
+ * Depicts a man and a woman demonstrating that they are a married couple.
  */
 export const FamilyPlanningIcon: React.FC<CustomIconProps> = ({
   size = 24,
@@ -120,21 +120,21 @@ export const FamilyPlanningIcon: React.FC<CustomIconProps> = ({
       className={className}
       {...props}
     >
-      {/* Parent 1 (Left / Father) */}
-      <circle cx="6" cy="6" r="2.25" />
-      <path d="M2.5 19v-2.5a3.5 3.5 0 0 1 3.5-3.5h.5a3.5 3.5 0 0 1 3.5 3.5V19" />
+      {/* Husband / Man (Left) */}
+      <circle cx="7.5" cy="7.5" r="2.5" />
+      <path d="M3.5 21v-2.5a3.5 3.5 0 0 1 3.5-3.5h1a3.5 3.5 0 0 1 3.5 3.5V21" />
 
-      {/* Parent 2 (Right / Mother) */}
-      <circle cx="18" cy="6" r="2.25" />
-      <path d="M14 19v-2.5a3.5 3.5 0 0 1 3.5-3.5h.5a3.5 3.5 0 0 1 3.5 3.5V19" />
+      {/* Wife / Woman (Right) with hair silhouette & dress */}
+      <circle cx="16.5" cy="7.5" r="2.5" />
+      <path d="M14 8c0 2 1 3.2 2.5 3.2s2.5-1.2 2.5-3.2" />
+      <path d="M12.5 21l1.2-5.5a2.8 2.8 0 0 1 2.8-2h0a2.8 2.8 0 0 1 2.8 2L20.5 21" />
 
-      {/* Child in the Center */}
-      <circle cx="12" cy="11.5" r="1.75" />
-      <path d="M9.5 21v-1.5a2.5 2.5 0 0 1 2.5-2.5h0a2.5 2.5 0 0 1 2.5 2.5V21" />
+      {/* Married Couple Union (Heart symbol between the couple) */}
+      <path d="M12 2.8c-.4-.5-1-.5-1.4 0-.3.4-.3 1 0 1.4L12 5.5l1.4-1.3c.3-.4.3-1 0-1.4-.4-.5-1-.5-1.4 0z" fill="currentColor" fillOpacity="0.3" />
 
-      {/* Holding hands / family bond connection */}
-      <path d="M6.5 16.5 9.5 18" />
-      <path d="M17.5 16.5 14.5 18" />
+      {/* Holding hands connection */}
+      <path d="M9.5 17.5h5" />
     </svg>
   );
 };
+
