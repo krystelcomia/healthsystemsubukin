@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NavLink } from "@/components/NavLink";
@@ -407,7 +407,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     });
 
   // Group activities by date so there is a single date entry per day
-  const groupedActivityLogsByDate = filteredActivityLogs.reduce((acc: Record<string, any[]>, log: any) => {
+  const groupedActivityLogsByDate = filteredActivityLogs.reduce<Record<string, any[]>>((acc, log: any) => {
     const logDate = log.dateStr || (log.timestamp ? new Date(log.timestamp).toISOString().split("T")[0] : "Undated");
     if (!acc[logDate]) {
       acc[logDate] = [];
@@ -416,7 +416,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     return acc;
   }, {});
 
-  const sortedDateGroups = Object.entries(groupedActivityLogsByDate).sort(
+  const sortedDateGroups: [string, any[]][] = Object.entries(groupedActivityLogsByDate).sort(
     ([dateA], [dateB]) => dateB.localeCompare(dateA)
   );
 
@@ -1179,7 +1179,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </thead>
                 <tbody className="divide-y divide-slate-300 text-black">
                   {sortedDateGroups.length > 0 ? (
-                    sortedDateGroups.map(([dateKey, dayLogs], groupIdx) => (
+                    sortedDateGroups.map(([dateKey, dayLogs]: [string, any[]], groupIdx: number) => (
                       <React.Fragment key={dateKey || groupIdx}>
                         {/* Single Date Header Entry for all activities on this day */}
                         <tr className="bg-slate-200/90 text-black border-y-2 border-slate-400 font-bold">
@@ -1379,7 +1379,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </thead>
           <tbody>
             {sortedDateGroups.length > 0 ? (
-              sortedDateGroups.map(([dateKey, dayLogs], groupIdx) => (
+              sortedDateGroups.map(([dateKey, dayLogs]: [string, any[]], groupIdx: number) => (
                 <React.Fragment key={dateKey || groupIdx}>
                   <tr style={{ background: "#e2e8f0", borderTop: "2px solid #000", borderBottom: "1px solid #000" }}>
                     <td colSpan={5} style={{ border: "1px solid #000", padding: "6px 10px", fontWeight: "bold", textTransform: "uppercase", fontSize: "11px" }}>
