@@ -238,8 +238,35 @@ const Index = () => {
         });
       });
 
+      // Integrate all recorded system activities (recording data, editing, deleting, printing, attendance)
+      try {
+        const rawActivityLogs = JSON.parse(localStorage.getItem("bhw_activity_logs") || "[]");
+        (rawActivityLogs || []).forEach((act: any) => {
+          const timestamp = act.timestamp ? new Date(act.timestamp).getTime() : Date.now();
+          const worker = act.workerName || act.userEmail || "BHW Staff";
+          allEvents.push({
+            name: worker,
+            action: act.description || act.action || "System action recorded",
+            time: formatTimeAgo(new Date(timestamp)),
+            timestamp,
+            type: act.actionCategory || "Activity",
+          });
+        });
+      } catch {}
+
       allEvents.sort((a, b) => b.timestamp - a.timestamp);
-      setRecentActivity(allEvents.slice(0, 5));
+      
+      // Deduplicate overlapping entries by name + action + minute
+      const seen = new Set<string>();
+      const deduplicatedEvents = allEvents.filter((ev) => {
+        const minuteSlot = Math.floor(ev.timestamp / 60000);
+        const key = `${ev.name}-${ev.action.slice(0, 30)}-${minuteSlot}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      setRecentActivity(deduplicatedEvents.slice(0, 8));
 
       setLoading(false);
     };
@@ -248,9 +275,13 @@ const Index = () => {
     const handleDbUpdate = () => fetchStats();
     window.addEventListener("storage", handleDbUpdate);
     window.addEventListener("bhw-db-updated", handleDbUpdate);
+    window.addEventListener("bhw-activity-updated", handleDbUpdate);
+    window.addEventListener("bhw-attendance-updated", handleDbUpdate);
     return () => {
       window.removeEventListener("storage", handleDbUpdate);
       window.removeEventListener("bhw-db-updated", handleDbUpdate);
+      window.removeEventListener("bhw-activity-updated", handleDbUpdate);
+      window.removeEventListener("bhw-attendance-updated", handleDbUpdate);
     };
   }, []);
 

@@ -113,13 +113,46 @@ const AdminDashboard = () => {
         .from("consultations").select("consultation_date, consultation_cause, created_at, residents(full_name)")
         .order("created_at", { ascending: false }).limit(5);
 
+      const allAdminEvents: { name: string; action: string; time: string; timestamp: number }[] = [];
+
       if (recentConsultations) {
-        setRecentActivity(recentConsultations.map((c: any) => ({
-          name: c.residents?.full_name || "Resident",
-          action: c.consultation_cause || t("dashboard.consultations"),
-          time: formatTimeAgo(new Date(c.created_at)),
-        })));
+        recentConsultations.forEach((c: any) => {
+          allAdminEvents.push({
+            name: c.residents?.full_name || "Resident",
+            action: c.consultation_cause || t("dashboard.consultations"),
+            time: formatTimeAgo(new Date(c.created_at)),
+            timestamp: new Date(c.created_at).getTime(),
+          });
+        });
       }
+
+      try {
+        const rawActivityLogs = JSON.parse(localStorage.getItem("bhw_activity_logs") || "[]");
+        (rawActivityLogs || []).forEach((act: any) => {
+          const timestamp = act.timestamp ? new Date(act.timestamp).getTime() : Date.now();
+          const worker = act.workerName || act.userEmail || "BHW Staff";
+          allAdminEvents.push({
+            name: worker,
+            action: act.description || act.action || "System action recorded",
+            time: formatTimeAgo(new Date(timestamp)),
+            timestamp,
+          });
+        });
+      } catch {}
+
+      allAdminEvents.sort((a, b) => b.timestamp - a.timestamp);
+
+      // Deduplicate overlapping entries
+      const seen = new Set<string>();
+      const deduplicatedAdminEvents = allAdminEvents.filter((ev) => {
+        const minuteSlot = Math.floor(ev.timestamp / 60000);
+        const key = `${ev.name}-${ev.action.slice(0, 30)}-${minuteSlot}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      setRecentActivity(deduplicatedAdminEvents.slice(0, 8));
       setLoading(false);
     };
 
@@ -150,6 +183,8 @@ const AdminDashboard = () => {
     window.addEventListener("bhw-worker-status-changed", handleStatusEvent);
     window.addEventListener("storage", handleStatusEvent);
     window.addEventListener("bhw-db-updated", handleStatusEvent);
+    window.addEventListener("bhw-activity-updated", handleStatusEvent);
+    window.addEventListener("bhw-attendance-updated", handleStatusEvent);
 
     // Realtime channel subscription for instant worker status change detection across all devices
     let channel: any = null;
@@ -180,6 +215,8 @@ const AdminDashboard = () => {
       window.removeEventListener("bhw-worker-status-changed", handleStatusEvent);
       window.removeEventListener("storage", handleStatusEvent);
       window.removeEventListener("bhw-db-updated", handleStatusEvent);
+      window.removeEventListener("bhw-activity-updated", handleStatusEvent);
+      window.removeEventListener("bhw-attendance-updated", handleStatusEvent);
     };
   }, []);
 
