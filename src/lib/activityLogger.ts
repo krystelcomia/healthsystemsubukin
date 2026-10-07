@@ -169,6 +169,29 @@ export async function logActivity(
   opts?: { entity_type?: string; entity_id?: string; description?: string }
 ) {
   try {
+    // Do not include user sign-ins and sign-outs in the activity logs, as those belong in the attendance logs.
+    const actLower = action.toLowerCase();
+    const descLower = (opts?.description || "").toLowerCase();
+    const isAuthOrAttendance =
+      actLower.includes("login") ||
+      actLower.includes("logout") ||
+      actLower.includes("sign-in") ||
+      actLower.includes("sign-out") ||
+      actLower.includes("signin") ||
+      actLower.includes("signout") ||
+      actLower.includes("check-in") ||
+      actLower.includes("check-out") ||
+      actLower.includes("attendance") ||
+      actLower.includes("shift") ||
+      descLower.includes("signed in") ||
+      descLower.includes("signed out") ||
+      descLower.includes("checked in") ||
+      descLower.includes("checked out");
+
+    if (isAuthOrAttendance) {
+      return;
+    }
+
     let currentUser: any = null;
     try {
       const { data } = await supabase.auth.getUser();
@@ -203,9 +226,8 @@ export async function logActivity(
                       (uEmail ? uEmail.split("@")[0] : null) ||
                       "BHW Personnel";
 
-    // Categorize action for clear badge & filtering
-    const actLower = action.toLowerCase();
-    let actionCategory: "RECORDING" | "EDITING" | "DELETING" | "PRINTING" | "ATTENDANCE" | "OTHER" = "OTHER";
+    // Categorize action for clear badge & filtering (recording, editing, deleting, printing)
+    let actionCategory: "RECORDING" | "EDITING" | "DELETING" | "PRINTING" | "OTHER" = "OTHER";
     if (actLower.includes("submit") || actLower.includes("create") || actLower.includes("add") || actLower.includes("record")) {
       actionCategory = "RECORDING";
     } else if (actLower.includes("update") || actLower.includes("edit") || actLower.includes("modify") || actLower.includes("save")) {
@@ -214,8 +236,6 @@ export async function logActivity(
       actionCategory = "DELETING";
     } else if (actLower.includes("print")) {
       actionCategory = "PRINTING";
-    } else if (actLower.includes("check-in") || actLower.includes("check-out") || actLower.includes("shift") || actLower.includes("attendance")) {
-      actionCategory = "ATTENDANCE";
     }
 
     const now = new Date();
@@ -352,10 +372,7 @@ export function bhwCheckIn(
     }
   } catch {}
 
-  // 4. Log activity
-  logActivity("check-in", { description: `BHW worker ${workerName} checked in` });
-
-  // 5. Broadcast in real time to all tabs and windows
+  // 4. Broadcast in real time to all tabs and windows
   broadcastAttendance({
     type: "CHECK_IN",
     userId,
@@ -434,12 +451,7 @@ export function bhwCheckOut(userMeta?: { userId?: string | null; userEmail?: str
   localStorage.removeItem("active_bhw_worker");
   localStorage.removeItem("active_bhw_session_id");
 
-  // 4. Log activity
-  if (workerName) {
-    logActivity("check-out", { description: `BHW worker ${workerName} checked out` });
-  }
-
-  // 5. Broadcast in real time
+  // 4. Broadcast in real time
   broadcastAttendance({
     type: "CHECK_OUT",
     userId,
