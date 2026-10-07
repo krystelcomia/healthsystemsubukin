@@ -440,7 +440,7 @@ const AuthPage = () => {
       {/* Clear background overlay without blur so the background photo of the barangay hall remains sharp and visible */}
       <div className="absolute inset-0 bg-slate-950/20 pointer-events-none" />
 
-      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/50 dark:border-slate-700/60 bg-white/75 dark:bg-slate-900/80 backdrop-blur-md shadow-2xl rounded-none overflow-hidden transition-all">
+      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/60 dark:border-white/15 bg-white/65 dark:bg-slate-900/70 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden transition-all">
         <CardHeader className="text-center space-y-3 pt-8 pb-3 px-6 sm:px-8">
           <div className="relative mx-auto inline-block">
             <img
@@ -455,7 +455,7 @@ const AuthPage = () => {
             </CardTitle>
             <CardDescription className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-medium">
               {mode === "login" 
-                ? (language === "tl" ? "Mag-log in upang ma-access ang health records" : "Sign in to access the health records system")
+                ? (language === "tl" ? "Mag-log in gamit ang iyong email address" : "Sign in to access the health records system")
                 : t("auth.forgotDesc")}
             </CardDescription>
           </div>
@@ -464,42 +464,42 @@ const AuthPage = () => {
         <CardContent className="px-6 sm:px-8 pb-8 pt-1">
           {mode === "login" ? (
             <div className="space-y-4">
-              <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-3.5" autoComplete="off">
-                {/* Username / Email Field */}
-                <div className="space-y-1.5">
+              <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4" autoComplete="off">
+                {/* Email Field (Simple Line Style) */}
+                <div className="space-y-1">
                   <Label className="text-slate-700 dark:text-slate-200 text-xs font-semibold">
-                    {language === "tl" ? "Username o Email" : "Username"}
+                    {language === "tl" ? "Email" : "Email"}
                   </Label>
                   <div className="relative">
                     <Input
-                      className="h-11 text-sm pr-10 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] hover:bg-white/60 dark:hover:bg-slate-950/60 hover:border-white/80 dark:hover:border-white/20 focus-visible:bg-white/75 dark:focus-visible:bg-slate-950/75 focus-visible:ring-2 focus-visible:ring-slate-900/20 dark:focus-visible:ring-primary/40 focus-visible:border-slate-900/40 dark:focus-visible:border-primary transition-all duration-200"
-                      type="text"
+                      className="h-10 text-sm pr-8 px-0.5 bg-transparent border-0 border-b border-slate-400/80 dark:border-slate-500 text-slate-900 dark:text-white placeholder:text-slate-500/70 dark:placeholder:text-slate-400 rounded-none focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary focus-visible:bg-transparent shadow-none transition-all duration-200"
+                      type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder={language === "tl" ? "Ilagay ang username o email" : "Username"}
-                      autoComplete="username"
+                      placeholder={language === "tl" ? "Ilagay ang iyong email" : "Enter your email"}
+                      autoComplete="email"
                     />
-                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
-                      <User className="h-4 w-4" />
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
+                      <Mail className="h-4 w-4" />
                     </div>
                   </div>
                 </div>
 
-                {/* Password Field */}
-                <div className="space-y-1.5">
+                {/* Password Field (Simple Line Style) */}
+                <div className="space-y-1">
                   <Label className="text-slate-700 dark:text-slate-200 text-xs font-semibold">
                     {t("auth.password")}
                   </Label>
                   <div className="relative">
                     <Input
-                      className="h-11 text-sm pr-10 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] hover:bg-white/60 dark:hover:bg-slate-950/60 hover:border-white/80 dark:hover:border-white/20 focus-visible:bg-white/75 dark:focus-visible:bg-slate-950/75 focus-visible:ring-2 focus-visible:ring-slate-900/20 dark:focus-visible:ring-primary/40 focus-visible:border-slate-900/40 dark:focus-visible:border-primary transition-all duration-200"
+                      className="h-10 text-sm pr-8 px-0.5 bg-transparent border-0 border-b border-slate-400/80 dark:border-slate-500 text-slate-900 dark:text-white placeholder:text-slate-500/70 dark:placeholder:text-slate-400 rounded-none focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary focus-visible:bg-transparent shadow-none transition-all duration-200"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       autoComplete="current-password"
                     />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
                       <button
                         type="button"
                         className="text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 transition-colors p-1"
@@ -512,7 +512,7 @@ const AuthPage = () => {
                 </div>
 
                 {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between pt-0.5 text-xs">
+                <div className="flex items-center justify-between pt-1 text-xs">
                   <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-300 select-none">
                     <input
                       type="checkbox"
