@@ -413,7 +413,7 @@ const ResidentRecords = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-xl font-heading font-extrabold text-foreground">{formatResidentName(selectedResident.full_name)}</h2>
+                    <h2 className="text-xl font-heading font-extrabold text-foreground">{selectedResident.full_name}</h2>
                     {selectedResident.family_number && (
                       <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30 font-mono">
                         Family #: {selectedResident.family_number}
@@ -441,7 +441,7 @@ const ResidentRecords = () => {
           {/* Printable Resident Header Info */}
           <div className="print-only print-resident-header" style={{ display: "none", width: "100%", borderBottom: "2px solid #000", paddingBottom: "10px", marginBottom: "16px", textAlign: "left" }}>
             <div style={{ fontSize: "20px", fontWeight: "800", color: "#000", marginBottom: "6px", display: "block", width: "100%", clear: "both" }}>
-              {formatResidentName(selectedResident.full_name)}
+              {selectedResident.full_name}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 20px", fontSize: "12px", color: "#000", lineHeight: "1.4", width: "100%" }}>
               <span><strong>{t("residents.gender")}:</strong> {selectedResident.gender}</span>
@@ -725,7 +725,7 @@ const ResidentRecords = () => {
               <DialogHeader><DialogTitle>{t("residents.editResident")}</DialogTitle><DialogDescription>{t("residents.editResidentDesc")}</DialogDescription></DialogHeader>
               {editResident && (
                 <div className="space-y-3">
-                  <div className="space-y-1"><Label>{t("residents.fullName")} * <span className="font-normal text-muted-foreground text-xs">(Surname, First Name, Middle Name)</span></Label><Input placeholder="Surname, First Name, Middle Name" value={editResident.full_name} onKeyDown={allowOnlyLetters} onChange={(e) => setEditResident({ ...editResident, full_name: sanitizeLetters(e.target.value) })} /></div>
+                  <div className="space-y-1"><Label>{t("residents.fullName")} *</Label><Input placeholder={t("residents.fullName")} value={editResident.full_name} onKeyDown={allowOnlyLetters} onChange={(e) => setEditResident({ ...editResident, full_name: sanitizeLetters(e.target.value) })} /></div>
                   <div className="space-y-1"><Label>{t("residents.birthday")}</Label><Input type="date" value={editResident.birthday || ""} onChange={(e) => {
                     const bday = e.target.value;
                     const computed = calculateAge(bday);
@@ -909,7 +909,7 @@ const ResidentRecords = () => {
             {filtered.map((r, i) => (
               <tr key={r.id}>
                 <td style={tdStyle}>{i + 1}</td>
-                <td style={tdStyle}>{formatResidentName(r.full_name)}</td>
+                <td style={tdStyle}>{r.full_name}</td>
                 <td style={tdStyle}>{r.family_number || "—"}</td>
                 <td style={tdStyle}>{r.gender}</td>
                 <td style={tdStyle}>{r.age}</td>
@@ -956,7 +956,7 @@ const ResidentRecords = () => {
 
                         <div className="min-w-0">
                           <h4 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                            {formatResidentName(resident.full_name)}
+                            {resident.full_name}
                           </h4>
                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                             {resident.family_number && (
@@ -1002,7 +1002,7 @@ const ResidentRecords = () => {
                     {filtered.map((r) => (
                       <tr key={r.id} className="hover:bg-muted/30 transition-colors">
                         <td className="p-3 font-semibold text-foreground cursor-pointer hover:text-primary" onClick={() => handleSelectResident(r)}>
-                          {formatResidentName(r.full_name)}
+                          {r.full_name}
                         </td>
                         <td className="p-3 font-mono text-primary font-bold">
                           {r.family_number || "—"}

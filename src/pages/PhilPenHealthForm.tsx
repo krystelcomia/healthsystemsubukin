@@ -19,6 +19,7 @@ import { SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitioMapping";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
+import { ResidentSearchSelect } from "@/components/ResidentSearchSelect";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import barangayLogo from "@/assets/barangay-logo.png";
@@ -642,24 +643,17 @@ const PhilPenHealthForm = () => {
               
               {/* Left Side Group */}
               <div className="md:col-span-8 space-y-3.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-foreground shrink-0 text-sm font-bold">Name <span className="font-normal text-muted-foreground text-xs">(Surname, First Name, Middle Name)</span>:</span>
-                  <div className="flex-1 no-print">
-                    <Select value={form.resident_id} onValueChange={handleResidentChange} disabled={isMidwife}>
-                      <SelectTrigger className="h-8 border-b-2 border-t-0 border-x-0 border-slate-300 dark:border-slate-600 bg-transparent rounded-none px-1 shadow-none focus:ring-0 focus:border-primary text-sm font-normal transition-colors">
-                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select resident (Surname, First Name, Middle Name)..."} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {residents.map((r) => (
-                          <SelectItem key={r.id} value={r.id}>{formatResidentName(r.full_name)}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {/* Print representation of name select */}
-                  <span className="hidden print:inline border-b border-slate-400 flex-1 px-1 text-sm font-normal min-h-6">
-                    {formatResidentName(residents.find(r => r.id === form.resident_id)?.full_name || "")}
-                  </span>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-foreground shrink-0 text-sm font-bold">Name *:</span>
+                  <ResidentSearchSelect
+                    residents={residents}
+                    value={form.resident_id}
+                    onValueChange={handleResidentChange}
+                    disabled={isMidwife}
+                    variant="underline"
+                    placeholder={language === "tl" ? "Maghanap ng residente..." : "Search a resident..."}
+                    searchPlaceholder={language === "tl" ? "Maghanap ng residente sa pangalan o sitio..." : "Search a resident by name or sitio..."}
+                  />
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -1160,7 +1154,7 @@ const PhilPenHealthForm = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredHistory.map((rec) => {
-                      const resName = formatResidentName(rec.residents?.full_name) || "—";
+                      const resName = rec.residents?.full_name || "—";
                       const riskBadges = [];
                       if (rec.smokes) riskBadges.push("Smoker");
                       if (rec.drinks_alcohol) riskBadges.push("Alcohol");
@@ -1320,7 +1314,7 @@ const PhilPenHealthForm = () => {
                     {rec.record_date || (rec.created_at ? new Date(rec.created_at).toLocaleDateString() : "—")}
                   </td>
                   <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px", fontWeight: "bold" }}>
-                    {formatResidentName(rec.residents?.full_name) || "—"}
+                    {rec.residents?.full_name || "—"}
                   </td>
                   <td style={{ border: "1px solid #000", padding: "5px 6px", fontSize: "10px" }}>
                     {rec.address_sitio || "Subukin"}
@@ -1375,7 +1369,7 @@ const PhilPenHealthForm = () => {
                   <div className="col-span-2">
                     <span className="text-slate-500 text-[10px] block">Patient Name:</span>
                     <strong className="text-sm text-slate-900 dark:text-slate-100">
-                      {formatResidentName(selectedRecordForView.residents?.full_name) || "—"}
+                      {selectedRecordForView.residents?.full_name || "—"}
                     </strong>
                   </div>
                   <div>

@@ -53,6 +53,7 @@ import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { getFamilyOnlyResidents, calculateAge, ensureResidentExists } from "@/lib/residentLinker";
 import { formatResidentName } from "@/lib/nameFormatter";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
+import { ResidentSearchSelect } from "@/components/ResidentSearchSelect";
 import { 
   allowOnlyNumbers, 
   allowNumbersAndDecimal, 
@@ -1144,19 +1145,15 @@ const AddNewForm = () => {
             </div>
 
             {/* Resident Selector */}
-            <div className="w-full sm:w-64">
-              <Select value={selectedResidentId} onValueChange={handleSelectResident}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder={language === "tl" ? "I-link ang Residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Link Resident (Surname, First Name, Middle Name)..."} />
-                </SelectTrigger>
-                <SelectContent>
-                  {residents.map((r) => (
-                    <SelectItem key={r.id} value={r.id} className="text-xs">
-                      {formatResidentName(r.full_name)} ({r.sitio || "Subukin"})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="w-full sm:w-72">
+              <ResidentSearchSelect
+                residents={residents}
+                value={selectedResidentId}
+                onValueChange={handleSelectResident}
+                variant="outline"
+                placeholder={language === "tl" ? "Maghanap ng residente..." : "Search a resident..."}
+                searchPlaceholder={language === "tl" ? "Maghanap ng residente sa pangalan o sitio..." : "Search resident by name or sitio..."}
+              />
             </div>
           </div>
 
@@ -1285,22 +1282,18 @@ const AddNewForm = () => {
                 </div>
 
                 {/* Resident Selector */}
-                <div className="w-full sm:w-64 no-print">
+                <div className="w-full sm:w-72 no-print">
                   <Label className="text-xs font-semibold mb-1 block">
-                    {language === "tl" ? "I-link ang Rehistradong Residente (Apelyido, Pangalan, Gitnang Pangalan)" : "Link Registered Resident (Surname, First Name, Middle Name)"}
+                    {language === "tl" ? "Maghanap ng Rehistradong Residente" : "Search Registered Resident"}
                   </Label>
-                  <Select value={selectedResidentId} onValueChange={handleSelectResident}>
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select resident (Surname, First Name, Middle Name)..."} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {residents.map((r) => (
-                        <SelectItem key={r.id} value={r.id} className="text-xs">
-                          {formatResidentName(r.full_name)} ({r.sitio || "Subukin"})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <ResidentSearchSelect
+                    residents={residents}
+                    value={selectedResidentId}
+                    onValueChange={handleSelectResident}
+                    variant="outline"
+                    placeholder={language === "tl" ? "Maghanap ng residente..." : "Search a resident..."}
+                    searchPlaceholder={language === "tl" ? "Maghanap ng residente sa pangalan o sitio..." : "Search resident by name or sitio..."}
+                  />
                 </div>
               </div>
 
@@ -1658,7 +1651,7 @@ const AddNewForm = () => {
                             </span>
                           </td>
                           <td className="p-3 font-semibold text-foreground">
-                            {formatResidentName(rec.resident_name) || "—"}
+                            {rec.resident_name || "—"}
                           </td>
                           <td className="p-3 text-muted-foreground max-w-[320px] truncate" title={summaryEntries}>
                             {summaryEntries || "—"}
@@ -1726,7 +1719,7 @@ const AddNewForm = () => {
                 <div>
                   <span className="text-slate-500 text-[10px] block">{language === "tl" ? "Residente / Kliyente:" : "Resident / Client:"}</span>
                   <strong className="text-sm text-slate-900 dark:text-slate-100">
-                    {formatResidentName(selectedSubmissionForView.resident_name) || "—"}
+                    {selectedSubmissionForView.resident_name || "—"}
                   </strong>
                 </div>
                 <div>

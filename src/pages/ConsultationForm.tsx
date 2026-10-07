@@ -20,6 +20,7 @@ import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
+import { ResidentSearchSelect } from "@/components/ResidentSearchSelect";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import barangayLogo from "@/assets/barangay-logo.png";
@@ -493,21 +494,17 @@ const ConsultationForm = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-foreground">Name * <span className="font-normal text-muted-foreground text-xs">(Surname, First Name, Middle Name)</span></Label>
-                  <div className="no-print">
-                    <Select value={form.resident_id} onValueChange={handleSelectResident} disabled={isMidwife}>
-                      <SelectTrigger className={lineSelectClass}>
-                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select resident (Surname, First Name, Middle Name)..."} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {residents.map((r) => <SelectItem key={r.id} value={r.id}>{formatResidentName(r.full_name)}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <span className="hidden print:block border-b-2 border-slate-300 w-full min-h-[1.5rem] px-1 font-medium">
-                    {formatResidentName(residents.find(r => r.id === form.resident_id)?.full_name || "")}
-                  </span>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label className="text-xs font-semibold text-foreground">Name *</Label>
+                  <ResidentSearchSelect
+                    residents={residents}
+                    value={form.resident_id}
+                    onValueChange={handleSelectResident}
+                    disabled={isMidwife}
+                    variant="underline"
+                    placeholder={language === "tl" ? "Maghanap ng residente..." : "Search a resident..."}
+                    searchPlaceholder={language === "tl" ? "Maghanap ng residente sa pangalan o sitio..." : "Search a resident by name or sitio..."}
+                  />
                 </div>
               </div>
 
@@ -909,7 +906,7 @@ const ConsultationForm = () => {
                   <div>
                     <span className="text-slate-500 text-[10px] block">Patient Full Name:</span>
                     <strong className="text-sm text-slate-900 dark:text-slate-100">
-                      {formatResidentName(selectedRecordForView.residents?.full_name) || "—"}
+                      {selectedRecordForView.residents?.full_name || "—"}
                     </strong>
                   </div>
                   <div>

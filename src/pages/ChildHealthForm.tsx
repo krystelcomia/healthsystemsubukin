@@ -45,6 +45,7 @@ import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
+import { ResidentSearchSelect } from "@/components/ResidentSearchSelect";
 import {
   allowOnlyLetters,
   allowOnlyNumbers,
@@ -1363,7 +1364,7 @@ const ChildHealthForm = () => {
 
       updated[targetIdx] = {
         ...updated[targetIdx],
-        child_name: formatResidentName(res.full_name) || "",
+        child_name: res.full_name || "",
         dob: res.birthday || (res.age ? `Age: ${res.age}y` : ""),
       };
 
@@ -2510,20 +2511,20 @@ const ChildHealthForm = () => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-card p-3 rounded-lg border border-border/60 shadow-xs w-full">
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
-                      <UserCheck className="h-4 w-4" /> Select a Resident (Surname, First Name, Middle Name):
+                      <Search className="h-4 w-4" /> Search a Resident:
                     </span>
-                    <Select disabled={isMidwife} value={selectedResidentId} onValueChange={handleSelectResidentForSick}>
-                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
-                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select a child resident (Surname, First Name, Middle Name)..."} />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {childResidents.map(r => (
-                          <SelectItem key={r.id} value={r.id} className="text-xs">
-                            {formatResidentName(r.full_name)} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos / ${calculateAgeYears(r.birthday, r.age)}y)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="w-full sm:w-80">
+                      <ResidentSearchSelect
+                        residents={childResidents}
+                        value={selectedResidentId}
+                        onValueChange={handleSelectResidentForSick}
+                        disabled={isMidwife}
+                        variant="outline"
+                        placeholder={language === "tl" ? "Maghanap ng batang residente..." : "Search a child resident..."}
+                        searchPlaceholder={language === "tl" ? "Maghanap ng bata sa pangalan o sitio..." : "Search child resident by name or sitio..."}
+                        customSubtitle={(r) => calculateAgeMonths(r.birthday) !== null ? `${calculateAgeMonths(r.birthday)} mos` : `${r.age || 0}y`}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -2617,12 +2618,12 @@ const ChildHealthForm = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                      <Label className="text-[11px] font-medium text-slate-500">Pangalan ng Ina (Surname, First Name, Middle Name):</Label>
-                      <Input type="text" value={sickForm.mother_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, mother_name: sanitizeLetters(e.target.value) }))} placeholder="Surname, First Name, Middle Name" className={lineInputClass} />
+                      <Label className="text-[11px] font-medium text-slate-500">Pangalan ng Ina:</Label>
+                      <Input type="text" value={sickForm.mother_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, mother_name: sanitizeLetters(e.target.value) }))} placeholder="Pangalan ng Ina" className={lineInputClass} />
                     </div>
                     <div>
-                      <Label className="text-[11px] font-medium text-slate-500">Pangalan ng Ama (Surname, First Name, Middle Name):</Label>
-                      <Input type="text" value={sickForm.father_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, father_name: sanitizeLetters(e.target.value) }))} placeholder="Surname, First Name, Middle Name" className={lineInputClass} />
+                      <Label className="text-[11px] font-medium text-slate-500">Pangalan ng Ama:</Label>
+                      <Input type="text" value={sickForm.father_name} onKeyDown={allowOnlyLetters} onChange={e => setSickForm(p => ({ ...p, father_name: sanitizeLetters(e.target.value) }))} placeholder="Pangalan ng Ama" className={lineInputClass} />
                     </div>
                     <div>
                       <Label className="text-[11px] font-medium text-slate-500">Contact Number:</Label>
@@ -3618,20 +3619,20 @@ const ChildHealthForm = () => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
-                      <UserCheck className="h-4 w-4" /> Select a Resident (Surname, First Name, Middle Name):
+                      <Search className="h-4 w-4" /> Search a Resident:
                     </span>
-                    <Select disabled={isMidwife} value="" onValueChange={handleSelectResidentForVitA}>
-                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
-                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select a child resident (Surname, First Name, Middle Name)..."} />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {childResidents.map(r => (
-                          <SelectItem key={r.id} value={r.id} className="text-xs">
-                            {formatResidentName(r.full_name)} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="w-full sm:w-80">
+                      <ResidentSearchSelect
+                        residents={childResidents}
+                        value=""
+                        onValueChange={handleSelectResidentForVitA}
+                        disabled={isMidwife}
+                        variant="outline"
+                        placeholder={language === "tl" ? "Maghanap ng batang residente..." : "Search a child resident..."}
+                        searchPlaceholder={language === "tl" ? "Maghanap ng bata sa pangalan o sitio..." : "Search child resident by name or sitio..."}
+                        customSubtitle={(r) => calculateAgeMonths(r.birthday) !== null ? `${calculateAgeMonths(r.birthday)} mos` : `${r.age || 0}y`}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3643,7 +3644,7 @@ const ChildHealthForm = () => {
                     <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold text-center border-b border-slate-400">
                       <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 w-8 print:w-[3%]">NO.</th>
                       <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[280px] w-[280px] print:w-[17%]">
-                        NAME OF CHILD<br/><span className="text-[10px] font-normal text-slate-600 dark:text-slate-400">(Surname, First Name, Middle Name)</span>
+                        NAME OF CHILD
                       </th>
                       <th rowSpan={3} className="border border-slate-300 dark:border-slate-700 p-1 min-w-[90px] print:w-[8%]">BIRTH DATE</th>
                       
@@ -3715,7 +3716,7 @@ const ChildHealthForm = () => {
                               const val = e.target.value;
                               setVitARows(prev => prev.map(r => r.id === row.id ? { ...r, child_name: val } : r));
                             }} 
-                            placeholder="Surname, First Name, Middle Name" 
+                            placeholder="Child's Name" 
                             className="cell-input w-full bg-transparent border-0 outline-none text-xs px-1 font-medium"
                           />
                         </td>
@@ -3856,20 +3857,20 @@ const ChildHealthForm = () => {
                 <div className="flex flex-col gap-3 bg-card p-3 rounded-lg border border-border/60 shadow-xs text-xs w-full">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
                     <span className="text-xs font-semibold text-primary flex items-center gap-1.5 shrink-0">
-                      <UserCheck className="h-4 w-4" /> Select a Resident (Surname, First Name, Middle Name):
+                      <Search className="h-4 w-4" /> Search a Resident:
                     </span>
-                    <Select disabled={isMidwife} value="" onValueChange={handleSelectResidentForSIA}>
-                      <SelectTrigger className="h-8 text-xs bg-background w-full sm:w-80">
-                        <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select a child resident (Surname, First Name, Middle Name)..."} />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {childResidents.map(r => (
-                          <SelectItem key={r.id} value={r.id} className="text-xs">
-                            {formatResidentName(r.full_name)} {calculateAgeMonths(r.birthday) !== null ? `(${calculateAgeMonths(r.birthday)} mos)` : `(${r.age || 0}y)`} {r.sitio ? `• ${r.sitio}` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="w-full sm:w-80">
+                      <ResidentSearchSelect
+                        residents={childResidents}
+                        value=""
+                        onValueChange={handleSelectResidentForSIA}
+                        disabled={isMidwife}
+                        variant="outline"
+                        placeholder={language === "tl" ? "Maghanap ng batang residente..." : "Search a child resident..."}
+                        searchPlaceholder={language === "tl" ? "Maghanap ng bata sa pangalan o sitio..." : "Search child resident by name or sitio..."}
+                        customSubtitle={(r) => calculateAgeMonths(r.birthday) !== null ? `${calculateAgeMonths(r.birthday)} mos` : `${r.age || 0}y`}
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

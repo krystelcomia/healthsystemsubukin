@@ -41,6 +41,7 @@ import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
+import { ResidentSearchSelect } from "@/components/ResidentSearchSelect";
 
 export const RISK_FACTORS_COLUMN_1 = [
   "Abnormal presentation",
@@ -1050,20 +1051,15 @@ const MaternalCareForm = () => {
                 <h3 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
                   <UserCheck className="h-4 w-4 shrink-0" /> Patient General Information
                 </h3>
-                <div className="flex items-center gap-2 no-print w-full sm:w-auto">
-                  <Label className="text-xs shrink-0 font-medium text-foreground whitespace-nowrap">Select Resident (Surname, First Name, Middle Name):</Label>
-                  <Select value={form.resident_id} onValueChange={handleSelectResident}>
-                    <SelectTrigger className="h-8 text-xs bg-background text-foreground w-full sm:w-64 min-w-[140px]">
-                      <SelectValue placeholder={language === "tl" ? "Pumili ng residente (Apelyido, Pangalan, Gitnang Pangalan)..." : "Select resident (Surname, First Name, Middle Name)..."} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {residents.map(r => (
-                        <SelectItem key={r.id} value={r.id} className="text-xs">
-                          {formatResidentName(r.full_name)} {r.sitio ? `(${r.sitio})` : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="no-print w-full sm:w-80">
+                  <ResidentSearchSelect
+                    residents={residents}
+                    value={form.resident_id}
+                    onValueChange={handleSelectResident}
+                    variant="outline"
+                    placeholder={language === "tl" ? "Maghanap ng residente..." : "Search a resident..."}
+                    searchPlaceholder={language === "tl" ? "Maghanap ng residente sa pangalan o sitio..." : "Search a resident by name or sitio..."}
+                  />
                 </div>
               </div>
 

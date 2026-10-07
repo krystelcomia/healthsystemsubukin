@@ -322,14 +322,10 @@ export async function getFamilyOnlyResidents(): Promise<any[]> {
     // First add all residents from residents table
     for (const r of resData) {
       if (!r.full_name || !r.full_name.trim()) continue;
-      const formatted = formatResidentName(r.full_name);
-      const key = formatted.toLowerCase();
+      const key = r.full_name.trim().toLowerCase();
       if (!seen.has(key)) {
         seen.add(key);
-        uniqueResidents.push({
-          ...r,
-          full_name: formatted,
-        });
+        uniqueResidents.push(r);
       }
     }
 
@@ -342,13 +338,12 @@ export async function getFamilyOnlyResidents(): Promise<any[]> {
       }
 
       if (fam.father_name && fam.father_name.trim()) {
-        const formattedFather = formatResidentName(fam.father_name);
-        const k = formattedFather.toLowerCase();
+        const k = fam.father_name.trim().toLowerCase();
         if (!seen.has(k)) {
           seen.add(k);
           uniqueResidents.push({
             id: `f-${fam.id}`,
-            full_name: formattedFather,
+            full_name: fam.father_name.trim(),
             gender: "Male",
             age: 0,
             status: "Married",
@@ -359,13 +354,12 @@ export async function getFamilyOnlyResidents(): Promise<any[]> {
       }
 
       if (fam.mother_name && fam.mother_name.trim()) {
-        const formattedMother = formatResidentName(fam.mother_name);
-        const k = formattedMother.toLowerCase();
+        const k = fam.mother_name.trim().toLowerCase();
         if (!seen.has(k)) {
           seen.add(k);
           uniqueResidents.push({
             id: `m-${fam.id}`,
-            full_name: formattedMother,
+            full_name: fam.mother_name.trim(),
             gender: "Female",
             age: 0,
             status: "Married",
@@ -377,13 +371,12 @@ export async function getFamilyOnlyResidents(): Promise<any[]> {
 
       for (const mem of members) {
         if (!mem.full_name || !mem.full_name.trim()) continue;
-        const formattedMem = formatResidentName(mem.full_name);
-        const k = formattedMem.toLowerCase();
+        const k = mem.full_name.trim().toLowerCase();
         if (!seen.has(k)) {
           seen.add(k);
           uniqueResidents.push({
             id: `mem-${fam.id}-${k}`,
-            full_name: formattedMem,
+            full_name: mem.full_name.trim(),
             gender: mem.gender || "Male",
             age: Number(mem.age) || (mem.birthday ? calculateAge(mem.birthday) : 0),
             status: mem.civil_status || "Single",

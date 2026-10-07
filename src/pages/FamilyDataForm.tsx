@@ -1362,10 +1362,10 @@ const FamilyDataForm = () => {
                           {rec.num_households === "" ? "—" : (rec.num_households ?? "—")}
                         </td>
                         <td className="border border-border p-2.5 text-foreground font-medium">
-                          {formatResidentName(rec.father_name) || "—"}
+                          {rec.father_name || "—"}
                         </td>
                         <td className="border border-border p-2.5 text-foreground">
-                          {formatResidentName(rec.mother_name) || "—"}
+                          {rec.mother_name || "—"}
                         </td>
                         <td className="border border-border p-2.5 text-center text-foreground/80">
                           {displayMales}
@@ -1559,7 +1559,7 @@ const FamilyDataForm = () => {
                         <Input
                           value={editFather}
                           onKeyDown={allowOnlyLetters}
-                          placeholder="Surname, First Name, Middle Name"
+                          placeholder="Father's Full Name"
                           onChange={(e) => {
                             const val = sanitizeLetters(e.target.value);
                             setEditFather(val);
@@ -1577,7 +1577,7 @@ const FamilyDataForm = () => {
                         <Input
                           value={editMother}
                           onKeyDown={allowOnlyLetters}
-                          placeholder="Surname, First Name, Middle Name"
+                          placeholder="Mother's Full Name"
                           onChange={(e) => {
                             const val = sanitizeLetters(e.target.value);
                             setEditMother(val);
@@ -1675,7 +1675,7 @@ const FamilyDataForm = () => {
                     <thead>
                       <tr className="bg-muted/40 border-b border-border/80">
                         <th className="p-3 font-semibold text-center w-[40px]">#</th>
-                        <th className="p-3 font-semibold">Full Name <span className="font-normal text-muted-foreground text-xs">(Surname, First Name, Middle Name)</span></th>
+                        <th className="p-3 font-semibold">Full Name</th>
                         <th className="p-3 font-semibold text-center">Birthday *</th>
                         <th className="p-3 font-semibold text-center">Age</th>
                         <th className="p-3 font-semibold">Role</th>
@@ -1694,7 +1694,7 @@ const FamilyDataForm = () => {
                         activeMembers.map((m, idx) => (
                           <tr key={m.id || idx} className="border-b border-border/40 hover:bg-muted/20">
                             <td className="p-3 text-center text-muted-foreground text-xs">{idx + 1}</td>
-                            <td className="p-3 font-medium">{formatResidentName(m.full_name)}</td>
+                            <td className="p-3 font-medium">{m.full_name}</td>
                             <td className="p-3 text-center">{m.birthday || "—"}</td>
                             <td className="p-3 text-center">{m.age || "—"}</td>
                             <td className="p-3">{m.relationship}</td>
@@ -1835,7 +1835,7 @@ const FamilyDataForm = () => {
                 <Input
                   value={newFather}
                   onKeyDown={allowOnlyLetters}
-                  placeholder="Surname, First Name, Middle Name"
+                  placeholder="Father's Full Name"
                   onChange={(e) => {
                     const val = sanitizeLetters(e.target.value);
                     setNewFather(val);
@@ -1854,7 +1854,7 @@ const FamilyDataForm = () => {
                 <Input
                   value={newMother}
                   onKeyDown={allowOnlyLetters}
-                  placeholder="Surname, First Name, Middle Name"
+                  placeholder="Mother's Full Name"
                   onChange={(e) => {
                     const val = sanitizeLetters(e.target.value);
                     setNewMother(val);
@@ -1901,7 +1901,7 @@ const FamilyDataForm = () => {
                 <table className="w-full text-xs min-w-[660px]">
                   <thead>
                     <tr className="bg-muted/60 border-b border-border/50 text-muted-foreground font-semibold">
-                      <th className="p-2 text-left w-48">Full Name <span className="font-normal text-muted-foreground">(Surname, First Name, Middle Name)</span></th>
+                      <th className="p-2 text-left w-48">Full Name</th>
                       <th className="p-2 text-left w-44">Birthday *</th>
                       <th className="p-2 text-center w-20">Age</th>
                       <th className="p-2 text-left w-24">Role</th>
@@ -1919,7 +1919,7 @@ const FamilyDataForm = () => {
                         <tr key={mem.id} className="border-b border-border/30 hover:bg-muted/20">
                           <td className="p-1.5">
                             <Input
-                              placeholder="Surname, First Name, Middle Name"
+                              placeholder="Full Name"
                               value={mem.full_name}
                               onKeyDown={allowOnlyLetters}
                               onChange={(e) => {
@@ -2058,12 +2058,12 @@ const FamilyDataForm = () => {
 
           <div className="space-y-3 py-2 text-xs">
             <div>
-              <Label className="text-xs">Full Name * <span className="font-normal text-muted-foreground">(Surname, First Name, Middle Name)</span></Label>
+              <Label className="text-xs">Full Name *</Label>
               <Input
                 value={memName}
                 onKeyDown={allowOnlyLetters}
                 onChange={(e) => setMemName(sanitizeLetters(e.target.value))}
-                placeholder="Surname, First Name, Middle Name"
+                placeholder="Full Name"
                 className={`h-8 text-xs mt-1 ${memName.trim() !== "" && addMemberDuplicateError ? "border-destructive focus-visible:ring-destructive text-destructive bg-destructive/5" : ""}`}
               />
               {memName.trim() !== "" && addMemberDuplicateError && (
