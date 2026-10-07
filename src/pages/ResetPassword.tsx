@@ -214,7 +214,7 @@ const ResetPassword = () => {
                     {language === "tl" ? "Buong Pangalan ng Manggagawa" : "Worker's Full Name"}
                   </Label>
                   <Input
-                    className="h-10 text-xs font-medium bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                    className="h-11 text-xs font-medium bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all"
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
@@ -229,7 +229,7 @@ const ResetPassword = () => {
                     {language === "tl" ? "Username ng Manggagawa" : "Worker's Username"}
                   </Label>
                   <Input
-                    className="h-10 text-xs font-medium bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                    className="h-11 text-xs font-medium bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -245,7 +245,7 @@ const ResetPassword = () => {
                 </p>
               </div>
 
-              <Button type="submit" className="w-full h-10 gap-2 font-bold text-sm shadow-md" disabled={loading}>
+              <Button type="submit" className="w-full h-11 gap-2 font-bold text-sm rounded-xl shadow-md" disabled={loading}>
                 <KeyRound className="h-4 w-4" />
                 {loading ? t("auth.sending") : (language === "tl" ? "Ipadala ang Reset Code sa Email" : "Send Reset Code via Email")}
               </Button>
@@ -253,7 +253,7 @@ const ResetPassword = () => {
               <Button
                 type="button"
                 variant="ghost"
-                className="w-full gap-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+                className="w-full gap-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-xl transition-colors"
                 onClick={() => navigate("/auth")}
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
@@ -280,7 +280,7 @@ const ResetPassword = () => {
                     type="button"
                     size="sm"
                     variant="secondary"
-                    className="h-7 text-[11px] px-2.5 gap-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium shadow-xs"
+                    className="h-7 text-[11px] px-2.5 gap-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium rounded-lg shadow-xs"
                     onClick={() => window.open("https://mail.google.com/mail/u/0/#inbox", "_blank")}
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
@@ -290,7 +290,7 @@ const ResetPassword = () => {
                     type="button"
                     size="sm"
                     variant="secondary"
-                    className="h-7 text-[11px] px-2.5 gap-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium shadow-xs"
+                    className="h-7 text-[11px] px-2.5 gap-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium rounded-lg shadow-xs"
                     onClick={() => window.open(`https://mail.google.com/mail/u/0/#search/${encodeURIComponent(email)}`, "_blank")}
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
@@ -314,7 +314,7 @@ const ResetPassword = () => {
                   </button>
                 </div>
                 <Input
-                  className="font-mono tracking-widest text-center text-xl font-extrabold h-12 bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                  className="font-mono tracking-widest text-center text-xl font-extrabold h-12 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all"
                   type="text"
                   maxLength={6}
                   value={verificationCode}
@@ -329,7 +329,7 @@ const ResetPassword = () => {
                 </p>
               </div>
 
-              <Button type="submit" className="w-full h-10 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md" disabled={loading}>
+              <Button type="submit" className="w-full h-11 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md" disabled={loading}>
                 <ShieldCheck className="h-4 w-4" />
                 {loading ? (language === "tl" ? "Sinusuri ang Code..." : "Verifying Code...") : (language === "tl" ? "I-verify ang Code" : "Verify Code")}
               </Button>
@@ -338,7 +338,7 @@ const ResetPassword = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  className="flex-1 h-9 text-xs transition-colors"
+                  className="flex-1 h-9 text-xs rounded-xl transition-colors"
                   onClick={() => { setStep(1); setVerificationCode(""); }}
                 >
                   {language === "tl" ? "Palitan ang Email" : "Change Email"}
@@ -346,7 +346,7 @@ const ResetPassword = () => {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="flex-1 h-9 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs transition-colors"
+                  className="flex-1 h-9 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs rounded-xl transition-colors"
                   onClick={() => navigate("/auth")}
                 >
                   {t("auth.backToSignIn")}
@@ -374,7 +374,7 @@ const ResetPassword = () => {
                 <Label className="text-slate-800 dark:text-slate-200 text-xs font-semibold">{t("reset.newPassword")}</Label>
                 <div className="relative">
                   <Input
-                    className="h-10 text-sm pr-10 bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                    className="h-11 text-sm pr-10 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -395,7 +395,7 @@ const ResetPassword = () => {
                 <Label className="text-slate-800 dark:text-slate-200 text-xs font-semibold">{t("reset.confirmPassword")}</Label>
                 <div className="relative">
                   <Input
-                    className="h-10 text-sm pr-10 bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                    className="h-11 text-sm pr-10 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all"
                     type={showConfirm ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -411,7 +411,7 @@ const ResetPassword = () => {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full h-10 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md" disabled={loading}>
+              <Button type="submit" className="w-full h-11 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md" disabled={loading}>
                 <LockKeyhole className="h-4 w-4" />
                 {loading ? t("reset.updating") : (language === "tl" ? "I-save ang Bagong Password" : "Save New Password")}
               </Button>
@@ -420,7 +420,7 @@ const ResetPassword = () => {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="w-full h-9 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs transition-colors"
+                  className="w-full h-9 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs rounded-xl transition-colors"
                   onClick={() => navigate("/auth")}
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />

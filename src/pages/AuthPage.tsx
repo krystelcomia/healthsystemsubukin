@@ -473,14 +473,14 @@ const AuthPage = () => {
                   </Label>
                   <div className="relative">
                     <Input
-                      className="h-10 text-sm pr-10 bg-white/70 dark:bg-slate-950/60 border-slate-300/80 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-slate-900/20 dark:focus-visible:ring-primary/40 focus-visible:border-slate-900 dark:focus-visible:border-primary transition-all shadow-xs"
+                      className="h-11 text-sm pr-10 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] hover:bg-white/60 dark:hover:bg-slate-950/60 hover:border-white/80 dark:hover:border-white/20 focus-visible:bg-white/75 dark:focus-visible:bg-slate-950/75 focus-visible:ring-2 focus-visible:ring-slate-900/20 dark:focus-visible:ring-primary/40 focus-visible:border-slate-900/40 dark:focus-visible:border-primary transition-all duration-200"
                       type="text"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={language === "tl" ? "Ilagay ang username o email" : "Username"}
                       autoComplete="username"
                     />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
                       <User className="h-4 w-4" />
                     </div>
                   </div>
@@ -493,22 +493,22 @@ const AuthPage = () => {
                   </Label>
                   <div className="relative">
                     <Input
-                      className="h-10 text-sm pr-16 bg-white/70 dark:bg-slate-950/60 border-slate-300/80 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-slate-900/20 dark:focus-visible:ring-primary/40 focus-visible:border-slate-900 dark:focus-visible:border-primary transition-all shadow-xs"
+                      className="h-11 text-sm pr-16 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] hover:bg-white/60 dark:hover:bg-slate-950/60 hover:border-white/80 dark:hover:border-white/20 focus-visible:bg-white/75 dark:focus-visible:bg-slate-950/75 focus-visible:ring-2 focus-visible:ring-slate-900/20 dark:focus-visible:ring-primary/40 focus-visible:border-slate-900/40 dark:focus-visible:border-primary transition-all duration-200"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       autoComplete="current-password"
                     />
-                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                       <button
                         type="button"
                         className="text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 transition-colors p-1"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
-                      <Lock className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                      <Lock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                     </div>
                   </div>
                 </div>
@@ -536,7 +536,7 @@ const AuthPage = () => {
                 {/* Primary Login Button */}
                 <Button
                   type="submit"
-                  className="w-full h-10 font-bold text-sm bg-slate-900 hover:bg-slate-800 dark:bg-primary dark:hover:bg-primary/90 text-white rounded-xl shadow-md mt-1 transition-all"
+                  className="w-full h-11 font-bold text-sm bg-slate-900 hover:bg-slate-800 dark:bg-primary dark:hover:bg-primary/90 text-white rounded-xl shadow-md mt-1 transition-all"
                   disabled={loading}
                 >
                   {loading ? t("auth.signingIn") : (language === "tl" ? "Mag-log in" : "Login")}
@@ -568,7 +568,7 @@ const AuthPage = () => {
                   setGoogleEmailInput(email.includes("@") ? email : "");
                   setGoogleModalOpen(true);
                 }}
-                className="w-full h-10 px-4 bg-white/90 hover:bg-white dark:bg-slate-800 dark:hover:bg-slate-700/90 border border-slate-300/80 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold rounded-xl shadow-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer"
+                className="w-full h-11 px-4 bg-white/70 hover:bg-white/90 dark:bg-slate-800/80 dark:hover:bg-slate-700/90 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] flex items-center justify-center gap-2.5 transition-all cursor-pointer"
               >
                 <GoogleIcon className="h-4 w-4" />
                 <span>{language === "tl" ? "Mag-log in gamit ang Google" : "Login with Google"}</span>
@@ -587,7 +587,7 @@ const AuthPage = () => {
                         {language === "tl" ? "Buong Pangalan ng Manggagawa" : "Worker's Full Name"}
                       </Label>
                       <Input
-                        className="h-10 text-xs font-medium bg-white/70 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                        className="h-11 text-xs font-medium bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all"
                         type="text"
                         value={forgotFullName}
                         onChange={(e) => setForgotFullName(e.target.value)}
@@ -602,7 +602,7 @@ const AuthPage = () => {
                         {language === "tl" ? "Username ng Manggagawa" : "Worker's Username"}
                       </Label>
                       <Input
-                        className="h-10 text-xs font-medium bg-white/70 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                        className="h-11 text-xs font-medium bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all"
                         type="text"
                         value={forgotUsername}
                         onChange={(e) => setForgotUsername(e.target.value)}
@@ -690,7 +690,7 @@ const AuthPage = () => {
                       </button>
                     </div>
                     <Input
-                      className="font-mono tracking-widest text-center text-xl font-extrabold h-12 bg-white/70 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                      className="font-mono tracking-widest text-center text-xl font-extrabold h-12 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all"
                       type="text"
                       maxLength={6}
                       value={verificationCode}
@@ -705,7 +705,7 @@ const AuthPage = () => {
                     </p>
                   </div>
 
-                  <Button type="submit" className="w-full h-10 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md" disabled={loading}>
+                  <Button type="submit" className="w-full h-11 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md" disabled={loading}>
                     <ShieldCheck className="h-4 w-4" />
                     {loading ? (language === "tl" ? "Sinusuri ang Code..." : "Verifying Code...") : (language === "tl" ? "I-verify ang Code" : "Verify Code")}
                   </Button>
@@ -753,7 +753,7 @@ const AuthPage = () => {
                     <Label className="text-slate-800 dark:text-slate-200 text-xs font-semibold">{t("reset.newPassword")}</Label>
                     <div className="relative">
                       <Input
-                        className="h-10 text-sm pr-10 bg-white/70 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                        className="h-11 text-sm pr-10 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all"
                         type={showNewPassword ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
@@ -774,7 +774,7 @@ const AuthPage = () => {
                     <Label className="text-slate-800 dark:text-slate-200 text-xs font-semibold">{t("reset.confirmPassword")}</Label>
                     <div className="relative">
                       <Input
-                        className="h-10 text-sm pr-10 bg-white/70 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                        className="h-11 text-sm pr-10 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all"
                         type={showConfirmPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -790,7 +790,7 @@ const AuthPage = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full h-10 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md" disabled={loading}>
+                  <Button type="submit" className="w-full h-11 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md" disabled={loading}>
                     <LockKeyhole className="h-4 w-4" />
                     {loading ? t("reset.updating") : (language === "tl" ? "I-save ang Bagong Password" : "Save New Password")}
                   </Button>
@@ -846,7 +846,7 @@ const AuthPage = () => {
                   value={googleEmailInput}
                   onChange={(e) => setGoogleEmailInput(e.target.value)}
                   placeholder="yourname@gmail.com"
-                  className="h-10 text-sm pl-9 bg-slate-50 dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus-visible:ring-2 focus-visible:ring-primary"
+                  className="h-11 text-sm pl-9 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] focus-visible:ring-2 focus-visible:ring-primary"
                   autoFocus
                 />
                 <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
