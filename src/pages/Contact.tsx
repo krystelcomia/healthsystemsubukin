@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Phone, Search, Users, PhoneCall, User, Shield, AlertTriangle, Building, Activity, Flame, Heart, HeartPulse, MapPin, ExternalLink } from "lucide-react";
+import { Phone, Search, Users, PhoneCall, User, Shield, AlertTriangle, Building, Activity, Flame, Heart, HeartPulse, MapPin, ExternalLink, Video } from "lucide-react";
 import { getAssignedSitio } from "@/lib/sitioMapping";
 import { logActivity } from "@/lib/activityLogger";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
+import { InSystemCallModal, ContactTarget } from "@/components/InSystemCallModal";
 
 interface Contact {
   id: number;
@@ -72,6 +73,17 @@ const ContactPage = () => {
   const { t, language } = useSettings();
   const [searchTerm, setSearchTerm] = useState("");
   const [workersList, setWorkersList] = useState<Contact[]>(BHW_CONTACTS);
+
+  // In-System Messenger-Style Call State
+  const [activeCallContact, setActiveCallContact] = useState<ContactTarget | null>(null);
+  const [callModalOpen, setCallModalOpen] = useState(false);
+  const [callInitialMode, setCallInitialMode] = useState<"chooser" | "audio" | "video">("chooser");
+
+  const handleInitiateCall = (target: ContactTarget, mode: "chooser" | "audio" | "video" = "chooser") => {
+    setActiveCallContact(target);
+    setCallInitialMode(mode);
+    setCallModalOpen(true);
+  };
 
   useEffect(() => {
     const fetchDbWorkers = async () => {
@@ -230,11 +242,71 @@ const ContactPage = () => {
                           </div>
                         </div>
 
-                        <div className="space-y-2 pt-2 border-t border-border/20">
-                          <div className="flex items-center gap-2 text-foreground text-sm font-semibold">
-                            <PhoneCall className="h-4 w-4 text-primary shrink-0" />
-                            <span>{c.phone}</span>
+                        <div className="space-y-2.5 pt-2 border-t border-border/20">
+                          {/* Tap number to initiate in-system Messenger call */}
+                          <div 
+                            onClick={() => handleInitiateCall({
+                              id: c.id,
+                              name: c.name,
+                              phone: c.phone,
+                              role: c.role === "supervisor" || c.role === "supervisory" ? "BHW Supervisory" : c.role === "midwife" ? "Barangay Midwife" : c.role === "bns" ? "Barangay Nutrition Scholar" : "Barangay Health Worker",
+                              sitio: c.sitio
+                            }, "chooser")}
+                            className="group/phone flex items-center justify-between p-2 rounded-xl bg-slate-50 hover:bg-sky-50/80 dark:bg-slate-800/50 dark:hover:bg-slate-800 border border-slate-200/80 hover:border-sky-400 dark:border-slate-700/80 transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-sm"
+                            title="Tap to make in-system audio or video call"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="h-7 w-7 rounded-full bg-primary/10 group-hover/phone:bg-primary group-hover/phone:text-white text-primary flex items-center justify-center shrink-0 transition-colors">
+                                <PhoneCall className="h-3.5 w-3.5" />
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-mono text-sm font-bold text-foreground group-hover/phone:text-primary transition-colors truncate">
+                                  {c.phone}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground group-hover/phone:text-primary/90 font-medium leading-none">
+                                  {language === "tl" ? "Pindutin para tumawag sa system" : "Tap to call in system"}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Direct Quick Action Audio & Video Call buttons (Messenger style) */}
+                            <div className="flex items-center gap-1 shrink-0 ml-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleInitiateCall({
+                                    id: c.id,
+                                    name: c.name,
+                                    phone: c.phone,
+                                    role: c.role === "supervisor" || c.role === "supervisory" ? "BHW Supervisory" : c.role === "midwife" ? "Barangay Midwife" : c.role === "bns" ? "Barangay Nutrition Scholar" : "Barangay Health Worker",
+                                    sitio: c.sitio
+                                  }, "audio");
+                                }}
+                                className="h-7 w-7 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-300 dark:border-emerald-700 flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
+                                title={language === "tl" ? "Tawag sa Audio (System)" : "Audio Call in System"}
+                              >
+                                <Phone className="h-3.5 w-3.5" />
+                              </button>
+
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleInitiateCall({
+                                    id: c.id,
+                                    name: c.name,
+                                    phone: c.phone,
+                                    role: c.role === "supervisor" || c.role === "supervisory" ? "BHW Supervisory" : c.role === "midwife" ? "Barangay Midwife" : c.role === "bns" ? "Barangay Nutrition Scholar" : "Barangay Health Worker",
+                                    sitio: c.sitio
+                                  }, "video");
+                                }}
+                                className="h-7 w-7 rounded-full bg-sky-50 hover:bg-sky-600 text-sky-700 hover:text-white border border-sky-300 dark:border-sky-700 flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
+                                title={language === "tl" ? "Tawag sa Video (System)" : "Video Call in System"}
+                              >
+                                <Video className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
                           </div>
+
                           {c.sitio && (
                             <div className="flex items-center gap-2 text-foreground/90 text-xs font-semibold bg-muted/50 px-2.5 py-1 rounded-md border border-border/40">
                               <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -296,11 +368,29 @@ const ContactPage = () => {
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-border/20">
-                        <div className="flex flex-col">
-                          <span className={`text-sm font-semibold ${is911 ? "text-red-500" : "text-foreground"}`}>
-                            {c.phone}
-                          </span>
-                        </div>
+                        <button
+                          onClick={() => handleInitiateCall({
+                            id: `emergency-${c.id}`,
+                            name: c.service,
+                            phone: c.phone,
+                            role: "Emergency Service / Hotline",
+                            sitio: "San Juan, Batangas"
+                          }, "audio")}
+                          className="flex items-center justify-between w-full p-2 rounded-xl bg-slate-50 hover:bg-red-50/60 dark:bg-slate-800/50 border border-slate-200 hover:border-red-400 transition-all cursor-pointer text-left group"
+                          title="Call in system"
+                        >
+                          <div className="flex flex-col">
+                            <span className={`text-sm font-mono font-bold ${is911 ? "text-red-600" : "text-foreground group-hover:text-primary"}`}>
+                              {c.phone}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {language === "tl" ? "Tawagan sa system" : "Call in system"}
+                            </span>
+                          </div>
+                          <div className="h-7 w-7 rounded-full bg-red-100 group-hover:bg-red-600 text-red-600 group-hover:text-white flex items-center justify-center transition-colors">
+                            <Phone className="h-3.5 w-3.5" />
+                          </div>
+                        </button>
                       </div>
                     </CardContent>
                   </Card>
@@ -334,10 +424,29 @@ const ContactPage = () => {
                     </div>
 
                     <div className="flex items-center justify-between pt-2 border-t border-border/20">
-                      <div className="flex items-center gap-2 text-foreground text-sm font-semibold">
-                        <PhoneCall className="h-4 w-4 text-rose-500" />
-                        <span>{c.phone}</span>
-                      </div>
+                      <button
+                        onClick={() => handleInitiateCall({
+                          id: `hospital-${c.id}`,
+                          name: c.name,
+                          phone: c.phone,
+                          role: "Hospital / Medical Center",
+                          sitio: "San Juan, Batangas"
+                        }, "audio")}
+                        className="flex items-center justify-between w-full p-2 rounded-xl bg-slate-50 hover:bg-rose-50/60 dark:bg-slate-800/50 border border-slate-200 hover:border-rose-400 transition-all cursor-pointer text-left group"
+                        title="Call in system"
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-sm font-mono font-bold text-foreground group-hover:text-rose-600">
+                            {c.phone}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {language === "tl" ? "Tawagan sa system" : "Call in system"}
+                          </span>
+                        </div>
+                        <div className="h-7 w-7 rounded-full bg-rose-100 group-hover:bg-rose-600 text-rose-600 group-hover:text-white flex items-center justify-center transition-colors">
+                          <Phone className="h-3.5 w-3.5" />
+                        </div>
+                      </button>
                     </div>
                   </CardContent>
                 </Card>
@@ -346,6 +455,14 @@ const ContactPage = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* In-System Messenger-Style Audio & Video Call Modal */}
+      <InSystemCallModal
+        contact={activeCallContact}
+        isOpen={callModalOpen}
+        initialMode={callInitialMode}
+        onClose={() => setCallModalOpen(false)}
+      />
     </div>
   );
 };
