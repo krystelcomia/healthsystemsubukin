@@ -243,13 +243,14 @@ export function BhaiChatbot() {
       {
         id: "welcome-1",
         sender: "bot",
-        text: "Magandang araw po sa inyo! Ako po si **BHAI** (Barangay Health AI), ang inyong magalang na katulong sa kalusugan at datos ng Barangay Subukin. 😊\n\nNandito po ako upang tulungan kayo. Maaari po ninyong itanong sa akin ang:\n\n• 📊 **Kabuuang bilang ng mga talaan** (residente, konsultasyon, pamilya, atbp.)\n• 👤 **Buod ng rekord ng isang pasyente o residente** (i-type lamang po ang buong pangalan)\n• 📍 **Lokasyon, palatandaan, at coordinates ng bawat Sitio**\n• 👩‍⚕️ **Direktoryo at contact number ng ating mga BHW at Midwife**\n• 👴 **Serbisyo at tulong para sa mga Senior Citizen**\n• 🚨 **Emergency hotline at ambulansya sa San Juan, Batangas**\n\nMaaari po ninyong pindutin ang alinman sa mga tanong (FAQ) sa itaas o direktang i-type ang inyong katanungan sa ibaba!",
+        text: "Magandang araw po sa inyo! Ako po si BHAI (Barangay Health AI), ang inyong magalang na katulong sa kalusugan at datos ng Barangay Subukin. 😊\n\nNandito po ako upang tulungan ang ating mga kawani at residente. Maaari po ninyong itanong sa akin ang:\n\n• 📊 Kabuuang bilang ng mga talaan (residente, konsultasyon, bakuna, buntis, atbp.)\n• 🤰 Maternal Care at Prenatal (mga buntis at panganganak)\n• 👶 Bakuna at Kalusugan ng Bata (mga sanggol at bata)\n• 👨‍👩‍👧 Family Planning at mga paraan ng proteksyon\n• 🩺 Konsultasyon at mga karaniwang sakit sa Barangay\n• 👴 Serbisyong Pangkalusugan ng Senior Citizen at BP Check\n• 📍 Lokasyon, populasyon, at coordinates ng bawat Sitio\n• 👩‍⚕️ Sino ang naka-duty ngayon at kontak ng mga BHW\n• 📝 Activity Logs at talaan ng mga nagbura o nag-print sa sistema\n• 💡 Gabay sa paggamit ng sistema (paano magdagdag ng residente, mag-print, atbp.)\n• 🚨 Emergency hotlines at ambulansya sa San Juan, Batangas\n\nMaaari rin po ninyong itanong ang anumang pangalan, pamilya, o katanungang pangkalusugan!",
         timestamp: new Date().toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }),
         quickActions: [
           { label: "📊 Kabuuang Talaan", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
-          { label: "📍 Listahan ng Sitio", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" },
-          { label: "👩‍⚕️ Kontak ng mga BHW", query: "Sino-sino po ang mga BHW at ang kanilang telepono?" },
-          { label: "👴 Serbisyo sa Senior", query: "Ano-ano po ang serbisyong pangkalusugan para sa senior citizen?" }
+          { label: "👩‍⚕️ Sino ang Naka-Duty?", query: "Sino-sino po ang mga BHW na naka-duty ngayon?" },
+          { label: "🤰 Talaan ng mga Buntis", query: "Ilan po ang mga buntis sa ating talaan?" },
+          { label: "👶 Bakuna sa mga Bata", query: "Ilan po ang mga batang may tala ng bakuna?" },
+          { label: "📍 Listahan ng Sitio", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" }
         ]
       }
     ];
@@ -264,7 +265,12 @@ export function BhaiChatbot() {
     }
   }, [messages, isOpen, isMinimized]);
 
-  // Comprehensive Data Answering Engine sa Magalang na Tagalog para sa mga Nakatatanda
+  // Clean all asterisks helper to keep responses completely clean
+  const cleanFormat = (text: string): string => {
+    return text.replace(/\*\*/g, "").replace(/\*/g, "");
+  };
+
+  // Comprehensive Data Answering Engine sa Magalang na Tagalog para sa mga Nakatatanda at Kawani
   const generateBotAnswer = async (userQuery: string): Promise<{ text: string; quickActions?: { label: string; query: string }[] }> => {
     const q = userQuery.toLowerCase().trim();
 
@@ -319,27 +325,28 @@ export function BhaiChatbot() {
         const grandTotal = rTotal + fTotal + cTotal + mTotal + chTotal + fpTotal + dTotal + pTotal;
 
         const responseText = 
-          `Opo, narito po ang kasalukuyang **Opisyal na Talaan at Estadistika** sa sistema ng kalusugan ng Barangay Subukin:\n\n` +
-          `📁 **Kabuuang Tala sa Database: ${grandTotal.toLocaleString()} mga rekord**\n\n` +
-          `• 👥 **Mga Rehistradong Residente:** ${rTotal.toLocaleString()} katao\n` +
-          `• 🏠 **Mga Pamilya at Kabahayan (Census):** ${fTotal.toLocaleString()} pamilya\n` +
-          `• 🩺 **Konsultasyon at Check-up:** ${cTotal.toLocaleString()} rekord\n` +
-          `• 🤰 **Maternal Care (Para sa mga Buntis):** ${mTotal.toLocaleString()} rekord\n` +
-          `• 👶 **Kalusugan ng Bata at Bakuna:** ${chTotal.toLocaleString()} rekord\n` +
-          `• 👨‍👩‍👧 **Family Planning Records:** ${fpTotal.toLocaleString()} rekord\n` +
-          `• 🦟 **Dengue Prevention Inspections:** ${dTotal.toLocaleString()} bahay\n` +
-          `• ❤️ **PhilPen NCD Screening (Presyon at Sugar):** ${pTotal.toLocaleString()} rekord\n` +
-          `• 👩‍⚕️ **Mga Kawani / BHW Workers:** ${wTotal} tauhan\n` +
-          `• 📝 **Naitalang Activity Logs ng Sistema:** ${rawActivityLogs.length}\n` +
-          `• 🕒 **Attendance Check-ins ng mga BHW:** ${rawAttendance.length}\n\n` +
-          `*Lahat po ng datos na ito ay ligtas na nakatala at regular na ina-update ng ating mga masisipag na Barangay Health Workers.*`;
+          `Opo, narito po ang kasalukuyang Opisyal na Talaan at Estadistika sa sistema ng kalusugan ng Barangay Subukin:\n\n` +
+          `📁 KABUUANG TALA SA DATABASE: ${grandTotal.toLocaleString()} mga rekord\n\n` +
+          `• 👥 Mga Rehistradong Residente: ${rTotal.toLocaleString()} katao\n` +
+          `• 🏠 Mga Pamilya at Kabahayan (Census): ${fTotal.toLocaleString()} pamilya\n` +
+          `• 🩺 Konsultasyon at Check-up: ${cTotal.toLocaleString()} rekord\n` +
+          `• 🤰 Maternal Care (Para sa mga Buntis): ${mTotal.toLocaleString()} rekord\n` +
+          `• 👶 Kalusugan ng Bata at Bakuna: ${chTotal.toLocaleString()} rekord\n` +
+          `• 👨‍👩‍👧 Family Planning Records: ${fpTotal.toLocaleString()} rekord\n` +
+          `• 🦟 Dengue Prevention Inspections: ${dTotal.toLocaleString()} bahay\n` +
+          `• ❤️ PhilPen NCD Screening (Presyon at Sugar): ${pTotal.toLocaleString()} rekord\n` +
+          `• 👩‍⚕️ Mga Kawani / BHW Workers: ${wTotal} tauhan\n` +
+          `• 📝 Naitalang Activity Logs ng Sistema: ${rawActivityLogs.length}\n` +
+          `• 🕒 Attendance Check-ins ng mga BHW: ${rawAttendance.length}\n\n` +
+          `Lahat po ng datos na ito ay ligtas na nakatala at regular na ina-update ng ating mga masisipag na Barangay Health Workers.`;
 
         return {
-          text: responseText,
+          text: cleanFormat(responseText),
           quickActions: [
+            { label: "🤰 Mga Buntis", query: "Ilan po ang mga buntis sa ating talaan?" },
+            { label: "👶 Mga Bakuna", query: "Ilan po ang mga batang may tala ng bakuna?" },
             { label: "📍 Listahan ng Sitios", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" },
-            { label: "👩‍⚕️ Direktoryo ng BHW", query: "Sino-sino po ang mga BHW at kanilang kontak?" },
-            { label: "👴 Serbisyo sa Senior", query: "Ano-ano po ang serbisyong pangkalusugan para sa senior citizen?" }
+            { label: "👩‍⚕️ Direktoryo ng BHW", query: "Sino-sino po ang mga BHW at kanilang kontak?" }
           ]
         };
       } catch (err) {
@@ -349,7 +356,206 @@ export function BhaiChatbot() {
       }
     }
 
-    // 2. MGA SERBISYO PARA SA MGA SENIOR CITIZEN AT NAKATATANDA
+    // 2. MATERNAL CARE / BUNTIS / PRENATAL CHECKUP
+    if (
+      q.includes("buntis") || 
+      q.includes("maternal") || 
+      q.includes("prenatal") || 
+      q.includes("panganganak") || 
+      q.includes("manganganak") || 
+      q.includes("trimester") ||
+      q.includes("buntis sa")
+    ) {
+      try {
+        const { data: maternalList } = await supabase
+          .from("maternal_care" as any)
+          .select("*")
+          .limit(10);
+
+        const mRecords = (maternalList as any[]) || [];
+        const count = mRecords.length;
+
+        let matResponse = `🤰 TALAAN NG MGA BUNTIS AT MATERNAL CARE (Barangay Subukin):\n\n`;
+        matResponse += `Mayroon po tayong ${count} naitalang mga rekord ng pagbubuntis at prenatal care sa sistema.\n\n`;
+
+        if (count > 0) {
+          matResponse += `Mga kamakailang talaan:\n`;
+          mRecords.slice(0, 5).forEach((m: any, idx: number) => {
+            const pName = m.patient_name || m.name || m.resident_name || "Pasyente";
+            const sitio = m.sitio || m.address || "Subukin";
+            const edd = m.edd || m.expected_delivery_date || m.due_date;
+            const eddStr = edd ? new Date(edd).toLocaleDateString() : "Walang petsa ng EDD";
+            const risk = m.risk_level || m.risk || "Normal";
+            matResponse += `${idx + 1}. ${pName} — Sitio: ${sitio} • Inaasahang Panganganak: ${eddStr} (Risk: ${risk})\n`;
+          });
+          matResponse += `\nPaalala sa mga BHW: Tiyakin po na regular silang nakakapag-prenatal checkup sa Barangay Health Center tuwing umaga kasama si Midwife Mary Jane Landicho.`;
+        } else {
+          matResponse += `Wala pa pong aktibong talaan ng buntis sa kasalukuyan o kailangan pang i-update sa Maternal Care form.`;
+        }
+
+        return {
+          text: cleanFormat(matResponse),
+          quickActions: [
+            { label: "👶 Kalusugan ng Bata", query: "Ilan po ang mga batang may tala ng bakuna?" },
+            { label: "👩‍⚕️ Tawagan si Midwife", query: "Contact ni Mary Jane Landicho" }
+          ]
+        };
+      } catch {
+        return {
+          text: "Nasa talaan po ng Maternal Care ang mga rekord ng mga nagdadalang-tao. Maaari pong tingnan sa Maternal Care Form o magtanong kay Midwife Mary Jane Landicho."
+        };
+      }
+    }
+
+    // 3. CHILD HEALTH & BAKUNA / IMMUNIZATION
+    if (
+      q.includes("bakuna") || 
+      q.includes("bata") || 
+      q.includes("sanggol") || 
+      q.includes("child") || 
+      q.includes("immunization") || 
+      q.includes("timbang") || 
+      q.includes("bcg") || 
+      q.includes("polio") || 
+      q.includes("measles")
+    ) {
+      try {
+        const { data: childList } = await supabase
+          .from("child_health" as any)
+          .select("*")
+          .limit(10);
+
+        const cRecords = (childList as any[]) || [];
+        const count = cRecords.length;
+
+        let childResponse = `👶 KALUSUGAN NG BATA AT BAKUNA (Child Health & Immunization):\n\n`;
+        childResponse += `Mayroong ${count} naitalang bata at sanggol sa ating sistema para sa pagbabakuna at pagsubaybay sa timbang.\n\n`;
+
+        if (count > 0) {
+          childResponse += `Mga naitalang talaan ng bata:\n`;
+          cRecords.slice(0, 5).forEach((c: any, idx: number) => {
+            const cName = c.child_name || c.name || "Bata";
+            const mother = c.mother_name || c.parent_name || "Magulang";
+            const sitio = c.sitio || c.address || "Subukin";
+            const status = c.immunization_status || c.vaccine_status || "Kasama sa programa";
+            childResponse += `${idx + 1}. ${cName} — Magulang: ${mother} • Sitio: ${sitio} (${status})\n`;
+          });
+          childResponse += `\nMahahalagang Bakuna ng Sanggol sa Health Center:\n`;
+          childResponse += `• BCG (Proteksyon laban sa TB)\n`;
+          childResponse += `• Hepatitis B (Unang 24 oras matapos ipanganak)\n`;
+          childResponse += `• Pentavalent (DPT-HepB-HiB)\n`;
+          childResponse += `• OPV / IPV (Laban sa Polio)\n`;
+          childResponse += `• PCV (Laban sa Pulmonya)\n`;
+          childResponse += `• MMR / Measles (Laban sa Tigdas)\n\n`;
+          childResponse += `Maaari pong dalhin ang sanggol sa Health Center para sa regular na bakuna tuwing itinakdang immunization day.`;
+        } else {
+          childResponse += `Ligtas pong nakatala ang mga sanggol sa ating Child Health Form para sa regular na bakuna at deworming.`;
+        }
+
+        return {
+          text: cleanFormat(childResponse),
+          quickActions: [
+            { label: "🤰 Maternal Care", query: "Ilan po ang mga buntis sa ating talaan?" },
+            { label: "👩‍⚕️ Kontak ng Midwife", query: "Contact ni Mary Jane Landicho" }
+          ]
+        };
+      } catch {
+        return {
+          text: "Ang programa sa pagbabakuna ng mga sanggol ay regular na isinasagawa sa Barangay Subukin Health Center. Pakisangguni po kay Midwife Mary Jane Landicho."
+        };
+      }
+    }
+
+    // 4. FAMILY PLANNING / PAGPAPLANO NG PAMILYA
+    if (
+      q.includes("family planning") || 
+      q.includes("fp") || 
+      q.includes("pills") || 
+      q.includes("dmpa") || 
+      q.includes("condom") || 
+      q.includes("iud") || 
+      q.includes("implant") ||
+      q.includes("contraceptive")
+    ) {
+      try {
+        const { count } = await supabase.from("family_planning").select("*", { count: "exact", head: true });
+        return {
+          text: cleanFormat(
+            `👨‍👩‍👧 PROGRAMA SA FAMILY PLANNING (Barangay Subukin):\n\n` +
+            `Mayroong ${(count || 0).toLocaleString()} naitalang mga kliyente sa ating Family Planning registry.\n\n` +
+            `Mga Libreng Serbisyo at Paraan na Makukuha sa Health Center:\n` +
+            `• Oral Contraceptive Pills (COC / POP para sa nagpapasuso)\n` +
+            `• DMPA Injectables (Depo shot tuwing 3 buwan)\n` +
+            `• Condoms (Laban sa impeksyon at pagbubuntis)\n` +
+            `• Referral para sa IUD at Subdermal Implant sa San Juan RHU\n` +
+            `• Natural Family Planning Counseling (BOM, SDM, LAM)\n\n` +
+            `Maaari pong sumangguni sa ating BHW o kay Midwife Mary Jane para sa ligtas at kompidensyal na pagpapayo.`
+          ),
+          quickActions: [
+            { label: "👩‍⚕️ Kontak ng BHW", query: "Sino-sino po ang mga BHW at ang kanilang telepono?" },
+            { label: "🕒 Oras ng Center", query: "Ano po ang oras ng Health Center?" }
+          ]
+        };
+      } catch {
+        return {
+          text: "Ang Family Planning services ay libreng ipinagkakaloob sa Barangay Health Center sa pamamahala ng ating Midwife."
+        };
+      }
+    }
+
+    // 5. KONSULTASYON, CHECK-UP, AT MGA SAKIT (CONSULTATIONS & MORBIDITY)
+    if (
+      q.includes("konsultasyon") || 
+      q.includes("consultation") || 
+      q.includes("checkup") || 
+      q.includes("check-up") || 
+      q.includes("sakit") || 
+      q.includes("reklamo") || 
+      q.includes("ubo") || 
+      q.includes("lagnat") || 
+      q.includes("sipon")
+    ) {
+      try {
+        const { data: consData, count } = await supabase
+          .from("consultations")
+          .select("*", { count: "exact" })
+          .order("consultation_date", { ascending: false })
+          .limit(5);
+
+        let cText = `🩺 TALAAN NG KONSULTASYON AT CHECK-UP SA HEALTH CENTER:\n\n`;
+        cText += `Kabuuang naitalang konsultasyon sa sistema: ${(count || 0).toLocaleString()} mga rekord.\n\n`;
+
+        if (consData && consData.length > 0) {
+          cText += `Kamakailang mga pasyenteng nagpa-checkup:\n`;
+          consData.forEach((c: any, i: number) => {
+            const dateStr = c.consultation_date ? new Date(c.consultation_date).toLocaleDateString() : "Petsa";
+            const cause = c.consultation_cause || c.diagnosis || "General Consultation";
+            const rName = c.resident_name || c.patient_name || "Residente";
+            cText += `${i + 1}. ${dateStr}: ${rName} — Reklamo/Sakit: ${cause}\n`;
+          });
+          cText += `\nKaraniwang Karamdaman sa Barangay:\n`;
+          cText += `• Upper Respiratory Tract Infection (Ubo at Sipon)\n`;
+          cText += `• Acute Gastroenteritis o pananakit ng tiyan\n`;
+          cText += `• Altapresyon / Hypertension check\n`;
+          cText += `• Lagnat at pananakit ng katawan\n\n`;
+          cText += `Paalala: Kapag ang lagnat ay lumampas sa 2 araw, ipatingin agad sa Health Center upang maeksamen laban sa dengue o impeksyon.`;
+        }
+
+        return {
+          text: cleanFormat(cText),
+          quickActions: [
+            { label: "📊 Lahat ng Records", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
+            { label: "🕒 Oras ng Center", query: "Ano po ang oras ng Health Center?" }
+          ]
+        };
+      } catch {
+        return {
+          text: "Naitatala po ang bawat konsultasyon sa Consultation Form kasama ang vitals, diagnosis, at ibinigay na gamot."
+        };
+      }
+    }
+
+    // 6. MGA SERBISYO PARA SA MGA SENIOR CITIZEN AT NAKATATANDA
     if (
       q.includes("senior") || 
       q.includes("matanda") || 
@@ -361,27 +567,271 @@ export function BhaiChatbot() {
       q.includes("diabetes") || 
       q.includes("sugar")
     ) {
+      try {
+        const { count: seniorCount } = await supabase
+          .from("residents")
+          .select("*", { count: "exact", head: true })
+          .gte("age", 60);
+
+        const { count: philCount } = await supabase
+          .from("philpen_health")
+          .select("*", { count: "exact", head: true });
+
+        const seniorTotal = seniorCount || 0;
+        const philTotal = philCount || 0;
+
+        return {
+          text: cleanFormat(
+            `👴👵 MGA SERBISYONG PANGKALUSUGAN PARA SA MGA SENIOR CITIZEN (Barangay Subukin):\n\n` +
+            `Mayroong ${seniorTotal.toLocaleString()} rehistradong senior citizen sa ating barangay, at ${philTotal.toLocaleString()} ang sumailalim sa PhilPen Risk Assessment.\n\n` +
+            `Mga Tulong at Serbisyo:\n` +
+            `1. Libreng Pagkuha ng Blood Pressure (BP):\n` +
+            `   • Maaari pong magpakuha ng BP sa Health Center o sa BHW na nakatalaga sa inyong Sitio anumang araw.\n\n` +
+            `2. PhilPen NCD Screening:\n` +
+            `   • Pagsusuri para sa diabetes, sakit sa puso, at stroke risk upang maagapan ang anumang komplikasyon.\n\n` +
+            `3. Tulong sa Maintenance Medicines:\n` +
+            `   • Pamamahagi ng mga gamot sa altapresyon at diabetes kapag may alokasyon mula sa San Juan RHU.\n\n` +
+            `4. Home Visit ng BHW:\n` +
+            `   • Para sa mga bedridden o nahihirapang lumakad, binibisita po sila sa tahanan ng kanilang BHW para sa BP monitoring.\n\n` +
+            `May partikular po ba kayong nararamdaman o nais na ikonsulta sa ating Midwife o BHW?`
+          ),
+          quickActions: [
+            { label: "👩‍⚕️ Tawagan ang BHW", query: "Sino-sino po ang mga BHW at ano ang telepono?" },
+            { label: "🕒 Oras ng Health Center", query: "Ano po ang oras ng Health Center?" },
+            { label: "🚨 Emergency Hotlines", query: "Ano-ano po ang emergency hotlines sa San Juan?" }
+          ]
+        };
+      } catch {
+        return {
+          text: cleanFormat(
+            `Lubos pong pinahahalagahan ng ating barangay ang kalusugan ng ating mga senior citizen. May libreng BP checkup, maintenance medicines alinsunod sa alokasyon ng RHU, at regular na home visits mula sa BHW.`
+          )
+        };
+      }
+    }
+
+    // 7. SINO ANG NAKA-DUTY / ATTENDANCE INQUIRY
+    if (
+      q.includes("duty") || 
+      q.includes("shift") || 
+      q.includes("attendance") || 
+      q.includes("pumasok") || 
+      q.includes("time in") || 
+      q.includes("time out") || 
+      q.includes("naka-duty") ||
+      q.includes("naka duty")
+    ) {
+      try {
+        const rawAttendance = JSON.parse(localStorage.getItem("bhw_attendance_logs") || "[]");
+        const activeShifts = rawAttendance.filter((log: any) => !log.logoutAt);
+        const todayStr = new Date().toISOString().split("T")[0];
+        const todaysLogs = rawAttendance.filter((log: any) => {
+          const lDate = log.loginAt ? new Date(log.loginAt).toISOString().split("T")[0] : "";
+          return lDate === todayStr;
+        });
+
+        let dutyText = `🕒 ATTENDANCE AT KASALUKUYANG SHIFT NG MGA BHW:\n\n`;
+
+        if (activeShifts.length > 0) {
+          dutyText += `Mga KASALUKUYANG NAKA-DUTY (Aktibong Shift ngayon):\n`;
+          activeShifts.forEach((s: any, idx: number) => {
+            const timeIn = s.loginAt ? new Date(s.loginAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "—";
+            dutyText += `${idx + 1}. 🟢 ${s.workerName || "BHW Staff"} — Pumasok noong ${timeIn} (${s.sitio || "Health Center"})\n`;
+          });
+          dutyText += `\nKabuuang pumasok ngayong araw: ${todaysLogs.length} kawani.\n`;
+        } else {
+          dutyText += `Wala pong aktibong shift na kasalukuyang naka-clock in ngayon.\n`;
+          if (todaysLogs.length > 0) {
+            dutyText += `Ngunit mayroong ${todaysLogs.length} kawani na nakapag-duty at naka-check out na ngayong araw.\n`;
+          } else {
+            dutyText += `Ang attendance ay naitatala sa pamamagitan ng Attendance tracker button sa itaas ng screen.\n`;
+          }
+        }
+
+        dutyText += `\nPara makipag-ugnayan sa on-call staff, maaari pong tawagan si Midwife Mary Jane Landicho sa 0912-345-6789 o si Supervisor Cristeta Lanuza sa 0919-6980-712.`;
+
+        return {
+          text: cleanFormat(dutyText),
+          quickActions: [
+            { label: "👩‍⚕️ Direktoryo ng BHW", query: "Sino-sino po ang mga BHW at kanilang kontak?" },
+            { label: "🕒 Oras ng Center", query: "Ano po ang oras ng Health Center?" }
+          ]
+        };
+      } catch {
+        return {
+          text: "Naitatala po ang oras ng pagpasok at paglabas ng mga BHW sa System Attendance Logs sa itaas ng navigation bar."
+        };
+      }
+    }
+
+    // 8. ACTIVITY LOGS / AUDIT INQUIRIES (Sino ang nagbura, nag-print, nag-record)
+    if (
+      q.includes("activity log") || 
+      q.includes("audit") || 
+      q.includes("nagbura") || 
+      q.includes("nag-delete") || 
+      q.includes("nag-print") || 
+      q.includes("nag-record") || 
+      q.includes("nag-edit") || 
+      q.includes("huling ginawa") || 
+      q.includes("history")
+    ) {
+      try {
+        const rawActivityLogs = JSON.parse(localStorage.getItem("bhw_activity_logs") || "[]");
+        const count = rawActivityLogs.length;
+
+        let actText = `📝 TALAAN NG MGA GAWAIN SA SISTEMA (Activity Logs):\n\n`;
+        actText += `Mayroong kabuuang ${count.toLocaleString()} naitalang pagkilos o aktibidad sa ating audit trail.\n\n`;
+
+        if (count > 0) {
+          actText += `Mga pinakabagong aktibidad:\n`;
+          rawActivityLogs.slice(0, 5).forEach((act: any, idx: number) => {
+            const time = act.timeStr || (act.timestamp ? new Date(act.timestamp).toLocaleTimeString() : "");
+            const date = act.dateKey || (act.timestamp ? new Date(act.timestamp).toLocaleDateString() : "");
+            actText += `${idx + 1}. [${date} ${time}] ${act.workerName || "Staff"}: ${act.description || act.action}\n`;
+          });
+          actText += `\nLahat po ng pagdaragdag ng datos, pag-eedit, pagbura ng tala, at pag-print ay awtomatikong naitatala kasama ang pangalan ng kawani para sa seguridad ng datos.`;
+        } else {
+          actText += `Wala pa pong naitalang bagong aktibidad sa system log.`;
+        }
+
+        return {
+          text: cleanFormat(actText),
+          quickActions: [
+            { label: "📊 Kabuuang Talaan", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
+            { label: "🕒 Attendance Logs", query: "Sino-sino po ang mga BHW na naka-duty ngayon?" }
+          ]
+        };
+      } catch {
+        return {
+          text: "Makikita po ang buong talaan ng gawain sa System Activity Logs sa ilalim ng Attendance menu."
+        };
+      }
+    }
+
+    // 9. BACKUP & RECOVERY / DATA SAFETY
+    if (
+      q.includes("backup") || 
+      q.includes("restore") || 
+      q.includes("recovery") || 
+      q.includes("i-save ang system") || 
+      q.includes("database safety")
+    ) {
+      try {
+        const backupHistory = JSON.parse(localStorage.getItem("bhw_backup_history") || "[]");
+        const autoConfig = JSON.parse(localStorage.getItem("bhw_auto_backup_config") || "{}");
+
+        let bText = `💾 BACKUP AT SEGURIDAD NG DATOS SA BARANGAY SUBUKIN:\n\n`;
+        bText += `Mayroong ${backupHistory.length} naitalang backup files sa kasaysayan ng sistema.\n`;
+        bText += `Awtomatikong Backup Schedule: ${autoConfig.frequency ? autoConfig.frequency.toUpperCase() : "WEEKLY"}\n\n`;
+
+        if (backupHistory.length > 0) {
+          const lastB = backupHistory[0];
+          bText += `Huling Nabuong Backup:\n`;
+          bText += `• File: ${lastB.filename || "bhw-backup.json"}\n`;
+          bText += `• Petsa: ${lastB.timestamp ? new Date(lastB.timestamp).toLocaleString() : "Kamakailan"}\n`;
+          bText += `• Laki: ${lastB.size || "400+ KB"}\n\n`;
+        }
+
+        bText += `Paano Mag-Backup:\n`;
+        bText += `1. Pumunta sa Admin menu sa kaliwa.\n`;
+        bText += `2. Pindutin ang Backup & Recovery.\n`;
+        bText += `3. Pindutin ang button na 'Create Backup Now' upang mai-download ang JSON backup file sa inyong computer.`;
+
+        return {
+          text: cleanFormat(bText),
+          quickActions: [
+            { label: "📊 Kabuuang Records", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
+            { label: "📝 Activity Logs", query: "Ano ang huling activity logs?" }
+          ]
+        };
+      } catch {
+        return {
+          text: "Ang backup ng database ay regular na ginagawa sa Admin -> Backup & Recovery upang mapangalagaan ang lahat ng talaan."
+        };
+      }
+    }
+
+    // 10. HOW-TO GUIDES / TULONG SA PAGGAMIT NG SISTEMA PARA SA MGA BHW
+    if (
+      q.includes("paano") || 
+      q.includes("how to") || 
+      q.includes("tulong sa paggamit") || 
+      q.includes("paano mag") || 
+      q.includes("saan makikita")
+    ) {
+      if (q.includes("residente") || q.includes("magdagdag") || q.includes("add resident")) {
+        return {
+          text: cleanFormat(
+            `💡 GABAY: PAANO MAGDAGDAG NG RESIDENTE SA SISTEMA:\n\n` +
+            `1. Pindutin ang 'Resident Records' sa kaliwang menu (sidebar).\n` +
+            `2. I-click ang berdeng button na '+ Add Resident'.\n` +
+            `3. Punan ang mga sumusunod na detalye:\n` +
+            `   • Buong Pangalan (Apelyido, Pangalan, Gitnang Pangalan)\n` +
+            `   • Kaarawan at Edad\n` +
+            `   • Kasarian at Katayuang Sibil\n` +
+            `   • Sitio sa Barangay Subukin\n` +
+            `   • PhilHealth Number (kung mayroon) at Telepono\n` +
+            `4. Pindutin ang 'Save Resident' sa ibaba.\n\n` +
+            `Awtomatiko pong maitatala ang bagong residente sa database at magiging bahagi ng estadistika ng barangay.`
+          ),
+          quickActions: [
+            { label: "📊 Kabuuang Residente", query: "Ilan po ang kabuuang bilang ng records sa sistema?" }
+          ]
+        };
+      }
+
+      if (q.includes("print") || q.includes("mag-print") || q.includes("report")) {
+        return {
+          text: cleanFormat(
+            `💡 GABAY: PAANO MAG-PRINT NG OPISYAL NA REPORT:\n\n` +
+            `1. Pumunta sa pahina ng nais i-print (halimbawa: Dashboard Overview, Resident Records, o Attendance Logs).\n` +
+            `2. Hanapin ang button na may icon ng printer (Print Report / I-print).\n` +
+            `3. Bubukas ang opisyal na printable format na may opisyal na letterhead at logo ng Barangay Subukin at Bayan ng San Juan.\n` +
+            `4. Piliin ang inyong printer o i-save bilang PDF sa inyong computer.\n\n` +
+            `Lahat po ng opisyal na ulat ay may nakalagay na petsa at espasyo para sa pirma ng Barangay Midwife o Supervisor.`
+          ),
+          quickActions: [
+            { label: "🕒 Print Attendance", query: "Sino-sino po ang mga BHW na naka-duty ngayon?" }
+          ]
+        };
+      }
+
+      if (q.includes("time in") || q.includes("clock in") || q.includes("attendance")) {
+        return {
+          text: cleanFormat(
+            `💡 GABAY: PAANO MAG-TIME IN O MAG-CLOCK OUT:\n\n` +
+            `1. Sa pinaka-itaas na bar ng sistema, hanapin ang attendance icon (may fingerprint / orasan).\n` +
+            `2. Pindutin ang button upang mag-Clock In sa pagsisimula ng inyong shift.\n` +
+            `3. Sa pagtatapos ng inyong shift o tungkulin, pindutin ang 'Clock Out'.\n` +
+            `4. Awtomatiko nitong bibilangin ang tagal ng inyong shift at itatala sa opisyal na Attendance Logs.`
+          ),
+          quickActions: [
+            { label: "🕒 Tingnan ang Attendance", query: "Sino-sino po ang mga BHW na naka-duty ngayon?" }
+          ]
+        };
+      }
+
       return {
-        text: `👴👵 **Mga Serbisyong Pangkalusugan para sa ating mga Senior Citizen sa Barangay Subukin:**\n\n` +
-          `Lubos pong pinahahalagahan ng ating barangay ang kalusugan ng ating mga lolo at lola. Narito po ang mga regular na tulong na maaari ninyong matanggap:\n\n` +
-          `1. 🩺 **Libreng Pagkuha ng Presyon ng Dugo (Blood Pressure Check):**\n` +
-          `   • Maaari po kayong magpakuha ng BP sa Health Center o sa BHW na nakatalaga sa inyong Sitio anumang oras.\n\n` +
-          `2. ❤️ **PhilPen Risk Assessment Screening:**\n` +
-          `   • Pagsusuri para sa diabetes, sakit sa puso, at altapresyon upang maagapan ang anumang karamdaman.\n\n` +
-          `3. 💊 **Tulong sa Maintenance Medicines:**\n` +
-          `   • Kapag may alokasyon mula sa San Juan Rural Health Unit (RHU), ipinamamahagi po ang mga libreng maintenance para sa high blood at diabetes sa Health Center.\n\n` +
-          `4. 🚶‍♂️ **Home Visit ng BHW:**\n` +
-          `   • Kung nahihirapan na po kayong maglakad o bumiyahe, maaaring bisitahin kayo sa inyong tahanan ng nakatalagang BHW sa inyong sitio.\n\n` +
-          `*May partikular po ba kayong nararamdaman o nais na ikonsulta sa ating Midwife o BHW?*`,
+        text: cleanFormat(
+          `💡 GABAY SA SISTEMA NG BARANGAY SUBUKIN HEALTH CENTER:\n\n` +
+          `Maaari po akong magbigay ng gabay sa alinman sa mga sumusunod:\n` +
+          `• Paano magdagdag ng residente o pamilya\n` +
+          `• Paano magtala ng konsultasyon, bakuna, o prenatal checkup\n` +
+          `• Paano mag-print ng opisyal na report o health summary\n` +
+          `• Paano mag-time in at time out sa attendance\n` +
+          `• Paano mag-backup at mag-restore ng database\n\n` +
+          `Pakitukoy po kung aling gawain ang kailangan ninyo ng tulong!`
+        ),
         quickActions: [
-          { label: "👩‍⚕️ Tawagan ang BHW", query: "Sino-sino po ang mga BHW at ano ang telepono?" },
-          { label: "🕒 Oras ng Health Center", query: "Ano po ang oras ng Health Center?" },
-          { label: "🚨 Emergency Hotlines", query: "Ano-ano po ang emergency hotlines sa San Juan?" }
+          { label: "👤 Magdagdag ng Residente", query: "Paano magdagdag ng residente?" },
+          { label: "🖨 Mag-print ng Report", query: "Paano mag-print ng report?" },
+          { label: "🕒 Mag-time In", query: "Paano mag-time in?" }
         ]
       };
     }
 
-    // 3. PARTIKULAR NA SITIO O LOKASYON
+    // 11. PARTIKULAR NA SITIO O LOKASYON (May live system population count)
     const matchedSitioKey = Object.keys(SITIO_DETAILS).find(k => 
       q.includes(k.toLowerCase()) || 
       q.includes(k.toLowerCase().replace("sitio ", ""))
@@ -389,16 +839,35 @@ export function BhaiChatbot() {
 
     if (matchedSitioKey) {
       const s = SITIO_DETAILS[matchedSitioKey];
+      const rawSitioName = matchedSitioKey.replace("Sitio ", "").trim();
+
+      // Live query for resident and family count in this sitio
+      let liveResCount = 0;
+      let liveFamCount = 0;
+      try {
+        const [rRes, fRes] = await Promise.all([
+          supabase.from("residents").select("*", { count: "exact", head: true }).ilike("sitio", `%${rawSitioName}%`),
+          supabase.from("family_data").select("*", { count: "exact", head: true }).ilike("sitio", `%${rawSitioName}%`)
+        ]);
+        liveResCount = rRes.count ?? 0;
+        liveFamCount = fRes.count ?? 0;
+      } catch {}
+
       return {
-        text: `📍 **Impormasyon at Lokasyon para sa ${matchedSitioKey}:**\n\n` +
-          `• **Eksaktong Coordinates:** \`${s.coords}\`\n` +
-          `• **Lokasyon:** ${s.location}\n` +
-          `• **Mahalagang Palatandaan:** ${s.landmarks}\n` +
-          `• **Nakatalagang BHW:** **${s.assignedBhw}**\n` +
-          `• **Telepono / Contact:** 📞 **${s.contact}**\n\n` +
-          `Maaari po ninyong tawagan si **${s.assignedBhw}** kung kailangan ninyo ng tulong pangkalusugan sa ${matchedSitioKey}. May nais pa po ba kayong itanong?`,
+        text: cleanFormat(
+          `📍 IMPORMASYON AT TALAAN PARA SA ${matchedSitioKey.toUpperCase()}:\n\n` +
+          `• Eksaktong Coordinates: ${s.coords}\n` +
+          `• Lokasyon: ${s.location}\n` +
+          `• Mahalagang Palatandaan: ${s.landmarks}\n` +
+          `• Nakatalagang BHW: ${s.assignedBhw}\n` +
+          `• Telepono / Contact: 📞 ${s.contact}\n\n` +
+          `📊 Kasalukuyang Datos sa Sistema:\n` +
+          `• Rehistradong Residente: ${liveResCount.toLocaleString()} katao\n` +
+          `• Naitalang Pamilya / Kabahayan: ${liveFamCount.toLocaleString()} pamilya\n\n` +
+          `Maaari po ninyong tawagan si ${s.assignedBhw} kung kailangan ninyo ng tulong pangkalusugan sa ${matchedSitioKey}.`
+        ),
         quickActions: [
-          { label: `📞 Kontakin si ${s.assignedBhw.split(" ")[0]}`, query: `Contact details ni ${s.assignedBhw}` },
+          { label: `📞 Tawagan ang BHW`, query: `Contact details ni ${s.assignedBhw}` },
           { label: "📍 Lahat ng 11 Sitios", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" }
         ]
       };
@@ -409,11 +878,13 @@ export function BhaiChatbot() {
         const detail = SITIO_DETAILS[`Sitio ${name}`] || SITIO_DETAILS[name];
         const coords = detail ? detail.coords : "Subukin Sector";
         const bhw = getAssignedSitio(name) || detail?.assignedBhw || "Barangay Health Staff";
-        return `**${i + 1}. Sitio ${name}**\n   • Coordinates: \`${coords}\`\n   • Nakatalagang BHW: **${bhw}**`;
+        return `${i + 1}. Sitio ${name}\n   • Coordinates: ${coords}\n   • Nakatalagang BHW: ${bhw}`;
       }).join("\n\n");
 
       return {
-        text: `Ang **Barangay Subukin, San Juan, Batangas** (Coordinates: \`13.72335° N, 121.44059° E\`) ay may **11 Opisyal na Sitio**:\n\n${sitioList}\n\n*Maaari po ninyong itanong ang partikular na Sitio (halimbawa: "Saan po ang Sitio Maligaya?") upang maibigay ko po ang eksaktong palatandaan at kontak ng BHW doon.*`,
+        text: cleanFormat(
+          `Ang Barangay Subukin, San Juan, Batangas (Coordinates: 13.72335° N, 121.44059° E) ay may 11 Opisyal na Sitio:\n\n${sitioList}\n\nMaaari po ninyong itanong ang partikular na Sitio (halimbawa: "Saan po ang Sitio Maligaya?") upang maibigay ko ang populasyon, palatandaan, at kontak ng BHW doon.`
+        ),
         quickActions: [
           { label: "📍 Sitio Maligaya", query: "Saan po ang Sitio Maligaya?" },
           { label: "📍 Sitio Masigla", query: "Saan po ang Sitio Masigla?" },
@@ -422,7 +893,7 @@ export function BhaiChatbot() {
       };
     }
 
-    // 4. BHW CONTACT DETAILS & TAUHAN
+    // 12. BHW CONTACT DETAILS & TAUHAN
     const matchedWorker = BHW_PERSONNEL_LIST.find(w => 
       q.includes(w.name.toLowerCase()) || 
       q.includes(w.name.toLowerCase().split(" ")[0]) ||
@@ -431,15 +902,18 @@ export function BhaiChatbot() {
 
     if (matchedWorker) {
       return {
-        text: `👩‍⚕️ **Detalye at Kontak para kay ${matchedWorker.name}:**\n\n` +
-          `• **Buong Pangalan:** **${matchedWorker.name}**\n` +
-          `• **Tungkulin:** ${matchedWorker.role}\n` +
-          `• **Itinalagang Lugar / Sitio:** 📍 **${matchedWorker.sitio}**\n` +
-          `• **Telepono / Mobile:** 📞 **${matchedWorker.phone}**\n` +
-          `• **Email:** ✉️ \`${matchedWorker.email}\`\n\n` +
-          `Kung mayroon po kayong katanungan o kailangan sa kanyang nasasakupan, maaari po ninyo siyang direktang tawagan o i-text sa ibinigay na numero.`,
+        text: cleanFormat(
+          `👩‍⚕️ DETALYE AT KONTAK PARA KAY ${matchedWorker.name.toUpperCase()}:\n\n` +
+          `• Buong Pangalan: ${matchedWorker.name}\n` +
+          `• Tungkulin: ${matchedWorker.role}\n` +
+          `• Itinalagang Lugar / Sitio: 📍 ${matchedWorker.sitio}\n` +
+          `• Telepono / Mobile: 📞 ${matchedWorker.phone}\n` +
+          `• Email: ✉️ ${matchedWorker.email}\n\n` +
+          `Maaari po ninyo siyang tawagan o i-text sa ibinigay na numero para sa anumang pangangailangang pangkalusugan sa kanyang nasasakupan.`
+        ),
         quickActions: [
           { label: "👩‍⚕️ Lahat ng BHW", query: "Sino-sino po ang mga BHW at ang kanilang telepono?" },
+          { label: "🕒 Shift Status", query: "Sino-sino po ang mga BHW na naka-duty ngayon?" },
           { label: "🚨 Emergency Hotlines", query: "Ano-ano po ang emergency hotlines sa San Juan?" }
         ]
       };
@@ -447,11 +921,13 @@ export function BhaiChatbot() {
 
     if (q.includes("bhw") || q.includes("worker") || q.includes("tauhan") || q.includes("midwife") || q.includes("supervisor") || q.includes("contact") || q.includes("telepono") || q.includes("direktoryo") || q.includes("number")) {
       const bhwListText = BHW_PERSONNEL_LIST.map((w, idx) => 
-        `**${idx + 1}. ${w.name}** (${w.role})\n   • Sitio: **${w.sitio}**\n   • Telepono: 📞 **${w.phone}**`
+        `${idx + 1}. ${w.name} (${w.role})\n   • Sitio: ${w.sitio}\n   • Telepono: 📞 ${w.phone}`
       ).join("\n\n");
 
       return {
-        text: `Opo, narito po ang **Opisyal na Direktoryo ng mga Tauhan ng Kalusugan (BHW)** ng Barangay Subukin:\n\n${bhwListText}\n\n*Opisyal na Barangay Midwife:* **Mary Jane Landicho** (0912-345-6789)\n*BHW Supervisory:* **Cristeta R. Lanuza** (0919-6980-712)\n\n*Maaari po ninyo silang tawagan sa oras ng pangangailangan.*`,
+        text: cleanFormat(
+          `Opo, narito po ang Opisyal na Direktoryo ng mga Tauhan ng Kalusugan (BHW) ng Barangay Subukin:\n\n${bhwListText}\n\nOpisyal na Barangay Midwife: Mary Jane Landicho (0912-345-6789)\nBHW Supervisory: Cristeta R. Lanuza (0919-6980-712)\n\nMaaari po ninyo silang tawagan sa oras ng pangangailangan.`
+        ),
         quickActions: [
           { label: "👩‍⚕️ Midwife Mary Jane", query: "Contact ni Mary Jane Landicho" },
           { label: "👩‍⚕️ Supervisor Cristeta", query: "Contact ni Cristeta R. Lanuza" },
@@ -460,7 +936,7 @@ export function BhaiChatbot() {
       };
     }
 
-    // 5. RESIDENT SPECIFIC RECORD SUMMARY / SEARCH
+    // 13. RESIDENT SPECIFIC RECORD SUMMARY / SEARCH
     if (
       q.includes("residente") || 
       q.includes("resident") || 
@@ -518,47 +994,47 @@ export function BhaiChatbot() {
             const philpen = philData.data || [];
             const family = (famData.data || [])[0];
 
-            let summaryText = `📋 **Buod ng Rekord ng Residente sa Barangay Subukin:**\n\n` +
-              `• **Buong Pangalan:** **${r.full_name}**\n` +
-              `• **Edad at Kasarian:** ${r.age || "—"} taong gulang • ${r.sex || "—"}\n` +
-              `• **Araw ng Kapanganakan:** ${r.birthdate ? new Date(r.birthdate).toLocaleDateString() : "—"}\n` +
-              `• **Tirahan / Sitio:** 📍 **${r.sitio || "Barangay Subukin"}**\n` +
-              `• **Katayuang Sibil:** ${r.civil_status || "—"}\n` +
-              `• **Telepono:** ${r.contact_number || "Walang naitalang numero"}\n` +
-              `• **PhilHealth No.:** ${r.philhealth_number || "Wala pa po / N/A"}\n\n`;
+            let summaryText = `📋 BUOD NG REKORD NG RESIDENTE (Barangay Subukin):\n\n` +
+              `• Buong Pangalan: ${r.full_name}\n` +
+              `• Edad at Kasarian: ${r.age || "—"} taong gulang • ${r.sex || "—"}\n` +
+              `• Araw ng Kapanganakan: ${r.birthdate ? new Date(r.birthdate).toLocaleDateString() : "—"}\n` +
+              `• Tirahan / Sitio: 📍 ${r.sitio || "Barangay Subukin"}\n` +
+              `• Katayuang Sibil: ${r.civil_status || "—"}\n` +
+              `• Telepono: ${r.contact_number || "Walang naitalang numero"}\n` +
+              `• PhilHealth No.: ${r.philhealth_number || "Wala pa po / N/A"}\n\n`;
 
             if (family) {
-              summaryText += `🏠 **Talaan ng Pamilya (Household):**\n` +
+              summaryText += `🏠 Talaan ng Pamilya (Household):\n` +
                 `• Pamilya #: ${family.family_number || "—"}\n` +
                 `• Ulo ng Pamilya: ${family.father_name || family.mother_name || "—"}\n\n`;
             }
 
             if (consultations.length > 0) {
-              summaryText += `🩺 **Kamakailang Konsultasyon (${consultations.length} naitala):**\n` +
+              summaryText += `🩺 Kamakailang Konsultasyon (${consultations.length} naitala):\n` +
                 consultations.map((c: any) => 
-                  `  - *${new Date(c.consultation_date).toLocaleDateString()}*: ${c.consultation_cause || "Pangkalahatang Check-up"} (Vitals: ${c.pulse_rate ? `Pulse ${c.pulse_rate}` : ""} ${c.temperature ? `Temp ${c.temperature}°C` : ""})`
+                  `  - ${new Date(c.consultation_date).toLocaleDateString()}: ${c.consultation_cause || "Pangkalahatang Check-up"} (Vitals: ${c.pulse_rate ? `Pulse ${c.pulse_rate}` : ""} ${c.temperature ? `Temp ${c.temperature}°C` : ""})`
                 ).join("\n") + "\n\n";
             } else {
-              summaryText += `🩺 **Konsultasyon:** Wala pa pong naitalang dating konsultasyon sa Health Center.\n\n`;
+              summaryText += `🩺 Konsultasyon: Wala pa pong naitalang dating konsultasyon sa Health Center.\n\n`;
             }
 
             if (maternal.length > 0) {
-              summaryText += `🤰 **Maternal Care:** May aktibong talaan po ng pagbubuntis o prenatal check-up.\n\n`;
+              summaryText += `🤰 Maternal Care: May aktibong talaan po ng pagbubuntis o prenatal check-up.\n\n`;
             }
 
             if (childHealth.length > 0) {
-              summaryText += `👶 **Child Health:** May talaan po ng pagbabakuna at timbang ng bata.\n\n`;
+              summaryText += `👶 Child Health: May talaan po ng pagbabakuna at timbang ng bata.\n\n`;
             }
 
             if (philpen.length > 0) {
               const p = philpen[0];
-              summaryText += `❤️ **PhilPen NCD Screening:** Naitalang Blood Pressure: ${p.bp || "Normal"}, Blood Sugar: ${p.blood_sugar || "N/A"}.\n\n`;
+              summaryText += `❤️ PhilPen NCD Screening: Naitalang Blood Pressure: ${p.bp || "Normal"}, Blood Sugar: ${p.blood_sugar || "N/A"}.\n\n`;
             }
 
-            summaryText += `*Kung nais po ninyong baguhin o dagdagan ang impormasyong ito, maaari pong pumunta sa pahina ng Resident Records o sumangguni sa ating BHW.*`;
+            summaryText += `Kung nais po ninyong baguhin o dagdagan ang impormasyong ito, maaari pong pumunta sa pahina ng Resident Records o sumangguni sa ating BHW.`;
 
             return {
-              text: summaryText,
+              text: cleanFormat(summaryText),
               quickActions: [
                 { label: "👥 Iba pang Residente", query: "Maghanap ng ibang residente" },
                 { label: "📊 Kabuuang Records", query: "Ilan po ang kabuuang bilang ng records sa sistema?" }
@@ -566,7 +1042,9 @@ export function BhaiChatbot() {
             };
           } else {
             return {
-              text: `🔍 Paumanhin po, wala po akong nahanap na residenteng tumutugma sa pangalang **"${cleanSearch}"** sa ating database.\n\nPaki-tiyak po ang wastong baybay ng pangalan o apelyido (halimbawa: *"buod ni Juan Dela Cruz"*), o maaari rin pong tingnan sa pahina ng Resident Records.`,
+              text: cleanFormat(
+                `🔍 Paumanhin po, wala po akong nahanap na residenteng tumutugma sa pangalang "${cleanSearch}" sa ating database.\n\nPaki-tiyak po ang wastong baybay ng pangalan o apelyido (halimbawa: "buod ni Juan Dela Cruz"), o maaari rin pong tingnan sa pahina ng Resident Records.`
+              ),
               quickActions: [
                 { label: "📊 Kabuuang Residente", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
                 { label: "📍 Listahan ng Sitio", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" }
@@ -580,7 +1058,9 @@ export function BhaiChatbot() {
         }
       } else {
         return {
-          text: `Upang maipakita ko po ang **buod ng talaan ng isang residente o pasyente**, paki-type po ang kanyang buong pangalan o apelyido.\n\nHalimbawa po:\n• *"Buod ng rekord ni Maria Santos"*\n• *"Talaan para kay Dela Cruz"*`,
+          text: cleanFormat(
+            `Upang maipakita ko po ang buod ng talaan ng isang residente o pasyente, paki-type po ang kanyang buong pangalan o apelyido.\n\nHalimbawa po:\n• Buod ng rekord ni Maria Santos\n• Talaan para kay Dela Cruz`
+          ),
           quickActions: [
             { label: "📊 Ilan ang Residente?", query: "Ilan po ang kabuuang bilang ng records sa sistema?" }
           ]
@@ -588,40 +1068,44 @@ export function BhaiChatbot() {
       }
     }
 
-    // 6. EMERGENCY CONTACTS
+    // 14. EMERGENCY CONTACTS
     if (q.includes("emergency") || q.includes("sakuna") || q.includes("ambulansya") || q.includes("pulis") || q.includes("rescue") || q.includes("hospital") || q.includes("ospital") || q.includes("sunog") || q.includes("tulong")) {
       return {
-        text: `🚨 **Mga Opisyal na Emergency Hotlines (San Juan, Batangas):**\n\n` +
+        text: cleanFormat(
+          `🚨 MGA OPISYAL NA EMERGENCY HOTLINES (San Juan, Batangas):\n\n` +
           `Itago po ninyo ang mga numerong ito para sa anumang agarang pangangailangan:\n\n` +
-          `• 📞 **Pambansang Emergency Hotline:** **911**\n` +
-          `• 🚑 **San Juan MDRRMO Rescue:** 📞 **0998-590-5102**\n` +
-          `• 🏥 **Ambulansya (Municipal Health):** 📞 **0905-669-927**\n` +
-          `• 👮 **San Juan Municipal Police Station:** 📞 **0915-385-0205**\n` +
-          `• 🚒 **San Juan Fire Station (BFP):** 📞 **911 / MDRRMO**\n` +
-          `• 🏥 **San Juan District Hospital:** 📞 **(043) 633-3756**\n` +
-          `• 🏥 **San Juan Doctors' Hospital:** 📞 **(043) 575-3138**\n` +
-          `• 🏥 **Divine Care Hospital:** 📞 **(043) 420-0062**\n\n` +
-          `*Para po sa tulong sa antas ng barangay, maaari pong tawagan agad ang ating Midwife na si Mary Jane Landicho sa 0912-345-6789 o si BHW Cristeta Lanuza sa 0919-6980-712.*`,
+          `• 📞 Pambansang Emergency Hotline: 911\n` +
+          `• 🚑 San Juan MDRRMO Rescue: 📞 0998-590-5102\n` +
+          `• 🏥 Ambulansya (Municipal Health): 📞 0905-669-927\n` +
+          `• 👮 San Juan Municipal Police Station: 📞 0915-385-0205\n` +
+          `• 🚒 San Juan Fire Station (BFP): 📞 911 / MDRRMO\n` +
+          `• 🏥 San Juan District Hospital: 📞 (043) 633-3756\n` +
+          `• 🏥 San Juan Doctors' Hospital: 📞 (043) 575-3138\n` +
+          `• 🏥 Divine Care Hospital: 📞 (043) 420-0062\n\n` +
+          `Para sa tulong sa antas ng barangay, maaari pong tawagan agad ang ating Midwife na si Mary Jane Landicho sa 0912-345-6789 o si BHW Cristeta Lanuza sa 0919-6980-712.`
+        ),
         quickActions: [
           { label: "👩‍⚕️ Direktoryo ng BHW", query: "Sino-sino po ang mga BHW at ang kanilang telepono?" },
-          { label: "📍 Lokasyon ng Health Center", query: "Saan po ang Health Center?" }
+          { label: "📍 Lokasyon ng Center", query: "Saan po ang Health Center?" }
         ]
       };
     }
 
-    // 7. DENGUE INSPECTIONS & PREVENTION
+    // 15. DENGUE INSPECTIONS & PREVENTION
     if (q.includes("dengue") || q.includes("lamok") || q.includes("kiti-kiti") || q.includes("larvae")) {
       try {
         const { count } = await supabase.from("dengue_prevention").select("*", { count: "exact", head: true });
         return {
-          text: `🦟 **Talaan ng Dengue Prevention at Pag-iingat Laban sa Lamok:**\n\n` +
-          `• **Kabuuang Bahay na Nainspeksyon:** **${(count || 0).toLocaleString()} kabahayan** sa 11 Sitio.\n` +
-          `• **Pangunahing Programa:** 4S Strategy ng Kagawaran ng Kalusugan:\n` +
-          `   1. **Search & Destroy:** Itapon ang tubig sa mga lumang gulong, paso, at plorera.\n` +
-          `   2. **Self-Protection:** Magsuot ng mahabang pantalon at damit, gumamit ng mosquito repellent o kulambo.\n` +
-          `   3. **Seek Early Consultation:** Magpatingin agad sa Health Center kapag may lagnat na higit sa 2 araw.\n` +
-          `   4. **Say Yes to Fogging:** Pumayag sa pagpapausok o fogging kung may banta ng dengue sa sitio.\n\n` +
-          `Patuloy pong umiikot ang ating mga BHW upang tulungan ang bawat pamilya na mapanatiling malinis ang kapaligiran.`,
+          text: cleanFormat(
+            `🦟 TALAAN NG DENGUE PREVENTION AT PAG-IINGAT LABAN SA LAMOK:\n\n` +
+            `• Kabuuang Bahay na Nainspeksyon: ${(count || 0).toLocaleString()} kabahayan sa 11 Sitio.\n` +
+            `• Pangunahing Programa: 4S Strategy ng Kagawaran ng Kalusugan:\n` +
+            `   1. Search & Destroy: Itapon ang tubig sa mga lumang gulong, paso, at plorera.\n` +
+            `   2. Self-Protection: Magsuot ng mahabang damit at pantalon, gumamit ng repellent o kulambo.\n` +
+            `   3. Seek Early Consultation: Magpatingin agad sa Health Center kapag may lagnat na higit sa 2 araw.\n` +
+            `   4. Say Yes to Fogging: Pumayag sa pagpapausok o fogging kung may banta ng dengue sa sitio.\n\n` +
+            `Patuloy pong umiikot ang ating mga BHW upang tulungan ang bawat pamilya na mapanatiling ligtas at malinis ang kapaligiran.`
+          ),
           quickActions: [
             { label: "📊 Kabuuang Talaan", query: "Ilan po ang kabuuang bilang ng records sa sistema?" }
           ]
@@ -631,15 +1115,17 @@ export function BhaiChatbot() {
       }
     }
 
-    // 8. ORAS NG HEALTH CENTER AT ATTENDANCE
-    if (q.includes("oras") || q.includes("schedule") || q.includes("attendance") || q.includes("shift") || q.includes("bukas") || q.includes("hours") || q.includes("kailan")) {
+    // 16. ORAS NG HEALTH CENTER
+    if (q.includes("oras") || q.includes("schedule") || q.includes("bukas") || q.includes("hours") || q.includes("kailan")) {
       return {
-        text: `🕒 **Oras ng Pagbubukas at Serbisyo ng Barangay Subukin Health Center:**\n\n` +
-          `• **Lunes hanggang Biyernes:** 8:00 AM hanggang 5:00 PM\n` +
-          `• **Sabado at Linggo:** On-call po ang ating mga health staff para sa mga emergency at panganganak.\n` +
-          `• **Pinakamainam na Oras ng Check-up:** Inirerekomenda pong pumunta sa umaga mula 8:30 AM hanggang 11:30 AM para sa prenatal, bakuna, at konsultasyon.\n` +
-          `• **Attendance ng mga BHW:** Naka-integrate po sa sistema gamit ang Clock In / Clock Out shift tracker upang matiyak ang regular na serbisyo.\n\n` +
-          `Huwag po kayong mag-atubiling dumulog sa Health Center para sa inyong mga pangangailangang medikal!`,
+        text: cleanFormat(
+          `🕒 ORAS NG PAGBUBUKAS AT SERBISYO NG BARANGAY SUBUKIN HEALTH CENTER:\n\n` +
+          `• Lunes hanggang Biyernes: 8:00 AM hanggang 5:00 PM\n` +
+          `• Sabado at Linggo: On-call po ang ating mga health staff para sa mga emergency at panganganak.\n` +
+          `• Pinakamainam na Oras ng Check-up: Inirerekomenda pong pumunta sa umaga mula 8:30 AM hanggang 11:30 AM para sa prenatal, bakuna, at konsultasyon.\n` +
+          `• Attendance ng mga BHW: Regular pong naka-duty ang ating mga BHW sa bawat Sitio at sa Health Center.\n\n` +
+          `Huwag po kayong mag-atubiling dumulog sa Health Center para sa inyong mga pangangailangang medikal!`
+        ),
         quickActions: [
           { label: "👩‍⚕️ Tawagan si Midwife", query: "Contact ni Mary Jane Landicho" },
           { label: "📍 Saan ang Health Center?", query: "Saan po matatagpuan ang Barangay Health Center?" }
@@ -647,7 +1133,7 @@ export function BhaiChatbot() {
       };
     }
 
-    // 9. MAGALANG NA PAGBATI (GREETINGS)
+    // 17. MAGALANG NA PAGBATI (GREETINGS)
     if (
       q === "hi" || 
       q === "hello" || 
@@ -662,58 +1148,103 @@ export function BhaiChatbot() {
       q === "thanks"
     ) {
       return {
-        text: `Magandang araw po sa inyo! Ako po si **BHAI** (Barangay Health AI). Isang malaking karangalan po ang makapaglingkod at tumulong sa inyo. 😊\n\nAno po ang nais ninyong malaman o masilip sa ating mga talaan ng kalusugan, mga residente, o mga sitio sa Barangay Subukin?`,
+        text: cleanFormat(
+          `Magandang araw po sa inyo! Ako po si BHAI (Barangay Health AI). Isang malaking karangalan po ang makapaglingkod at tumulong sa inyo. 😊\n\nAno po ang nais ninyong malaman o masilip sa ating mga talaan ng kalusugan, mga residente, o mga sitio sa Barangay Subukin?`
+        ),
         quickActions: [
           { label: "📊 Ilan ang Talaan?", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
+          { label: "👩‍⚕️ Sino ang Naka-Duty?", query: "Sino-sino po ang mga BHW na naka-duty ngayon?" },
           { label: "📍 Saan ang mga Sitio?", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" },
-          { label: "👩‍⚕️ Kontak ng mga BHW?", query: "Sino-sino po ang mga BHW at ang kanilang telepono?" },
-          { label: "👴 Serbisyo sa Senior?", query: "Ano-ano po ang serbisyong pangkalusugan para sa senior citizen?" }
+          { label: "👵 Serbisyo sa Senior?", query: "Ano-ano po ang serbisyong pangkalusugan para sa senior citizen?" }
         ]
       };
     }
 
-    // 10. INTELLIGENT RESIDENT NAME FALLBACK (Pangalan ng tao na direktang inilagay)
-    const words = q.split(" ").filter(w => w.length > 2 && w !== "saan" && w !== "sino" && w !== "ilan" && w !== "bakit");
-    if (words.length >= 2) {
-      try {
-        const { data: matched } = await supabase
-          .from("residents")
-          .select("*")
-          .ilike("full_name", `%${words[0]}%`)
-          .limit(1);
+    // 18. DEEP DYNAMIC SYSTEM INSPECTION (Para sa anumang tanong sa labas ng mga pre-set na sagot)
+    // Sinasaliksik nito ang database para magbigay ng eksaktong impormasyon
+    try {
+      // Maghanap sa residents, families, consultations, at BHW workers gamit ang query terms
+      const searchTerms = q.split(" ").filter(t => t.length > 2 && !["ang", "mga", "ano", "sino", "saan", "bakit", "paano", "kung", "may", "wala", "nila", "namin", "natin", "inyo", "tayo", "dito"].includes(t));
+      const primaryTerm = searchTerms[0] || q;
 
-        if (matched && matched.length > 0) {
-          const r = matched[0];
-          return {
-            text: `Natagpuan ko po ang talaan para kay **${r.full_name}**:\n\n` +
-              `• **Edad at Kasarian:** ${r.age || "—"} taong gulang • ${r.sex || "—"}\n` +
-              `• **Sitio:** 📍 **${r.sitio || "Barangay Subukin"}**\n` +
-              `• **Kapanganakan:** ${r.birthdate ? new Date(r.birthdate).toLocaleDateString() : "—"}\n` +
-              `• **PhilHealth No.:** ${r.philhealth_number || "Wala pa po"}\n\n` +
-              `Nais po ba ninyong makita ang kanyang buong klinikal na buod (konsultasyon, bakuna, o talaan ng pamilya)?`,
-            quickActions: [
-              { label: `📋 Buong Buod ni ${r.full_name.split(" ")[0]}`, query: `Buod ng rekord ni ${r.full_name}` }
-            ]
-          };
+      const [resSearch, famSearch, consSearch, matSearch] = await Promise.all([
+        supabase.from("residents").select("*").or(`full_name.ilike.%${primaryTerm}%,sitio.ilike.%${primaryTerm}%,philhealth_number.ilike.%${primaryTerm}%`).limit(3),
+        supabase.from("family_data").select("*").or(`father_name.ilike.%${primaryTerm}%,mother_name.ilike.%${primaryTerm}%,family_number.ilike.%${primaryTerm}%,sitio.ilike.%${primaryTerm}%`).limit(2),
+        supabase.from("consultations").select("*").or(`consultation_cause.ilike.%${primaryTerm}%,diagnosis.ilike.%${primaryTerm}%`).limit(3),
+        supabase.from("maternal_care" as any).select("*").ilike("patient_name", `%${primaryTerm}%`).limit(2)
+      ]);
+
+      const foundRes = resSearch.data || [];
+      const foundFam = famSearch.data || [];
+      const foundCons = consSearch.data || [];
+      const foundMat = (matSearch.data as any[]) || [];
+
+      if (foundRes.length > 0 || foundFam.length > 0 || foundCons.length > 0 || foundMat.length > 0) {
+        let inspectText = `🔍 MGA NATAGPUANG TALA SA SISTEMA PARA SA "${primaryTerm.toUpperCase()}":\n\n`;
+
+        if (foundRes.length > 0) {
+          inspectText += `👥 Talaan ng Residente:\n`;
+          foundRes.forEach((r: any) => {
+            inspectText += `• ${r.full_name} (${r.age || "—"} taong gulang) — Sitio: ${r.sitio || "Subukin"}\n`;
+          });
+          inspectText += `\n`;
         }
-      } catch {}
-    }
 
-    // Default Guidance na Magalang para sa mga Nakatatanda
+        if (foundFam.length > 0) {
+          inspectText += `🏠 Talaan ng Pamilya:\n`;
+          foundFam.forEach((f: any) => {
+            inspectText += `• Pamilya #${f.family_number || "—"}: ${f.father_name || "Ama"} at ${f.mother_name || "Ina"} (${f.sitio || "Subukin"})\n`;
+          });
+          inspectText += `\n`;
+        }
+
+        if (foundCons.length > 0) {
+          inspectText += `🩺 Konsultasyon:\n`;
+          foundCons.forEach((c: any) => {
+            inspectText += `• Reklamo/Sakit: ${c.consultation_cause || "Check-up"} (${new Date(c.consultation_date).toLocaleDateString()})\n`;
+          });
+          inspectText += `\n`;
+        }
+
+        if (foundMat.length > 0) {
+          inspectText += `🤰 Maternal Records:\n`;
+          foundMat.forEach((m: any) => {
+            inspectText += `• ${m.patient_name || "Pasyente"} — Sitio: ${m.sitio || "Subukin"}\n`;
+          });
+          inspectText += `\n`;
+        }
+
+        inspectText += `Nais po ba ninyong suriin ang buong rekord ng alinman sa mga ito?`;
+
+        return {
+          text: cleanFormat(inspectText),
+          quickActions: [
+            { label: "📊 Kabuuang Talaan", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
+            { label: "👩‍⚕️ Direktoryo ng BHW", query: "Sino-sino po ang mga BHW at kanilang kontak?" }
+          ]
+        };
+      }
+    } catch {}
+
+    // 19. Intelligent Guidance kapag hindi natagpuan (May malinaw na gabay sa kawani)
     return {
-      text: `Naiintindihan ko po kayo! Ako po si **BHAI**, ang opisyal na **Barangay Health AI** para sa Barangay Subukin.\n\nUpang matulungan ko po kayo nang mabilis at maayos, maaari po kayong magtanong tungkol sa:\n\n` +
-        `1. 📊 **Kabuuang Talaan** — *"Ilan po ang kabuuang rekord sa ating sistema?"*\n` +
-        `2. 👤 **Rekord ng Residente** — *"Ibigay po ang buod ng rekord ni [Pangalan]"*\n` +
-        `3. 📍 **Lokasyon ng Sitio** — *"Saan po matatagpuan ang Sitio [Pangalan]?"*\n` +
-        `4. 👩‍⚕️ **Kontak ng mga BHW** — *"Sino po ang BHW sa Sitio Maligaya at ano ang kontak?"*\n` +
-        `5. 👴 **Serbisyo sa Senior** — *"Ano-ano po ang programa para sa senior citizen?"*\n` +
-        `6. 🚨 **Emergency Hotlines** — *"Ano-ano po ang numero ng ambulansya at ospital?"*\n\n` +
-        `Maaari rin po ninyong pindutin ang mga pindutan sa ibaba para sa mabilisang sagot!`,
+      text: cleanFormat(
+        `Naiintindihan ko po ang inyong katanungan! Ako po si BHAI, ang opisyal na Barangay Health AI para sa Barangay Subukin.\n\n` +
+        `Siniyasat ko po ang ating database ng Residente, Pamilya, Konsultasyon, at BHW Staff, ngunit kailangan ko po ng kaunting paglilinaw upang maibigay ang eksaktong datos.\n\n` +
+        `Maaari po ninyong itanong:\n` +
+        `1. 📊 Kabuuang Datos — "Ilan po ang kabuuang rekord sa ating sistema?"\n` +
+        `2. 🤰 Buntis at Sanggol — "Ilan po ang mga buntis o may bakuna?"\n` +
+        `3. 👤 Pangalan ng Residente — I-type ang buong pangalan tulad ng "Buod ni [Pangalan]"\n` +
+        `4. 📍 Sitio at Populasyon — "Ilan ang tao sa Sitio Maligaya?"\n` +
+        `5. 👩‍⚕️ Attendance ng BHW — "Sino-sino ang naka-duty ngayon?"\n` +
+        `6. 💡 Tulong sa Paggamit — "Paano magdagdag ng residente o mag-print?"\n\n` +
+        `Pindutin lamang po ang mga pindutan sa ibaba para sa agarang tulong!`
+      ),
       quickActions: [
         { label: "📊 Kabuuang Talaan", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
-        { label: "📍 Listahan ng Sitios", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" },
-        { label: "👩‍⚕️ Direktoryo ng BHW", query: "Sino-sino po ang mga BHW at ang kanilang telepono?" },
-        { label: "👴 Serbisyo sa Senior", query: "Ano-ano po ang serbisyong pangkalusugan para sa senior citizen?" }
+        { label: "👩‍⚕️ Naka-Duty Ngayon", query: "Sino-sino po ang mga BHW na naka-duty ngayon?" },
+        { label: "🤰 Talaan ng Buntis", query: "Ilan po ang mga buntis sa ating talaan?" },
+        { label: "📍 Listahan ng Sitios", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" }
       ]
     };
   };
@@ -763,13 +1294,13 @@ export function BhaiChatbot() {
       {
         id: "cleared-welcome",
         sender: "bot",
-        text: "Bagong usapan po! Ako po muli si **BHAI** (Barangay Health AI). Paano po ako makakatulong sa inyo ngayon sa mga talaan ng kalusugan o sitio sa Barangay Subukin?",
+        text: "Bagong usapan po! Ako po muli si BHAI (Barangay Health AI). Paano po ako makakatulong sa inyo ngayon sa mga talaan ng kalusugan, mga buntis, bakuna, o mga sitio sa Barangay Subukin?",
         timestamp: new Date().toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }),
         quickActions: [
           { label: "📊 Kabuuang Talaan", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
-          { label: "📍 Listahan ng Sitio", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" },
-          { label: "👩‍⚕️ Kontak ng mga BHW", query: "Sino-sino po ang mga BHW at ang kanilang telepono?" },
-          { label: "👴 Serbisyo sa Senior", query: "Ano-ano po ang serbisyong pangkalusugan para sa senior citizen?" }
+          { label: "👩‍⚕️ Naka-Duty Ngayon", query: "Sino-sino po ang mga BHW na naka-duty ngayon?" },
+          { label: "🤰 Talaan ng Buntis", query: "Ilan po ang mga buntis sa ating talaan?" },
+          { label: "📍 Listahan ng Sitio", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" }
         ]
       }
     ]);
@@ -777,17 +1308,9 @@ export function BhaiChatbot() {
 
   return (
     <>
-      {/* Floating Chat Trigger Button */}
+      {/* Floating Chat Trigger Button - Only the icon is visible as requested */}
       {!isOpen && (
-        <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2 group">
-          {/* Friendly prompt bubble tailored for elderly users */}
-          <div className="hidden sm:flex items-center gap-2 bg-card/95 backdrop-blur-md px-3.5 py-2 rounded-2xl shadow-xl border border-primary/20 text-xs font-semibold text-foreground animate-bounce-subtle pointer-events-none">
-            <Sparkles className="h-4 w-4 text-amber-500 animate-spin-slow shrink-0" />
-            <span>
-              May katanungan po ba kayo? Kausapin po si BHAI!
-            </span>
-          </div>
-
+        <div className="fixed bottom-6 right-6 z-40 flex items-center group">
           <button
             onClick={() => {
               setIsOpen(true);
@@ -947,11 +1470,12 @@ export function BhaiChatbot() {
                             : "bg-muted/50 border border-border/40 text-foreground rounded-tl-xs whitespace-pre-wrap"
                         }`}
                       >
-                        {/* Parse bold and bullets for nice rendering */}
-                        {msg.text.split("\n").map((line, idx) => {
+                        {/* Render clean text without asterisks */}
+                        {msg.text.split("\n").map((rawLine, idx) => {
+                          const line = rawLine.replace(/\*\*/g, "").replace(/\*/g, "");
                           if (line.startsWith("• ") || line.startsWith("- ")) {
                             return (
-                              <p key={idx} className="my-0.5 pl-2 border-l-2 border-primary/40">
+                              <p key={idx} className="my-0.5 pl-2 border-l-2 border-primary/40 font-medium">
                                 {line}
                               </p>
                             );
