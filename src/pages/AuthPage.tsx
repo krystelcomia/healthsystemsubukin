@@ -16,7 +16,6 @@ import {
   ShieldCheck,
   LockKeyhole,
   User,
-  Lock,
   ShieldAlert,
   X,
 } from "lucide-react";
@@ -441,7 +440,7 @@ const AuthPage = () => {
       {/* Clear background overlay without blur so the background photo of the barangay hall remains sharp and visible */}
       <div className="absolute inset-0 bg-slate-950/20 pointer-events-none" />
 
-      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/50 dark:border-slate-700/60 bg-white/75 dark:bg-slate-900/80 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden transition-all">
+      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/50 dark:border-slate-700/60 bg-white/75 dark:bg-slate-900/80 backdrop-blur-md shadow-2xl rounded-none overflow-hidden transition-all">
         <CardHeader className="text-center space-y-3 pt-8 pb-3 px-6 sm:px-8">
           <div className="relative mx-auto inline-block">
             <img
@@ -493,14 +492,14 @@ const AuthPage = () => {
                   </Label>
                   <div className="relative">
                     <Input
-                      className="h-11 text-sm pr-16 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] hover:bg-white/60 dark:hover:bg-slate-950/60 hover:border-white/80 dark:hover:border-white/20 focus-visible:bg-white/75 dark:focus-visible:bg-slate-950/75 focus-visible:ring-2 focus-visible:ring-slate-900/20 dark:focus-visible:ring-primary/40 focus-visible:border-slate-900/40 dark:focus-visible:border-primary transition-all duration-200"
+                      className="h-11 text-sm pr-10 bg-white/45 dark:bg-slate-950/45 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500/80 dark:placeholder:text-slate-400 rounded-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_2px_rgba(0,0,0,0.04)] hover:bg-white/60 dark:hover:bg-slate-950/60 hover:border-white/80 dark:hover:border-white/20 focus-visible:bg-white/75 dark:focus-visible:bg-slate-950/75 focus-visible:ring-2 focus-visible:ring-slate-900/20 dark:focus-visible:ring-primary/40 focus-visible:border-slate-900/40 dark:focus-visible:border-primary transition-all duration-200"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       autoComplete="current-password"
                     />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
                       <button
                         type="button"
                         className="text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 transition-colors p-1"
@@ -508,7 +507,6 @@ const AuthPage = () => {
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
-                      <Lock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                     </div>
                   </div>
                 </div>
@@ -520,7 +518,7 @@ const AuthPage = () => {
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="rounded border-slate-300 text-slate-900 focus:ring-slate-900/20 dark:border-slate-700 dark:bg-slate-950 dark:checked:bg-primary h-3.5 w-3.5 cursor-pointer"
+                      className="rounded border-slate-300 text-primary focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-950 dark:checked:bg-primary h-3.5 w-3.5 cursor-pointer"
                     />
                     <span>{language === "tl" ? "Tandaan Ako" : "Remember Me"}</span>
                   </label>
@@ -533,10 +531,10 @@ const AuthPage = () => {
                   </button>
                 </div>
 
-                {/* Primary Login Button */}
+                {/* Primary Login Button (Uses System Color Theme) */}
                 <Button
                   type="submit"
-                  className="w-full h-11 font-bold text-sm bg-slate-900 hover:bg-slate-800 dark:bg-primary dark:hover:bg-primary/90 text-white rounded-xl shadow-md mt-1 transition-all"
+                  className="w-full h-11 font-bold text-sm bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md mt-1 transition-all"
                   disabled={loading}
                 >
                   {loading ? t("auth.signingIn") : (language === "tl" ? "Mag-log in" : "Login")}

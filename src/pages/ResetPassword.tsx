@@ -187,7 +187,7 @@ const ResetPassword = () => {
       {/* Clear background overlay without blur so the background photo of the barangay hall remains sharp and visible */}
       <div className="absolute inset-0 bg-slate-950/20 pointer-events-none" />
 
-      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/50 dark:border-slate-700/60 bg-white/75 dark:bg-slate-900/80 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden transition-all">
+      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/50 dark:border-slate-700/60 bg-white/75 dark:bg-slate-900/80 backdrop-blur-md shadow-2xl rounded-none overflow-hidden transition-all">
         <CardHeader className="text-center space-y-3 pt-8 pb-3 px-6 sm:px-8">
           <div className="relative mx-auto inline-block">
             <img
