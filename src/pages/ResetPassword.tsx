@@ -184,24 +184,23 @@ const ResetPassword = () => {
       className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
       style={{ backgroundImage: `url(${loginBg})` }}
     >
-      {/* Ambient background overlay to improve contrast and focus on the card */}
-      <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]" />
+      {/* Soft translucent ambient background overlay to blend smoothly without harsh contrast */}
+      <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]" />
 
-      <Card className="relative z-10 w-full max-w-md border border-white/30 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden transition-all">
-        <div className="h-1.5 w-full bg-gradient-to-r from-primary via-primary/85 to-primary/60" />
-        <CardHeader className="text-center space-y-2.5 pt-7 pb-4 px-6 sm:px-8">
+      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/40 dark:border-slate-700/50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden transition-all">
+        <CardHeader className="text-center space-y-3 pt-8 pb-3 px-6 sm:px-8">
           <div className="relative mx-auto inline-block">
             <img
               src={barangayLogo}
               alt="Barangay Subukin Logo"
-              className="h-20 w-20 rounded-full object-cover shadow-md ring-4 ring-background"
+              className="h-20 w-20 rounded-full object-cover shadow-md ring-4 ring-white/60 dark:ring-slate-800/80"
             />
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <CardTitle className="text-2xl font-heading font-extrabold text-slate-800 dark:text-white tracking-tight">
               {t("reset.title")}
             </CardTitle>
-            <CardDescription className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
+            <CardDescription className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-medium">
               {t("reset.desc")}
             </CardDescription>
           </div>

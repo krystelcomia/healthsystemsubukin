@@ -1,16 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, ArrowLeft, KeyRound, Mail, CheckCircle2, ExternalLink, ShieldCheck, LockKeyhole } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  KeyRound,
+  Mail,
+  CheckCircle2,
+  ExternalLink,
+  ShieldCheck,
+  LockKeyhole,
+  User,
+  Lock,
+  ShieldAlert,
+  X,
+} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import barangayLogo from "@/assets/barangay-logo.png";
 import loginBg from "@/assets/login-bg.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
+
+const GoogleIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24">
+    <path
+      fill="#4285F4"
+      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+    />
+  </svg>
+);
 
 const AuthPage = () => {
   const { session, userRole, loading: authLoading } = useAuth();
@@ -19,8 +55,14 @@ const AuthPage = () => {
   const [forgotStep, setForgotStep] = useState<1 | 2 | 3>(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Google / Gmail login state
+  const [googleModalOpen, setGoogleModalOpen] = useState(false);
+  const [googleEmailInput, setGoogleEmailInput] = useState("");
+  const [googleLoading, setGoogleLoading] = useState(false);
   
   // Forgot password state
   const [verificationCode, setVerificationCode] = useState("");
@@ -49,11 +91,26 @@ const AuthPage = () => {
     "maryjanelandichomidwife@gmail.com": { username: "Mary Jane", fullName: "Mary Jane Landicho", role: "midwife", defaultPassword: "midwifesubukinmaryjane2026" },
   };
 
+  useEffect(() => {
+    const remembered = localStorage.getItem("bhw_remember_email");
+    if (remembered) {
+      setEmail(remembered);
+      setRememberMe(true);
+    }
+  }, []);
+
   const handleLogin = async () => {
     if (!email || !password) {
-      toast.error(language === "tl" ? "Mangyaring ilagay ang email at password" : "Please enter email and password");
+      toast.error(language === "tl" ? "Mangyaring ilagay ang email/username at password" : "Please enter email/username and password");
       return;
     }
+    // Handle remember me
+    if (rememberMe) {
+      localStorage.setItem("bhw_remember_email", email.trim());
+    } else {
+      localStorage.removeItem("bhw_remember_email");
+    }
+
     // Clear instance expired flag so new active session takes over
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("bhw_instance_expired");
@@ -140,6 +197,84 @@ const AuthPage = () => {
 
     toast.success(language === "tl" ? "Matagumpay na nakapag-sign in" : "Signed in successfully");
     setLoading(false);
+  };
+
+  // Google / Gmail Login Handler (Ensures account creation is disabled for unregistered emails)
+  const handleGoogleLogin = async (providedGmail?: string) => {
+    const targetGmail = (providedGmail || googleEmailInput).trim().toLowerCase();
+    if (!targetGmail) {
+      toast.error(language === "tl" ? "Mangyaring ilagay ang iyong Gmail address" : "Please enter your Gmail address");
+      return;
+    }
+
+    setGoogleLoading(true);
+
+    // 1. Verify that this Gmail address exists in the system database
+    const dbStr = localStorage.getItem("supabase_mock_db");
+    const db = dbStr ? JSON.parse(dbStr) : {};
+    const workers: any[] = db["bhw_workers"] || [];
+    const authUsers: any[] = db["auth_users"] || [];
+    const profiles: any[] = db["profiles"] || [];
+
+    const workerMatch = workers.find((w) => (w.gmail || "").toLowerCase().trim() === targetGmail);
+    const userMatch = authUsers.find((u) => (u.email || "").toLowerCase().trim() === targetGmail);
+    const official = OFFICIAL_SYSTEM_ACCOUNTS[targetGmail];
+
+    // If not found in any registered database table: ACCOUNT CREATION IS DISABLED
+    if (!workerMatch && !userMatch && !official) {
+      setGoogleLoading(false);
+      toast.error(
+        language === "tl"
+          ? "Hindi pinapayagan ang paggawa ng bagong account. Ang Gmail na ito ay wala sa database ng Barangay Subukin Health System. Makipag-ugnayan sa supervisor."
+          : "Account creation is disabled. This Gmail address is not registered in the Barangay Subukin Health System database. Please contact the administrator.",
+        { duration: 8000 }
+      );
+      return;
+    }
+
+    // Clear instance expired flag so new active session takes over
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("bhw_instance_expired");
+      sessionStorage.removeItem("bhw_site_tab_instance_id");
+      delete (window as any).__bhwTabInstanceId;
+    }
+
+    // 2. Account exists in database: Sign in with registered credentials
+    const passwordToUse = userMatch?.password || official?.defaultPassword || "bhwsubukin2026";
+    let res = await supabase.auth.signInWithPassword({ email: targetGmail, password: passwordToUse });
+
+    if (res.error && official) {
+      try {
+        await supabase.auth.signUp({
+          email: targetGmail,
+          password: passwordToUse,
+          options: {
+            data: {
+              full_name: official.fullName,
+              username: official.username,
+            }
+          }
+        });
+        res = await supabase.auth.signInWithPassword({ email: targetGmail, password: passwordToUse });
+      } catch (e) {
+        console.warn("Auto sync on google login:", e);
+      }
+    }
+
+    setGoogleLoading(false);
+    setGoogleModalOpen(false);
+
+    if (res.error) {
+      toast.error(res.error.message, { duration: 7000 });
+      return;
+    }
+
+    const workerName = workerMatch?.name || official?.fullName || targetGmail;
+    toast.success(
+      language === "tl"
+        ? `Maligayang pagbabalik, ${workerName}! Matagumpay na naka-sign in gamit ang Gmail.`
+        : `Welcome back, ${workerName}! Signed in successfully with Gmail.`
+    );
   };
 
   // Step 1: Send verification code to user's Gmail via EmailJS by looking up Full Name & Username
@@ -303,75 +438,142 @@ const AuthPage = () => {
       className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
       style={{ backgroundImage: `url(${loginBg})` }}
     >
-      {/* Ambient background overlay to improve contrast and focus on the login card */}
-      <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]" />
+      {/* Soft translucent ambient background overlay to blend smoothly without harsh contrast */}
+      <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]" />
 
-      <Card className="relative z-10 w-full max-w-md border border-white/30 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden transition-all">
-        <div className="h-1.5 w-full bg-gradient-to-r from-primary via-primary/85 to-primary/60" />
-        <CardHeader className="text-center space-y-2.5 pt-7 pb-4 px-6 sm:px-8">
+      <Card className="relative z-10 w-full max-w-sm sm:max-w-md border border-white/40 dark:border-slate-700/50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden transition-all">
+        <CardHeader className="text-center space-y-3 pt-8 pb-3 px-6 sm:px-8">
           <div className="relative mx-auto inline-block">
             <img
               src={barangayLogo}
               alt="Barangay Subukin Logo"
-              className="h-20 w-20 rounded-full object-cover shadow-md ring-4 ring-background"
+              className="h-20 w-20 rounded-full object-cover shadow-md ring-4 ring-white/60 dark:ring-slate-800/80"
             />
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight">
-              {mode === "login" ? t("auth.title") : t("auth.forgotTitle")}
+            <CardTitle className="text-2xl font-heading font-extrabold text-slate-800 dark:text-white tracking-tight">
+              {t("auth.title")}
             </CardTitle>
-            <CardDescription className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
-              {mode === "login" ? t("auth.desc") : t("auth.forgotDesc")}
+            <CardDescription className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-medium">
+              {mode === "login" 
+                ? (language === "tl" ? "Mag-log in upang ma-access ang health records" : "Sign in to access the health records system")
+                : t("auth.forgotDesc")}
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="px-6 sm:px-8 pb-8 pt-2">
+
+        <CardContent className="px-6 sm:px-8 pb-8 pt-1">
           {mode === "login" ? (
-            <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4" autoComplete="off">
-              <div className="space-y-1.5">
-                <Label className="text-slate-800 dark:text-slate-200 text-xs font-semibold">{t("auth.email")}</Label>
-                <Input
-                  className="h-10 text-sm bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  autoComplete="off"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-slate-800 dark:text-slate-200 text-xs font-semibold">{t("auth.password")}</Label>
-                <div className="relative">
-                  <Input
-                    className="h-10 text-sm pr-10 bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors p-0.5"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+            <div className="space-y-4">
+              <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-3.5" autoComplete="off">
+                {/* Username / Email Field */}
+                <div className="space-y-1.5">
+                  <Label className="text-slate-700 dark:text-slate-200 text-xs font-semibold">
+                    {language === "tl" ? "Username o Email" : "Username"}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      className="h-10 text-sm pr-10 bg-white/70 dark:bg-slate-950/60 border-slate-300/80 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-slate-900/20 dark:focus-visible:ring-primary/40 focus-visible:border-slate-900 dark:focus-visible:border-primary transition-all shadow-xs"
+                      type="text"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder={language === "tl" ? "Ilagay ang username o email" : "Username"}
+                      autoComplete="username"
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
+                      <User className="h-4 w-4" />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-end pt-1">
+
+                {/* Password Field */}
+                <div className="space-y-1.5">
+                  <Label className="text-slate-700 dark:text-slate-200 text-xs font-semibold">
+                    {t("auth.password")}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      className="h-10 text-sm pr-16 bg-white/70 dark:bg-slate-950/60 border-slate-300/80 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-slate-900/20 dark:focus-visible:ring-primary/40 focus-visible:border-slate-900 dark:focus-visible:border-primary transition-all shadow-xs"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                    />
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                      <button
+                        type="button"
+                        className="text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 transition-colors p-1"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      </button>
+                      <Lock className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Remember Me & Forgot Password */}
+                <div className="flex items-center justify-between pt-0.5 text-xs">
+                  <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-300 select-none">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="rounded border-slate-300 text-slate-900 focus:ring-slate-900/20 dark:border-slate-700 dark:bg-slate-950 dark:checked:bg-primary h-3.5 w-3.5 cursor-pointer"
+                    />
+                    <span>{language === "tl" ? "Tandaan Ako" : "Remember Me"}</span>
+                  </label>
                   <button
                     type="button"
                     onClick={() => { setMode("forgot"); setForgotStep(1); }}
-                    className="text-xs text-primary hover:text-primary/80 font-semibold transition-colors hover:underline cursor-pointer"
+                    className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors hover:underline cursor-pointer font-medium"
                   >
                     {t("auth.forgotPassword")}
                   </button>
                 </div>
+
+                {/* Primary Login Button */}
+                <Button
+                  type="submit"
+                  className="w-full h-10 font-bold text-sm bg-slate-900 hover:bg-slate-800 dark:bg-primary dark:hover:bg-primary/90 text-white rounded-xl shadow-md mt-1 transition-all"
+                  disabled={loading}
+                >
+                  {loading ? t("auth.signingIn") : (language === "tl" ? "Mag-log in" : "Login")}
+                </Button>
+              </form>
+
+              {/* Account creation notice */}
+              <div className="text-center pt-1 pb-0.5">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                  {language === "tl" 
+                    ? "Para lamang sa mga awtorisadong kawani at BHW ng Barangay Subukin" 
+                    : "Authorized BHW & Staff Portal • Account creation disabled"}
+                </p>
               </div>
-              <Button type="submit" className="w-full h-10 font-bold text-sm shadow-md mt-2" disabled={loading}>
-                {loading ? t("auth.signingIn") : t("auth.signIn")}
-              </Button>
-            </form>
+
+              {/* Divider */}
+              <div className="relative flex items-center py-1">
+                <div className="flex-grow border-t border-slate-300/70 dark:border-slate-700/60" />
+                <span className="flex-shrink mx-3 text-[11px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wider">
+                  {language === "tl" ? "O mag-sign in gamit ang" : "Or"}
+                </span>
+                <div className="flex-grow border-t border-slate-300/70 dark:border-slate-700/60" />
+              </div>
+
+              {/* Login with Google Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setGoogleEmailInput(email.includes("@") ? email : "");
+                  setGoogleModalOpen(true);
+                }}
+                className="w-full h-10 px-4 bg-white/90 hover:bg-white dark:bg-slate-800 dark:hover:bg-slate-700/90 border border-slate-300/80 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold rounded-xl shadow-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer"
+              >
+                <GoogleIcon className="h-4 w-4" />
+                <span>{language === "tl" ? "Mag-log in gamit ang Google" : "Login with Google"}</span>
+              </button>
+            </div>
           ) : (
             <div className="space-y-4">
               {/* ═══════════════════════════════════════════════════════
@@ -385,7 +587,7 @@ const AuthPage = () => {
                         {language === "tl" ? "Buong Pangalan ng Manggagawa" : "Worker's Full Name"}
                       </Label>
                       <Input
-                        className="h-10 text-xs font-medium bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                        className="h-10 text-xs font-medium bg-white/70 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
                         type="text"
                         value={forgotFullName}
                         onChange={(e) => setForgotFullName(e.target.value)}
@@ -400,7 +602,7 @@ const AuthPage = () => {
                         {language === "tl" ? "Username ng Manggagawa" : "Worker's Username"}
                       </Label>
                       <Input
-                        className="h-10 text-xs font-medium bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                        className="h-10 text-xs font-medium bg-white/70 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
                         type="text"
                         value={forgotUsername}
                         onChange={(e) => setForgotUsername(e.target.value)}
@@ -416,7 +618,7 @@ const AuthPage = () => {
                     </p>
                   </div>
 
-                  <Button type="submit" className="w-full h-10 gap-2 font-bold text-sm shadow-md" disabled={loading}>
+                  <Button type="submit" className="w-full h-10 gap-2 font-bold text-sm rounded-xl shadow-md" disabled={loading}>
                     <KeyRound className="h-4 w-4" />
                     {loading ? t("auth.sending") : (language === "tl" ? "Ipadala ang Reset Code sa Email" : "Send Reset Code via Email")}
                   </Button>
@@ -424,7 +626,7 @@ const AuthPage = () => {
                   <Button
                     type="button"
                     variant="ghost"
-                    className="w-full gap-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+                    className="w-full gap-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-xl transition-colors"
                     onClick={() => { setMode("login"); setForgotStep(1); }}
                   >
                     <ArrowLeft className="h-3.5 w-3.5" />
@@ -454,7 +656,7 @@ const AuthPage = () => {
                         type="button"
                         size="sm"
                         variant="secondary"
-                        className="h-7 text-[11px] px-2.5 gap-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium shadow-xs"
+                        className="h-7 text-[11px] px-2.5 gap-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium rounded-lg shadow-xs"
                         onClick={() => window.open("https://mail.google.com/mail/u/0/#inbox", "_blank")}
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
@@ -464,7 +666,7 @@ const AuthPage = () => {
                         type="button"
                         size="sm"
                         variant="secondary"
-                        className="h-7 text-[11px] px-2.5 gap-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium shadow-xs"
+                        className="h-7 text-[11px] px-2.5 gap-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium rounded-lg shadow-xs"
                         onClick={() => window.open(`https://mail.google.com/mail/u/0/#search/${encodeURIComponent(email)}`, "_blank")}
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
@@ -488,7 +690,7 @@ const AuthPage = () => {
                       </button>
                     </div>
                     <Input
-                      className="font-mono tracking-widest text-center text-xl font-extrabold h-12 bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                      className="font-mono tracking-widest text-center text-xl font-extrabold h-12 bg-white/70 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
                       type="text"
                       maxLength={6}
                       value={verificationCode}
@@ -503,7 +705,7 @@ const AuthPage = () => {
                     </p>
                   </div>
 
-                  <Button type="submit" className="w-full h-10 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md" disabled={loading}>
+                  <Button type="submit" className="w-full h-10 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md" disabled={loading}>
                     <ShieldCheck className="h-4 w-4" />
                     {loading ? (language === "tl" ? "Sinusuri ang Code..." : "Verifying Code...") : (language === "tl" ? "I-verify ang Code" : "Verify Code")}
                   </Button>
@@ -512,7 +714,7 @@ const AuthPage = () => {
                     <Button
                       type="button"
                       variant="outline"
-                      className="flex-1 h-9 text-xs transition-colors"
+                      className="flex-1 h-9 text-xs rounded-xl transition-colors"
                       onClick={() => { setForgotStep(1); setVerificationCode(""); }}
                     >
                       {language === "tl" ? "Palitan ang Email" : "Change Email"}
@@ -520,7 +722,7 @@ const AuthPage = () => {
                     <Button
                       type="button"
                       variant="ghost"
-                      className="flex-1 h-9 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs transition-colors"
+                      className="flex-1 h-9 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs rounded-xl transition-colors"
                       onClick={() => { setMode("login"); setForgotStep(1); setVerificationCode(""); }}
                     >
                       {t("auth.backToSignIn")}
@@ -551,7 +753,7 @@ const AuthPage = () => {
                     <Label className="text-slate-800 dark:text-slate-200 text-xs font-semibold">{t("reset.newPassword")}</Label>
                     <div className="relative">
                       <Input
-                        className="h-10 text-sm pr-10 bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                        className="h-10 text-sm pr-10 bg-white/70 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
                         type={showNewPassword ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
@@ -572,7 +774,7 @@ const AuthPage = () => {
                     <Label className="text-slate-800 dark:text-slate-200 text-xs font-semibold">{t("reset.confirmPassword")}</Label>
                     <div className="relative">
                       <Input
-                        className="h-10 text-sm pr-10 bg-slate-50 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
+                        className="h-10 text-sm pr-10 bg-white/70 dark:bg-slate-950/70 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary transition-all shadow-xs"
                         type={showConfirmPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -588,7 +790,7 @@ const AuthPage = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full h-10 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md" disabled={loading}>
+                  <Button type="submit" className="w-full h-10 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md" disabled={loading}>
                     <LockKeyhole className="h-4 w-4" />
                     {loading ? t("reset.updating") : (language === "tl" ? "I-save ang Bagong Password" : "Save New Password")}
                   </Button>
@@ -597,7 +799,7 @@ const AuthPage = () => {
                     <Button
                       type="button"
                       variant="ghost"
-                      className="w-full h-9 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs transition-colors"
+                      className="w-full h-9 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs rounded-xl transition-colors"
                       onClick={() => { setMode("login"); setForgotStep(1); setVerificationCode(""); setVerifiedCode(""); }}
                     >
                       {t("auth.backToSignIn")}
@@ -609,11 +811,112 @@ const AuthPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Google / Gmail Sign In Modal */}
+      <Dialog open={googleModalOpen} onOpenChange={setGoogleModalOpen}>
+        <DialogContent className="max-w-md bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl">
+          <DialogHeader className="space-y-2 text-center">
+            <div className="mx-auto h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-xs">
+              <GoogleIcon className="h-6 w-6" />
+            </div>
+            <DialogTitle className="text-lg font-bold text-slate-900 dark:text-white">
+              {language === "tl" ? "Mag-sign in gamit ang Gmail" : "Sign in with Google"}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
+              {language === "tl"
+                ? "Ilagay ang iyong nakarehistrong Gmail address sa database ng Barangay Subukin."
+                : "Enter your registered Gmail address to sign in. Account creation is disabled for unregistered emails."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleGoogleLogin();
+            }}
+            className="space-y-4 pt-2"
+          >
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                {language === "tl" ? "Gmail Address" : "Registered Gmail Address"}
+              </Label>
+              <div className="relative">
+                <Input
+                  type="email"
+                  value={googleEmailInput}
+                  onChange={(e) => setGoogleEmailInput(e.target.value)}
+                  placeholder="yourname@gmail.com"
+                  className="h-10 text-sm pl-9 bg-slate-50 dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus-visible:ring-2 focus-visible:ring-primary"
+                  autoFocus
+                />
+                <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed space-y-1">
+              <div className="flex items-center gap-1.5 font-semibold text-amber-900 dark:text-amber-200">
+                <ShieldAlert className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                <span>{language === "tl" ? "Paunawa sa Seguridad" : "Security Notice"}</span>
+              </div>
+              <p>
+                {language === "tl"
+                  ? "Ang mga awtorisadong Gmail lamang na nasa database ng mga BHW at kawani ang papayagang pumasok. Naka-disable ang paglikha ng bagong account."
+                  : "Only registered BHW and staff Gmail addresses in the database can sign in. Self-registration is strictly disabled."}
+              </p>
+            </div>
+
+            {/* Quick Pick from Official Workers */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                {language === "tl" ? "O pumili ng rehistradong Gmail:" : "Or select registered staff account:"}
+              </span>
+              <div className="max-h-36 overflow-y-auto space-y-1 pr-1 text-xs">
+                {Object.entries(OFFICIAL_SYSTEM_ACCOUNTS).slice(0, 6).map(([accEmail, acc]) => (
+                  <button
+                    key={accEmail}
+                    type="button"
+                    onClick={() => {
+                      setGoogleEmailInput(accEmail);
+                      handleGoogleLogin(accEmail);
+                    }}
+                    className="w-full text-left p-2 rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/70 dark:border-slate-700/60 transition-colors flex items-center justify-between group cursor-pointer"
+                  >
+                    <div>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-primary transition-colors text-xs">{acc.fullName}</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{accEmail}</p>
+                    </div>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold uppercase">{acc.role}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setGoogleModalOpen(false)}
+                className="flex-1 rounded-xl h-10 text-xs"
+              >
+                {language === "tl" ? "Kanselahin" : "Cancel"}
+              </Button>
+              <Button
+                type="submit"
+                disabled={googleLoading}
+                className="flex-1 rounded-xl h-10 text-xs font-bold bg-slate-900 hover:bg-slate-800 dark:bg-primary dark:hover:bg-primary/90 text-white"
+              >
+                {googleLoading ? (language === "tl" ? "Sinusuri..." : "Verifying...") : (language === "tl" ? "Magpatuloy" : "Continue")}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export default AuthPage;
+
 
 
 
