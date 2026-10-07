@@ -120,10 +120,12 @@ const SettingsContext = createContext<SettingsContextType>({
 
 export const useSettings = () => useContext(SettingsContext);
 
+// Text-only scale factors. The root (html) font size stays fixed at 16px so the
+// overall layout, spacing and component dimensions never change.
 const FONT_SIZE_MAP: Record<string, string> = {
-  small: "14px",
-  medium: "16px",
-  large: "18px",
+  small: "0.875",
+  medium: "1",
+  large: "1.125",
 };
 
 const FONT_STYLE_MAP: Record<string, string> = {
@@ -216,7 +218,10 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }, [darkMode]);
 
   useEffect(() => {
-    document.documentElement.style.fontSize = FONT_SIZE_MAP[fontSize] || "16px";
+    const root = document.documentElement;
+    // Ensure no leftover inline root font-size from older versions resizes the layout
+    root.style.removeProperty("font-size");
+    root.style.setProperty("--font-scale", FONT_SIZE_MAP[fontSize] || "1");
     localStorage.setItem("fontSize", fontSize);
     persistActiveUserSettings({ fontSize });
   }, [fontSize]);

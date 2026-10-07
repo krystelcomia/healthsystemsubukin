@@ -54,6 +54,10 @@
 
     --font-heading: 'Plus Jakarta Sans', sans-serif;
     --font-body: 'Inter', sans-serif;
+
+    /* Text-only scale set by the Font Size setting (small/medium/large).
+       Layout dimensions use rem and stay fixed because html font-size is locked. */
+    --font-scale: 1;
   }
 
   .dark {
@@ -101,9 +105,15 @@
     @apply border-border;
   }
 
+  html {
+    /* Fixed so spacing, widths and heights (rem-based) never change with the Font Size setting */
+    font-size: 16px;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    font-size: calc(1rem * var(--font-scale, 1));
   }
 
   h1, h2, h3, h4, h5, h6 {
