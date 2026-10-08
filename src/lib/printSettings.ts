@@ -76,6 +76,7 @@ export interface PrintSettingsEventDetail {
   defaultOrientation?: PrintOrientation;
   title?: string;
   onConfirm?: (orientation: PrintOrientation) => void;
+  onCancel?: () => void;
   formId?: string;
 }
 

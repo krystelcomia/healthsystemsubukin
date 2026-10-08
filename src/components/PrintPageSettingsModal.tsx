@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,11 +27,13 @@ import {
   executePrintWithOrientation,
   PrintSettingsEventDetail
 } from "@/lib/printSettings";
+import { useSettings } from "@/contexts/SettingsContext";
 
-interface PrintPageSettingsModalProps {
+export interface PrintPageSettingsModalProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onConfirmPrint?: (orientation: PrintOrientation) => void;
+  onCancel?: () => void;
   defaultOrientation?: PrintOrientation;
   title?: string;
 }
@@ -40,11 +42,16 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   onConfirmPrint,
+  onCancel,
   defaultOrientation,
-  title = "Print Page Settings",
+  title,
 }) => {
+  const { language } = useSettings();
+  const isTagalog = language === "tl";
+
   const [internalOpen, setInternalOpen] = useState(false);
   const [activeCallback, setActiveCallback] = useState<((orientation: PrintOrientation) => void) | null>(null);
+  const [activeCancelCallback, setActiveCancelCallback] = useState<(() => void) | null>(null);
   const [customTitle, setCustomTitle] = useState<string | null>(null);
 
   const isControlled = controlledOpen !== undefined;
@@ -55,16 +62,29 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
     return defaultOrientation || getSavedPrintOrientation();
   });
 
-  // Listen to global open event so ANY form or button can trigger the print settings modal
+  // Track the original orientation so cancellation can cleanly restore it
+  const originalOrientationRef = useRef<PrintOrientation>(selectedOrientation);
+
+  // When modal becomes open, snapshot current orientation
   useEffect(() => {
+    if (isOpen) {
+      const current = defaultOrientation || getSavedPrintOrientation();
+      setSelectedOrientation(current);
+      originalOrientationRef.current = current;
+    }
+  }, [isOpen, defaultOrientation]);
+
+  // Listen to global open event only on the uncontrolled root instance
+  useEffect(() => {
+    if (isControlled) return;
+
     const handleOpenEvent = (e: Event) => {
       const customEvent = e as CustomEvent<PrintSettingsEventDetail>;
       const detail = customEvent.detail;
-      if (detail?.defaultOrientation) {
-        setSelectedOrientation(detail.defaultOrientation);
-      } else {
-        setSelectedOrientation(getSavedPrintOrientation());
-      }
+      const initial = detail?.defaultOrientation || getSavedPrintOrientation();
+      setSelectedOrientation(initial);
+      originalOrientationRef.current = initial;
+
       if (detail?.title) {
         setCustomTitle(detail.title);
       } else {
@@ -75,6 +95,11 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
       } else {
         setActiveCallback(null);
       }
+      if (detail?.onCancel) {
+        setActiveCancelCallback(() => detail.onCancel);
+      } else {
+        setActiveCancelCallback(null);
+      }
       setInternalOpen(true);
     };
 
@@ -82,17 +107,33 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
     return () => {
       window.removeEventListener("bhw-open-print-settings", handleOpenEvent);
     };
-  }, []);
-
-  useEffect(() => {
-    if (defaultOrientation) {
-      setSelectedOrientation(defaultOrientation);
-    }
-  }, [defaultOrientation]);
+  }, [isControlled]);
 
   const handleSelectOrientation = (orientation: PrintOrientation) => {
     setSelectedOrientation(orientation);
     applyPrintOrientation(orientation);
+  };
+
+  const handleCancel = () => {
+    // Revert previewed orientation back to the original orientation
+    if (originalOrientationRef.current) {
+      applyPrintOrientation(originalOrientationRef.current);
+      setSelectedOrientation(originalOrientationRef.current);
+    }
+    setIsOpen(false);
+    if (onCancel) {
+      onCancel();
+    } else if (activeCancelCallback) {
+      activeCancelCallback();
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      handleCancel();
+    } else {
+      setIsOpen(true);
+    }
   };
 
   const handleProceedPrint = () => {
@@ -101,6 +142,7 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
 
     // Apply orientation
     applyPrintOrientation(selectedOrientation);
+    originalOrientationRef.current = selectedOrientation;
 
     setIsOpen(false);
 
@@ -115,8 +157,13 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
     }
   };
 
+  const resolvedTitle =
+    customTitle ||
+    title ||
+    (isTagalog ? "Mga Setting sa Pag-print ng Pahina" : "Print Page Settings");
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[540px] border-primary/20 shadow-2xl p-6">
         <DialogHeader className="pb-3 border-b border-border/50">
           <div className="flex items-center gap-3">
@@ -125,13 +172,15 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
             </div>
             <div>
               <DialogTitle className="text-lg font-bold font-heading text-foreground flex items-center gap-2">
-                {customTitle || title}
+                {resolvedTitle}
                 <Badge variant="outline" className="text-[11px] font-normal border-primary/30 text-primary">
-                  Official Format
+                  {isTagalog ? "Opisyal na Format" : "Official Format"}
                 </Badge>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                Pumili ng orientation at ayusin ang page settings bago i-print ang dokumento.
+                {isTagalog
+                  ? "Pumili ng orientation at ayusin ang mga setting ng pahina bago i-print ang dokumento."
+                  : "Select page orientation and configure print settings before printing the document."}
               </DialogDescription>
             </div>
           </div>
@@ -141,10 +190,12 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
         <div className="py-4 space-y-4">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <span>Pumili ng Orientation (Page Orientation)</span>
+              <span>{isTagalog ? "Pumili ng Oryentasyon (Page Orientation)" : "Page Orientation"}</span>
             </label>
             <span className="text-[11px] text-muted-foreground">
-              Awtomatikong ia-apply sa browser print preview
+              {isTagalog
+                ? "Awtomatikong ia-apply sa browser print preview"
+                : "Automatically applied to browser print preview"}
             </span>
           </div>
 
@@ -177,13 +228,15 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
 
               <div>
                 <h4 className="text-sm font-bold text-foreground mb-0.5">
-                  Portrait (Patayo)
+                  {isTagalog ? "Portrait (Patayo)" : "Portrait"}
                 </h4>
                 <p className="text-[11px] text-muted-foreground leading-snug">
-                  8.5 × 11 in (Vertical)
+                  8.5 × 11 in ({isTagalog ? "Patayo / Vertical" : "Vertical"})
                 </p>
                 <p className="text-[10px] text-muted-foreground/80 mt-1">
-                  Inirerekomenda para sa mga standard forms, individual records, at consultation slips.
+                  {isTagalog
+                    ? "Inirerekomenda para sa mga karaniwang form, indibidwal na rekord, at mga consultation slip."
+                    : "Recommended for standard forms, individual records, and consultation slips."}
                 </p>
               </div>
             </div>
@@ -223,13 +276,15 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
 
               <div>
                 <h4 className="text-sm font-bold text-foreground mb-0.5">
-                  Landscape (Pahiga)
+                  {isTagalog ? "Landscape (Pahiga)" : "Landscape"}
                 </h4>
                 <p className="text-[11px] text-muted-foreground leading-snug">
-                  11 × 8.5 in (Horizontal)
+                  11 × 8.5 in ({isTagalog ? "Pahiga / Horizontal" : "Horizontal"})
                 </p>
                 <p className="text-[10px] text-muted-foreground/80 mt-1">
-                  Inirerekomenda para sa malalawak na ledger, multi-column masterlists, at census tables.
+                  {isTagalog
+                    ? "Inirerekomenda para sa malalawak na ledger, multi-column masterlist, at mga talaan ng sensus."
+                    : "Recommended for wide ledgers, multi-column masterlists, and census tables."}
                 </p>
               </div>
             </div>
@@ -239,15 +294,15 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
           <div className="rounded-xl border border-border/60 bg-muted/30 p-3.5 space-y-2 text-xs">
             <div className="flex items-center gap-2 font-semibold text-foreground">
               <Type className="h-4 w-4 text-primary" />
-              <span>Opisyal na Pamantayan sa Pag-print (Print Specifications)</span>
+              <span>{isTagalog ? "Opisyal na Pamantayan sa Pag-print (Print Specifications)" : "Official Print Specifications"}</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-muted-foreground pt-1 border-t border-border/40">
               <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-foreground">Font Style:</span>
+                <span className="font-semibold text-foreground">{isTagalog ? "Estilo ng Font:" : "Font Style:"}</span>
                 <span className="font-serif italic font-medium">Times New Roman, 12pt</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-foreground">Paper Footer:</span>
+                <span className="font-semibold text-foreground">{isTagalog ? "Footer ng Pahina:" : "Page Footer:"}</span>
                 <span className="font-serif italic text-slate-700 dark:text-slate-300">system generated (11pt)</span>
               </div>
             </div>
@@ -258,10 +313,10 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
           <Button
             type="button"
             variant="outline"
-            onClick={() => setIsOpen(false)}
-            className="w-full sm:w-auto"
+            onClick={handleCancel}
+            className="w-full sm:w-auto font-medium"
           >
-            Kanselahin (Cancel)
+            {isTagalog ? "Kanselahin" : "Cancel"}
           </Button>
 
           <Button
@@ -270,7 +325,9 @@ export const PrintPageSettingsModal: React.FC<PrintPageSettingsModalProps> = ({
             className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold gap-2 shadow-md shadow-primary/20"
           >
             <Printer className="h-4 w-4" />
-            I-print Ngayon ({selectedOrientation === "landscape" ? "Landscape" : "Portrait"})
+            {isTagalog
+              ? `I-print Ngayon (${selectedOrientation === "landscape" ? "Landscape" : "Portrait"})`
+              : `Print Now (${selectedOrientation === "landscape" ? "Landscape" : "Portrait"})`}
           </Button>
         </DialogFooter>
       </DialogContent>

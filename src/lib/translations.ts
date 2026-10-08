@@ -403,7 +403,25 @@ export const translations: Record<Language, Record<string, string>> = {
     "dengue.printAndSave": "Print Form",
     "dengue.printAndSaveSuccess": "Form saved successfully and sent to print!",
     "dengue.noRecordsToSave": "No records to save. Please enter or add a record first.",
-    "dengue.saveSuccess": "Records saved successfully."
+    "dengue.saveSuccess": "Records saved successfully.",
+    // Print Settings
+    "print.settings": "Print Settings",
+    "print.pageSettings": "Print Page Settings",
+    "print.officialFormat": "Official Format",
+    "print.modalDesc": "Select page orientation and configure print settings before printing the document.",
+    "print.pageOrientation": "Page Orientation",
+    "print.autoApplied": "Automatically applied to browser print preview",
+    "print.portrait": "Portrait",
+    "print.portraitSub": "8.5 × 11 in (Vertical)",
+    "print.portraitDesc": "Recommended for standard forms, individual records, and consultation slips.",
+    "print.landscape": "Landscape",
+    "print.landscapeSub": "11 × 8.5 in (Horizontal)",
+    "print.landscapeDesc": "Recommended for wide ledgers, multi-column masterlists, and census tables.",
+    "print.specifications": "Official Print Specifications",
+    "print.fontStyle": "Font Style:",
+    "print.pageFooter": "Page Footer:",
+    "print.cancel": "Cancel",
+    "print.printNow": "Print Now"
   },
   tl: {
     // Sidebar
@@ -807,7 +825,25 @@ export const translations: Record<Language, Record<string, string>> = {
     "dengue.printAndSave": "Print at I-save",
     "dengue.printAndSaveSuccess": "Matagumpay na nai-save ang form at naipadala sa print!",
     "dengue.noRecordsToSave": "Walang i-sa-save na rekor. Maglagay o magdagdag muna ng datos.",
-    "dengue.saveSuccess": "Matagumpay na na-save ang mga rekor."
+    "dengue.saveSuccess": "Matagumpay na na-save ang mga rekor.",
+    // Print Settings
+    "print.settings": "Mga Setting sa Pag-print",
+    "print.pageSettings": "Mga Setting sa Pag-print ng Pahina",
+    "print.officialFormat": "Opisyal na Format",
+    "print.modalDesc": "Pumili ng orientation at ayusin ang mga setting ng pahina bago i-print ang dokumento.",
+    "print.pageOrientation": "Oryentasyon ng Pahina (Page Orientation)",
+    "print.autoApplied": "Awtomatikong ia-apply sa browser print preview",
+    "print.portrait": "Portrait (Patayo)",
+    "print.portraitSub": "8.5 × 11 in (Vertical)",
+    "print.portraitDesc": "Inirerekomenda para sa mga karaniwang form, indibidwal na rekord, at mga consultation slip.",
+    "print.landscape": "Landscape (Pahiga)",
+    "print.landscapeSub": "11 × 8.5 in (Horizontal)",
+    "print.landscapeDesc": "Inirerekomenda para sa malalawak na ledger, multi-column masterlist, at mga talaan ng sensus.",
+    "print.specifications": "Opisyal na Pamantayan sa Pag-print (Print Specifications)",
+    "print.fontStyle": "Estilo ng Font:",
+    "print.pageFooter": "Footer ng Pahina:",
+    "print.cancel": "Kanselahin",
+    "print.printNow": "I-print Ngayon"
   },
 };
 

@@ -13,6 +13,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 
 interface PrintPageSettingsBarProps {
   onPrint?: (orientation: PrintOrientation) => void;
+  onCancel?: () => void;
   className?: string;
   formName?: string;
   compact?: boolean;
@@ -25,6 +26,7 @@ interface PrintPageSettingsBarProps {
 
 export const PrintPageSettingsBar: React.FC<PrintPageSettingsBarProps> = ({
   onPrint,
+  onCancel,
   className = "",
   formName,
   defaultOrientation,
@@ -75,6 +77,9 @@ export const PrintPageSettingsBar: React.FC<PrintPageSettingsBarProps> = ({
   };
 
   const label = buttonText || (language === "tl" ? "I-print" : "Print");
+  const modalTitle = formName
+    ? (language === "tl" ? `Mga Setting sa Pag-print — ${formName}` : `Print Settings — ${formName}`)
+    : (language === "tl" ? "Mga Setting sa Pag-print ng Pahina" : "Print Page Settings");
 
   return (
     <>
@@ -96,8 +101,9 @@ export const PrintPageSettingsBar: React.FC<PrintPageSettingsBarProps> = ({
         open={settingsModalOpen}
         onOpenChange={setSettingsModalOpen}
         onConfirmPrint={handleTriggerPrint}
+        onCancel={onCancel}
         defaultOrientation={orientation}
-        title={formName ? `Print Settings — ${formName}` : "Print Page Settings"}
+        title={modalTitle}
       />
     </>
   );
