@@ -465,34 +465,34 @@ const AuthPage = () => {
           {mode === "login" ? (
             <div className="space-y-4">
               <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4" autoComplete="off">
-                {/* Email Field (Simple Line Style with Crisp Black Underline & Text) */}
+                {/* Email Field (Thin Grey Underline) */}
                 <div className="space-y-1">
                   <Label className="text-slate-950 dark:text-white text-xs font-bold">
                     {language === "tl" ? "Email" : "Email"}
                   </Label>
                   <div className="relative">
                     <Input
-                      className="h-10 text-sm pr-8 px-0.5 bg-transparent border-0 border-b-2 border-slate-900 dark:border-slate-300 text-slate-950 dark:text-white font-medium placeholder:text-slate-600 dark:placeholder:text-slate-400 rounded-none focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary focus-visible:bg-transparent shadow-none transition-all duration-200"
+                      className="h-10 text-sm pr-8 px-0.5 bg-transparent border-0 border-b border-slate-400 dark:border-slate-500 text-slate-950 dark:text-white font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-none focus-visible:ring-0 focus-visible:border-b focus-visible:border-primary focus-visible:bg-transparent shadow-none transition-all duration-200"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@gmail.com"
                       autoComplete="email"
                     />
-                    <div className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-900 dark:text-slate-200 pointer-events-none">
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none">
                       <Mail className="h-4 w-4" />
                     </div>
                   </div>
                 </div>
 
-                {/* Password Field (Simple Line Style with Crisp Black Underline & Text) */}
+                {/* Password Field (Thin Grey Underline) */}
                 <div className="space-y-1">
                   <Label className="text-slate-950 dark:text-white text-xs font-bold">
                     {t("auth.password")}
                   </Label>
                   <div className="relative">
                     <Input
-                      className="h-10 text-sm pr-8 px-0.5 bg-transparent border-0 border-b-2 border-slate-900 dark:border-slate-300 text-slate-950 dark:text-white font-medium placeholder:text-slate-600 dark:placeholder:text-slate-400 rounded-none focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary focus-visible:bg-transparent shadow-none transition-all duration-200"
+                      className="h-10 text-sm pr-8 px-0.5 bg-transparent border-0 border-b border-slate-400 dark:border-slate-500 text-slate-950 dark:text-white font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-none focus-visible:ring-0 focus-visible:border-b focus-visible:border-primary focus-visible:bg-transparent shadow-none transition-all duration-200"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -502,7 +502,7 @@ const AuthPage = () => {
                     <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
                       <button
                         type="button"
-                        className="text-slate-900 hover:text-black dark:text-slate-200 dark:hover:text-white transition-colors p-1"
+                        className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors p-1"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
