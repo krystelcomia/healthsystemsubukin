@@ -27,6 +27,9 @@ import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { useAuth } from "@/contexts/AuthContext";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { ResidentSearchSelect } from "@/components/ResidentSearchSelect";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 import {
   allowOnlyNumbers,
   allowNumbersAndDecimal,
@@ -585,23 +588,23 @@ const FamilyPlanningForm = () => {
   };
 
   const handlePrint = () => {
-    window.print();
+    executePrintWithOrientation({ defaultOrientation: "portrait" });
   };
 
   const handlePrintModal = () => {
-    document.body.classList.add("printing-modal");
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove("printing-modal");
-    }, 1000);
+    executePrintWithOrientation({
+      defaultOrientation: "portrait",
+      onBeforePrint: () => document.body.classList.add("printing-modal"),
+      onAfterPrint: () => document.body.classList.remove("printing-modal"),
+    });
   };
 
   const handlePrintHistory = () => {
-    document.body.classList.add("printing-history");
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove("printing-history");
-    }, 1000);
+    executePrintWithOrientation({
+      defaultOrientation: "landscape",
+      onBeforePrint: () => document.body.classList.add("printing-history"),
+      onAfterPrint: () => document.body.classList.remove("printing-history"),
+    });
   };
 
   const parseRecordDetails = (rec: any): FPFullFormState | null => {
@@ -1725,6 +1728,8 @@ const FamilyPlanningForm = () => {
             </div>
           </div>
 
+          <PrintSystemGeneratedFooter className="mt-4" />
+
           {/* Bottom Action Bar at the end of the form */}
           <div className="no-print pt-4 border-t border-slate-300 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/80 dark:bg-slate-900/60 p-3 rounded-md mt-4">
             <p className="text-xs text-slate-600 dark:text-slate-400 font-medium italic">
@@ -1746,14 +1751,11 @@ const FamilyPlanningForm = () => {
                   </Button>
                 </>
               )}
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handlePrint} 
-                className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
-              >
-                <Printer className="h-4 w-4" /> Print
-              </Button>
+              <PrintPageSettingsBar
+                onPrint={handlePrint}
+                formName="Family Planning Form"
+                defaultOrientation="portrait"
+              />
             </div>
           </div>
 
@@ -1801,17 +1803,12 @@ const FamilyPlanningForm = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handlePrintHistory}
+              <PrintPageSettingsBar
+                onPrint={handlePrintHistory}
+                formName="Family Planning History"
+                defaultOrientation="landscape"
                 disabled={filteredHistoryRecords.length === 0}
-                className="h-9 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 shrink-0 whitespace-nowrap"
-              >
-                <Printer className="h-3.5 w-3.5" />
-                Print History
-              </Button>
+              />
             </div>
           </CardHeader>
           <CardContent>
@@ -1967,6 +1964,8 @@ const FamilyPlanningForm = () => {
             <span style={{ fontSize: "10px", color: "#4b5563" }}>Barangay Health Supervisor / Midwife</span>
           </div>
         </div>
+
+        <PrintSystemGeneratedFooter className="mt-4" />
       </div>
 
       {/* VIEW & PRINT RECORD DETAIL MODAL (EXACT FP FORM 1 REPLICA) */}
@@ -2177,30 +2176,37 @@ const FamilyPlanningForm = () => {
                     </div>
                   </div>
 
-                  <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
-                    <span className="text-[10px] text-slate-500">FP Record ID: {selectedRecordForView.id}</span>
-                    <div className="flex gap-2">
-                      {!isMidwife && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={() => {
-                            if (parsed) setFpState(parsed);
-                            setActiveView("form");
-                            setViewModalOpen(false);
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                            toast.info("Record loaded into main editor.");
-                          }}
-                          className="bg-primary text-primary-foreground text-xs"
-                        >
-                          Edit Record
+                    <PrintSystemGeneratedFooter className="mt-4" />
+
+                    <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
+                      <span className="text-[10px] text-slate-500">FP Record ID: {selectedRecordForView.id}</span>
+                      <div className="flex items-center gap-2">
+                        <PrintPageSettingsBar
+                          onPrint={handlePrintModal}
+                          formName="Family Planning Client Record"
+                          defaultOrientation="portrait"
+                        />
+                        {!isMidwife && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => {
+                              if (parsed) setFpState(parsed);
+                              setActiveView("form");
+                              setViewModalOpen(false);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                              toast.info("Record loaded into main editor.");
+                            }}
+                            className="bg-primary text-primary-foreground text-xs"
+                          >
+                            Edit Record
+                          </Button>
+                        )}
+                        <Button type="button" variant="secondary" size="sm" onClick={() => setViewModalOpen(false)} className="text-xs">
+                          Close
                         </Button>
-                      )}
-                      <Button type="button" variant="secondary" size="sm" onClick={() => setViewModalOpen(false)} className="text-xs">
-                        Close
-                      </Button>
-                    </div>
-                  </DialogFooter>
+                      </div>
+                    </DialogFooter>
                 </div>
               );
             })()

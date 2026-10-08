@@ -46,6 +46,9 @@ import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { ResidentSearchSelect } from "@/components/ResidentSearchSelect";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 import {
   allowOnlyLetters,
   allowOnlyNumbers,
@@ -1926,31 +1929,33 @@ const ChildHealthForm = () => {
     setViewingSavedBatch(batch);
     setViewBatchModalOpen(true);
     setTimeout(() => {
-      document.body.classList.add("printing-child-batch");
-      window.print();
-      setTimeout(() => {
-        document.body.classList.remove("printing-child-batch");
-      }, 1000);
+      executePrintWithOrientation({
+        defaultOrientation: batch?.formType === "sick-children" ? "portrait" : "landscape",
+        onBeforePrint: () => document.body.classList.add("printing-child-batch"),
+        onAfterPrint: () => document.body.classList.remove("printing-child-batch"),
+      });
     }, 350);
   };
 
-
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    const defaultOrientation = activeTab === "sick-children" ? "portrait" : "landscape";
+    executePrintWithOrientation({ defaultOrientation });
+  };
 
   const handlePrintSummary = () => {
-    document.body.classList.add("printing-summary");
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove("printing-summary");
-    }, 1000);
+    executePrintWithOrientation({
+      defaultOrientation: "portrait",
+      onBeforePrint: () => document.body.classList.add("printing-summary"),
+      onAfterPrint: () => document.body.classList.remove("printing-summary"),
+    });
   };
 
   const handlePrintHistory = () => {
-    document.body.classList.add("printing-history");
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove("printing-history");
-    }, 1000);
+    executePrintWithOrientation({
+      defaultOrientation: "landscape",
+      onBeforePrint: () => document.body.classList.add("printing-history"),
+      onAfterPrint: () => document.body.classList.remove("printing-history"),
+    });
   };
 
   const lineInputClass = "w-full text-xs border-0 border-b border-slate-400 dark:border-slate-500 bg-transparent rounded-none shadow-none focus-visible:ring-0 focus:outline-none px-1 h-6";
@@ -3539,6 +3544,7 @@ const ChildHealthForm = () => {
                 <div className="print-only text-center text-[7px] text-slate-500 pt-1.5 border-t border-dotted mt-1.5" style={{ display: "none" }}>
                   CONFIDENTIAL PEDIATRIC MEDICAL RECORD • BARANGAY SUBUKIN HEALTH CENTER • SAN JUAN, BATANGAS
                 </div>
+                <PrintSystemGeneratedFooter className="mt-4" />
                 </fieldset>
 
                 {/* Form Action Buttons */}
@@ -3558,14 +3564,11 @@ const ChildHealthForm = () => {
                       </Button>
                     </>
                   )}
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={handlePrint} 
-                    className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
-                  >
-                    <Printer className="h-4 w-4" /> Print
-                  </Button>
+                  <PrintPageSettingsBar 
+                    onPrint={handlePrint}
+                    formName="Care for Sick Children Record"
+                    defaultOrientation="portrait"
+                  />
                 </div>
               </form>
 
@@ -3802,20 +3805,19 @@ const ChildHealthForm = () => {
                 </div>
               </div>
 
+              <PrintSystemGeneratedFooter className="mt-4" />
+
               <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
                 {!isMidwife && (
                   <Button type="button" onClick={handleSaveVitAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
                     <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save Vitamin A Master List"}
                   </Button>
                 )}
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handlePrint} 
-                  className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
-                >
-                  <Printer className="h-4 w-4" /> Print
-                </Button>
+                <PrintPageSettingsBar 
+                  onPrint={handlePrint}
+                  formName="Vitamin A Master List"
+                  defaultOrientation="landscape"
+                />
               </div>
             </TabsContent>
 
@@ -4019,20 +4021,19 @@ const ChildHealthForm = () => {
                 </div>
               </div>
 
+              <PrintSystemGeneratedFooter className="mt-4" />
+
               <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
                 {!isMidwife && (
                   <Button type="button" onClick={handleSaveSIAMasterlist} disabled={saving} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5">
                     <Save className="h-4 w-4" /> {saving ? "Saving..." : "Save SIA Master List"}
                   </Button>
                 )}
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handlePrint} 
-                  className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
-                >
-                  <Printer className="h-4 w-4" /> Print
-                </Button>
+                <PrintPageSettingsBar 
+                  onPrint={handlePrint}
+                  formName="SIA Master List"
+                  defaultOrientation="landscape"
+                />
               </div>
             </TabsContent>
           </Tabs>
@@ -4492,16 +4493,20 @@ const ChildHealthForm = () => {
                     <p className="text-slate-800 dark:text-slate-200 text-xs whitespace-pre-wrap">{selectedRecordForView.remarks}</p>
                   </div>
                 )}
+
+                <PrintSystemGeneratedFooter className="mt-4" />
               </div>
             );
           })()}
 
           <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
             <span className="text-[10px] text-slate-500 font-medium">Official Health Summary — Barangay Subukin</span>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={handlePrintSummary} className="text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
-                <Printer className="h-3.5 w-3.5" /> Print Summary
-              </Button>
+            <div className="flex items-center gap-2">
+              <PrintPageSettingsBar
+                onPrint={handlePrintSummary}
+                formName="Child Health Summary"
+                defaultOrientation="portrait"
+              />
               <Button type="button" variant="secondary" size="sm" onClick={() => setViewRecordModalOpen(false)}>
                 Close
               </Button>
@@ -4678,6 +4683,8 @@ const ChildHealthForm = () => {
                   <span style={{ fontSize: "10px", color: "#4b5563" }}>Barangay Health Supervisor / Midwife</span>
                 </div>
               </div>
+
+              <PrintSystemGeneratedFooter className="mt-4" />
             </div>
           );
         })()}
@@ -4792,20 +4799,19 @@ const ChildHealthForm = () => {
                 Archived complete official form batch • Saved on {viewingSavedBatch?.formattedDate}
               </DialogDescription>
             </div>
-            <Button
-              type="button"
-              onClick={() => {
-                document.body.classList.add("printing-child-batch");
-                window.print();
-                setTimeout(() => {
-                  document.body.classList.remove("printing-child-batch");
-                }, 1000);
-              }}
-              className="gap-1.5 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs mr-6"
-            >
-              <Printer className="h-3.5 w-3.5" />
-              Print Full Form
-            </Button>
+            <div className="mr-6">
+              <PrintPageSettingsBar
+                onPrint={() => {
+                  executePrintWithOrientation({
+                    defaultOrientation: viewingSavedBatch?.formType === "sick-children" ? "portrait" : "landscape",
+                    onBeforePrint: () => document.body.classList.add("printing-child-batch"),
+                    onAfterPrint: () => document.body.classList.remove("printing-child-batch"),
+                  });
+                }}
+                formName="Archived Form Batch"
+                defaultOrientation={viewingSavedBatch?.formType === "sick-children" ? "portrait" : "landscape"}
+              />
+            </div>
           </DialogHeader>
 
           {/* Dialog Body & Print Area */}
@@ -4909,6 +4915,8 @@ const ChildHealthForm = () => {
                     <span className="text-[10px] text-slate-500">Barangay Health Supervisor / Midwife</span>
                   </div>
                 </div>
+
+                <PrintSystemGeneratedFooter className="mt-4" />
               </div>
             )}
 
@@ -4993,6 +5001,8 @@ const ChildHealthForm = () => {
                     <span className="text-[10px] text-slate-500">Barangay Health Supervisor / Midwife</span>
                   </div>
                 </div>
+
+                <PrintSystemGeneratedFooter className="mt-4" />
               </div>
             )}
           </div>

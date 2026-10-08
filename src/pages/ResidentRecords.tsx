@@ -47,6 +47,9 @@ import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 
 interface Resident {
   id: string; 
@@ -303,8 +306,8 @@ const ResidentRecords = () => {
 
   const handleSelectResident = (resident: Resident) => { setSelectedResident(resident); fetchHealthRecords(resident); };
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = (orientation: "portrait" | "landscape" = "portrait") => {
+    executePrintWithOrientation({ defaultOrientation: orientation });
   };
 
   const dbSitios = Array.from(new Set(residents.map((r) => r.sitio).filter((s) => Boolean(s) && s !== "Centro" && s !== "Sitio Centro"))).sort() as string[];
@@ -370,7 +373,7 @@ const ResidentRecords = () => {
             .header-seal { width: 100% !important; }
             .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
             #resident-print-area table td, #resident-print-area table th { padding: 3px 6px !important; font-size: 11px !important; }
-            @page { size: A4 portrait; margin: 5mm; }
+            @page { margin: 6mm; }
           }
         `}</style>
 
@@ -379,15 +382,11 @@ const ResidentRecords = () => {
             <ArrowLeft className="h-4 w-4" /> {t("residents.backToRecords")}
           </Button>
           <div className="flex items-center gap-2">
-            <Button 
-              type="button"
-              variant="outline" 
-              size="sm" 
-              onClick={handlePrint} 
-              className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
-            >
-              <Printer className="h-3.5 w-3.5" /> Print Profile
-            </Button>
+            <PrintPageSettingsBar
+              onPrint={() => handlePrint("portrait")}
+              formName={`Resident Profile - ${selectedResident.full_name}`}
+              defaultOrientation="portrait"
+            />
           </div>
         </div>
 
@@ -715,6 +714,7 @@ const ResidentRecords = () => {
             <p className="print-date text-left" style={{ fontSize: 10, color: "#6b7280", margin: 0 }}>{new Date().toLocaleString()}</p>
             <p className="print-total text-right font-semibold" style={{ fontSize: 11, color: "#111827", margin: 0 }}>Total Health Records: {totalRecords}</p>
           </div>
+          <PrintSystemGeneratedFooter className="mt-4" />
         </div>
 
         {/* Edit Dialog inside detail view */}
@@ -783,7 +783,7 @@ const ResidentRecords = () => {
           .header-seal { width: 100% !important; }
           .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
           #resident-print-area table td, #resident-print-area table th { padding: 3px 6px !important; font-size: 11px !important; }
-          @page { size: A4 portrait; margin: 5mm; }
+          @page { margin: 6mm; }
         }
       `}</style>
 
@@ -844,17 +844,11 @@ const ResidentRecords = () => {
             <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-primary" : ""}`} />
             {language === "tl" ? "I-refresh" : "Refresh"}
           </Button>
-
-          <Button 
-            type="button"
-            variant="outline" 
-            size="sm" 
-            onClick={handlePrint} 
-            className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
-          >
-            <Printer className="h-3.5 w-3.5" />
-            Print Registry
-          </Button>
+          <PrintPageSettingsBar
+            onPrint={() => handlePrint("landscape")}
+            formName={sitioFilter !== "all" ? `Resident Registry - Sitio ${sitioFilter}` : "Resident Master Registry"}
+            defaultOrientation="landscape"
+          />
 
           <div className="flex items-center p-1 rounded-lg bg-muted border border-border/50 shrink-0">
             <Button
@@ -923,6 +917,7 @@ const ResidentRecords = () => {
           <p className="print-date text-left" style={{ fontSize: 10, color: "#6b7280", margin: 0 }}>{new Date().toLocaleString()}</p>
           <p className="print-total text-right font-semibold" style={{ fontSize: 12, color: "#111827", margin: 0 }}>{t("common.total")}: {filtered.length}</p>
         </div>
+        <PrintSystemGeneratedFooter className="mt-4" />
 
         {/* Screen View: Clean Grid vs Compact List */}
         <div className="no-print space-y-4">

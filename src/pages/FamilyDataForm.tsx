@@ -44,10 +44,12 @@ import { getAssignedSitio, SUBUKIN_SITIOS, getDatabaseSitios } from "@/lib/sitio
 import { logActivity } from "@/lib/activityLogger";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import barangayLogo from "@/assets/barangay-logo.png";
-import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 
 export interface FamilyMember {
@@ -844,18 +846,20 @@ const FamilyDataForm = () => {
   };
 
   const handlePrintIndividualFile = () => {
-    document.body.classList.add("printing-dialog");
-    window.print();
-    setTimeout(() => {
-      if (!fileDialogOpen) {
-        document.body.classList.remove("printing-dialog");
-      }
-    }, 1000);
+    executePrintWithOrientation({
+      defaultOrientation: "portrait",
+      onBeforePrint: () => document.body.classList.add("printing-dialog"),
+      onAfterPrint: () => {
+        if (!fileDialogOpen) {
+          document.body.classList.remove("printing-dialog");
+        }
+      },
+    });
   };
 
   const handlePrintLedger = () => {
     document.body.classList.remove("printing-dialog");
-    window.print();
+    executePrintWithOrientation({ defaultOrientation: "landscape" });
   };
 
   // Sync printing-dialog class on body when fileDialogOpen changes
@@ -1295,14 +1299,11 @@ const FamilyDataForm = () => {
                 </h2>
               </div>
               <div className="flex items-center gap-2">
-                <Button 
-                  type="button"
-                  onClick={handlePrintLedger} 
-                  variant="outline" 
-                  className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
-                >
-                  <Printer className="h-4 w-4" /> Print
-                </Button>
+                <PrintPageSettingsBar 
+                  onPrint={handlePrintLedger}
+                  formName="Master Family Data Sheet"
+                  defaultOrientation="landscape"
+                />
               </div>
             </div>
 
@@ -1424,6 +1425,8 @@ const FamilyDataForm = () => {
                 <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
               </div>
             </div>
+
+            <PrintSystemGeneratedFooter className="mt-4" />
           </CardContent>
         </Card>
       )}
@@ -1517,15 +1520,11 @@ const FamilyDataForm = () => {
                       {isEditingFileDetails ? "Done Editing" : "Edit File Headers"}
                     </Button>
                   )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrintIndividualFile}
-                    className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
-                  >
-                    <Printer className="h-3.5 w-3.5" /> Print File
-                  </Button>
+                  <PrintPageSettingsBar
+                    onPrint={handlePrintIndividualFile}
+                    formName="Family Record File"
+                    defaultOrientation="portrait"
+                  />
                 </div>
               </div>
 
@@ -1747,6 +1746,8 @@ const FamilyDataForm = () => {
                     <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
                   </div>
                 </div>
+
+                <PrintSystemGeneratedFooter className="mt-4" />
               </div>
 
               {/* Dialog Footer Actions */}

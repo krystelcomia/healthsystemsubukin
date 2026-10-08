@@ -27,6 +27,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import { getThemeStyle } from "@/lib/themeStyles";
 import { OfficialHeader } from "@/components/OfficialHeader";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 
 interface FormConfig {
   table: string;
@@ -311,10 +314,15 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
 
     document.body.classList.add("printing-admin-summary");
     setTimeout(() => {
-      window.print();
+      executePrintWithOrientation({
+        defaultOrientation: "landscape",
+        onAfterPrint: () => {
+          document.body.classList.remove("printing-admin-summary");
+        },
+      });
       setTimeout(() => {
         document.body.classList.remove("printing-admin-summary");
-      }, 500);
+      }, 1500);
     }, 150);
   };
 
@@ -600,7 +608,6 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
             mix-blend-mode: multiply !important;
           }
           @page {
-            size: A4 portrait;
             margin: 6mm;
           }
         }
@@ -678,13 +685,11 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
               <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-white" : ""}`} /> {language === "tl" ? "I-refresh" : "Refresh"}
             </Button>
 
-            <Button
-              size="sm"
-              onClick={() => handlePrintReport(currentWeekRecords, language === "tl" ? `Aktibong Lingguhang Ulat - ${displayTitle}` : `Active Weekly ${config.title} Report`)}
-              className="bg-white/20 hover:bg-white/30 text-white font-semibold gap-1.5 text-xs backdrop-blur-sm border border-white/25 shadow-xs"
-            >
-              <Printer className="h-3.5 w-3.5" /> {language === "tl" ? "I-print ang Aktibong Linggo" : "Print Active Week"}
-            </Button>
+            <PrintPageSettingsBar
+              onPrint={() => handlePrintReport(currentWeekRecords, language === "tl" ? `Aktibong Lingguhang Ulat - ${displayTitle}` : `Active Weekly ${config.title} Report`)}
+              formName={displayTitle}
+              defaultOrientation="landscape"
+            />
           </div>
         </div>
       </div>
@@ -1060,6 +1065,8 @@ const AdminFormSummary = ({ formType }: AdminFormSummaryProps) => {
               <span style={{ fontSize: "10px", color: "#4b5563" }}>Barangay Health Supervisor / Midwife</span>
             </div>
           </div>
+
+          <PrintSystemGeneratedFooter className="mt-4" />
         </div>
       )}
     </div>

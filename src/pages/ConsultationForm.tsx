@@ -21,6 +21,9 @@ import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { ResidentSearchSelect } from "@/components/ResidentSearchSelect";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import headerTextImg from "@/assets/header_text.png";
 import barangayLogo from "@/assets/barangay-logo.png";
@@ -158,23 +161,23 @@ const ConsultationForm = () => {
   };
 
   const handlePrint = () => {
-    window.print();
+    executePrintWithOrientation({ defaultOrientation: "portrait" });
   };
 
   const handlePrintModal = () => {
-    document.body.classList.add("printing-modal");
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove("printing-modal");
-    }, 1000);
+    executePrintWithOrientation({
+      defaultOrientation: "portrait",
+      onBeforePrint: () => document.body.classList.add("printing-modal"),
+      onAfterPrint: () => document.body.classList.remove("printing-modal"),
+    });
   };
 
   const handlePrintHistory = () => {
-    document.body.classList.add("printing-history");
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove("printing-history");
-    }, 1000);
+    executePrintWithOrientation({
+      defaultOrientation: "landscape",
+      onBeforePrint: () => document.body.classList.add("printing-history"),
+      onAfterPrint: () => document.body.classList.remove("printing-history"),
+    });
   };
 
   const handleReset = () => {
@@ -608,6 +611,8 @@ const ConsultationForm = () => {
                 <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
               </div>
             </div>
+
+            <PrintSystemGeneratedFooter className="mt-4" />
             </fieldset>
 
             {/* Form Actions */}
@@ -634,15 +639,11 @@ const ConsultationForm = () => {
                 </Button>
               )}
               
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handlePrint}
-                className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
-              >
-                <Printer className="h-4 w-4" /> 
-                Print
-              </Button>
+              <PrintPageSettingsBar 
+                onPrint={handlePrint}
+                formName="Consultation Form"
+                defaultOrientation="portrait"
+              />
             </div>
           </form>
         </CardContent>
@@ -690,17 +691,12 @@ const ConsultationForm = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handlePrintHistory}
+              <PrintPageSettingsBar
+                onPrint={handlePrintHistory}
+                formName="Consultation History"
+                defaultOrientation="landscape"
                 disabled={filteredHistory.length === 0}
-                className="h-9 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 shrink-0"
-              >
-                <Printer className="h-3.5 w-3.5" />
-                Print History
-              </Button>
+              />
             </div>
           </CardHeader>
           <CardContent>
@@ -882,6 +878,8 @@ const ConsultationForm = () => {
             <span style={{ fontSize: "10px", color: "#4b5563" }}>Barangay Health Supervisor / Midwife</span>
           </div>
         </div>
+
+        <PrintSystemGeneratedFooter className="mt-4" />
       </div>
 
       {/* VIEW & PRINT RECORD DETAIL DIALOG */}
@@ -983,9 +981,16 @@ const ConsultationForm = () => {
                 </div>
               </div>
 
+              <PrintSystemGeneratedFooter className="mt-4" />
+
               <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
                 <span className="text-[10px] text-slate-500">Record ID: {selectedRecordForView.id}</span>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  <PrintPageSettingsBar
+                    onPrint={handlePrintModal}
+                    formName="Patient Consultation Record"
+                    defaultOrientation="portrait"
+                  />
                   <Button
                     type="button"
                     variant="secondary"

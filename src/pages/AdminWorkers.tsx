@@ -20,6 +20,9 @@ import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 import { isWorkerOnline } from "@/lib/presenceTracker";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 
 interface BHWWorker {
   id: string; name: string; age: number; address: string; gmail: string; number: string; is_online: boolean; last_seen: string | null; user_id: string | null; created_at: string; assigned_sitio?: string;
@@ -366,7 +369,7 @@ const AdminWorkers = () => {
   };
 
   const handlePrint = () => {
-    window.print();
+    executePrintWithOrientation({ defaultOrientation: "landscape" });
   };
 
   const formatLastSeen = (lastSeen: string | null) => {
@@ -398,7 +401,7 @@ const AdminWorkers = () => {
           .header-seal { width: 100% !important; }
           .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
           #admin-workers-print-area table td, #admin-workers-print-area table th { padding: 6px 10px !important; font-size: 11px !important; color: #000 !important; }
-          @page { size: A4 portrait; margin: 6mm; }
+          @page { margin: 6mm; }
         }
       `}</style>
 
@@ -440,15 +443,11 @@ const AdminWorkers = () => {
           >
             <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-primary" : ""}`} /> {language === "tl" ? "I-refresh" : "Refresh"}
           </Button>
-          <Button 
-            type="button"
-            variant="outline" 
-            size="sm"
-            onClick={handlePrint}
-            className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-9 text-xs shadow-xs shrink-0"
-          >
-            <Printer className="h-4 w-4" /> {t("common.print")}
-          </Button>
+          <PrintPageSettingsBar
+            onPrint={handlePrint}
+            formName="BHW Worker Directory"
+            defaultOrientation="landscape"
+          />
           <Button 
             size="sm" 
             onClick={() => setDialogOpen(true)} 
@@ -506,6 +505,7 @@ const AdminWorkers = () => {
               Total Active Workers: {workers.length}
             </p>
           </div>
+          <PrintSystemGeneratedFooter className="mt-4" />
         </div>
 
         {/* Screen Cards List */}

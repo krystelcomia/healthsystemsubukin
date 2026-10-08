@@ -17,6 +17,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import OfficialHeader from "@/components/OfficialHeader";
 import { BhaiChatbot } from "@/components/AteBhwChatbot";
+import { PrintPageSettingsModal } from "@/components/PrintPageSettingsModal";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 
 const getHeaderLinks = (t: (key: string) => string) => [
   { label: t("nav.dashboard"), to: "/", Icon: Home, isCalendar: false },
@@ -302,7 +306,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const handlePrintAttendance = () => {
     document.body.classList.add("printing-attendance");
-    window.print();
+    executePrintWithOrientation({
+      defaultOrientation: "portrait",
+      onBeforePrint: () => {
+        document.body.classList.add("printing-attendance");
+      },
+      onAfterPrint: () => {
+        document.body.classList.remove("printing-attendance");
+      },
+    });
     const cleanup = () => {
       document.body.classList.remove("printing-attendance");
       window.removeEventListener("afterprint", cleanup);
@@ -313,7 +325,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const handlePrintActivityLogs = () => {
     document.body.classList.add("printing-activity-logs");
-    window.print();
+    executePrintWithOrientation({
+      defaultOrientation: "landscape",
+      onBeforePrint: () => {
+        document.body.classList.add("printing-activity-logs");
+      },
+      onAfterPrint: () => {
+        document.body.classList.remove("printing-activity-logs");
+      },
+    });
     const cleanup = () => {
       document.body.classList.remove("printing-activity-logs");
       window.removeEventListener("afterprint", cleanup);
@@ -1002,14 +1022,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           <DialogFooter className="pt-4 border-t border-slate-300 mt-4 shrink-0 flex items-center justify-between gap-3 text-black">
             <div className="flex items-center gap-2">
-              <Button
-                onClick={handlePrintAttendance}
-                size="sm"
-                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm"
-              >
-                <Printer className="h-4 w-4" />
-                {language === "tl" ? "I-print ang Attendance Logs" : "Print Attendance Logs"}
-              </Button>
+              <PrintPageSettingsBar
+                onPrint={handlePrintAttendance}
+                formName="Attendance Logs"
+                defaultOrientation="portrait"
+              />
             </div>
             <Button 
               variant="outline" 
@@ -1221,6 +1238,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <p style={{ marginTop: "4px", fontSize: "11px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.05em" }}>Barangay Midwife / Certified Correct</p>
             </div>
           </div>
+
+          <PrintSystemGeneratedFooter className="mt-6" />
         </div>
       )}
 
@@ -1447,14 +1466,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           <DialogFooter className="pt-4 border-t border-slate-300 mt-4 shrink-0 flex items-center justify-between gap-3 text-black">
             <div className="flex items-center gap-2">
-              <Button
-                onClick={handlePrintActivityLogs}
-                size="sm"
-                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm"
-              >
-                <Printer className="h-4 w-4" />
-                {language === "tl" ? "I-print ang Activity Logs" : "Print Activity Logs"}
-              </Button>
+              <PrintPageSettingsBar
+                onPrint={handlePrintActivityLogs}
+                formName="Activity Logs"
+                defaultOrientation="landscape"
+              />
             </div>
             <Button variant="outline" size="sm" onClick={() => setActivityLogsDialogOpen(false)} className="text-black font-bold border-slate-400">
               {language === "tl" ? "Isara" : "Close"}
@@ -1582,7 +1598,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <p style={{ marginTop: "4px", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase" }}>BHW Supervisory / Verified Correct</p>
           </div>
         </div>
+
+        <PrintSystemGeneratedFooter className="mt-6" />
       </div>
+
+      {/* Global Print Settings Modal */}
+      <PrintPageSettingsModal />
 
       {/* BHAI - Barangay Health AI Chatbot */}
       <BhaiChatbot />

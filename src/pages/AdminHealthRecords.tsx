@@ -34,6 +34,9 @@ import barangayLogo from "@/assets/barangay-logo.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { formatHouseholdHeadName, sortFamilyMembers } from "@/lib/nameFormatter";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 
 interface FormMeta {
   id: string;
@@ -250,9 +253,12 @@ const AdminHealthRecords = () => {
   };
 
   const triggerInSystemPrint = (title: string, html: string, orientation: string, subtitle?: string) => {
+    const isLandscape = orientation.toLowerCase().includes("landscape");
     setPrintContent({ title, html, orientation, subtitle });
     setTimeout(() => {
-      window.print();
+      executePrintWithOrientation({
+        defaultOrientation: isLandscape ? "landscape" : "portrait",
+      });
     }, 150);
   };
 
@@ -1189,15 +1195,11 @@ const AdminHealthRecords = () => {
                   </DialogDescription>
                 </div>
 
-                <Button 
-                  type="button"
-                  size="sm" 
-                  variant="outline" 
-                  onClick={handlePrintRecordsLedger} 
-                  className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
-                >
-                  <Printer className="h-3.5 w-3.5" /> Print
-                </Button>
+                <PrintPageSettingsBar 
+                  onPrint={handlePrintRecordsLedger} 
+                  formName={`${selectedForm.title} Submissions`}
+                  defaultOrientation="landscape"
+                />
               </DialogHeader>
 
               {/* Modal Search Bar */}
@@ -1297,15 +1299,11 @@ const AdminHealthRecords = () => {
                   </DialogTitle>
                 </div>
 
-                <Button 
-                  type="button"
-                  size="sm" 
-                  variant="outline"
-                  onClick={handlePrintSingleFilledRecord} 
-                  className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
-                >
-                  <Printer className="h-3.5 w-3.5" /> Print
-                </Button>
+                <PrintPageSettingsBar 
+                  onPrint={handlePrintSingleFilledRecord} 
+                  formName={`${selectedForm.title} Entry`}
+                  defaultOrientation="portrait"
+                />
               </DialogHeader>
 
               {selectedForm.id === "family_data" ? (
@@ -1557,6 +1555,7 @@ const AdminHealthRecords = () => {
             logoHeight="95px"
           />
           <div dangerouslySetInnerHTML={{ __html: printContent.html }} />
+          <PrintSystemGeneratedFooter className="mt-4" />
           <style>{`
             @media print {
               body * { visibility: hidden !important; }
@@ -1573,7 +1572,6 @@ const AdminHealthRecords = () => {
                 box-sizing: border-box !important;
               }
               @page { 
-                size: ${printContent.orientation}; 
                 margin: 6mm; 
               }
             }

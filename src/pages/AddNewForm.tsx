@@ -70,6 +70,9 @@ import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { convertPaperFormToDigital } from "@/lib/formConverter";
 import { useSettings } from "@/contexts/SettingsContext";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 
 type FieldType = "text" | "number" | "date" | "textarea" | "checkbox";
 
@@ -757,10 +760,19 @@ const AddNewForm = () => {
      ════════════════════════════════════════════════════════════ */
   const handlePrintModal = () => {
     document.body.classList.add("printing-modal");
-    window.print();
+    executePrintWithOrientation({
+      defaultOrientation: "portrait",
+      onAfterPrint: () => {
+        document.body.classList.remove("printing-modal");
+      },
+    });
     setTimeout(() => {
       document.body.classList.remove("printing-modal");
-    }, 1000);
+    }, 1500);
+  };
+
+  const handlePrintForm = () => {
+    executePrintWithOrientation({ defaultOrientation: "portrait" });
   };
 
   return (
@@ -771,7 +783,6 @@ const AddNewForm = () => {
         }
         @media print {
           @page {
-            size: auto;
             margin: 8mm 10mm;
           }
           body * {
@@ -1378,6 +1389,8 @@ const AddNewForm = () => {
                 </div>
               </div>
 
+              <PrintSystemGeneratedFooter className="mt-4" />
+
               {/* Bottom Signature & Action Bar */}
               <div className="pt-4 border-t border-slate-300 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="text-xs text-slate-600 dark:text-slate-400 space-y-0.5 no-print">
@@ -1402,15 +1415,11 @@ const AddNewForm = () => {
                         <RotateCcw className="h-3.5 w-3.5 text-slate-700 dark:text-slate-300" /> {language === "tl" ? "I-reset" : "Reset"}
                       </Button>
 
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.print()}
-                        className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
-                      >
-                        <Printer className="h-3.5 w-3.5" /> {language === "tl" ? "I-print" : "Print"}
-                      </Button>
+                      <PrintPageSettingsBar
+                        onPrint={handlePrintForm}
+                        formName={draftTitle || "Custom Form"}
+                        defaultOrientation="portrait"
+                      />
 
                       {!isMidwife && (
                         <Button
@@ -1448,15 +1457,11 @@ const AddNewForm = () => {
                         </>
                       )}
 
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.print()}
-                        className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-8 text-xs shrink-0"
-                      >
-                        <Printer className="h-3.5 w-3.5" /> {language === "tl" ? "I-print" : "Print"}
-                      </Button>
+                      <PrintPageSettingsBar
+                        onPrint={handlePrintForm}
+                        formName={draftTitle || "Custom Form"}
+                        defaultOrientation="portrait"
+                      />
 
                       {!isMidwife && (
                         <Button
@@ -1788,18 +1793,16 @@ const AddNewForm = () => {
                 </div>
               </div>
 
+              <PrintSystemGeneratedFooter className="mt-4" />
+
               <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
                 <span className="text-[10px] text-slate-500">Record ID: {selectedSubmissionForView.id}</span>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrintModal}
-                    className="gap-1.5 text-xs"
-                  >
-                    <Printer className="h-3.5 w-3.5" /> {language === "tl" ? "I-print" : "Print"}
-                  </Button>
+                <div className="flex gap-2 items-center">
+                  <PrintPageSettingsBar
+                    onPrint={handlePrintModal}
+                    formName={selectedSubmissionForView.formTitle || draftTitle || "Custom Form Submission"}
+                    defaultOrientation="portrait"
+                  />
                   <Button
                     type="button"
                     variant="secondary"

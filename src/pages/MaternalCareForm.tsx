@@ -39,10 +39,13 @@ import headerTextImg from "@/assets/header_text.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { PregnantWomanIcon } from "@/components/icons/CustomHealthIcons";
-import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 import { useAuth } from "@/contexts/AuthContext";
+import { allowOnlyLetters, allowOnlyNumbers, sanitizeLetters, sanitizeNumbers } from "@/lib/inputValidation";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { ResidentSearchSelect } from "@/components/ResidentSearchSelect";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 
 export const RISK_FACTORS_COLUMN_1 = [
   "Abnormal presentation",
@@ -580,23 +583,23 @@ const MaternalCareForm = () => {
   };
 
   const handlePrint = () => {
-    window.print();
+    executePrintWithOrientation({ defaultOrientation: "portrait" });
   };
 
   const handlePrintModal = () => {
-    document.body.classList.add("printing-modal");
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove("printing-modal");
-    }, 1000);
+    executePrintWithOrientation({
+      defaultOrientation: "portrait",
+      onBeforePrint: () => document.body.classList.add("printing-modal"),
+      onAfterPrint: () => document.body.classList.remove("printing-modal"),
+    });
   };
 
   const handlePrintHistory = () => {
-    document.body.classList.add("printing-history");
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove("printing-history");
-    }, 1000);
+    executePrintWithOrientation({
+      defaultOrientation: "landscape",
+      onBeforePrint: () => document.body.classList.add("printing-history"),
+      onAfterPrint: () => document.body.classList.remove("printing-history"),
+    });
   };
 
   // Filter saved records
@@ -1518,6 +1521,8 @@ const MaternalCareForm = () => {
               </div>
             </div>
 
+            <PrintSystemGeneratedFooter className="mt-4" />
+
             {/* Submit Action Buttons */}
             <div className="flex items-center justify-end gap-3 no-print pt-2 border-t">
               {!isMidwife && editRecordId && (
@@ -1540,14 +1545,11 @@ const MaternalCareForm = () => {
                   </Button>
                 </>
               )}
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handlePrint} 
-                className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
-              >
-                <Printer className="h-4 w-4" /> Print
-              </Button>
+              <PrintPageSettingsBar 
+                onPrint={handlePrint}
+                formName="Maternal Care Record"
+                defaultOrientation="portrait"
+              />
             </div>
           </form>
         </CardContent>
@@ -1593,17 +1595,12 @@ const MaternalCareForm = () => {
                 </SelectContent>
               </Select>
 
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handlePrintHistory}
+              <PrintPageSettingsBar
+                onPrint={handlePrintHistory}
+                formName="Maternal Care History"
+                defaultOrientation="landscape"
                 disabled={filteredRecords.length === 0}
-                className="h-8 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 shrink-0"
-              >
-                <Printer className="h-3.5 w-3.5" />
-                Print History
-              </Button>
+              />
             </div>
           </div>
         </CardHeader>
@@ -1751,6 +1748,8 @@ const MaternalCareForm = () => {
             <span style={{ fontSize: "10px", color: "#4b5563" }}>Barangay Health Supervisor / Midwife</span>
           </div>
         </div>
+
+        <PrintSystemGeneratedFooter className="mt-4" />
       </div>
 
       {/* VIEW / PRINT RECORD DETAIL DIALOG */}
@@ -2008,12 +2007,16 @@ const MaternalCareForm = () => {
                 CONFIDENTIAL PATIENT MEDICAL RECORD • BARANGAY HEALTH WORKER HEALTH INFORMATION MANAGEMENT SYSTEM (BHW-HIMS) • BARANGAY SUBUKIN, SAN JUAN, BATANGAS
               </div>
 
+              <PrintSystemGeneratedFooter className="mt-4" />
+
               <DialogFooter className="mt-4 border-t pt-3 flex items-center justify-between no-print">
                 <span className="text-[10px] text-slate-500">Maternal Record ID: {selectedRecordForView.id}</span>
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" size="sm" onClick={handlePrintModal} className="text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
-                    <Printer className="h-3.5 w-3.5" /> Print Record
-                  </Button>
+                <div className="flex items-center gap-2">
+                  <PrintPageSettingsBar
+                    onPrint={handlePrintModal}
+                    formName="Maternal Patient Record"
+                    defaultOrientation="portrait"
+                  />
                   <Button type="button" variant="outline" size="sm" onClick={() => setViewRecordModalOpen(false)}>
                     Close
                   </Button>

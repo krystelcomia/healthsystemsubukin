@@ -260,9 +260,45 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
       cursor: pointer;
       font-size: 11px;
     }
+    .orient-btn {
+      background: rgba(255,255,255,0.15);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .orient-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    .system-generated-footer {
+      font-family: 'Times New Roman', Times, serif !important;
+      font-size: 11pt !important;
+      font-style: italic !important;
+      text-align: right;
+      margin-top: 24px;
+      padding-top: 8px;
+      color: #333333;
+    }
     @media print {
       .no-print-bar { display: none !important; }
-      body { padding: 0; }
+      body {
+        padding: 0;
+        font-family: 'Times New Roman', Times, serif !important;
+        font-size: 12pt !important;
+      }
+      table, th, td, p, div, span {
+        font-family: 'Times New Roman', Times, serif !important;
+        font-size: 12pt !important;
+      }
+      .system-generated-footer {
+        font-family: 'Times New Roman', Times, serif !important;
+        font-size: 11pt !important;
+        font-style: italic !important;
+        display: block !important;
+      }
       table.report-document-layout > thead {
         display: table-header-group !important;
       }
@@ -271,12 +307,25 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
       }
     }
   </style>
+  <style id="dynamic-orientation-style">
+    @page { size: landscape !important; margin: 8mm; }
+  </style>
 </head>
 <body>
   <div class="no-print-bar">
     <div><strong>Barangay Subukin Health Records System</strong> • Official Exported Report</div>
-    <button class="print-btn" onclick="window.print()">Print / Save as PDF (Ctrl+P)</button>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-size:11px; color:#cbd5e1;">Orientation:</span>
+      <button class="orient-btn" onclick="setOrientation('portrait')">Portrait</button>
+      <button class="orient-btn" onclick="setOrientation('landscape')">Landscape</button>
+      <button class="print-btn" onclick="window.print()">Print / Save as PDF (Ctrl+P)</button>
+    </div>
   </div>
+  <script>
+    function setOrientation(o) {
+      document.getElementById('dynamic-orientation-style').innerHTML = '@page { size: ' + o + ' !important; margin: 8mm; }';
+    }
+  </script>
 
   <table class="report-document-layout">
     <thead>
@@ -325,6 +374,7 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
               </div>
             </div>
           </div>
+          <div class="system-generated-footer">system generated</div>
         </td>
       </tr>
     </tbody>

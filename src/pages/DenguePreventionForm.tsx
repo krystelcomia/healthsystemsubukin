@@ -31,6 +31,9 @@ import { PageHeaderBanner } from "@/components/PageHeaderBanner";
 import { ReadOnlyBanner } from "@/components/ReadOnlyBanner";
 import { getDatabaseSitios, SUBUKIN_SITIOS } from "@/lib/sitioMapping";
 import { allowOnlyLetters, sanitizeLetters } from "@/lib/inputValidation";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 
 interface HouseholdHeadOption {
   id: string | null;
@@ -1255,7 +1258,7 @@ const DenguePreventionForm = () => {
 
   // Print Form button: triggers window.print while retaining all entered records in the form.
   const handlePrintForm = () => {
-    window.print();
+    executePrintWithOrientation({ defaultOrientation: "landscape" });
   };
 
   // Delete single previous record/batch stored in saved list
@@ -1318,7 +1321,7 @@ const DenguePreventionForm = () => {
     setViewingSavedForm(savedForm);
     setViewModalOpen(true);
     setTimeout(() => {
-      window.print();
+      executePrintWithOrientation({ defaultOrientation: "landscape" });
     }, 250);
   };
 
@@ -1995,6 +1998,8 @@ const DenguePreventionForm = () => {
             </div>
           </div>
 
+          <PrintSystemGeneratedFooter className="mt-4" />
+
           <div className="flex items-center justify-end gap-2 mt-4 no-print flex-wrap">
             {!isMidwife && (
               <>
@@ -2017,14 +2022,11 @@ const DenguePreventionForm = () => {
                 </Button>
               </>
             )}
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handlePrintForm} 
-              className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold px-4 h-9 text-xs sm:text-sm"
-            >
-              <Printer className="h-4 w-4" /> Print
-            </Button>
+            <PrintPageSettingsBar
+              onPrint={handlePrintForm}
+              formName="Dengue Prevention Checklist"
+              defaultOrientation="landscape"
+            />
           </div>
         </CardContent>
       </Card>
@@ -2374,11 +2376,18 @@ const DenguePreventionForm = () => {
                     <span className="text-[10px] text-slate-600">Barangay Health Supervisor / Midwife</span>
                   </div>
                 </div>
+
+                <PrintSystemGeneratedFooter className="mt-4" />
               </CardContent>
             </Card>
           )}
 
-          <DialogFooter className="gap-2 mt-4 no-print">
+          <DialogFooter className="gap-2 mt-4 no-print flex items-center justify-between sm:justify-between w-full">
+            <PrintPageSettingsBar
+              onPrint={() => viewingSavedForm && handlePrintSavedForm(viewingSavedForm)}
+              formName="Saved Dengue Checklist"
+              defaultOrientation="landscape"
+            />
             <Button variant="outline" onClick={() => setViewModalOpen(false)}>
               Close
             </Button>

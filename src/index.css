@@ -334,4 +334,63 @@
     page-break-inside: auto !important;
     break-inside: auto !important;
   }
+
+  /* Mandatory Official Printing Typography: Times New Roman, 12pt */
+  html, body,
+  main, article, section, div,
+  table, thead, tbody, tfoot, tr, th, td,
+  p, span, label, input, textarea, select, li, dt, dd,
+  .print-only, [id*="-print-area"], [id*="-printable"],
+  .official-header-wrapper, .official-barangay-header,
+  .printable-form, .form-container, .card, [class*="card"] {
+    font-family: "Times New Roman", Times, serif !important;
+  }
+
+  body,
+  p, span, label, input, textarea, select, li, dt, dd,
+  table, tr, td, th {
+    font-size: 12pt !important;
+    line-height: 1.35 !important;
+  }
+
+  /* Headings in Times New Roman */
+  h1 { font-size: 16pt !important; font-family: "Times New Roman", Times, serif !important; font-weight: bold !important; }
+  h2 { font-size: 14pt !important; font-family: "Times New Roman", Times, serif !important; font-weight: bold !important; }
+  h3 { font-size: 13pt !important; font-family: "Times New Roman", Times, serif !important; font-weight: bold !important; }
+  h4, h5, h6 { font-size: 12pt !important; font-family: "Times New Roman", Times, serif !important; }
+
+  /* Mandatory Footer at the end of the paper: "system generated" in italics (11-point Times New Roman) */
+  .print-system-generated,
+  .print-system-generated-footer {
+    display: block !important;
+    visibility: visible !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 11pt !important;
+    font-style: italic !important;
+    text-align: right !important;
+    margin-top: 18px !important;
+    padding-top: 6px !important;
+    color: #000000 !important;
+    width: 100% !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+
+  /* Fallback end-of-paper marker on printed page if no explicit .print-system-generated exists */
+  body:not(.has-system-generated-footer)::after {
+    content: "system generated";
+    display: block !important;
+    visibility: visible !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 11pt !important;
+    font-style: italic !important;
+    text-align: right !important;
+    margin-top: 24px !important;
+    padding-top: 8px !important;
+    color: #000000 !important;
+    width: 100% !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
 }
+

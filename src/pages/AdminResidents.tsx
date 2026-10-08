@@ -15,6 +15,9 @@ import barangayLogo from "@/assets/barangay-logo.png";
 import sanjuanLogo from "@/assets/sanjuan_logo.png";
 import { OfficialHeader } from "@/components/OfficialHeader";
 import { PageHeaderBanner } from "@/components/PageHeaderBanner";
+import { PrintPageSettingsBar } from "@/components/PrintPageSettingsBar";
+import { PrintSystemGeneratedFooter } from "@/components/PrintSystemGeneratedFooter";
+import { executePrintWithOrientation } from "@/lib/printSettings";
 
 interface Resident {
   id: string; full_name: string; gender: string; age: number; status: string; sitio: string; birthday: string | null; family_number?: string | null; created_at: string;
@@ -336,7 +339,7 @@ const AdminResidents = () => {
   });
 
   const handlePrint = () => {
-    window.print();
+    executePrintWithOrientation({ defaultOrientation: "landscape" });
   };
 
   const totalRecords = healthRecords ? (
@@ -375,7 +378,7 @@ const AdminResidents = () => {
           .sitio-print-block { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 12px !important; }
           .print-footer-signatures { display: flex !important; page-break-inside: avoid !important; break-inside: avoid !important; }
           .header-seal img { height: 80px !important; mix-blend-mode: multiply !important; }
-          @page { size: A4 portrait; margin: 6mm 8mm; }
+          @page { margin: 6mm 8mm; }
         }
       `}</style>
 
@@ -439,15 +442,11 @@ const AdminResidents = () => {
           >
             <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-primary" : ""}`} /> {language === "tl" ? "I-refresh" : "Refresh"}
           </Button>
-          <Button 
-            type="button"
-            variant="outline" 
-            size="sm"
-            onClick={handlePrint}
-            className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold h-9 text-xs shadow-xs shrink-0"
-          >
-            <Printer className="h-4 w-4" /> {t("common.print")}
-          </Button>
+          <PrintPageSettingsBar
+            onPrint={handlePrint}
+            formName={selectedSitio === "all" ? "Admin Resident Master List" : `Admin Resident List - Sitio ${selectedSitio}`}
+            defaultOrientation="landscape"
+          />
         </div>
       </div>
 
@@ -648,6 +647,8 @@ const AdminResidents = () => {
             <p style={{ margin: 0, fontSize: "9px", color: "#475569" }}>Punong Barangay</p>
           </div>
         </div>
+
+        <PrintSystemGeneratedFooter className="mt-4" />
       </div>
 
       {/* Dialog showing selected resident's health records */}
