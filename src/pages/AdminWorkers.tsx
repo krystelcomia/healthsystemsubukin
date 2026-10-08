@@ -401,7 +401,22 @@ const AdminWorkers = () => {
           .header-seal { width: 100% !important; }
           .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
           #admin-workers-print-area table td, #admin-workers-print-area table th { padding: 6px 10px !important; font-size: 11px !important; color: #000 !important; }
-          @page { margin: 6mm; }
+          @page {
+            margin-top: 0.5in;
+            margin-bottom: 0.5in;
+            margin-left: 0.35in;
+            margin-right: 0.35in;
+          }
+          @page :first {
+            margin-top: 0.25in;
+            margin-bottom: 0.5in;
+            margin-left: 0.35in;
+            margin-right: 0.35in;
+          }
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
         }
       `}</style>
 

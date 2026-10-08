@@ -373,7 +373,22 @@ const ResidentRecords = () => {
             .header-seal { width: 100% !important; }
             .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
             #resident-print-area table td, #resident-print-area table th { padding: 3px 6px !important; font-size: 11px !important; }
-            @page { margin: 6mm; }
+            @page {
+              margin-top: 0.5in;
+              margin-bottom: 0.5in;
+              margin-left: 0.35in;
+              margin-right: 0.35in;
+            }
+            @page :first {
+              margin-top: 0.25in;
+              margin-bottom: 0.5in;
+              margin-left: 0.35in;
+              margin-right: 0.35in;
+            }
+            tr {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
           }
         `}</style>
 
@@ -783,7 +798,22 @@ const ResidentRecords = () => {
           .header-seal { width: 100% !important; }
           .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
           #resident-print-area table td, #resident-print-area table th { padding: 3px 6px !important; font-size: 11px !important; }
-          @page { margin: 6mm; }
+          @page {
+            margin-top: 0.5in;
+            margin-bottom: 0.5in;
+            margin-left: 0.35in;
+            margin-right: 0.35in;
+          }
+          @page :first {
+            margin-top: 0.25in;
+            margin-bottom: 0.5in;
+            margin-left: 0.35in;
+            margin-right: 0.35in;
+          }
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
         }
       `}</style>
 

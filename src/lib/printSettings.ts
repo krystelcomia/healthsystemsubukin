@@ -47,7 +47,26 @@ export function applyPrintOrientation(orientation: PrintOrientation) {
     @media print {
       @page {
         size: ${orientation} !important;
-        margin: 8mm;
+        margin-top: 0.5in;
+        margin-bottom: 0.5in;
+        margin-left: 0.35in;
+        margin-right: 0.35in;
+      }
+      @page :first {
+        margin-top: 0.25in;
+        margin-bottom: 0.5in;
+        margin-left: 0.35in;
+        margin-right: 0.35in;
+      }
+      tr, .print-row {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      thead {
+        display: table-header-group !important;
+      }
+      tfoot {
+        display: table-footer-group !important;
       }
     }
   `;

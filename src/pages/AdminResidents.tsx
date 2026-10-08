@@ -378,7 +378,22 @@ const AdminResidents = () => {
           .sitio-print-block { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 12px !important; }
           .print-footer-signatures { display: flex !important; page-break-inside: avoid !important; break-inside: avoid !important; }
           .header-seal img { height: 80px !important; mix-blend-mode: multiply !important; }
-          @page { margin: 6mm 8mm; }
+          @page {
+            margin-top: 0.5in;
+            margin-bottom: 0.5in;
+            margin-left: 0.35in;
+            margin-right: 0.35in;
+          }
+          @page :first {
+            margin-top: 0.25in;
+            margin-bottom: 0.5in;
+            margin-left: 0.35in;
+            margin-right: 0.35in;
+          }
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
         }
       `}</style>
 

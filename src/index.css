@@ -159,8 +159,18 @@
 
 @media print {
   @page {
-    margin: 6mm;
     size: auto;
+    margin-top: 0.5in;
+    margin-bottom: 0.5in;
+    margin-left: 0.35in;
+    margin-right: 0.35in;
+  }
+
+  @page :first {
+    margin-top: 0.25in;
+    margin-bottom: 0.5in;
+    margin-left: 0.35in;
+    margin-right: 0.35in;
   }
 
   /* Globally hide all application chrome in print mode */
@@ -333,6 +343,19 @@
     break-after: avoid !important;
     page-break-inside: auto !important;
     break-inside: auto !important;
+  }
+
+  tr, .print-row {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
   }
 
   /* Mandatory Official Printing Typography: Times New Roman, 12pt */

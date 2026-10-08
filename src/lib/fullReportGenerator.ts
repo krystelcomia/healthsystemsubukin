@@ -25,7 +25,16 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
   <style>
     @page {
       size: ${landscape ? "A4 landscape" : "A4 portrait"};
-      margin: 10mm 8mm 12mm 8mm;
+      margin-top: 0.5in;
+      margin-bottom: 0.5in;
+      margin-left: 0.35in;
+      margin-right: 0.35in;
+    }
+    @page :first {
+      margin-top: 0.25in;
+      margin-bottom: 0.5in;
+      margin-left: 0.35in;
+      margin-right: 0.35in;
     }
     * {
       box-sizing: border-box;
@@ -308,7 +317,19 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
     }
   </style>
   <style id="dynamic-orientation-style">
-    @page { size: landscape !important; margin: 8mm; }
+    @page {
+      size: landscape !important;
+      margin-top: 0.5in;
+      margin-bottom: 0.5in;
+      margin-left: 0.35in;
+      margin-right: 0.35in;
+    }
+    @page :first {
+      margin-top: 0.25in;
+      margin-bottom: 0.5in;
+      margin-left: 0.35in;
+      margin-right: 0.35in;
+    }
   </style>
 </head>
 <body>
@@ -323,7 +344,7 @@ const getHtmlTemplate = (title: string, subtitle: string, bodyContent: string, l
   </div>
   <script>
     function setOrientation(o) {
-      document.getElementById('dynamic-orientation-style').innerHTML = '@page { size: ' + o + ' !important; margin: 8mm; }';
+      document.getElementById('dynamic-orientation-style').innerHTML = '@page { size: ' + o + ' !important; margin-top: 0.5in; margin-bottom: 0.5in; margin-left: 0.35in; margin-right: 0.35in; } @page :first { margin-top: 0.25in; margin-bottom: 0.5in; margin-left: 0.35in; margin-right: 0.35in; }';
     }
   </script>
 

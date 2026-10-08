@@ -414,7 +414,23 @@ const ConsultationForm = () => {
           .header-seal { width: 100% !important; }
           .header-seal img { height: 95px !important; mix-blend-mode: multiply !important; }
           #consultation-print-area table td, #consultation-print-area table th { padding: 3px 5px !important; font-size: 11px !important; }
-          @page { size: A4 portrait; margin: 6mm; }
+          @page {
+            size: A4 portrait;
+            margin-top: 0.5in;
+            margin-bottom: 0.5in;
+            margin-left: 0.35in;
+            margin-right: 0.35in;
+          }
+          @page :first {
+            margin-top: 0.25in;
+            margin-bottom: 0.5in;
+            margin-left: 0.35in;
+            margin-right: 0.35in;
+          }
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
         }
       `}</style>
 

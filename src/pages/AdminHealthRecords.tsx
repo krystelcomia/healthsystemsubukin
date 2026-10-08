@@ -1572,7 +1572,20 @@ const AdminHealthRecords = () => {
                 box-sizing: border-box !important;
               }
               @page { 
-                margin: 6mm; 
+                margin-top: 0.5in;
+                margin-bottom: 0.5in;
+                margin-left: 0.35in;
+                margin-right: 0.35in;
+              }
+              @page :first {
+                margin-top: 0.25in;
+                margin-bottom: 0.5in;
+                margin-left: 0.35in;
+                margin-right: 0.35in;
+              }
+              tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
               }
             }
           `}</style>
