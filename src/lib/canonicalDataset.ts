@@ -66,11 +66,101 @@ export const CANONICAL_INITIAL_DATABASE: Record<string, any> = {
     { id: "worker-renalyn", name: "Renalyn D. Laurante", age: 37, address: "Matahimik / Burol", gmail: "renalynlauranteBHW@gmail.com", number: "0985-1086-472", is_online: false, user_id: "user-renalyn", assigned_sitio: "Matahimik / Burol", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" },
     { id: "worker-maribel", name: "Maribel M. Abayon", age: 44, address: "Masigla", gmail: "maribelabayonBNS@gmail.com", number: "0922-6722-134", is_online: false, user_id: "user-maribel", assigned_sitio: "Masigla", created_at: "2026-08-01T08:00:00.000Z", updated_at: "2026-08-01T08:00:00.000Z" }
   ],
-  family_data: [],
-  residents: [],
-  consultations: [],
-  philpen_health: [],
-  dengue_prevention: [],
+  family_data: [
+    {
+      id: "fam-badillo-1",
+      resident_id: "res-badillo-errol",
+      family_number: "FAM-001",
+      num_households: 1,
+      father_name: "BADILLO, Errol M.",
+      mother_name: "BADILLO, Maria C.",
+      sitio: "Masigla",
+      num_males: 2,
+      num_females: 1,
+      total_members: 3,
+      members_detail: [
+        { id: "mem-1", full_name: "BADILLO, Errol M.", relationship: "Ulo ng Pamilya (Ama)", age: 46, gender: "Lalaki", civil_status: "Kasal" },
+        { id: "mem-2", full_name: "BADILLO, Maria C.", relationship: "Ina / Asawa", age: 44, gender: "Babae", civil_status: "Kasal" },
+        { id: "mem-3", full_name: "BADILLO, John Kevin M.", relationship: "Anak", age: 16, gender: "Lalaki", civil_status: "Walang Asawa" }
+      ],
+      created_at: "2026-08-15T08:30:00.000Z",
+      updated_at: "2026-08-15T08:30:00.000Z"
+    }
+  ],
+  residents: [
+    {
+      id: "res-badillo-errol",
+      full_name: "BADILLO, Errol M.",
+      age: 46,
+      sex: "Lalaki",
+      gender: "Lalaki",
+      birthdate: "1980-04-12",
+      sitio: "Masigla",
+      civil_status: "Kasal",
+      contact_number: "0917-882-3491",
+      philhealth_number: "12-054928192-3",
+      created_at: "2026-08-15T08:00:00.000Z",
+      updated_at: "2026-08-15T08:00:00.000Z"
+    }
+  ],
+  consultations: [
+    {
+      id: "cons-badillo-1",
+      resident_id: "res-badillo-errol",
+      consultation_date: "2026-09-18",
+      consultation_cause: "Ubo, Sipon, at Pananakit ng Katawan (Flu Symptoms)",
+      diagnosis: "Upper Respiratory Tract Infection (URTI) & Mild Hypertension",
+      blood_pressure: "130/85",
+      temperature: "37.8",
+      pulse_rate: "78",
+      respiratory_rate: "18",
+      weight: "68",
+      height: "168",
+      treatment: "Pahinga sa kama, pag-inom ng maraming tubig, at maligamgam na tubig na may kalamansi",
+      medication: "Paracetamol 500mg (1 tablet tuwing 6 na oras kung may lagnat o pananakit); Salbutamol kung may ubo; Multivitamins",
+      notes: "Pinayuhan na bumalik sa Health Center pagkatapos ng 5 araw kung hindi bumaba ang lagnat.",
+      created_at: "2026-09-18T09:15:00.000Z",
+      updated_at: "2026-09-18T09:15:00.000Z"
+    }
+  ],
+  philpen_health: [
+    {
+      id: "phil-badillo-1",
+      resident_id: "res-badillo-errol",
+      full_name: "BADILLO, Errol M.",
+      age: 46,
+      gender: "Lalaki",
+      sitio: "Masigla",
+      bp: "130/85",
+      blood_sugar: "96 mg/dL (Normal Fasting Blood Sugar)",
+      cholesterol: "Normal",
+      smoking: "Hindi naninigarilyo (Non-smoker)",
+      alcohol: "Paminsan-minsan / Panlipunan lamang",
+      exercise: "May sapat na gawaing pisikal sa bukid at paglalakad",
+      hypertension: "May banayad na hypertension (Stage 1)",
+      diabetes: "Wala (Negative)",
+      risk_level: "Mababa hanggang Katamtaman (Low to Moderate Risk)",
+      assessment_date: "2026-08-20",
+      notes: "Inirekomenda ang bawas-alat sa pagkain at regular na pagsubaybay sa blood pressure tuwing buwan.",
+      created_at: "2026-08-20T10:00:00.000Z",
+      updated_at: "2026-08-20T10:00:00.000Z"
+    }
+  ],
+  dengue_prevention: [
+    {
+      id: "deng-badillo-1",
+      resident_id: "res-badillo-errol",
+      household_head: "BADILLO, Errol M.",
+      sitio: "Masigla",
+      inspection_date: "2026-09-05",
+      larvae_found: "Negatibo / Walang kiti-kiti",
+      containers_checked: 6,
+      actions_taken: "Pagtakip sa mga drum ng tubig, pagtapon ng nakatenggang tubig sa mga paso at lumang gulong.",
+      remarks: "Ligtas at malinis ang paligid ng tahanan sa Sitio Masigla.",
+      created_at: "2026-09-05T14:00:00.000Z",
+      updated_at: "2026-09-05T14:00:00.000Z"
+    }
+  ],
   maternal_care: [],
   child_health: [],
   family_planning: [],

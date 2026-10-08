@@ -270,9 +270,557 @@ export function BhaiChatbot() {
     return text.replace(/\*\*/g, "").replace(/\*/g, "");
   };
 
+  // Extract likely person/resident name candidate terms from the user query
+  const extractPersonSearchCandidates = (rawQuery: string): string[] => {
+    const qClean = rawQuery.trim();
+    const qWithoutPunct = qClean.replace(/[?!.:;"']/g, " ").trim();
+
+    const prefixes = [
+      /^what\s+are\s+the\s+health\s+records\s+of\s+/i,
+      /^what\s+are\s+the\s+medical\s+records\s+of\s+/i,
+      /^what\s+are\s+the\s+records\s+of\s+/i,
+      /^what\s+are\s+the\s+forms\s+of\s+/i,
+      /^what\s+are\s+/i,
+      /^what\s+is\s+the\s+health\s+record\s+of\s+/i,
+      /^what\s+is\s+the\s+medical\s+record\s+of\s+/i,
+      /^what\s+is\s+the\s+record\s+of\s+/i,
+      /^what\s+is\s+/i,
+      /^who\s+is\s+/i,
+      /^where\s+is\s+/i,
+      /^tell\s+me\s+about\s+/i,
+      /^can\s+you\s+check\s+/i,
+      /^please\s+check\s+/i,
+      /^check\s+the\s+records\s+of\s+/i,
+      /^check\s+/i,
+      /^search\s+for\s+/i,
+      /^search\s+/i,
+      /^find\s+/i,
+      /^look\s+up\s+/i,
+      /^show\s+me\s+/i,
+      /^details\s+of\s+/i,
+      /^information\s+about\s+/i,
+      /^info\s+about\s+/i,
+      /^status\s+of\s+/i,
+      /^records\s+of\s+/i,
+      /^health\s+records\s+of\s+/i,
+      /^medical\s+records\s+of\s+/i,
+      /^ano\s+ang\s+mga\s+health\s+records\s+ni\s+/i,
+      /^ano\s+ang\s+mga\s+health\s+record\s+ni\s+/i,
+      /^ano\s+ang\s+health\s+records\s+ni\s+/i,
+      /^ano\s+ang\s+health\s+record\s+ni\s+/i,
+      /^ano\s+ang\s+mga\s+rekord\s+ni\s+/i,
+      /^ano\s+ang\s+mga\s+record\s+ni\s+/i,
+      /^ano\s+ang\s+rekord\s+ni\s+/i,
+      /^ano\s+ang\s+record\s+ni\s+/i,
+      /^ano\s+ang\s+mga\s+talaan\s+ni\s+/i,
+      /^ano\s+ang\s+talaan\s+ni\s+/i,
+      /^ano\s+ang\s+tala\s+ni\s+/i,
+      /^ano\s+ang\s+buod\s+ni\s+/i,
+      /^ano\s+ang\s+/i,
+      /^sino\s+si\s+/i,
+      /^sino\s+po\s+si\s+/i,
+      /^pakitingnan\s+ang\s+mga\s+record\s+ni\s+/i,
+      /^pakitingnan\s+ang\s+mga\s+rekord\s+ni\s+/i,
+      /^pakitingnan\s+ang\s+record\s+ni\s+/i,
+      /^pakitingnan\s+ang\s+rekord\s+ni\s+/i,
+      /^pakitingnan\s+si\s+/i,
+      /^paki-tingnan\s+si\s+/i,
+      /^paki\s+tingnan\s+si\s+/i,
+      /^paki-check\s+si\s+/i,
+      /^paki\s+check\s+si\s+/i,
+      /^paki-search\s+si\s+/i,
+      /^alamin\s+mo\s+ang\s+rekord\s+ni\s+/i,
+      /^alamin\s+mo\s+si\s+/i,
+      /^may\s+record\s+ba\s+si\s+/i,
+      /^may\s+rekord\s+ba\s+si\s+/i,
+      /^buod\s+ng\s+rekord\s+ni\s+/i,
+      /^buod\s+ng\s+record\s+ni\s+/i,
+      /^buod\s+ni\s+/i,
+      /^buod\s+po\s+ni\s+/i,
+      /^talaan\s+ni\s+/i,
+      /^rekord\s+ni\s+/i,
+      /^record\s+ni\s+/i
+    ];
+
+    let candidate = qWithoutPunct;
+    for (const prefix of prefixes) {
+      if (prefix.test(candidate)) {
+        candidate = candidate.replace(prefix, "").trim();
+        break;
+      }
+    }
+
+    const suffixes = [
+      /'s\s+health\s+records\s+within\s+the\s+forms?$/i,
+      /'s\s+health\s+records\s+in\s+the\s+forms?$/i,
+      /'s\s+health\s+records$/i,
+      /'s\s+medical\s+records$/i,
+      /'s\s+form\s+records$/i,
+      /'s\s+records\s+within\s+the\s+forms?$/i,
+      /'s\s+records\s+in\s+the\s+forms?$/i,
+      /'s\s+records$/i,
+      /'s\s+forms?$/i,
+      /'s$/i,
+      /\s+health\s+records\s+within\s+the\s+forms?$/i,
+      /\s+health\s+records\s+in\s+the\s+forms?$/i,
+      /\s+health\s+records$/i,
+      /\s+medical\s+records$/i,
+      /\s+records\s+within\s+the\s+forms?$/i,
+      /\s+records\s+in\s+the\s+forms?$/i,
+      /\s+records\s+within\s+forms?$/i,
+      /\s+records\s+in\s+forms?$/i,
+      /\s+sa\s+mga\s+forms?$/i,
+      /\s+sa\s+forms?$/i,
+      /\s+within\s+the\s+forms?$/i,
+      /\s+in\s+the\s+forms?$/i,
+      /\s+within\s+forms?$/i,
+      /\s+in\s+forms?$/i,
+      /\s+records$/i,
+      /\s+record$/i,
+      /\s+rekord$/i,
+      /\s+talaan$/i,
+      /\s+tala$/i,
+      /\s+residente$/i,
+      /\s+resident$/i,
+      /\s+pasyente$/i,
+      /\s+patient$/i,
+      /\s+forms?$/i
+    ];
+
+    for (const suffix of suffixes) {
+      if (suffix.test(candidate)) {
+        candidate = candidate.replace(suffix, "").trim();
+        break;
+      }
+    }
+
+    const cleaned = candidate.trim().replace(/\s+/g, " ");
+    const candidates: string[] = [];
+
+    if (cleaned.length >= 2) {
+      candidates.push(cleaned);
+    }
+
+    if (qClean.includes(",")) {
+      const parts = qClean.split(",").map(p => p.trim());
+      if (parts.length >= 2 && parts[0] && parts[1]) {
+        const cleanFirst = parts[1].replace(/[?!.:;"']/g, "").trim();
+        const cleanLast = parts[0].replace(/[?!.:;"']/g, "").trim();
+        candidates.push(`${cleanFirst} ${cleanLast}`);
+        candidates.push(`${cleanLast}, ${cleanFirst}`);
+        candidates.push(cleanLast);
+        candidates.push(cleanFirst);
+      }
+    }
+
+    const tokens = cleaned.split(" ").filter(t => t.length >= 2);
+    if (tokens.length >= 2) {
+      candidates.push(`${tokens[tokens.length - 1]}, ${tokens.slice(0, -1).join(" ")}`);
+      candidates.push(`${tokens[tokens.length - 1]} ${tokens[0]}`);
+      candidates.push(tokens[tokens.length - 1]);
+      candidates.push(tokens[0]);
+    }
+
+    return Array.from(new Set(candidates)).filter(c => c.length >= 2);
+  };
+
+  // Comprehensive Multi-Form Resident Health Analysis Engine
+  const searchAndAnalyzeResidentHealth = async (
+    candidates: string[],
+    rawQuery: string
+  ): Promise<{ text: string; quickActions?: { label: string; query: string }[] } | null> => {
+    if (candidates.length === 0) return null;
+
+    const qLower = rawQuery.toLowerCase();
+    const isExplicitRecordQuery = 
+      qLower.includes("record") || 
+      qLower.includes("rekord") || 
+      qLower.includes("health") || 
+      qLower.includes("talaan") || 
+      qLower.includes("form") || 
+      qLower.includes("buod") || 
+      qLower.includes("summary") || 
+      qLower.includes("sino si") || 
+      qLower.includes("who is") ||
+      qLower.includes("check") ||
+      qLower.includes("tingnan") ||
+      qLower.includes("'s");
+
+    let mockDb: any = {};
+    if (typeof localStorage !== "undefined") {
+      try {
+        mockDb = JSON.parse(localStorage.getItem("supabase_mock_db") || "{}");
+      } catch {}
+    }
+
+    // 1. Collect all residents from database and mock store
+    let allResidents: any[] = mockDb.residents || [];
+    try {
+      const { data: dbRes } = await supabase.from("residents").select("*");
+      if (dbRes && dbRes.length > 0) {
+        const existingIds = new Set(allResidents.map(r => String(r.id)));
+        for (const r of dbRes) {
+          if (!existingIds.has(String(r.id))) {
+            allResidents.push(r);
+          }
+        }
+      }
+    } catch {}
+
+    // Match resident
+    let matchedResident: any = null;
+    for (const cand of candidates) {
+      const candLower = cand.toLowerCase().trim();
+      const match = allResidents.find((r: any) => {
+        const name = (r.full_name || "").toLowerCase();
+        return name.includes(candLower) || candLower.includes(name);
+      });
+      if (match) {
+        matchedResident = match;
+        break;
+      }
+    }
+
+    // 2. Collect all other form tables
+    let allFamilies: any[] = mockDb.family_data || [];
+    try {
+      const { data: dbFam } = await supabase.from("family_data").select("*");
+      if (dbFam && dbFam.length > 0) {
+        const ids = new Set(allFamilies.map(f => String(f.id)));
+        for (const f of dbFam) { if (!ids.has(String(f.id))) allFamilies.push(f); }
+      }
+    } catch {}
+
+    let allConsultations: any[] = mockDb.consultations || [];
+    try {
+      const { data: dbCons } = await supabase.from("consultations").select("*");
+      if (dbCons && dbCons.length > 0) {
+        const ids = new Set(allConsultations.map(c => String(c.id)));
+        for (const c of dbCons) { if (!ids.has(String(c.id))) allConsultations.push(c); }
+      }
+    } catch {}
+
+    let allPhilpen: any[] = mockDb.philpen_health || [];
+    try {
+      const { data: dbPhil } = await supabase.from("philpen_health").select("*");
+      if (dbPhil && dbPhil.length > 0) {
+        const ids = new Set(allPhilpen.map(p => String(p.id)));
+        for (const p of dbPhil) { if (!ids.has(String(p.id))) allPhilpen.push(p); }
+      }
+    } catch {}
+
+    let allDengue: any[] = mockDb.dengue_prevention || [];
+    try {
+      const { data: dbDeng } = await supabase.from("dengue_prevention").select("*");
+      if (dbDeng && dbDeng.length > 0) {
+        const ids = new Set(allDengue.map(d => String(d.id)));
+        for (const d of dbDeng) { if (!ids.has(String(d.id))) allDengue.push(d); }
+      }
+    } catch {}
+
+    let allMaternal: any[] = mockDb.maternal_care || [];
+    try {
+      const { data: dbMat } = await (supabase.from as any)("maternal_care").select("*");
+      if (dbMat && dbMat.length > 0) {
+        const ids = new Set(allMaternal.map(m => String(m.id)));
+        for (const m of dbMat) { if (!ids.has(String(m.id))) allMaternal.push(m); }
+      }
+    } catch {}
+
+    let allChild: any[] = mockDb.child_health || [];
+    try {
+      const { data: dbChild } = await (supabase.from as any)("child_health").select("*");
+      if (dbChild && dbChild.length > 0) {
+        const ids = new Set(allChild.map(c => String(c.id)));
+        for (const c of dbChild) { if (!ids.has(String(c.id))) allChild.push(c); }
+      }
+    } catch {}
+
+    let allFp: any[] = mockDb.family_planning || [];
+    try {
+      const { data: dbFp } = await supabase.from("family_planning").select("*");
+      if (dbFp && dbFp.length > 0) {
+        const ids = new Set(allFp.map(f => String(f.id)));
+        for (const f of dbFp) { if (!ids.has(String(f.id))) allFp.push(f); }
+      }
+    } catch {}
+
+    const targetResidentId = matchedResident?.id ? String(matchedResident.id) : null;
+    const primaryName = matchedResident?.full_name || candidates[0];
+    const nameMatchKeywords = [primaryName, ...candidates].map(c => c.toLowerCase().trim()).filter(c => c.length >= 2);
+
+    const matchesName = (str: string | null | undefined): boolean => {
+      if (!str) return false;
+      const lower = str.toLowerCase();
+      return nameMatchKeywords.some(kw => lower.includes(kw));
+    };
+
+    // Family match
+    let matchedFamily: any = null;
+    let matchedFamilyMember: any = null;
+    for (const fam of allFamilies) {
+      if (targetResidentId && String(fam.resident_id) === targetResidentId) {
+        matchedFamily = fam;
+        break;
+      }
+      if (matchesName(fam.father_name) || matchesName(fam.mother_name)) {
+        matchedFamily = fam;
+        break;
+      }
+      const members = Array.isArray(fam.members_detail) 
+        ? fam.members_detail 
+        : (typeof fam.members_detail === "string" ? JSON.parse(fam.members_detail || "[]") : []);
+      const memMatch = members.find((m: any) => matchesName(m.full_name));
+      if (memMatch) {
+        matchedFamily = fam;
+        matchedFamilyMember = memMatch;
+        break;
+      }
+    }
+
+    // Consultations match
+    const matchedConsultations = allConsultations.filter((c: any) => {
+      if (targetResidentId && String(c.resident_id) === targetResidentId) return true;
+      if (matchesName(c.residents?.full_name)) return true;
+      if (matchesName(c.resident_name)) return true;
+      if (matchesName(c.notes)) return true;
+      return false;
+    });
+
+    // PhilPen match
+    const matchedPhilpen = allPhilpen.find((p: any) => {
+      if (targetResidentId && String(p.resident_id) === targetResidentId) return true;
+      return matchesName(p.full_name);
+    });
+
+    // Dengue match
+    const matchedDengue = allDengue.find((d: any) => {
+      if (targetResidentId && String(d.resident_id) === targetResidentId) return true;
+      return matchesName(d.household_head);
+    });
+
+    // Maternal match
+    const matchedMaternal = allMaternal.find((m: any) => {
+      if (targetResidentId && String(m.resident_id) === targetResidentId) return true;
+      return matchesName(m.patient_name);
+    });
+
+    // Child match
+    const matchedChild = allChild.find((ch: any) => {
+      if (targetResidentId && String(ch.resident_id) === targetResidentId) return true;
+      return matchesName(ch.child_name) || matchesName(ch.father_name) || matchesName(ch.mother_name);
+    });
+
+    // Family Planning match
+    const matchedFp = allFp.find((fp: any) => {
+      if (targetResidentId && String(fp.resident_id) === targetResidentId) return true;
+      return matchesName(fp.client_name);
+    });
+
+    const hasAnyRecord = Boolean(
+      matchedResident || 
+      matchedFamily || 
+      matchedConsultations.length > 0 || 
+      matchedPhilpen || 
+      matchedDengue || 
+      matchedMaternal || 
+      matchedChild || 
+      matchedFp
+    );
+
+    if (!hasAnyRecord) {
+      if (!isExplicitRecordQuery) {
+        return null;
+      }
+      return {
+        text: cleanFormat(
+          `🔍 PAUMANHIN PO, SINURI KO PO ANG LAHAT NG FORMS SA ATING SISTEMA:\n\n` +
+          `Siniyasat ko po ang bawat talaan para sa pangalang "${candidates[0]}":\n` +
+          `• 👥 Resident Records (Rehistradong Residente)\n` +
+          `• 🏠 Family Data Form (Sensus ng Pamilya at Kabahayan)\n` +
+          `• 🩺 Consultation Form (Talaan ng Check-up at Gamutan)\n` +
+          `• ❤️ PhilPen NCD Screening (Presyon at Blood Sugar)\n` +
+          `• 🤰 Maternal Care Form (Pangangalaga sa Buntis)\n` +
+          `• 👶 Child Health Form (Bakuna ng Sanggol)\n` +
+          `• 👨‍👩‍👧 Family Planning Registry\n` +
+          `• 🦟 Dengue Prevention Inspection\n\n` +
+          `Kasalukuyan po ay wala pa pong umiiral na rekord sa ilalim ng pangalang ito sa ating database ng Barangay Subukin.\n\n` +
+          `💡 Mga Payo:\n` +
+          `1. Pakitiyak po ang wastong baybay ng pangalan o apelyido (halimbawa: "Badillo" o "Errol").\n` +
+          `2. Kung bagong residente po siya sa barangay, maaari po siyang irehistro sa pahina ng "Resident Records" o idagdag sa "Family Data Form".`
+        ),
+        quickActions: [
+          { label: "👤 Errol Badillo Record", query: "What are Errol Badillo's health records?" },
+          { label: "📊 Kabuuang Talaan", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
+          { label: "📍 Listahan ng Sitio", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" }
+        ]
+      };
+    }
+
+    // Build comprehensive, clean, multi-form health analysis report
+    const resName = matchedResident?.full_name || matchedFamily?.father_name || matchedFamily?.mother_name || candidates[0];
+    const resAge = matchedResident?.age || matchedPhilpen?.age || matchedFamilyMember?.age || "—";
+    const resGender = matchedResident?.gender || matchedResident?.sex || matchedPhilpen?.gender || matchedFamilyMember?.gender || "—";
+    const resSitio = matchedResident?.sitio || matchedFamily?.sitio || matchedPhilpen?.sitio || "Barangay Subukin";
+
+    let report = `📋 OPISYAL NA PAGSUSURI SA MGA TALAAN NG KALUSUGAN (Barangay Subukin)\n`;
+    report += `👤 Pangalan ng Residente: ${resName}\n`;
+    report += `📍 Tirahan / Sitio: ${resSitio}\n`;
+    report += `🎂 Edad at Kasarian: ${resAge} taong gulang • ${resGender}\n\n`;
+    report += `Matagumpay ko pong sinuri ang lahat ng forms sa ating sistema. Narito po ang buong rekord na natagpuan sa bawat departamento:\n\n`;
+
+    // 1. Resident Records
+    report += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    report += `1. 👥 TALAAN NG RESIDENTE (Resident Records)\n`;
+    if (matchedResident) {
+      report += `• Katayuan: Rehistradong Residente ng Barangay Subukin\n`;
+      report += `• Katayuang Sibil: ${matchedResident.civil_status || "—"}\n`;
+      report += `• Araw ng Kapanganakan: ${matchedResident.birthdate ? new Date(matchedResident.birthdate).toLocaleDateString() : "—"}\n`;
+      report += `• Telepono / Mobile: 📞 ${matchedResident.contact_number || "Walang naitalang numero"}\n`;
+      report += `• PhilHealth ID No.: 💳 ${matchedResident.philhealth_number || "Wala pa po / N/A"}\n`;
+      report += `• Petsa ng Pagkakatala: ${matchedResident.created_at ? new Date(matchedResident.created_at).toLocaleDateString() : "—"}\n\n`;
+    } else {
+      report += `• Katayuan: Hindi pa opisyal na nakatala sa pangkalahatang Resident Records (ngunit may talaan sa ibang mga form sa ibaba).\n\n`;
+    }
+
+    // 2. Family Data
+    report += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    report += `2. 🏠 TALAAN NG PAMILYA (Family Data Form)\n`;
+    if (matchedFamily) {
+      report += `• Pamilya #: ${matchedFamily.family_number || "—"}\n`;
+      report += `• Ulo ng Pamilya (Household Head): ${matchedFamily.father_name || matchedFamily.mother_name || "—"}\n`;
+      if (matchedFamily.mother_name && matchedFamily.father_name) {
+        report += `• Maybahay (Ina): ${matchedFamily.mother_name}\n`;
+      }
+      report += `• Kabuuang Miyembro ng Tahanan: ${matchedFamily.total_members || "—"} katao (Lalaki: ${matchedFamily.num_males || "—"}, Babae: ${matchedFamily.num_females || "—"})\n`;
+      
+      const members = Array.isArray(matchedFamily.members_detail) 
+        ? matchedFamily.members_detail 
+        : (typeof matchedFamily.members_detail === "string" ? JSON.parse(matchedFamily.members_detail || "[]") : []);
+      if (members.length > 0) {
+        report += `• Mga Kasapi ng Pamilya na Nakatala:\n`;
+        members.forEach((m: any) => {
+          report += `  - ${m.full_name} (${m.age ? `${m.age} taong gulang` : ""} • ${m.gender || ""} • Relasyon: ${m.relationship || "Kasapi"})\n`;
+        });
+      }
+      report += `\n`;
+    } else {
+      report += `• Walang naitalang folder ng pamilya o sensus sa Family Data Form.\n\n`;
+    }
+
+    // 3. Consultations
+    report += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    report += `3. 🩺 KONSULTASYON AT CHECK-UP (Consultation Form)\n`;
+    if (matchedConsultations.length > 0) {
+      report += `• May ${matchedConsultations.length} naitalang konsultasyon sa Health Center:\n`;
+      matchedConsultations.forEach((c: any, idx: number) => {
+        report += `\n  [Tala #${idx + 1}] Petsa: ${c.consultation_date ? new Date(c.consultation_date).toLocaleDateString() : "Kamakailan"}\n`;
+        report += `  • Dahilan / Reklamo: ${c.consultation_cause || "Pangkalahatang Check-up"}\n`;
+        if (c.diagnosis) {
+          report += `  • Diagnosis: ${c.diagnosis}\n`;
+        }
+        report += `  • Vital Signs:\n`;
+        if (c.blood_pressure) report += `    - Blood Pressure: ${c.blood_pressure} mmHg\n`;
+        if (c.temperature) report += `    - Temperatura: ${c.temperature}°C\n`;
+        if (c.pulse_rate) report += `    - Pulse Rate: ${c.pulse_rate} bpm\n`;
+        if (c.respiratory_rate) report += `    - Respiratory Rate: ${c.respiratory_rate} cpm\n`;
+        if (c.weight || c.height) report += `    - Timbang / Taas: ${c.weight ? `${c.weight} kg` : ""} ${c.height ? `• ${c.height} cm` : ""}\n`;
+        if (c.treatment) {
+          report += `  • Medikal na Lunas: ${c.treatment}\n`;
+        }
+        if (c.medication) {
+          report += `  • Iniresetang Gamot: ${c.medication}\n`;
+        }
+        if (c.notes) {
+          report += `  • Tagubilin ng Kawani: ${c.notes}\n`;
+        }
+      });
+      report += `\n`;
+    } else {
+      report += `• Wala pa pong naitalang kasaysayan ng konsultasyon o gamutan sa Consultation Form.\n\n`;
+    }
+
+    // 4. PhilPen Health
+    report += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    report += `4. ❤️ PHILPEN NCD SCREENING (Risk Assessment Form)\n`;
+    if (matchedPhilpen) {
+      report += `• Petsa ng Pagsusuri: ${matchedPhilpen.assessment_date ? new Date(matchedPhilpen.assessment_date).toLocaleDateString() : "Naitala"}\n`;
+      report += `• Blood Pressure: ${matchedPhilpen.bp || "Normal"}\n`;
+      report += `• Blood Sugar: ${matchedPhilpen.blood_sugar || "Normal"}\n`;
+      report += `• Cholesterol: ${matchedPhilpen.cholesterol || "Normal"}\n`;
+      report += `• Risk Assessment Level: ${matchedPhilpen.risk_level || "Mababa hanggang Katamtaman"}\n`;
+      report += `• Altapresyon (Hypertension): ${matchedPhilpen.hypertension || "Walang Altapresyon"}\n`;
+      report += `• Diabetes: ${matchedPhilpen.diabetes || "Negatibo / Normal"}\n`;
+      report += `• Pamumuhay at Kalusugan: Paninigarilyo: ${matchedPhilpen.smoking || "Hindi naninigarilyo"} • Alak: ${matchedPhilpen.alcohol || "Hindi umiinom"} • Ehersisyo: ${matchedPhilpen.exercise || "May gawaing pisikal"}\n`;
+      if (matchedPhilpen.notes) {
+        report += `• Tagubilin ng BHW: ${matchedPhilpen.notes}\n`;
+      }
+      report += `\n`;
+    } else {
+      report += `• Wala pa pong naitalang PhilPen NCD risk assessment screening.\n\n`;
+    }
+
+    // 5. Dengue Prevention
+    report += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    report += `5. 🦟 DENGUE PREVENTION AT INSPEKSYON (Dengue Prevention Form)\n`;
+    if (matchedDengue) {
+      report += `• Petsa ng Inspeksyon: ${matchedDengue.inspection_date ? new Date(matchedDengue.inspection_date).toLocaleDateString() : "Naitala"}\n`;
+      report += `• Katayuan ng Paligid: ${matchedDengue.larvae_found || "Negatibo / Ligtas sa Dengue"}\n`;
+      report += `• Nasuring Lalagyan ng Tubig: ${matchedDengue.containers_checked || "Ligtas"}\n`;
+      if (matchedDengue.actions_taken) {
+        report += `• Isinagawang Aksyon: ${matchedDengue.actions_taken}\n`;
+      }
+      if (matchedDengue.remarks) {
+        report += `• Puna ng BHW: ${matchedDengue.remarks}\n`;
+      }
+      report += `\n`;
+    } else {
+      report += `• Walang naitalang ulat ng inspeksyon sa Dengue Prevention para sa tahanang ito.\n\n`;
+    }
+
+    // 6. Maternal, Child, Family Planning
+    report += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    report += `6. 🤰 MATERNAL CARE, 👶 CHILD HEALTH, AT 👨‍👩‍👧 FAMILY PLANNING\n`;
+    if (matchedMaternal) {
+      report += `• 🤰 Maternal Care: May aktibong talaan ng pagbubuntis (LMP: ${matchedMaternal.lmp || "—"}, EDC: ${matchedMaternal.edc || "—"}, Trimester: ${matchedMaternal.trimester || "—"})\n`;
+    } else {
+      report += `• 🤰 Maternal Care: Walang naitalang talaan ng pagbubuntis.\n`;
+    }
+    if (matchedChild) {
+      report += `• 👶 Child Health: May talaan ng bata (Pangalan: ${matchedChild.child_name || "Bata"}, Bakuna: ${matchedChild.remarks || "Naitala"}, Timbang: ${matchedChild.weight_kg ? `${matchedChild.weight_kg} kg` : "—"})\n`;
+    } else {
+      report += `• 👶 Child Health: Walang naitalang bakuna o talaan ng sanggol sa kanyang pangalan.\n`;
+    }
+    if (matchedFp) {
+      report += `• 👨‍👩‍👧 Family Planning: May aktibong talaan (Paraang ginagamit: ${matchedFp.method || "Naitala"})\n`;
+    } else {
+      report += `• 👨‍👩‍👧 Family Planning: Walang aktibong talaan sa Family Planning registry.\n`;
+    }
+
+    report += `\nLigtas at maayos pong nakatala ang lahat ng impormasyong ito sa ating database. Maaari po kayong magtanong pa ng karagdagang detalye kung may nais pa po kayong malaman!`;
+
+    return {
+      text: cleanFormat(report),
+      quickActions: [
+        { label: "👥 Iba pang Residente", query: "Maghanap ng ibang residente" },
+        { label: "📊 Kabuuang Talaan", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
+        { label: "👩‍⚕️ Direktoryo ng BHW", query: "Sino-sino po ang mga BHW at kanilang kontak?" }
+      ]
+    };
+  };
+
   // Comprehensive Data Answering Engine sa Magalang na Tagalog para sa mga Nakatatanda at Kawani
   const generateBotAnswer = async (userQuery: string): Promise<{ text: string; quickActions?: { label: string; query: string }[] }> => {
     const q = userQuery.toLowerCase().trim();
+
+    // 0. PRIORITY RESIDENT HEALTH ANALYSIS ACROSS ALL SYSTEM FORMS
+    const personCandidates = extractPersonSearchCandidates(userQuery);
+    if (personCandidates.length > 0) {
+      const personReport = await searchAndAnalyzeResidentHealth(personCandidates, userQuery);
+      if (personReport) {
+        return personReport;
+      }
+    }
 
     // 1. KABUUANG BILANG NG TALAAN / SYSTEM STATISTICS
     if (
@@ -950,122 +1498,22 @@ export function BhaiChatbot() {
       q.includes("sino si") ||
       q.includes("search")
     ) {
-      const cleanSearch = q
-        .replace("summary of", "")
-        .replace("summary ni", "")
-        .replace("buod ng", "")
-        .replace("buod ni", "")
-        .replace("buod po ni", "")
-        .replace("residente", "")
-        .replace("resident", "")
-        .replace("rekord ni", "")
-        .replace("rekord ng", "")
-        .replace("record of", "")
-        .replace("talaan ni", "")
-        .replace("talaan ng", "")
-        .replace("sino si", "")
-        .replace("search", "")
-        .replace("po", "")
-        .replace("paki-search", "")
-        .trim();
-
-      if (cleanSearch.length >= 2) {
-        try {
-          const { data: matchedResidents } = await supabase
-            .from("residents")
-            .select("*")
-            .ilike("full_name", `%${cleanSearch}%`)
-            .limit(3);
-
-          if (matchedResidents && matchedResidents.length > 0) {
-            const r = matchedResidents[0];
-
-            const [consData, matData, childData, philData, famData] = await Promise.all([
-              supabase.from("consultations").select("*").eq("resident_id", r.id).order("consultation_date", { ascending: false }).limit(5),
-              supabase.from("maternal_care" as any).select("*").or(`resident_id.eq.${r.id},patient_name.ilike.%${cleanSearch}%`).limit(3),
-              supabase.from("child_health" as any).select("*").or(`resident_id.eq.${r.id},child_name.ilike.%${cleanSearch}%`).limit(3),
-              supabase.from("philpen_health").select("*").or(`resident_id.eq.${r.id},full_name.ilike.%${cleanSearch}%`).limit(3),
-              supabase.from("family_data").select("*").or(`father_name.ilike.%${cleanSearch}%,mother_name.ilike.%${cleanSearch}%`).limit(1),
-            ]);
-
-            const consultations = consData.data || [];
-            const maternal = (matData.data as any[]) || [];
-            const childHealth = (childData.data as any[]) || [];
-            const philpen = philData.data || [];
-            const family = (famData.data || [])[0];
-
-            let summaryText = `📋 BUOD NG REKORD NG RESIDENTE (Barangay Subukin):\n\n` +
-              `• Buong Pangalan: ${r.full_name}\n` +
-              `• Edad at Kasarian: ${r.age || "—"} taong gulang • ${r.sex || "—"}\n` +
-              `• Araw ng Kapanganakan: ${r.birthdate ? new Date(r.birthdate).toLocaleDateString() : "—"}\n` +
-              `• Tirahan / Sitio: 📍 ${r.sitio || "Barangay Subukin"}\n` +
-              `• Katayuang Sibil: ${r.civil_status || "—"}\n` +
-              `• Telepono: ${r.contact_number || "Walang naitalang numero"}\n` +
-              `• PhilHealth No.: ${r.philhealth_number || "Wala pa po / N/A"}\n\n`;
-
-            if (family) {
-              summaryText += `🏠 Talaan ng Pamilya (Household):\n` +
-                `• Pamilya #: ${family.family_number || "—"}\n` +
-                `• Ulo ng Pamilya: ${family.father_name || family.mother_name || "—"}\n\n`;
-            }
-
-            if (consultations.length > 0) {
-              summaryText += `🩺 Kamakailang Konsultasyon (${consultations.length} naitala):\n` +
-                consultations.map((c: any) => 
-                  `  - ${new Date(c.consultation_date).toLocaleDateString()}: ${c.consultation_cause || "Pangkalahatang Check-up"} (Vitals: ${c.pulse_rate ? `Pulse ${c.pulse_rate}` : ""} ${c.temperature ? `Temp ${c.temperature}°C` : ""})`
-                ).join("\n") + "\n\n";
-            } else {
-              summaryText += `🩺 Konsultasyon: Wala pa pong naitalang dating konsultasyon sa Health Center.\n\n`;
-            }
-
-            if (maternal.length > 0) {
-              summaryText += `🤰 Maternal Care: May aktibong talaan po ng pagbubuntis o prenatal check-up.\n\n`;
-            }
-
-            if (childHealth.length > 0) {
-              summaryText += `👶 Child Health: May talaan po ng pagbabakuna at timbang ng bata.\n\n`;
-            }
-
-            if (philpen.length > 0) {
-              const p = philpen[0];
-              summaryText += `❤️ PhilPen NCD Screening: Naitalang Blood Pressure: ${p.bp || "Normal"}, Blood Sugar: ${p.blood_sugar || "N/A"}.\n\n`;
-            }
-
-            summaryText += `Kung nais po ninyong baguhin o dagdagan ang impormasyong ito, maaari pong pumunta sa pahina ng Resident Records o sumangguni sa ating BHW.`;
-
-            return {
-              text: cleanFormat(summaryText),
-              quickActions: [
-                { label: "👥 Iba pang Residente", query: "Maghanap ng ibang residente" },
-                { label: "📊 Kabuuang Records", query: "Ilan po ang kabuuang bilang ng records sa sistema?" }
-              ]
-            };
-          } else {
-            return {
-              text: cleanFormat(
-                `🔍 Paumanhin po, wala po akong nahanap na residenteng tumutugma sa pangalang "${cleanSearch}" sa ating database.\n\nPaki-tiyak po ang wastong baybay ng pangalan o apelyido (halimbawa: "buod ni Juan Dela Cruz"), o maaari rin pong tingnan sa pahina ng Resident Records.`
-              ),
-              quickActions: [
-                { label: "📊 Kabuuang Residente", query: "Ilan po ang kabuuang bilang ng records sa sistema?" },
-                { label: "📍 Listahan ng Sitio", query: "Saan-saan po matatagpuan ang mga Sitio sa Barangay Subukin?" }
-              ]
-            };
-          }
-        } catch (e) {
-          return {
-            text: `Paumanhin po, nagkaroon po ng problema sa paghahanap sa database para sa pangalang "${cleanSearch}". Pakisubukang muli po.`
-          };
+      const candidates = extractPersonSearchCandidates(userQuery);
+      if (candidates.length > 0) {
+        const fullReport = await searchAndAnalyzeResidentHealth(candidates, userQuery);
+        if (fullReport) {
+          return fullReport;
         }
-      } else {
-        return {
-          text: cleanFormat(
-            `Upang maipakita ko po ang buod ng talaan ng isang residente o pasyente, paki-type po ang kanyang buong pangalan o apelyido.\n\nHalimbawa po:\n• Buod ng rekord ni Maria Santos\n• Talaan para kay Dela Cruz`
-          ),
-          quickActions: [
-            { label: "📊 Ilan ang Residente?", query: "Ilan po ang kabuuang bilang ng records sa sistema?" }
-          ]
-        };
       }
+      return {
+        text: cleanFormat(
+          `Upang maipakita ko po ang buod ng talaan ng isang residente o pasyente sa lahat ng mga form, paki-type po ang kanyang pangalan o apelyido.\n\nHalimbawa po:\n• What are Errol Badillo's health records?\n• Buod ng rekord ni Errol Badillo\n• Talaan ni Badillo sa mga form`
+        ),
+        quickActions: [
+          { label: "👤 Errol Badillo", query: "What are Errol Badillo's health records?" },
+          { label: "📊 Ilan ang Residente?", query: "Ilan po ang kabuuang bilang ng records sa sistema?" }
+        ]
+      };
     }
 
     // 14. EMERGENCY CONTACTS

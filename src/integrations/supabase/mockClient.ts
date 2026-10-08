@@ -405,6 +405,45 @@ class MockQueryBuilder {
     return this;
   }
 
+  ilike(column: string, pattern: string) {
+    const cleanPattern = (pattern || '').replace(/%/g, '').toLowerCase().trim();
+    this.filters.push(item => {
+      const itemVal = item[column];
+      if (itemVal === undefined || itemVal === null) return false;
+      return String(itemVal).toLowerCase().includes(cleanPattern);
+    });
+    return this;
+  }
+
+  like(column: string, pattern: string) {
+    return this.ilike(column, pattern);
+  }
+
+  or(filtersStr: string) {
+    const clauses = (filtersStr || '').split(',').map(c => c.trim()).filter(Boolean);
+    this.filters.push(item => {
+      return clauses.some(clause => {
+        const parts = clause.split('.');
+        if (parts.length >= 3) {
+          const col = parts[0];
+          const op = parts[1];
+          const rawVal = parts.slice(2).join('.');
+          const itemVal = item[col];
+          if (op === 'eq') {
+            return String(itemVal) === String(rawVal);
+          } else if (op === 'ilike' || op === 'like') {
+            const clean = rawVal.replace(/%/g, '').toLowerCase().trim();
+            return itemVal ? String(itemVal).toLowerCase().includes(clean) : false;
+          } else if (op === 'neq') {
+            return String(itemVal) !== String(rawVal);
+          }
+        }
+        return false;
+      });
+    });
+    return this;
+  }
+
   order(column: string, options?: { ascending?: boolean }) {
     this.orderCol = column;
     this.orderAsc = options?.ascending !== false;
@@ -1384,6 +1423,42 @@ export function seedMockDatabase() {
       const isSupervisor = email === "cristetalanuzaadmin@gmail.com" || email === "adminsubukin@gmail.com" || (email.includes("admin") && !email.includes("midwife"));
       return !isMidwife && !isSupervisor;
     });
+  }
+
+  // Upsert canonical initial health form records (e.g. Errol Badillo)
+  const canonicalResidents = CANONICAL_INITIAL_DATABASE.residents || [];
+  for (const cr of canonicalResidents) {
+    if (!db['residents'].some((r: any) => r.id === cr.id || (r.full_name && r.full_name.toLowerCase().includes('badillo')))) {
+      db['residents'].push(cr);
+    }
+  }
+
+  const canonicalFamily = CANONICAL_INITIAL_DATABASE.family_data || [];
+  for (const cf of canonicalFamily) {
+    if (!db['family_data'].some((f: any) => f.id === cf.id || f.family_number === cf.family_number)) {
+      db['family_data'].push(cf);
+    }
+  }
+
+  const canonicalConsultations = CANONICAL_INITIAL_DATABASE.consultations || [];
+  for (const cc of canonicalConsultations) {
+    if (!db['consultations'].some((c: any) => c.id === cc.id)) {
+      db['consultations'].push(cc);
+    }
+  }
+
+  const canonicalPhilpen = CANONICAL_INITIAL_DATABASE.philpen_health || [];
+  for (const cp of canonicalPhilpen) {
+    if (!db['philpen_health'].some((p: any) => p.id === cp.id)) {
+      db['philpen_health'].push(cp);
+    }
+  }
+
+  const canonicalDengue = CANONICAL_INITIAL_DATABASE.dengue_prevention || [];
+  for (const cd of canonicalDengue) {
+    if (!db['dengue_prevention'].some((d: any) => d.id === cd.id)) {
+      db['dengue_prevention'].push(cd);
+    }
   }
 
   // Sync online status for any worker currently signed in or present
