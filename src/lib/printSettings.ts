@@ -85,13 +85,20 @@ export function executePrintWithOrientation(
   let onBefore: (() => void) | undefined;
   let onAfter: (() => void) | undefined;
 
-  if (typeof optionsOrOrientation === 'object' && optionsOrOrientation !== null) {
+  if (typeof optionsOrOrientation === 'string') {
+    chosen = optionsOrOrientation;
+    onBefore = callbacks?.onBeforePrint;
+    onAfter = callbacks?.onAfterPrint;
+  } else if (typeof optionsOrOrientation === 'object' && optionsOrOrientation !== null) {
     const raw = optionsOrOrientation.defaultOrientation;
-    chosen = (raw === 'landscape' || raw === 'portrait') ? raw : getSavedPrintOrientation();
+    const saved = getSavedPrintOrientation();
+    chosen = (saved === 'landscape' || saved === 'portrait')
+      ? saved
+      : ((raw === 'landscape' || raw === 'portrait') ? raw : 'portrait');
     onBefore = optionsOrOrientation.onBeforePrint;
     onAfter = optionsOrOrientation.onAfterPrint;
   } else {
-    chosen = (optionsOrOrientation as PrintOrientation) || getSavedPrintOrientation();
+    chosen = getSavedPrintOrientation();
     onBefore = callbacks?.onBeforePrint;
     onAfter = callbacks?.onAfterPrint;
   }
